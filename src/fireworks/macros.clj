@@ -1,0 +1,146 @@
+(ns fireworks.macros
+ (:require  
+  [clojure.string :as string]
+  [fireworks.messaging :as messaging]
+  [fireworks.specs.config :as config]
+  [fireworks.specs.theme :as theme]
+  [fireworks.basethemes :as basethemes]
+  [fireworks.pp :refer [?pp]]
+  [clojure.edn :as edn]
+  [clojure.spec.alpha :as s]))
+
+(let [transforms {:keys keyword
+                  :strs str
+                  :syms identity}]
+  (defmacro keyed
+    "Create a map in which, for each symbol S in vars, (keyword S) is a
+     key mapping to the value of S in the current scope. If passed an optional
+     :strs or :syms first argument, use strings or symbols as the keys."
+    ([vars] `(keyed :keys ~vars))
+    ([key-type vars]
+     (let [transform (comp (partial list `quote)
+                           (transforms key-type))]
+       (into {} (map (juxt transform identity) vars))))))
+
+(def load-failure-body
+  (str "Please check:"
+       "\n"
+       "\n"
+       "- The file path"
+       "\n"
+       "- The name of the file"
+       "\n"
+       "- Does the file exist?"
+       "\n"
+       "\n"
+       "The default Fireworks configuration options will be applied."))
+
+(defn form-meta->file-info
+  [{:keys [file line column]}]
+  (str file ":" line ":" column))
+
+(defn load-edn
+  "Load edn from an io/reader source (filename or io/resource)."
+  [source form-meta]
+  (use 'clojure.java.io)
+  (try
+    (with-open [r (clojure.java.io/reader source)]
+      (edn/read (java.io.PushbackReader. r)))
+    (catch java.io.IOException e
+      (let [opts {:header  (str (form-meta->file-info form-meta)
+                                ", could not open file:")
+                  :path    source
+                  :default load-failure-body}]
+        (swap! messaging/warnings-and-errors
+               conj
+               [:messaging/read-file-warning opts])
+        (messaging/read-file-warning opts)))
+
+    (catch RuntimeException e
+      (let [opts {:header  "fireworks.state/user-config, could not parse file:"
+                  :path    source
+                  :default load-failure-body}]
+        (swap! messaging/warnings-and-errors
+               conj
+               [:messaging/read-file-warning opts])
+        (messaging/read-file-warning opts)))))
+
+
+(defmacro compile-time-warnings-and-errors []
+  (let [ret @messaging/warnings-and-errors]
+    `~ret))
+
+(defmacro get-user-configs
+  "This gets the path to user config from sys env var, then returns a map of
+   user config with resolved :theme entry.
+   
+   First, the path set by the user via \"FIREWORKS_CONFIG\" env var is
+   validated. If it is a non-blank string that does not point to .edn file,
+   issue a bad-option-value-warning. Also update messaging/warning-and-errors
+   atom, which will surface the warning if the user is in cljs land, and maybe
+   not looking at the build process in their terminal.
+
+   If the path set by the user via \"FIREWORKS_CONFIG\" env var points to a
+   non-existant `.edn` file, or a file that is not parseable by
+   `clojure.edn/read`, a warning is issued via fireworks.macros/load-edn.
+   Also update the `messaging/warning-and-errors` atom, which will surface the
+   warning if the user is in cljs land, and maybe not looking at the build
+   process in their terminal.
+   
+   If the config map is successfully loaded from edn file, and the :theme entry
+   is a valid `.edn` path, but this path  points to a non-existant `.edn` file,
+   or a file that is not parseable by `clojure.edn/read`, a warning is issued
+   via fireworks.macros/load-edn.
+
+   If a valid :theme map is resolved, it will be assoc'd to the user's config
+   map, and returned. Otherwised, just the config map is returned. 
+   "
+  []
+  (use 'clojure.java.io)
+  (reset! messaging/warnings-and-errors [])
+  (when-let [path-to-config (System/getenv "FIREWORKS_CONFIG")]
+    (let [form-meta   (meta &form)
+          valid-path? (s/valid?
+                       ::config/edn-file-path 
+                       path-to-config)]
+
+      (if-not valid-path?  
+        (let [opts {:v      path-to-config
+                    :k      "FIREWORKS_CONFIG="
+                    :spec   ::config/edn-file-path
+                    :header (str "[fireworks.core/p] Invalid value"
+                                 " for environmental variable.")}]
+
+          (messaging/bad-option-value-warning opts)
+
+          (swap! messaging/warnings-and-errors
+                 conj
+                 [:messaging/bad-option-value-warning opts]))
+
+        (when-let [config (load-edn path-to-config form-meta)]
+          (if-let [theme* (:theme config)]
+            (if-let [user-theme*
+                     (when-let [x 
+                                (cond
+                                  (s/valid? ::config/edn-file-path theme*)
+                                  (load-edn theme* form-meta)
+
+                                  (map? theme*)
+                                  theme*
+
+                                  (string? theme*)
+                                  (get basethemes/stock-themes theme* nil))]
+                       (when (s/valid? ::theme/theme x)
+                         x))]
+
+              ;; :theme entry resolves to a map, so assoc it to user config
+              (let [config (assoc config :theme user-theme*)]
+                `~config)
+
+              ;; :theme entry exists, but doesn't resolve to a map
+              ;; dissoc :theme entry and issue warning for user
+              (let [config (dissoc config :theme)]
+                `~config))
+
+            ;; :theme entry is nil or non-existant, just return user config map
+            `~config))))))

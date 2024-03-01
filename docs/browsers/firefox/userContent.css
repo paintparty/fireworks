@@ -1,0 +1,103 @@
+ /****************************************************************************/
+
+/*
+  The following 2 css rules are designed to customize the font-family and
+  background color of Firefox's Developer Tools, Console panel.
+
+  The goal is to achive feature parity with the chrome extension called
+  Devtools Console Customizer:
+
+  https://chromewebstore.google.com/detail/kjkmaoifmppnclfacnmbimcckfgekmod
+*/
+
+.flexible-output-input * {
+
+  font-family:
+  /*
+  THIS SETS THE FONT FAMILY IN FIREFOX'S DEVELOPER TOOLS CONSOLE.
+
+  THIS MUST BE A FONT THAT EXISTS ON YOUR COMPUTER.
+
+  THE EXACT SPELLING OF THE FONT MUST BE CORRECT.
+    
+  THIS SHOULD JUST BE THE NAME OF THE FONT FAMILY WITH NO WEIGHT
+  INFORMATION, E.G. "Fira Code", NOT "Fira Code Bold". IF YOU
+  WANT TO USE A DIFFERENT WEIGHT, ALTER THE `font-weight` PROPERTY
+  BELOW.
+
+  THE NAME SHOULD BE QUOTED, AND FOLLOWED BY A `,` CHARACTER, SO
+  THAT IF YOU SPELL IT WRONG OR IT IS NOT ON YOUR COMPUTER, THE 
+  ALTERNATE (FALLBACK) VALUES BELOW WILL TAKE EFFECT.
+  */
+  'JetBrains Mono',
+
+
+  /*
+  THE REMAINING VALUES BELOW CONSTITUE A CROSS-PLATFORM MONOSPACE
+  FONT STACK.
+
+  YOU PROBABLY DO NOT WANT TO COMMENT THIS OUT.
+
+  IF YOU HAPPEN TO SPELL YOUR DESIRED FONT (ABOVE) WRONG, THIS
+  WILL PROVIDE A SENSIBLE FALLBACK BASED ON YOUR OS.
+  */
+  ui-monospace, 
+  Menlo, Monaco, 
+  "Cascadia Mono", "Segoe UI Mono", 
+  "Roboto Mono", 
+  "Oxygen Mono", 
+  "Ubuntu Monospace", 
+  "Source Code Pro",
+  "Fira Mono", 
+  "Droid Sans Mono", 
+  "Courier New", monospace;
+
+
+  /*
+  THIS SETS THE FONT WEIGHT IN FIREFOX'S DEVELOPER TOOLS CONSOLE.
+
+  400 IS THE DEFAULT, EQUIVALENT TO "MEDIUM".
+  */
+  font-weight: 400;
+}
+
+.flexible-output-input .message.result.log,
+.flexible-output-input .message.console-api.log,
+.flexible-output-input .message.javascript.command.log,
+.flexible-output-input .message.console-api.info,
+.flexible-output-input .message.info,
+.flexible-output-input .eager-evaluation-result,
+.flexible-output-input .jsterm-input-container {
+
+  /* THIS SECTION DEFINES VARIOUS BACKGROUND COLORS.
+     IF YOU ARE USING A CUSTOM THEME, ADD THE BACKGROUND COLOR TO THIS LIST. */
+  --alabaster-light-bg: #f7f7f7; 
+  --alabaster-dark-bg: #0e1415; 
+  --neutral-light-bg: #ffffff; 
+  --neutral-dark-bg: #000000; 
+  --degas-light-bg: #f5f9f9; 
+  --degas-dark-bg: #363f4e; 
+  --solarized-light-bg: #fdf6e3; 
+  --solarized-dark-bg: #002b36; 
+  --monokai-light-bg: #ffffff; 
+  --monokai-dark-bg: #2d2a2e; 
+  --zenburn-light-bg: #f9f8f5; 
+  --zenburn-dark-bg: #3f3f3f; 
+
+  /* THIS SETS THE BACKGROUND COLOR IN FIREFOX'S DEVELOPER TOOLS CONSOLE. */
+
+  background-color: var(--alabaster-light-bg) !important;
+  /* background-color: var(--alabaster-dark-bg) !important; */
+  /* background-color: var(--degas-light-bg) !important; */
+  /* background-color: var(--degas-dark-bg) !important; */
+  /* background-color: var(--neutral-light-bg) !important; */
+  /* background-color: var(--neutral-dark-bg) !important; */
+  /* background-color: var(--zenburn-light-bg) !important; */
+  /* background-color: var(--zenburn-dark-bg) !important; */
+  /* background-color: var(--solarized-light-bg) !important; */
+  /* background-color: var(--solarized-dark-bg) !important; */
+  /* background-color: var(--monokai-light-bg) !important; */
+  /* background-color: var(--monokai-dark-bg) !important; */
+}
+
+ /****************************************************************************/
