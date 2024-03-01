@@ -775,7 +775,7 @@ JS built-in objects such as `js/Math` or `js/JSON` which cannot be called like f
 
 The execution time of printing an arbitrary value with Fireworks is orders of magnitude faster than is necessary to deliver on the stated goals. It is hard to measure, but I would estimate the performance would have to be 20-50x worse before a user would notice any difference as compared to doing similar dev-time printing using `pprint`, `println`, or `js/console.log`.
 
-To provide a point of reference, I ran a simplified performance test: **`fireworks.core/p`** vs **`clojure.pprint/pprint`** in JVM Clojure, printing a map of a dozen entries of various data types (found at `fireworks.smoke-test/basic-samples`).
+As provide a point of reference, consider this following performance test: **`fireworks.core/p`** vs **`clojure.pprint/pprint`** in JVM Clojure, printing a map of a dozen entries of various data types (found at `fireworks.smoke-test/basic-samples`).
 
 ```
 Hardware:  Mac Mini
