@@ -2,20 +2,24 @@
 
 
 (def neutral-light
-  {:name    "Neutral Light"
-   :desc    "Neutral dark theme with no syntax coloring"
-   :mood    :light
-   :author  "Author Name"
-   :langs   ["Clojure" "ClojureScript" "Babashka"]})
+  {:name   "Neutral Light"
+   :desc   "Neutral dark theme with no syntax coloring"
+   :mood   :light
+   :author "Author Name"
+   :langs  ["Clojure" "ClojureScript" "Babashka"]
+   :tokens {:classes {:comment {:color      "#AA3731"
+                                :font-style :italic}}}})
+                        
 
 
 (def neutral-dark
-  {:name    "Neutral Dark"
-   :desc    "Neutral dark theme with no syntax coloring"
-   :mood    :dark
-   :author  "Author Name"
-   :langs   ["Clojure" "ClojureScript" "Babashka"]})
-
+  {:name   "Neutral Dark"
+   :desc   "Neutral dark theme with no syntax coloring"
+   :mood   :dark
+   :author "Author Name"
+   :langs  ["Clojure" "ClojureScript" "Babashka"]
+   :tokens {:classes {:comment {:color      "#e0d557"
+                                :font-style :italic}}}})
 
 (def alabaster-light
   {:name    "Alabaster Light"
@@ -80,11 +84,13 @@
                       :string     {:color "#5c9999"}
                       :constant   {:color "#bf6faf"}
                       :definition {:color "#5f87d7"}
+                      :comment    {:color      "#5728f0"
+                                   :font-style :italic}
                       :annotation {:color      "#9e9e9e"
                                    :font-style :italic}
-                      :metadata      {:color           "#4b8eaf"
-                                     :text-shadow      "0 0 2px #ffffff"
-                                     :background-color "#e6fafa"}}
+                      :metadata   {:color            "#4b8eaf"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :background-color "#e6fafa"}}
            :syntax  {:number {:color "#737373"}
                      :js-object-key {:color "#888888"}}
            :printer {:function-args {:color "#9e9e9e"}
@@ -99,10 +105,12 @@
    :desc  "A dark pastel theme for Clojure"
    :mood  "dark"
    :tokens {:classes {:background {:background-color "#363f4e"}
-                      :foreground    {:color "#bfbfbf"}
+                      :foreground {:color "#bfbfbf"}
                       :string     {:color "#8cc08c"}
                       :constant   {:color "#c0a1bf"}
                       :definition {:color "#80a3ea"}
+                      :comment    {:color      "#e1d084"
+                                   :font-style :italic}
                       :annotation {:color      "#999999"
                                    :font-style :italic}
                       :metadata   {:color            "#b191b0"
@@ -122,10 +130,12 @@
    :mood             "light"
    :bracket-contrast "low"
    :tokens           {:classes {:background {:background-color "#f9f8f5"}
-                                :foreground    {:color "#666666"}
+                                :foreground {:color "#666666"}
                                 :string     {:color "#a64b64"}
                                 :constant   {:color "#548354"}
                                 :definition {:color "#99770f"}
+                                :comment    {:color      "#0060e6"
+                                             :font-style :italic}
                                 :annotation {:color      "#999999"
                                              :font-style :italic}
                                 :metadata   {:color            "#618d98"
@@ -148,6 +158,8 @@
                                 :string     {:color "#cc8585"}
                                 :constant   {:color "#8cc08c"}
                                 :definition {:color "#cccc7a"}
+                                :comment    {:color      "#76d5fe"
+                                             :font-style :italic}
                                 :annotation {:color      "#999999"
                                              :font-style :italic}
                                 :metadata   {:color            "#b19d8c"
@@ -172,9 +184,11 @@
    :mood             "light"
    :bracket-contrast "low"
    :tokens           {:classes {:background {:background-color "#fdf6e3"}
-                                :foreground    {:color "#666666"}
+                                :foreground {:color "#666666"}
                                 :string     {:color "#4ba6a6"}
                                 :definition {:color "#5270cc"}
+                                :comment    {:color      "#AA3731"
+                                             :font-style :italic}
                                 :annotation {:color      "#999999"
                                              :font-style :italic}
                                 :metadata   {:color            "#6f7cae"
@@ -203,6 +217,8 @@
                                 :string     {:color "#33a3a3"}
                                 :constant   {:color "#8f8f8f"}
                                 :definition {:color "#5289cc"}
+                                :comment    {:color      "#ee63b4"
+                                             :font-style :italic}
                                 :label      {:color            "#5289cc"
                                              :background-color "#143966"
                                              :text-shadow      "0 0 2px #000000"
@@ -229,6 +245,8 @@
                                  :definition {:color "#369e36"}
                                  :annotation {:color      "#a6a6a6"
                                               :font-style :italic}
+                                 :comment    {:color      "#e000ca"
+                                              :font-style :italic}
                                  :metadata   {:color            "#9978b0"
                                               :text-shadow      "0 0 2px #ffffff"
                                               :background-color "#f9f0ff"}
@@ -253,6 +271,8 @@
                                  :constant   {:color "#cc99ff"}
                                  :definition {:color "#9adb9a"}
                                  :annotation {:color      "#999999"
+                                              :font-style :italic}
+                                 :comment    {:color      "#2ef1ff"
                                               :font-style :italic}
                                  :metadata   {:color            "#a395b1"
                                               :text-shadow      "0 0 2px #1b002e"

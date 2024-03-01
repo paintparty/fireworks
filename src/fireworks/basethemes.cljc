@@ -115,7 +115,7 @@
                           :text-shadow "0 0 2px #003538"}
              :highlight  {:color            "#ffffff"
                           :background-color "#5f5fff"}
-             :label      {:color            "#808080"
+             :label      {:color            "#a3a3a3"
                           :background-color "#333333"
                           :text-shadow      "0 0 2px #000000"
                           :font-style       :italic}}
