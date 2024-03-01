@@ -173,7 +173,7 @@ The first argument can also be a map, which supplies various config options for 
 
 #### `?>`
 
-**`fireworks.core/?>`** will simply print the value using `js/console.log` or `pprint`. It returns the value. In other words, it offers the same ergonomics as **`?`**, but does not use fireworks to format or colorize the output. This may be preferrable if you want more succint output. It may also be useful if you want to print a large data structure and spend time looking at it.
+**`fireworks.core/?>`** will simply print the value using `js/console.log` or `pprint`. It returns the value. In other words, it offers the same ergonomics as **`?`**, but does not use fireworks to format or colorize the output. This may be preferable if you want more succinct output. It may also be useful if you want to print a large data structure and spend time looking at it.
 
 Similar to **`?`**, **`?>`** can take 2 args, the first of which will be used as a label. Unlike **`?`**, **`?>`** does not take a map of options. 
 
@@ -188,6 +188,9 @@ These are no-op functions which just return the value. Useful when you want to t
 
 
 ### Getting the formatted string & other data
+
+#### `p-data`
+
 If you just want the formatted string, and/or other data that **`fireworks.core/?`** uses to construct the printed output, you can use the **`fireworks.core/p-data`** macro.
 
 Calling **`fireworks.core/p-data`** in a ClojureScript (browser) context also provides vectors of css styles. This corresponds to the arguments that **`js/console.log`** requires for syntax-colored formatting. In a terminal context, **`p-data`** returns the same map as below, but with sgr escape codes for syntax coloring (instead of the `%c` tags), and no vectors of css styles:
@@ -227,7 +230,7 @@ Calling **`fireworks.core/p-data`** in a ClojureScript (browser) context also pr
 ## Configuration / Options
 
 Fireworks is designed to pick up your preferred theming and formatting options from a system-wide `.edn` config file that lives in a globally accessible place outside of any projects. In order to make this work, you will need to set the environment variable `FIREWORKS_CONFIG` to the path of this file.
-This `.edn` config file can live anywhere on your computer, but by convention should be `~/.fireworks/config.edn`. If you were to set the environment variable in your `.zshrc` (or similiar), it would look like this:
+This `.edn` config file can live anywhere on your computer, but by convention should be `~/.fireworks/config.edn`. If you were to set the environment variable in your `.zshrc` (or similar), it would look like this:
 
 ```
 export FIREWORKS_CONFIG="/Users/your-home-folder/.fireworks/config.edn"
@@ -245,7 +248,7 @@ All of the available config options and their default values:
 
 **`:mood`** `"light"`
 
-Sets the mood to `"dark"` or `"light"`. Will use the default light (or dark) theme, which is `"Alabster Light"` (or `"Alabaster Dark"`). Defaults to `"light"`.
+Sets the mood to `"dark"` or `"light"`. Will use the default light (or dark) theme, which is `"Alabaster Light"` (or `"Alabaster Dark"`). Defaults to `"light"`.
 
 <br>
 <br>
@@ -388,7 +391,7 @@ Custom print handlers for objects and collections. See [Custom Printers](#custom
 
 **`:find`** `nil`
 
-Find and hightlight values in the printed output. See [Highlighting values](#highlighting-values) section.
+Find and highlight values in the printed output. See [Highlighting values](#highlighting-values) section.
 
 <br>
 <br>
@@ -628,7 +631,7 @@ When printing maps that contain keys which are data-structures, `clojure.pprint/
 
 =>
 
-;; clojure.pprint/pprint ouput of above map
+;; clojure.pprint/pprint output of above map
 
 {["abcdefghijklmnopqrstuvxyz" "ABCDEFGHIJKLMNOPQRSTUVXYZ"]
  "vector",
@@ -770,9 +773,9 @@ JS built-in objects such as `js/Math` or `js/JSON` which cannot be called like f
 
 ## Performance
 
-The execution time of printing an arbitrary value with Fireworks is orders of magnitude faster than is necessary to deliver on the stated goals. It is hard to measure, but I would estimate the performance would have to be 20-50x worse before a user would notice any difference when doing similar dev-time printing using `pprint`, `println`, or `js/console.log`.
+The execution time of printing an arbitrary value with Fireworks is orders of magnitude faster than is necessary to deliver on the stated goals. It is hard to measure, but I would estimate the performance would have to be 20-50x worse before a user would notice any difference as compared to doing similar dev-time printing using `pprint`, `println`, or `js/console.log`.
 
-Out of curiousity, and to provide a point of reference, I ran a simplified perfomance test - **`fireworks.core/p`** vs **`clojure.pprint/pprint`** in JVM Clojure, printing a map of a dozen entries of various data types (found at `fireworks.smoke-test/basic-samples`).
+To provide a point of reference, I ran a simplified performance test: **`fireworks.core/p`** vs **`clojure.pprint/pprint`** in JVM Clojure, printing a map of a dozen entries of various data types (found at `fireworks.smoke-test/basic-samples`).
 
 ```
 Hardware:  Mac Mini
@@ -788,7 +791,7 @@ pId         nCalls   Min   Max    Mean  MAD    Clock   Total
 :fireworks  1,000    5ms   19ms   6ms   ±10%   6.33s   49%
 :pprint     1,000    6ms   11ms   7ms   ±9%    6.58s   51%
 ```
-Even with all the fancy formatting and syntax colorization, performance of printing values with Fireworks in JVM Clojure is basically on par with `clojure.pprint/pprint`.
+Even with all the specific formatting and syntax colorization, the performance of printing values with Fireworks in JVM Clojure is basically on par with `clojure.pprint/pprint`.
 
 <br>
 
@@ -798,7 +801,7 @@ Alpha, subject to change. Currently, the enhanced interop reflection / print han
 <br>
 
 ## Contributing
-Issues for bugs, improvements, or feautures are very welcome. Please file an issue for discussion before starting or issuing a PR.
+Issues for bugs, improvements, or features are very welcome. Please file an issue for discussion before starting or issuing a PR.
 
 
 <br>
