@@ -175,9 +175,10 @@ The first argument can also be a map, which supplies various config options for 
 
 #### `?>`
 
-**`fireworks.core/?>`** will simply print the value using `js/console.log` or `pprint`. It returns the value. In other words, it offers the same ergonomics as **`?`**, but does not use fireworks to format or colorize the output. This may be preferable if you want more succinct output. It may also be useful if you want to print a large data structure and spend time looking at it.
+**`fireworks.core/?>`** will simply print the value using `js/console.log` in (ClojureScript) or `pprint` (Clojure). It returns the value. In other words, it offers the same ergonomics as **`?`**, but does not use fireworks to format or colorize the output. This may be preferable if you want more succinct output. It may also be useful if you want to print a large data structure and spend time looking at it. In a JVM Clojure context, **`?>`** uses [pp](https://github.com/eerohele/pp) under the hood, a performant replacement for `clojure.pprint/pprint`.
 
 Similar to **`?`**, **`?>`** can take 2 args, the first of which will be used as a label. Unlike **`?`**, **`?>`** does not take a map of options. 
+
 
 <br>
 
