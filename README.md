@@ -99,7 +99,7 @@ Fireworks is not intended for situations where you may need to peruse, navigate,
 
 <br>
 
-## Usage
+## Setup
 
 Requires Clojure `1.10.3` or higher
 
@@ -129,7 +129,7 @@ Import into your namespace:
 
 <br>
 
-## API
+## Usage 
 
 ### Print & return
 Fireworks provides 3 different print-and-return functions so that you can print values from your source without altering the execution of your program:
