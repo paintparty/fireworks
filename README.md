@@ -156,7 +156,7 @@ Calling **`fireworks.core/?`** with two arguments will print the namespace info,
 <img src="resources/fireworks-core-par-label.png" width="390px" />
 
 
-The first argument can also be a map, which supplies various config options for formatting, theming, and highlighting:
+The first argument can also be a map, which supplies various config options:
 
 ```Clojure
 (? {:label      "My label"
@@ -232,6 +232,37 @@ Calling **`fireworks.core/p-data`** in a ClojureScript (browser) context also pr
 
 ## Configuration / Options
 
+
+For cutting & pasting into your [system-wide config](#system-wide-config), or trying things out at the call site: 
+
+```Clojure
+{:theme                      "Alabaster Light"
+ :mood                       :light            ; :light | :dark
+ :line-height                1.45
+ :print-level                7
+ :value-width-limit          33
+ :mapkey-width-limit         20
+ :coll-limit                 15
+ :evaled-form-coll-limit     7
+ :display-namespaces?        true
+ :metadata-print-level       7
+ :display-metadata?          true
+ :metadata-position          :inline           ; :inline | :block
+ :enable-rainbow-brackets?   true
+ :bracket-contrast           :high             ; :high | :low
+ :enable-terminal-truecolor? false
+ :enable-terminal-italics?   false
+ :custom-printers            nil
+ :find                       nil}
+```
+
+You can configure all of the above options ala-carte, for example if you want to quickly try different things out.
+A leading options map arg works with **`fireworks.core/?`**, **`fireworks.core/p`**, and **`fireworks.core/p-data`**.
+
+<br>
+
+### System-wide config
+
 Fireworks is designed to pick up your preferred theming and formatting options from a system-wide `.edn` config file that lives in a globally accessible place outside of any projects. In order to make this work, you will need to set the environment variable `FIREWORKS_CONFIG` to the path of this file.
 This `.edn` config file can live anywhere on your computer, but by convention should be `~/.fireworks/config.edn`. If you were to set the environment variable in your `.zshrc` (or similar), it would look like this:
 
@@ -244,6 +275,8 @@ You will need to substitute `your-home-folder` in the example above with the nam
 For the actual `config.edn` file, you can use the example at the end of this section as a starting point. Prior to doing this you can experiment with the various configuration options via passing a leading options map to `fireworks.core/p` or `fireworks.core/?` as in [this example below](#setting-options-at-call-site).
 
 <br>
+
+### All the options
 
 All of the available config options and their default values:
 
@@ -263,7 +296,7 @@ This must be one of the following 3 types of values:
 
 - A valid Fireworks theme, which is a map that satisfies the `fireworks.specs.theme/theme` spec. Typically, its structure will at minimum resemble the first example found in the [theming section ](#theming) of this document.
 
-- A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>**NOTE** - The path must be absolute e.g. `"/Users/your-home-folder/.fireworks/my-theme.edn"`<br>
+- A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/your-home-folder/.fireworks/my-theme.edn"`<br>
 This will not work:
 `"~/.fireworks/my-theme.edn"`
 <br>If the map in this `.edn` file fails to satisfy the `fireworks.specs.theme/theme` spec it will issue a warning and fall back to the default light or dark theme (depending on the value of **`:mood`**). 
@@ -399,50 +432,6 @@ Find and highlight values in the printed output. See [Highlighting values](#high
 <br>
 <br>
 
-### All the options
-
-For cutting & pasting into your `~/.fireworks/config.edn` file, or trying things out at the call site: 
-```Clojure
-{:theme                      "Alabaster Light"
- :mood                       "light"  ; "light" | "dark"
- :line-height                1.45
- :print-level                7
- :value-width-limit          33
- :mapkey-width-limit         20
- :coll-limit                 15
- :evaled-form-coll-limit     7
- :display-namespaces?        true
- :metadata-print-level       7
- :display-metadata?          true
- :metadata-position          "inline" ; "inline" | "block"
- :enable-rainbow-brackets?   true
- :bracket-contrast           "high"   ; "hight" | "low"
- :enable-terminal-truecolor? false
- :enable-terminal-italics?   false
- :custom-printers            nil
- :find                       nil}
-```
-
-<br>
-<br>
-
-### Setting options at call site
-
-You can configure all of the above options ala-carte via an options map, for example if you want to quickly try different things out.
-This option leading options map arg works with **`fireworks.core/?`**, **`fireworks.core/p`**, and **`fireworks.core/p-data`**.
-```Clojure
-(? {:mood                     "light"
-    :theme                    "Alabaster Light"
-    :line-height              1.35
-    :coll-limit               20
-    :value-width-limit        50
-    :bracket-contrast         "low"
-    :enable-rainbow-brackets? false}
-   x)
-```
-
-<br>
-<br>
 
 ### Highlighting values in printed output
 
@@ -607,7 +596,7 @@ For theming parity between your editor and terminal emulator, this is probably n
 
 ## Printing conventions
 
-The following sections are comparisons of various  default printing conventions (`clojure.pprint/pprint` vs `js/console.log` vs `fireworks.core/p`).
+The following sections are comparisons of various default printing conventions (`clojure.pprint/pprint` vs `js/console.log` vs `fireworks.core/p`).
 
 <br>
 
