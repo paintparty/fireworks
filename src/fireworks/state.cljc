@@ -7,7 +7,6 @@
    [fireworks.config :as config]
    [fireworks.defs :as defs]
    [fireworks.messaging :as messaging]
-   [fireworks.pp :refer [?pp]]
    [fireworks.specs.theme :as theme]
    [fireworks.specs.config :as config.specs]
    [fireworks.specs.tokens :as tokens]
@@ -397,9 +396,11 @@
   ([]
    (merged-theme* nil))
   ([reset]
-   ;; TODO - Add observability for theme, user-config
+   ;; TODO - Add observability for theme, user-config.
    ;; from env-vars, parsed and validated.
-   (let [theme*           (:theme @config)
+   (let [supplied-theme?  (:theme user-options)
+
+         theme*           (when supplied-theme? (:theme @config))
 
          fallback-theme   (if (dark? (:mood @config))
                             themes/alabaster-dark
@@ -467,7 +468,7 @@
                                          (map kv->css2)
                                          string/join)
                                     (line-height-css))
-                         :clj (m->sgr (map-vals hexa-or-sgr style)))))
+                         :clj  (m->sgr (map-vals hexa-or-sgr style)))))
                   (:highlight @merged-theme))]
     (assoc {:pred pred}
            :style
