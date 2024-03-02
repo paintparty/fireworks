@@ -218,8 +218,6 @@
                               (or label form)
                               arrow+linebreaks
                               fmt)]
-    ;; (?pp 
-    ;; (keyed [source opts fmt fmt+]))
     (if p*?
       (merge
        {:ns-str        ns-str
@@ -296,24 +294,28 @@
 
 
 (defn- diff-call-site-theme-option-keys
-  [user-opts opts]
-  (let [opts-to-reset  (opts-to-reset user-opts)]
-          (doseq [k opts-to-reset]
-            (reset-user-opt! k opts))
-          (when (seq opts-to-reset) 
-            (some-option-keys-that-update-theme
-             opts-to-reset))))
+  [opts-to-reset]
+  (when (seq opts-to-reset) 
+    (some-option-keys-that-update-theme
+     opts-to-reset)))
 
 
-(defn- reset-theme! [config-before user-opts opts]
-  (when (or (diff-call-site-theme-option-keys user-opts opts)
-            (diff-from-merged-user-config config-before))
-    (let [{:keys [with-style-maps
-                  with-serialized-style-maps]} (state/merged-theme* :reset)]
-      (reset! state/merged-theme
-              with-serialized-style-maps)
-      (reset! state/merged-theme-with-unserialized-style-maps
-              with-style-maps))))
+(defn- reset-config+theme!
+  [config-before user-opts opts]
+  (let [opts-to-reset (let [ks  (opts-to-reset user-opts)]
+                        (doseq [k ks]
+                          (reset-user-opt! k opts))
+                        ks)]
+
+    (when (or (diff-call-site-theme-option-keys opts-to-reset)
+              (diff-from-merged-user-config config-before))
+      (let [{:keys [with-style-maps
+                    with-serialized-style-maps]} (state/merged-theme* :reset)]
+        (reset! state/merged-theme
+                with-serialized-style-maps)
+        (reset! state/merged-theme-with-unserialized-style-maps
+                with-style-maps)))))
+
 
 (defn- reset-state!
   [{find-vals :find
@@ -341,8 +343,8 @@
     (reset! messaging/warnings-and-errors [])
     ;; Resetting config to user's config.edn merged with defaults
     (reset! state/config (state/config*))
-    ;; Potentially resetting/remerging the theme
-    (reset-theme! config-before user-opts opts))
+    ;; Reset config & potentially reset/remerging the theme
+    (reset-config+theme! config-before user-opts opts))
   
   ;; Reset the highlight state.
   ;; It may pull hightlight style from merged theme.
