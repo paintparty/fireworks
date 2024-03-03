@@ -112,7 +112,7 @@ Add as a dependency to your project:
 [![Clojars Project](https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg)](https://clojars.org/io.github.paintparty/fireworks)
 
 ```clojure
-[io.github.paintparty/fireworks "0.1.0"]
+[io.github.paintparty/fireworks "0.1.1"]
 ```
 <br>
 
