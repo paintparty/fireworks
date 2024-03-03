@@ -158,7 +158,11 @@
 
 
 (defn stringified-user-meta
-  [{:keys [user-meta metadata-position indent str-len-with-badge] :as m}]
+  [{:keys [user-meta
+           metadata-position
+           indent
+           str-len-with-badge
+           sev?]}]
   (let [block?              (contains? #{"block" :block} metadata-position)
         optional-caret-char (when block? "^") 
         stringified         (str optional-caret-char user-meta)
@@ -175,9 +179,11 @@
                                        optional-caret-char
                                        block?]))
                               (str
-                               (when-not block? (metamap-offset-background inline-offset))
-                               (tagged (str stringified) {:theme-token :metadata})))]
+                               (when-not block?
+                                 (metamap-offset-background inline-offset))
+                               (tagged (str stringified)
+                                       {:theme-token :metadata})))]
 
 
     (str ret
-         (when block? (str #_"\n" (spaces indent))))))
+         (when block? (str (when sev? "\n") (spaces indent))))))

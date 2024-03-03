@@ -48,7 +48,8 @@
            all-tags
            :fw/user-meta
            indent
-           :fw/custom-badge-style]
+           :fw/custom-badge-style
+           sev?]
     :as m}]
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
@@ -76,7 +77,11 @@
         (when (and user-meta
                    (contains? #{:block "block"} metadata-position))
           (tag/stringified-user-meta
-           (keyed [user-meta indent str-len-with-badge metadata-position])))
+           (keyed [user-meta
+                   indent
+                   str-len-with-badge
+                   metadata-position
+                   sev?])))
 
         atom-tagged
         (tagged (str defs/atom-label
