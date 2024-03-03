@@ -4,6 +4,30 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
+;; This is example config. If you want to run fireworks.core-test tests locally,
+;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
+;; If you don't do this, the tests will break.
+;; TODO - Fix the above situation.
+{:theme                      "Alabaster Light"
+ :mood                       :light
+ :line-height                1.45
+ :print-level                7
+ :value-width-limit          33
+ :mapkey-width-limit         20
+ :coll-limit                 15
+ :evaled-form-coll-limit     7
+ :display-namespaces?        true
+ :metadata-print-level       7
+ :display-metadata?          true
+ :metadata-position          :inline 
+ :enable-rainbow-brackets?   true
+ :bracket-contrast           :high
+ :enable-terminal-truecolor? true
+ :enable-terminal-italics?   true
+ :custom-printers            nil
+ :find                       nil}
+
+
 ;; This is for tests in core_tests
 (def alabaster-light-legacy
   {:name    "Alabaster Light"
