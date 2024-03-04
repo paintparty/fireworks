@@ -84,8 +84,7 @@ Fireworks is a color printer for Clojure, ClojureScript, and Babashka.
 <br>
 
 ## Why 
-
-Fireworks is highly themeable, with the intention of achieving visual parity of printed data across Clojure, ClojureScript, and Babashka. If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
+If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
 
 <br>
 
