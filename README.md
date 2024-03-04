@@ -471,7 +471,7 @@ Or pass multiple preds, with different styles:
 
 ## Theming
 
-I have a personal preference for syntax themes with a minimal palette, medium-to-low-contrast, and subdued colors. [Alabaster Light](https://github.com/tonsky/sublime-scheme-alabaster) was the obvious choice for a default theme, mostly because I've been using it myself for the past few years. That being said, Fireworks includes a handful of popular themes. Making your own to perfectly match your current editor theme is straightforward.
+[Alabaster Light](https://github.com/tonsky/sublime-scheme-alabaster) was the obvious choice for a default theme, mostly because I've been using it myself for the past few years. That being said, Fireworks includes a handful of popular themes. Making your own to perfectly match your current editor theme is straightforward.
 
 If you would like to make your own theme for use with Fireworks, check out `docs/example-theme.edn`. Notice how any of the keys in the `:classes` entry will act as a variable if the same keyword is used as a value in any of the other entries within the `:classes`, `:syntax`, or `:printer` maps.
 
