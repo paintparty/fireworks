@@ -92,9 +92,11 @@ The goal of Fireworks is to provide printed output that can be understood at a g
 
 <br>
 
-## Why not
+## Alts 
 
-Fireworks is not intended for situations where you may need to peruse, navigate, or explore large data structures in their entirety. For this use case, there is [Reveal](https://vlaaad.github.io/reveal/) and [Portal](https://github.com/djblue/portal). Another non-goal is the efficient serialization of large data structures for writing to log files. If you need that, check out [pp](https://github.com/eerohele/pp), [fipp](https://github.com/brandonbloom/fipp), or [zprint](https://github.com/kkinnear/zprint).
+Discovery: [Reveal](https://vlaaad.github.io/reveal/) and [Portal](https://github.com/djblue/portal).
+
+Serialization: [pp](https://github.com/eerohele/pp), [fipp](https://github.com/brandonbloom/fipp), or [zprint](https://github.com/kkinnear/zprint).
 
 
 <br>
@@ -256,8 +258,7 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
  :find                       nil}
 ```
 
-You can configure all of the above options ala-carte, for example if you want to quickly try different things out.
-A leading options map arg works with **`fireworks.core/?`**, **`fireworks.core/p`**, and **`fireworks.core/p-data`**.
+You can configure all of the above options ala-carte. A leading options map arg works with **`fireworks.core/?`**, **`fireworks.core/p`**, and **`fireworks.core/p-data`**.
 
 <br>
 
@@ -765,9 +766,7 @@ JS built-in objects such as `js/Math` or `js/JSON` which cannot be called like f
 
 ## Performance
 
-The execution time of printing an arbitrary value with Fireworks is orders of magnitude faster than is necessary to deliver on the stated goals. It is hard to measure, but I would estimate the performance would have to be 20-50x worse before a user would notice any difference as compared to doing similar dev-time printing using `pprint`, `println`, or `js/console.log`.
-
-As provide a point of reference, consider the following performance test: **`fireworks.core/p`** vs **`clojure.pprint/pprint`** in JVM Clojure, printing a map of a dozen entries of various data types (found at `fireworks.smoke-test/basic-samples`).
+Meaningless performance test: **`fireworks.core/p`** vs **`clojure.pprint/pprint`** in JVM Clojure, printing a map of a dozen entries of various data types (found at `fireworks.smoke-test/basic-samples`).
 
 ```
 Hardware:  Mac Mini
