@@ -80,11 +80,13 @@
 
 
 <br>
+
 ## What
 A color printer for Clojure, ClojureScript, and Babashka.
 
 
 <br>
+
 ## Why 
 If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
 
