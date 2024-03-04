@@ -2,7 +2,7 @@
 
 
 
-Fireworks is a color printer for Clojure, ClojureScript, and Babashka.
+A color printer for Clojure, ClojureScript, and Babashka.
 <br>
 
 
