@@ -88,7 +88,7 @@ It is designed for printing values during development, with an emphasis on reada
 
 ## Why 
 
-The goal of Fireworks is to provide printed output that can be understood at a glance. To this end, Fireworks is highly themeable, with the intention of achieving visual parity of printed data across Clojure, ClojureScript, and Babashka. If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
+Fireworks is highly themeable, with the intention of achieving visual parity of printed data across Clojure, ClojureScript, and Babashka. If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
 
 <br>
 
