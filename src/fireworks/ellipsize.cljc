@@ -213,7 +213,10 @@
 
         limit
         (if @state/top-level-value-is-sev?
-          100
+          ;; TODO - make this a config value with upper-bound
+          ;; maybe call it top-level-scalar-value-length-limit
+          ;; maybe change `width-limit*` to length-limit ?
+          500
           (max (if key?
                  mapkey-width-limit
                  value-width-limit)
@@ -241,7 +244,7 @@
                                                           stringified
                                                           stringified-len
                                                           num-chars-over]))
-                                      :else      stringified)
+                                      :else       stringified)
               num-chars-dropped     (when exceeds? num-chars-over)
               ellipsized-char-count (if-not exceeds?
                                       char-len
