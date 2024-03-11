@@ -38,7 +38,7 @@
          custom-printed (if (:evaled-form? opts)
                           truncated
                           (let [ret (walk/postwalk printers/custom truncated)]
-                            (when-not (some-> ret meta :fw/truncated)
+                            (when (some-> ret meta :fw/truncated :sev?)
                               (reset! state/top-level-value-is-sev? true))
                             ret))
          profiled       (walk/prewalk profile/profile custom-printed)
