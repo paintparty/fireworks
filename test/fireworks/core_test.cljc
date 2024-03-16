@@ -131,7 +131,35 @@
                 #_(pp/pprint formatted-string)
                 formatted-string)
               "%c[%c%c1%c %c2%c %c3%c %c4%c %c5%c%c ...+3%c%c]%c")))
-       
+
+       (deftest p*-with-non-coll-level-1-depth-length-limit
+         (is (= 
+              (let [ret              (p* {:label                         "my-label"
+                                          :enable-terminal-truecolor?    true
+                                          :enable-terminal-italics?      true
+                                          :bracket-contrast              "high"
+                                          :theme                         theme
+                                          :non-coll-depth-1-length-limit 60}
+                                         ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
+                    formatted-string (-> ret :formatted :string)]
+                #_(pp/pprint formatted-string)
+                formatted-string)
+              "%c[%c%c\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44\"%c...%c%c%c]%c")))
+
+       (deftest p*-with-non-coll-length-limit
+       (is (= 
+            (let [ret              (p* {:label                        "my-label"
+                                        :enable-terminal-truecolor?   true
+                                        :enable-terminal-italics?     true
+                                        :bracket-contrast             "high"
+                                        :theme                        theme
+                                        :non-coll-result-length-limit 42}
+                                       "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
+                  formatted-string (-> ret :formatted :string)]
+              (pp/pprint formatted-string)
+              formatted-string)
+            "%c\"asdfffaaaaasdfasdfasdfasdfasdfasdfasd\"%c...%c%c")))
+
        (deftest p*-rainbow-brackets
          (is (= 
               (let [ret              (p* {:label                      "my-label"
@@ -227,6 +255,50 @@
               #_(pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;5;64〠" "\"foo\"" "〠0〠"))))
+
+     (deftest p*-with-non-coll-level-1-depth-length-limit
+       (is (= 
+            (let [ret              (p* {:label                         "my-label"
+                                        :enable-terminal-truecolor?    true
+                                        :enable-terminal-italics?      true
+                                        :bracket-contrast              "high"
+                                        :theme                         theme
+                                        :non-coll-depth-1-length-limit 60}
+                                       ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
+                  formatted-string (-> ret :formatted :string)]
+              #_(pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠38;5;241〠"
+              "["
+              "〠0〠"
+              "〠38;2;68;140;39〠"
+              "\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44\""
+              "〠3;38;2;140;140;140〠"
+              "..."
+              "〠0〠"
+              "〠0〠"
+              "〠38;5;241〠"
+              "]"
+              "〠0〠"))))
+
+     (deftest p*-with-non-coll-result-length-limit
+       (is (= 
+            (let [ret              (p* {:label                        "my-label"
+                                        :enable-terminal-truecolor?   true
+                                        :enable-terminal-italics?     true
+                                        :bracket-contrast             "high"
+                                        :theme                        theme
+                                        :non-coll-result-length-limit 42}
+                                       "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
+                  formatted-string (-> ret :formatted :string)]
+              #_(pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠38;2;68;140;39〠"
+              "\"asdfffaaaaasdfasdfasdfasdfasdfasdfasd\""
+              "〠3;38;2;140;140;140〠"
+              "..."
+              "〠0〠"
+              "〠0〠"))))
 
      (deftest p*-with-coll-limit
        (is (= 
@@ -354,7 +426,7 @@
               "〠0〠"))))
 
 
-      (deftest p*-record-sample-in-atom
+     (deftest p*-record-sample-in-atom
        (is (= 
             (let [ret              (p* {:label                      "my-label"
                                         :enable-terminal-truecolor? true
