@@ -1,5 +1,5 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? !? ?> !?> p p*]]
+  (:require [fireworks.core :refer [? !? ?> !?> p p-data]]
             [clojure.string :as string] [fireworks.pp :as pp]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))

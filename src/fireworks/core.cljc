@@ -175,7 +175,7 @@
   [source
    {:keys [form-meta
            qf
-           p*?
+           p-data?
            label
            ns-str]
     :as   opts}] 
@@ -218,7 +218,7 @@
                               (or label form)
                               arrow+linebreaks
                               fmt)]
-    (if p*?
+    (if p-data?
       (merge
        {:ns-str        ns-str
         :file-info-str file-info*
@@ -374,7 +374,7 @@
                                        :clj Exception)
                                     e
                                (messaging/->FireworksThrowable e)))]
-      (if (:p*? opts) 
+      (if (:p-data? opts) 
         printing-opts
         (do 
           (messaging/print-formatted printing-opts
@@ -387,12 +387,12 @@
 
 (defn- cfg-opts
   "Helper for shaping opts arg to be passed to fireworks.core/_p"
-  [{:keys [p*? a form-meta]}]
+  [{:keys [p-data? a form-meta]}]
   (let [cfg-opts  (when (map? a) a)
         label     (if cfg-opts (:label cfg-opts) a)
         cfg-opts  (merge (dissoc (or cfg-opts {}) :label)
                          {:ns-str    (some-> *ns* ns-name str)
-                          :p*?       p*?
+                          :p-data?       p-data?
                           :label     label
                           :form-meta form-meta
                           :user-opts cfg-opts})]
@@ -470,7 +470,7 @@
                            ~x)))))
 
 
-(defmacro p*
+(defmacro p-data
   "Formats the namespace info, then the form (or user-supplied label),
    and then the value. The form (or optional label) and value are
    formatted with fireworks.core/p.
@@ -501,7 +501,7 @@
 
   ([x]
    (let [{:keys [cfg-opts
-                 defd]}   (helper2 {:p*?       true
+                 defd]}   (helper2 {:p-data?       true
                                     :x         x
                                     :form-meta (meta &form)})]
      (if defd
@@ -517,7 +517,7 @@
 
   ([a x]
    (let [{:keys [cfg-opts
-                 defd]}   (helper2 {:p*?       true
+                 defd]}   (helper2 {:p-data?       true
                                     :a         a
                                     :x         x
                                     :form-meta (meta &form)})]
