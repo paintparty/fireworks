@@ -64,9 +64,6 @@
 (s/def ::metadata-position
   #{:inline :block "inline" "block"})
 
-(s/def ::display-all-built-in-js-objects-uniformly?
-  boolean?)
-
 (s/def ::enable-rainbow-brackets?
   boolean?)
 
@@ -118,7 +115,6 @@
                           ::mood 
                           ::coll-limit 
                           ::evaled-form-coll-limit 
-                          ::display-all-built-in-js-objects-uniformly? 
                           ::display-metadata? 
                           ::metadata-position 
                           ::bracket-contrast

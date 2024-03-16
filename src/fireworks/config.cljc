@@ -48,10 +48,7 @@
                                :default        {}}
    :find                      {:spec     ::config/custom-printers
                                :default  nil}
-
-   :display-all-built-in-js-objects-uniformly?
-   {:spec    ::config/display-all-built-in-js-objects-uniformly?
-    :default false}})
+   })
 
 ;; Add new option keys to this list!
 (def option-keys
@@ -68,7 +65,6 @@
     :mood
     :coll-limit
     :evaled-form-coll-limit
-    :display-all-built-in-js-objects-uniformly?
     :display-metadata?
     :metadata-position
     :bracket-contrast
