@@ -1,7 +1,6 @@
 (ns ^:dev/always fireworks.sev
   (:require
    [fireworks.defs :as defs]
-   [fireworks.pp :refer [?pp]]
    [fireworks.state :as state]
    [fireworks.tag :as tag :refer [tagged tag! tag-reset!]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])

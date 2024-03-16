@@ -2,7 +2,7 @@
 (:require
    [clojure.string :as string]
    [fireworks.defs :as defs]
-   [fireworks.pp :refer [?pp]]
+  ;;  [fireworks.pp :refer [?pp]]
    [fireworks.state :as state]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])))
@@ -22,10 +22,10 @@
 (defn- fn-args*
   [fn-args]
   (if (contains? 
-       #{:typetag/unknown-function-signature-on-js-built-in-method
-         :typetag/unknown-function-signature-on-clj-function
-         :typetag/unknown-function-signature-on-java-class
-         :typetag/multimethod}
+       #{:lasertag/unknown-function-signature-on-js-built-in-method
+         :lasertag/unknown-function-signature-on-clj-function
+         :lasertag/unknown-function-signature-on-java-class
+         :lasertag/multimethod}
        fn-args)
     defs/mysterious-fn-args
     fn-args))
@@ -56,7 +56,7 @@
     :as   m}]
   (let [;; Create `budge-diff` partial, which will be used to calculate
         ;; the difference between the length of the fn name (at a given
-        ;; stage of shortening) and the (:value-width-limit @state/config).
+        ;; stage of shortening) and the (:non-coll-length-limit @state/config).
         atom-wrap-count (or (when atom? defs/atom-wrap-count) 0)
         budge-diff      (partial budge-diff limit atom-wrap-count)
         
@@ -120,7 +120,7 @@
 
 
         ;; Finally, calculate the final ellipsized-char-count. This count
-        ;; should never exceed the :value-width-limit, or the
+        ;; should never exceed the :non-coll-length-limit, or the
         ;; :map-key-width-limit, from @state/config.
         ecc             (+ (ellipsized-char-count badge
                                                   (str fn-display-name)
@@ -201,25 +201,29 @@
 (defn ellipsized
   "Ellipsizes longer-than acceptable self-evaluating values such as strings,
    regexes, keywords, #insts, fns, etc. Truncation is based on the following:
-   - :mapkey-width-limit or :value-width-limit values from config
+   - :non-coll-mapkey-length-limit or :non-coll-length-limit values from config
    - Optional inline badge length e.g `#js`
    - Optional atom encapsulation e.g. `Atom<42>`"
   [x 
-   {:keys [t limit key? badge inline-badge? atom?]
+   {:keys [t limit key? badge inline-badge? atom? sev? depth]
     :as   m}]
-  (let [{:keys [mapkey-width-limit
-                value-width-limit]}
+  (let [{:keys [non-coll-depth-1-length-limit
+                non-coll-result-length-limit
+                non-coll-mapkey-length-limit
+                non-coll-length-limit]}
         @state/config
 
         limit
-        (if @state/top-level-value-is-sev?
-          ;; TODO - make this a config value with upper-bound
-          ;; maybe call it top-level-scalar-value-length-limit
-          ;; maybe change `width-limit*` to length-limit ?
-          500
+        (if-let [level-k (cond @state/top-level-value-is-sev?
+                               :level-0-sev
+                               (and sev? (< depth 2))
+                               :level-1-sev)]
+          (case level-k
+            :level-0-sev non-coll-result-length-limit
+            :level-1-sev non-coll-depth-1-length-limit)
           (max (if key?
-                 mapkey-width-limit
-                 value-width-limit)
+                 non-coll-mapkey-length-limit
+                 non-coll-length-limit)
                (or limit 0)))]
     (if (:ellipsized-char-count m)
       x

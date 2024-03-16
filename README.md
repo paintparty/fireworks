@@ -114,7 +114,7 @@ Add as a dependency to your project:
 [![Clojars Project](https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg)](https://clojars.org/io.github.paintparty/fireworks)
 
 ```clojure
-[io.github.paintparty/fireworks "0.1.1"]
+[io.github.paintparty/fireworks "0.2.0"]
 ```
 <br>
 
@@ -238,24 +238,26 @@ Calling **`fireworks.core/p-data`** in a ClojureScript (browser) context also pr
 For cutting & pasting into your [system-wide config](#system-wide-config), or trying things out at the call site: 
 
 ```Clojure
-{:theme                      "Alabaster Light"
- :mood                       :light            ; :light | :dark
- :line-height                1.45
- :print-level                7
- :value-width-limit          33
- :mapkey-width-limit         20
- :coll-limit                 15
- :evaled-form-coll-limit     7
- :display-namespaces?        true
- :metadata-print-level       7
- :display-metadata?          true
- :metadata-position          :inline           ; :inline | :block
- :enable-rainbow-brackets?   true
- :bracket-contrast           :high             ; :high | :low
- :enable-terminal-truecolor? false
- :enable-terminal-italics?   false
- :custom-printers            nil
- :find                       nil}
+{:theme                         "Alabaster Light"
+ :mood                          :light            ; :light | :dark
+ :line-height                   1.45
+ :print-level                   7
+ :non-coll-length-limit         33
+ :non-coll-mapkey-length-limit  20
+ :non-coll-result-length-limit  444
+ :non-coll-depth-1-length-limit 59
+ :coll-limit                    15
+ :evaled-form-coll-limit        7
+ :display-namespaces?           true
+ :metadata-print-level          7
+ :display-metadata?             true
+ :metadata-position             :inline           ; :inline | :block
+ :enable-rainbow-brackets?      true
+ :bracket-contrast              :high             ; :high | :low
+ :enable-terminal-truecolor?    false
+ :enable-terminal-italics?      false
+ :custom-printers               nil
+ :find                          nil}
 ```
 
 You can configure all of the above options ala-carte. A leading options map arg works with **`fireworks.core/?`**, **`fireworks.core/p`**, and **`fireworks.core/p-data`**.
@@ -342,17 +344,34 @@ Sets the max depth of printing for nested collections.
 <br>
 <br>
 
-**`:value-width-limit`** `33`
+**`:non-coll-length-limit`** `33`
 
-Sets the max length of things like strings, keywords, function names, etc. Values whose length exceeds this will be ellipsized.
+Sets the max length of things like strings, keywords, function names, etc., when they are nested more than 1 level deep inside a data structure. Values whose length exceeds this will be ellipsized.
 
 
 <br>
 <br>
 
-**`:mapkey-width-limit`** `20`
+**`:non-coll-mapkey-length-limit`** `20`
 
 Sets the max length of things like strings, keywords, function names, etc., when they are used as keys in maps. Longer values will be ellipsized.
+
+
+<br>
+<br>
+
+**`:non-coll-result-length-limit`** `444`
+
+Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value itself is the result of the evaluation (not nested within a data structure).
+
+
+<br>
+<br>
+
+
+**`:non-coll-depth-1-length-limit`** `69`
+
+Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value is nested 1 level deep inside the result, which would be a non-associative collection such as a vector or seq.
 
 
 <br>
@@ -376,7 +395,7 @@ Sets the level of rainbow bracket intensity to `"high"` or `"low"`.  Default val
 
 **`:display-namespaces?`** `true`
 
-Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the **`:value-width-limit`** or the **`:mapkey-width-limit`** (in the case of map keys).
+Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the **`:non-coll-length-limit`** or the **`:non-coll-mapkey-length-limit`** (in the case of map keys).
 
 
 <br>
@@ -717,7 +736,7 @@ my-function-with-a-rea...[...]
 
 By default, Fireworks will print the function name with the fully-qualified namespace. This can be disabled by changing the config option `:display-namespaces?` to `false`.
 
-If the fully-qualified name of the function + args vector exceeds the value of `:value-width-limit`, the args will get ellipsized, the namespace will be dropped (if necessary), and the function name will be ellipsized (if necessary).
+If the fully-qualified name of the function + args vector exceeds the value of `:non-coll-length-limit`, the args will get ellipsized, the namespace will be dropped (if necessary), and the function name will be ellipsized (if necessary).
 
 <br>
 

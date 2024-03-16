@@ -201,7 +201,7 @@
             mini-st     (->> st (take 10) (map StackTraceElement->vec))
             indexes     (keep-indexed
                          (fn [i [f]]
-                           (when (re-find #"^fireworks\.|^typetag\."
+                           (when (re-find #"^fireworks\.|^lasertag\."
                                           (str f)) 
                              i))
                          mini-st)

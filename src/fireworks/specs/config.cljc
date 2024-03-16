@@ -43,10 +43,19 @@
 (s/def ::evaled-form-coll-limit
   ::fw-coll-limit)
 
-(s/def ::value-width-limit
+(s/def ::non-coll-extended-length-limit
+  (s/and int? #(<= 10 % 1000)))
+
+(s/def ::non-coll-result-length-limit
+  ::non-coll-extended-length-limit)
+
+(s/def ::non-coll-depth-1-length-limit
+  ::non-coll-extended-length-limit)
+
+(s/def ::non-coll-length-limit
   (s/and int? #(<= 10 % 80)))
 
-(s/def ::mapkey-width-limit
+(s/def ::non-coll-mapkey-length-limit
   (s/and int? #(<= 5 % 80)))
 
 (s/def ::print-level
@@ -63,9 +72,6 @@
 
 (s/def ::metadata-position
   #{:inline :block "inline" "block"})
-
-(s/def ::display-all-built-in-js-objects-uniformly?
-  boolean?)
 
 (s/def ::enable-rainbow-brackets?
   boolean?)
@@ -105,10 +111,12 @@
 
 (s/def ::fireworks-user-config
   (s/and map?
-         (s/keys :opt-un [::mapkey-width-limit 
-                          ::line-height 
+         (s/keys :opt-un [::line-height 
                           ::enable-terminal-italics? 
-                          ::value-width-limit 
+                          ::non-coll-result-length-limit
+                          ::non-coll-depth-1-length-limit
+                          ::non-coll-mapkey-length-limit 
+                          ::non-coll-length-limit 
                           ::display-namespaces? 
                           ::enable-rainbow-brackets? 
                           ::enable-terminal-truecolor? 
@@ -118,7 +126,6 @@
                           ::mood 
                           ::coll-limit 
                           ::evaled-form-coll-limit 
-                          ::display-all-built-in-js-objects-uniformly? 
                           ::display-metadata? 
                           ::metadata-position 
                           ::bracket-contrast

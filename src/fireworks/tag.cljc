@@ -2,7 +2,6 @@
   (:require
    [clojure.string :as string]
    [fireworks.defs :as defs]
-   [fireworks.pp :refer [?pp]]
    [fireworks.state :as state]
    [fireworks.util :refer [spaces]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
@@ -148,12 +147,6 @@
                                      (when inline-offset (metamap-offset-background l))
                                      (tagged l {:theme-token theme-token}))))
                                w-indent*)]
-
-    ;; (?pp [indent str-len-with-badge])
-    ;; (?pp lines)
-    ;; (?pp w-indent*)
-    ;; (?pp w-indent)
-
     (string/join w-indent)))
 
 
@@ -166,7 +159,7 @@
   (let [block?              (contains? #{"block" :block} metadata-position)
         optional-caret-char (when block? "^") 
         stringified         (str optional-caret-char user-meta)
-        multi-line?         (< (:value-width-limit @state/config)
+        multi-line?         (< (:non-coll-length-limit @state/config)
                                (count stringified))
         inline-offset       (when-not block?
                               (spaces defs/metadata-position-inline-offset))

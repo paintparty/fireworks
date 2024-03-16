@@ -1,5 +1,5 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? !? ?> !?> p p*]]
+  (:require [fireworks.core :refer [? !? ?> !?> p p-data]]
             [clojure.string :as string] [fireworks.pp :as pp]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
@@ -12,8 +12,8 @@
  :mood                       :light
  :line-height                1.45
  :print-level                7
- :value-width-limit          33
- :mapkey-width-limit         20
+ :non-coll-length-limit          33
+ :non-coll-mapkey-length-limit         20
  :coll-limit                 15
  :evaled-form-coll-limit     7
  :display-namespaces?        true
@@ -316,13 +316,13 @@
   (p {:label "theme Alabaster Light" :theme "Alabaster Light"}
      (atom [[1 2 3] "abcdefghijk"]))
 
-  ;; :value-width-limit
-  (p {:label :value-width-limit :value-width-limit 20}
+  ;; :non-coll-length-limit
+  (p {:label :non-coll-length-limit :non-coll-length-limit 20}
      "abcdefghijklmnopqrstuvwxyz")
 
 
-  ;; :mapkey-width-limit
-  (p {:label :mapkey-width-limit :mapkey-width-limit         20}
+  ;; :non-coll-mapkey-length-limit
+  (p {:label :non-coll-mapkey-length-limit :non-coll-mapkey-length-limit         20}
      {"abcdefghijklmnopqrstuvwxyz" [1 2 3] })
 
   (? {:evaled-form-coll-limit     7}
