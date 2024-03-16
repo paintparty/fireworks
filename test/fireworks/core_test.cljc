@@ -113,9 +113,11 @@
                                                                           :default)}
                                          smoke-test/basic-samples)
                     formatted-string (-> ret :formatted :string)]
-                #_(pp/pprint formatted-string)
+
+                ;; (pp/pprint "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                ;; (pp/pprint formatted-string)
                 formatted-string)
-              "%c{%c%c:uuid%c     %c#uuid%c%c\"4fe5d828-6444-11e8-8222\"%c...%c%c\n %c:fn%c       %ccljs.core/juxt%c%c[var_args]%c\n %c:brackets%c %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n %c:symbol2%c  %cmysym%c%c %c%c    %c%c{:foo%c%c\n                     %c%c [\"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  {:a \"foo\", :b [1 2 [1 2 3 4]]}%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"],%c%c\n                     %c%c :bar \"fooz\"}%c\n %c:atom1%c    %cAtom<%c%c1%c%c>%c\n %c:regex%c    %c#\"^hi$\"%c\n %c:number%c   %c1234%c\n %c:string%c   %c\"string\"%c\n %c:lamda%c    %cλ%c%c%c%c[%1]%c\n %c:atom2%c    %cAtom<%c%cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n %c:symbol%c   %cmysym%c%c %c%c    %c%c{:foo :bar}%c\n %c:boolean%c  %ctrue%c\n %c:record%c   %cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c}%c")))
+              "%c{%c%c:uuid%c     %c#uuid%c%c\"4fe5d828-6444-11e8-8222-720007e40350\"%c\n %c:fn%c       %ccljs.core/juxt%c%c[var_args]%c\n %c:brackets%c %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n %c:symbol2%c  %cmysym%c%c %c%c    %c%c{:foo%c%c\n                     %c%c [\"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  {:a \"foo\", :b [1 2 [1 2 3 4]]}%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"],%c%c\n                     %c%c :bar \"fooz\"}%c\n %c:atom1%c    %cAtom<%c%c1%c%c>%c\n %c:regex%c    %c#\"^hi$\"%c\n %c:number%c   %c1234%c\n %c:string%c   %c\"string\"%c\n %c:lamda%c    %cλ%c%c%c%c[%1]%c\n %c:atom2%c    %cAtom<%c%cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n %c:symbol%c   %cmysym%c%c %c%c    %c%c{:foo :bar}%c\n %c:boolean%c  %ctrue%c\n %c:record%c   %cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c}%c")))
        
        (deftest p*-with-coll-limit
          (is (= 
