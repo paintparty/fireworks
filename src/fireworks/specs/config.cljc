@@ -43,6 +43,9 @@
 (s/def ::evaled-form-coll-limit
   ::fw-coll-limit)
 
+(s/def ::non-coll-result-length-limit
+  (s/and int? #(<= 10 % 1000)))
+
 (s/def ::non-coll-length-limit
   (s/and int? #(<= 10 % 80)))
 
@@ -105,6 +108,7 @@
          (s/keys :opt-un [::non-coll-mapkey-length-limit 
                           ::line-height 
                           ::enable-terminal-italics? 
+                          ::non-coll-result-length-limit 
                           ::non-coll-length-limit 
                           ::display-namespaces? 
                           ::enable-rainbow-brackets? 
