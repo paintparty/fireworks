@@ -24,7 +24,7 @@
         ["" ""]
         :else
         ;; This should probably be ["" ""]
-        ;; We need more granularity from typetag first
+        ;; We need more granularity from lasertag first
         ;; :list-like? :array-like?
         ["[" "]"]))
 

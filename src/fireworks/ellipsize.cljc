@@ -22,10 +22,10 @@
 (defn- fn-args*
   [fn-args]
   (if (contains? 
-       #{:typetag/unknown-function-signature-on-js-built-in-method
-         :typetag/unknown-function-signature-on-clj-function
-         :typetag/unknown-function-signature-on-java-class
-         :typetag/multimethod}
+       #{:lasertag/unknown-function-signature-on-js-built-in-method
+         :lasertag/unknown-function-signature-on-clj-function
+         :lasertag/unknown-function-signature-on-java-class
+         :lasertag/multimethod}
        fn-args)
     defs/mysterious-fn-args
     fn-args))

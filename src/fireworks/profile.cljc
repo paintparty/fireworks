@@ -5,13 +5,13 @@
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
    [fireworks.pp :as pp :refer [?pp]]
-   [typetag.core :as typetag]
+   [lasertag.core :as lasertag]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [clojure.string :as string]))
 
 
-(def badges-by-typetag
+(def badges-by-lasertag
   {:js/Set         "js/Set"
    :js/Promise     "js/Promise"
    :js/Iterator    defs/js-literal-badge
@@ -43,11 +43,11 @@
                 (and (not= t :js/Object)
                      (or (contains? all-tags :js/map-like-object)
                          (contains? all-tags :js/TypedArray)))
-                (or (t badges-by-typetag)
+                (or (t badges-by-lasertag)
                     (subs (str t) 1))
 
                 :else
-                (t badges-by-typetag)))
+                (t badges-by-lasertag)))
         b #?(:cljs b
              :clj (if (= t :defmulti) "Multimethod" b))]
 
@@ -221,7 +221,7 @@
             :as fw-truncated-meta}  (or (some-> x meta :fw/truncated)
                                         ;; only for map-entries (kvs)
                                         (-> x
-                                            typetag/tag-map
+                                            lasertag/tag-map
                                             (set/rename-keys {:tag :t})))
            ret   (merge 
                   fw-truncated-meta

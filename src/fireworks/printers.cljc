@@ -4,7 +4,7 @@
    [fireworks.truncate :as truncate]
    [fireworks.state :as state]
    [clojure.set :as set]
-   [typetag.core :as typetag]))
+   [lasertag.core :as lasertag]))
 
 #?(:cljs
    (do 
@@ -119,7 +119,7 @@
             t            :t
             all-tags :all-tags}
            (or (some-> x meta :fw/truncated)
-               (let [m (typetag/tag-map x 
+               (let [m (lasertag/tag-map x 
                                         {:function-info?           false
                                          :js-built-in-object-info? false})]
                  (set/rename-keys m {:tag :t})))

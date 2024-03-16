@@ -5,9 +5,9 @@
    [fireworks.state :as state]
    [fireworks.serialize :refer [seq->sorted-set seq->sorted-map]]
    [fireworks.util :as util]
-   [typetag.core :as typetag]
+   [lasertag.core :as lasertag]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
-   #?(:cljs [typetag.cljs-interop :refer [js-built-in-objects-by-object-map]])
+   #?(:cljs [lasertag.cljs-interop :refer [js-built-in-objects-by-object-map]])
    #?(:clj [fireworks.macros :refer [keyed]])))
 
 (defn pre-truncated? [x]
@@ -298,16 +298,16 @@
   [{:keys [n
            x
            t
-           typetag-map
+           lasertag-map
            kv?
            atom?
            val-meta
            evaled-form?] 
     :as opts}]
-  (let [map-like?         (:map-like? typetag-map)
-        set-like?         (or (= t :js/Set) (:set-like? typetag-map))
-        og-coll-size      (:coll-size typetag-map)
-        all-tags          (:all-tags typetag-map)
+  (let [map-like?         (:map-like? lasertag-map)
+        set-like?         (or (= t :js/Set) (:set-like? lasertag-map))
+        og-coll-size      (:coll-size lasertag-map)
+        all-tags          (:all-tags lasertag-map)
         js-map-like?      (contains? all-tags :js/map-like-object)
         js-typed-array?   (contains? all-tags :js/TypedArray)
         dom-element-node? (contains? all-tags :dom-element-node)
@@ -343,7 +343,7 @@
                                 _             (when (= t :js/Set) str-len)
                                 meta-map      (when-not kv?
                                                 (merge
-                                                 typetag-map
+                                                 lasertag-map
                                                  (keyed [str-len
                                                          num-dropped
                                                          map-like?
@@ -389,10 +389,10 @@
          (map-entry? x)
 
          {:keys [coll-type? t]
-          :as   typetag-map}     
+          :as   lasertag-map}     
          (when-not kv?
            (-> x
-               (typetag/tag-map 
+               (lasertag/tag-map 
                 (when 
                  ;; TODO - When refactoring to attach metadata to
                  ;; non-colls in this truncation fn ...
@@ -409,12 +409,12 @@
      (if (or coll-type? kv?)
 
        ;; Potenitally shorten coll and attach meta
-       (new-coll (merge (keyed [n x kv? t typetag-map atom? val-meta]) opts))
+       (new-coll (merge (keyed [n x kv? t lasertag-map atom? val-meta]) opts))
 
        ;; Optionally symbolize non-colls and attach meta
        (if (pre-truncated? x)
          x
-         (let [meta-map (assoc typetag-map 
+         (let [meta-map (assoc lasertag-map 
                                :x x
                                :og-x og-x
                                :atom? atom?
