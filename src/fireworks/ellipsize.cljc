@@ -207,7 +207,8 @@
   [x 
    {:keys [t limit key? badge inline-badge? atom? sev? depth]
     :as   m}]
-  (let [{:keys [non-coll-result-length-limit
+  (let [{:keys [non-coll-depth-1-length-limit
+                non-coll-result-length-limit
                 non-coll-mapkey-length-limit
                 non-coll-length-limit]}
         @state/config
@@ -219,7 +220,7 @@
                                :level-1-sev)]
           (case level-k
             :level-0-sev non-coll-result-length-limit
-            :level-1-sev 69)
+            :level-1-sev non-coll-depth-1-length-limit)
           (max (if key?
                  non-coll-mapkey-length-limit
                  non-coll-length-limit)

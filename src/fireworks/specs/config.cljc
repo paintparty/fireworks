@@ -43,8 +43,14 @@
 (s/def ::evaled-form-coll-limit
   ::fw-coll-limit)
 
-(s/def ::non-coll-result-length-limit
+(s/def ::non-coll-extended-length-limit
   (s/and int? #(<= 10 % 1000)))
+
+(s/def ::non-coll-result-length-limit
+  ::non-coll-extended-length-limit)
+
+(s/def ::non-coll-depth-1-length-limit
+  ::non-coll-extended-length-limit)
 
 (s/def ::non-coll-length-limit
   (s/and int? #(<= 10 % 80)))
@@ -105,10 +111,11 @@
 
 (s/def ::fireworks-user-config
   (s/and map?
-         (s/keys :opt-un [::non-coll-mapkey-length-limit 
-                          ::line-height 
+         (s/keys :opt-un [::line-height 
                           ::enable-terminal-italics? 
-                          ::non-coll-result-length-limit 
+                          ::non-coll-result-length-limit
+                          ::non-coll-depth-1-length-limit
+                          ::non-coll-mapkey-length-limit 
                           ::non-coll-length-limit 
                           ::display-namespaces? 
                           ::enable-rainbow-brackets? 
