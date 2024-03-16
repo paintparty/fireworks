@@ -56,7 +56,7 @@
 
 
    In this example, the user-supplied label + newline is shorter
-   than the value-width-limit(from config), so no newline.
+   than the non-coll-length-limit(from config), so no newline.
 
    (? \"my form\" [1 2 3])
 
@@ -66,7 +66,7 @@
 
 
    In this example, the user-supplied label + newline is
-   longer than the value-width-limit(from config), so newline.
+   longer than the non-coll-length-limit(from config), so newline.
 
    (? \"my form\" [\"one\" \"two\" \"three\" \"four\" \"aadfasdfasd\"])
      
@@ -77,7 +77,7 @@
    
 
    In this example, the form-to-be-evaled + newline is shorter
-   than the value-width-limit (from config), so no newline.
+   than the non-coll-length-limit (from config), so no newline.
 
    (? (+ 2 3))
 
@@ -86,8 +86,8 @@
    
 
    In this example, the form-to-be-evaled + newline + arrow + result is 
-   longer than the value-width-limit (from config), but the arrow + result
-   is shorter than value-width-limit, so newline + arrow + value.
+   longer than the non-coll-length-limit (from config), but the arrow + result
+   is shorter than non-coll-length-limit, so newline + arrow + value.
 
    (? (range 10))
 
@@ -97,8 +97,8 @@
    
     
    In this example, the form-to-be-evaled + newline + arrow + result is 
-   longer than the value-width-limit (from config), and the arrow + result is
-   also longer than value-width-limit, so newline + arrow + newline + value.
+   longer than the non-coll-length-limit (from config), and the arrow + result is
+   also longer than non-coll-length-limit, so newline + arrow + newline + value.
    (? (range 20))
 
    `my.namespace:12:1
@@ -137,23 +137,23 @@
           (+  (or comment-or-form+arrow-len 0) (or len 0))
 
           wl
-          (:value-width-limit @state/config)
+          (:non-coll-length-limit @state/config)
 
-          comment-or-form+arrow+result-is-longer-than-value-width-limit?
+          comment-or-form+arrow+result-is-longer-than-non-coll-length-limit?
           (> comment-or-form+arrow+result-len wl)
 
-          result-is-longer-than-value-width-limit?
-          (> len (:value-width-limit @state/config))
+          result-is-longer-than-non-coll-length-limit?
+          (> len (:non-coll-length-limit @state/config))
           
           formatted-is-multi-line?
           (boolean (re-find #"\n" fmt))]
 
-      (if comment-or-form+arrow+result-is-longer-than-value-width-limit?
+      (if comment-or-form+arrow+result-is-longer-than-non-coll-length-limit?
         (if form
           (str "\n"
                tagged-arrow 
                (if (or formatted-is-multi-line?
-                       result-is-longer-than-value-width-limit?)
+                       result-is-longer-than-non-coll-length-limit?)
                  "\n"
                  " "))
           "\n")
@@ -556,7 +556,7 @@
 
 (defn- ?>* 
   [label ret]
-  [(< (:value-width-limit @state/config)
+  [(< (:non-coll-length-limit @state/config)
       (+ (or (-> label str count) 0)
          (or (-> ret str count) 0)))
    ;; should this be pprint?

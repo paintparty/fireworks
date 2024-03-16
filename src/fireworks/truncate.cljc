@@ -240,11 +240,11 @@
 
   [{:keys [coll num-dropped map-like? set-like? new-coll-size]}]
 
-  ;; The `(:value-width-limit @state/config)` value the `or` branch of the
+  ;; The `(:non-coll-length-limit @state/config)` value the `or` branch of the
   ;; str-len binding is temp placeholder, in case an exception is caught from
   ;; trying to stringify a coll that contains something like a js/TypedArray.
   (let [str-len (or (some-> coll stringified-coll count)
-                    (:value-width-limit @state/config))
+                    (:non-coll-length-limit @state/config))
         ret*    (cond 
                   ;; We are adding +1 for leading `#` char on
                   ;; set-like interop objects such as js/Set

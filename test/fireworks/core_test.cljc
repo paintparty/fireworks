@@ -65,8 +65,8 @@
          (is (= 
               (let [ret (p* {:label             "my-label-from-opts"
                              :theme             theme
-                             :value-width-limit (-> fireworks.config/options
-                                                    :value-width-limit
+                             :non-coll-length-limit (-> fireworks.config/options
+                                                    :non-coll-length-limit
                                                     :default)}
                             "foo")]
                 #_(pp/pprint ret) ret)
@@ -96,8 +96,8 @@
                                           :bracket-contrast           "high"
                                           :theme                      theme
                                           :custom-printers            {}
-                                          :value-width-limit          (-> fireworks.config/options
-                                                                          :value-width-limit
+                                          :non-coll-length-limit          (-> fireworks.config/options
+                                                                          :non-coll-length-limit
                                                                           :default)
                                           :display-namespaces?        (-> fireworks.config/options
                                                                           :display-namespaces?

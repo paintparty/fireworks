@@ -43,7 +43,7 @@
 (s/def ::evaled-form-coll-limit
   ::fw-coll-limit)
 
-(s/def ::value-width-limit
+(s/def ::non-coll-length-limit
   (s/and int? #(<= 10 % 80)))
 
 (s/def ::mapkey-width-limit
@@ -105,7 +105,7 @@
          (s/keys :opt-un [::mapkey-width-limit 
                           ::line-height 
                           ::enable-terminal-italics? 
-                          ::value-width-limit 
+                          ::non-coll-length-limit 
                           ::display-namespaces? 
                           ::enable-rainbow-brackets? 
                           ::enable-terminal-truecolor? 

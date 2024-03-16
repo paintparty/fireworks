@@ -148,7 +148,7 @@
             (boolean 
              (when (< 1 coll-count)
                (or single-column-map-layout?
-                   (< (:value-width-limit @state/config)
+                   (< (:non-coll-length-limit @state/config)
                       (or str-len-with-badge 0))))))
 
         ;; This is where indenting for multi-line collections is determined

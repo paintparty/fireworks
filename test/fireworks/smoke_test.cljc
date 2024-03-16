@@ -12,7 +12,7 @@
  :mood                       :light
  :line-height                1.45
  :print-level                7
- :value-width-limit          33
+ :non-coll-length-limit          33
  :mapkey-width-limit         20
  :coll-limit                 15
  :evaled-form-coll-limit     7
@@ -316,8 +316,8 @@
   (p {:label "theme Alabaster Light" :theme "Alabaster Light"}
      (atom [[1 2 3] "abcdefghijk"]))
 
-  ;; :value-width-limit
-  (p {:label :value-width-limit :value-width-limit 20}
+  ;; :non-coll-length-limit
+  (p {:label :non-coll-length-limit :non-coll-length-limit 20}
      "abcdefghijklmnopqrstuvwxyz")
 
 

@@ -166,7 +166,7 @@
   (let [block?              (contains? #{"block" :block} metadata-position)
         optional-caret-char (when block? "^") 
         stringified         (str optional-caret-char user-meta)
-        multi-line?         (< (:value-width-limit @state/config)
+        multi-line?         (< (:non-coll-length-limit @state/config)
                                (count stringified))
         inline-offset       (when-not block?
                               (spaces defs/metadata-position-inline-offset))

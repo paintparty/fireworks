@@ -15,7 +15,7 @@
                                :default 15}
    :evaled-form-coll-limit    {:spec    ::config/evaled-form-coll-limit
                                :default 7}
-   :value-width-limit         {:spec    ::config/value-width-limit
+   :non-coll-length-limit         {:spec    ::config/non-coll-length-limit
                                :default 33}
    :mapkey-width-limit        {:spec    ::config/mapkey-width-limit
                                :default 20}
@@ -55,7 +55,7 @@
   #{:mapkey-width-limit
     :line-height
     :enable-terminal-italics?
-    :value-width-limit
+    :non-coll-length-limit
     :display-namespaces?
     :enable-rainbow-brackets?
     :enable-terminal-truecolor?

@@ -56,7 +56,7 @@
     :as   m}]
   (let [;; Create `budge-diff` partial, which will be used to calculate
         ;; the difference between the length of the fn name (at a given
-        ;; stage of shortening) and the (:value-width-limit @state/config).
+        ;; stage of shortening) and the (:non-coll-length-limit @state/config).
         atom-wrap-count (or (when atom? defs/atom-wrap-count) 0)
         budge-diff      (partial budge-diff limit atom-wrap-count)
         
@@ -120,7 +120,7 @@
 
 
         ;; Finally, calculate the final ellipsized-char-count. This count
-        ;; should never exceed the :value-width-limit, or the
+        ;; should never exceed the :non-coll-length-limit, or the
         ;; :map-key-width-limit, from @state/config.
         ecc             (+ (ellipsized-char-count badge
                                                   (str fn-display-name)
@@ -201,14 +201,14 @@
 (defn ellipsized
   "Ellipsizes longer-than acceptable self-evaluating values such as strings,
    regexes, keywords, #insts, fns, etc. Truncation is based on the following:
-   - :mapkey-width-limit or :value-width-limit values from config
+   - :mapkey-width-limit or :non-coll-length-limit values from config
    - Optional inline badge length e.g `#js`
    - Optional atom encapsulation e.g. `Atom<42>`"
   [x 
    {:keys [t limit key? badge inline-badge? atom? sev? depth]
     :as   m}]
   (let [{:keys [mapkey-width-limit
-                value-width-limit]}
+                non-coll-length-limit]}
         @state/config
 
         limit
@@ -221,7 +221,7 @@
             :level-1-sev 69)
           (max (if key?
                  mapkey-width-limit
-                 value-width-limit)
+                 non-coll-length-limit)
                (or limit 0)))]
     (if (:ellipsized-char-count m)
       x
