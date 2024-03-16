@@ -205,18 +205,20 @@
    - Optional inline badge length e.g `#js`
    - Optional atom encapsulation e.g. `Atom<42>`"
   [x 
-   {:keys [t limit key? badge inline-badge? atom?]
+   {:keys [t limit key? badge inline-badge? atom? sev? depth]
     :as   m}]
   (let [{:keys [mapkey-width-limit
                 value-width-limit]}
         @state/config
 
         limit
-        (if @state/top-level-value-is-sev?
-          ;; TODO - make this a config value with upper-bound
-          ;; maybe call it top-level-scalar-value-length-limit
-          ;; maybe change `width-limit*` to length-limit ?
-          500
+        (if-let [level-k (cond @state/top-level-value-is-sev?
+                               :level-0-sev
+                               (and sev? (< depth 2))
+                               :level-1-sev)]
+          (case level-k
+            :level-0-sev 500
+            :level-1-sev 69)
           (max (if key?
                  mapkey-width-limit
                  value-width-limit)

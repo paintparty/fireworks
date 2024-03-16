@@ -418,7 +418,8 @@
                                :x x
                                :og-x og-x
                                :atom? atom?
-                               :sev? true)
+                               :sev? true
+                               :depth n)
                ret*     (if (util/carries-meta? x) 
                           x
                           (symbol (str x)))
