@@ -1,8 +1,6 @@
 (ns fireworks.printers
   (:require
    [clojure.string :as string]
-   [fireworks.profile :as profile]
-   [fireworks.pp :refer [?pp]]
    [fireworks.truncate :as truncate]
    [fireworks.state :as state]
    [clojure.set :as set]
