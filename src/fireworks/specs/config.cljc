@@ -46,7 +46,7 @@
 (s/def ::non-coll-length-limit
   (s/and int? #(<= 10 % 80)))
 
-(s/def ::mapkey-width-limit
+(s/def ::non-coll-mapkey-length-limit
   (s/and int? #(<= 5 % 80)))
 
 (s/def ::print-level
@@ -102,7 +102,7 @@
 
 (s/def ::fireworks-user-config
   (s/and map?
-         (s/keys :opt-un [::mapkey-width-limit 
+         (s/keys :opt-un [::non-coll-mapkey-length-limit 
                           ::line-height 
                           ::enable-terminal-italics? 
                           ::non-coll-length-limit 

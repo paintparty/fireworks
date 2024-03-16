@@ -13,7 +13,7 @@
  :line-height                1.45
  :print-level                7
  :non-coll-length-limit          33
- :mapkey-width-limit         20
+ :non-coll-mapkey-length-limit         20
  :coll-limit                 15
  :evaled-form-coll-limit     7
  :display-namespaces?        true
@@ -321,8 +321,8 @@
      "abcdefghijklmnopqrstuvwxyz")
 
 
-  ;; :mapkey-width-limit
-  (p {:label :mapkey-width-limit :mapkey-width-limit         20}
+  ;; :non-coll-mapkey-length-limit
+  (p {:label :non-coll-mapkey-length-limit :non-coll-mapkey-length-limit         20}
      {"abcdefghijklmnopqrstuvwxyz" [1 2 3] })
 
   (? {:evaled-form-coll-limit     7}

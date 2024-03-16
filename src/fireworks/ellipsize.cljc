@@ -201,13 +201,13 @@
 (defn ellipsized
   "Ellipsizes longer-than acceptable self-evaluating values such as strings,
    regexes, keywords, #insts, fns, etc. Truncation is based on the following:
-   - :mapkey-width-limit or :non-coll-length-limit values from config
+   - :non-coll-mapkey-length-limit or :non-coll-length-limit values from config
    - Optional inline badge length e.g `#js`
    - Optional atom encapsulation e.g. `Atom<42>`"
   [x 
    {:keys [t limit key? badge inline-badge? atom? sev? depth]
     :as   m}]
-  (let [{:keys [mapkey-width-limit
+  (let [{:keys [non-coll-mapkey-length-limit
                 non-coll-length-limit]}
         @state/config
 
@@ -220,7 +220,7 @@
             :level-0-sev 500
             :level-1-sev 69)
           (max (if key?
-                 mapkey-width-limit
+                 non-coll-mapkey-length-limit
                  non-coll-length-limit)
                (or limit 0)))]
     (if (:ellipsized-char-count m)

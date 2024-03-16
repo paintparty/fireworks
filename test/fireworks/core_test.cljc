@@ -108,8 +108,8 @@
                                           :metadata-print-level       (-> fireworks.config/options
                                                                           :metadata-print-level
                                                                           :default)
-                                          :mapkey-width-limit         (-> fireworks.config/options
-                                                                          :mapkey-width-limit
+                                          :non-coll-mapkey-length-limit         (-> fireworks.config/options
+                                                                          :non-coll-mapkey-length-limit
                                                                           :default)}
                                          smoke-test/basic-samples)
                     formatted-string (-> ret :formatted :string)]
