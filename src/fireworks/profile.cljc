@@ -284,8 +284,10 @@
           (map-indexed 
            (fn [i [k v]]
              (let [k (f k {:key?             true
+                           :associated-value v
                            :js-map-like-key? (:js-map-like? meta-map)
-                           :index            i})]
+                           :index            i})
+                   v (vary-meta v assoc-in [:fw/truncated :map-value?] true)]
                [k v]))
            x))
     x))
@@ -293,7 +295,11 @@
 (defn profile
   ([x]
    (profile x nil))
-  ([x {:keys [key? js-map-like-key? index] :as mapkey}]
+  ([x {:keys [key?
+              associated-value
+              js-map-like-key?
+              index]
+       :as mapkey}]
    ;; TODO - doc when (-> x meta :ellipsized-char-count) happen?
    (if (-> x meta :ellipsized-char-count)
      x
@@ -305,12 +311,12 @@
              (ellipsize/ellipsized x meta-map*))
            
            meta-map
-           (merge 
-                  meta-map*
+           (merge meta-map*
                   ellipsized
                   (when (contains? (:all-tags meta-map*) :record)
                     {:record? true})
                   (when key? {:key? true})
+                  (when associated-value {:associated-value associated-value})
                   (when js-map-like-key? {:js-map-like-key? true})
                   (when key? {:fw/pre-profiled-mapkey true})
                   (when index {:index index}) )
