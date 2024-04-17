@@ -1,5 +1,9 @@
 (ns ^:dev/always fireworks.defs)
 
+;; Tokens must be present in one of the maps below in order to pick up
+;; styling specified in theme.
+;; Style props also need to be registered in valid-stylemap-keys
+
 (def base-classes
   {:foreground    nil ;; -> foreground
    :background nil 
@@ -62,7 +66,7 @@
 (def all-base-syntax-tokens (into #{} (keys base-syntax-tokens)))
 
 (def base-printer-tokens
-  {:foreground               :foreground
+  {:foreground            :foreground
    :function-args         :bracket
    :literal-label         :label
    :type-label            :label
@@ -78,7 +82,11 @@
    :line-number           :annotation
    :column-number         :annotation
    :file-info-separator   :annotation
+   :eval-form             :foreground
    :eval-fat-arrow        :foreground
+   :result-gutter         :foreground
+   :result-gutter-start   :foreground
+   :result-gutter-end     :foreground
    :seq-bracket           :bracket
    :lazy-seq-bracket      :bracket
    :max-print-level-label :annotation})
@@ -108,8 +116,17 @@
             :font-size
             :font-weight
             :border-radius
+            :margin-block-end
+            :margin-block-start
+            :padding-block-end
+            :padding-block-start
+            :margin-inline-end
+            :margin-inline-start
+            :padding-inline-end
+            :padding-inline-start
             :opacity
-            :line-height]))
+            :line-height
+            :background-image]))
 
 (def quoting-chars
   {:string \"

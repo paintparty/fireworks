@@ -307,6 +307,24 @@
                 (some-> user-meta-inline (str  separator)))]
     (assoc m :ob ob :record? record?)))
 
+(defn- color-result-gutter-space-char
+  [separator]
+  (str "\n"
+       (tag/tag-entity! " " :result-gutter)
+       (subs separator 2)))
+
+(defn- color-result-gutter-space-char-two-lines
+  [separator]
+  (let [num-newlines (->> separator (re-seq #"\n") count)
+        _            (dotimes [_ num-newlines]
+                       (tag/tag-entity! " " :result-gutter))
+        ret*         (string/replace separator
+                                     #"\n"
+                                     "\n%c %c")
+        ret          (if (> num-newlines 1)
+                       (subs ret* 0 (dec (count ret*)))
+                       ret*)]
+    ret))
 
 (defn- reduce-coll
   [coll indent*]
@@ -345,12 +363,18 @@
                                         (contains? #{:js/Array :js/Set} t))
                                 ",")
                   separator   (cond map-value?
-                                    (str "\n" separator)
+                                    (str separator separator)
                                     :else
-                                    (str maybe-comma separator))
+                                    (str maybe-comma
+                                         separator))
                   ret         (str
                                tagged-val
-                               (when-not (= coll-count (inc idx)) separator))]
+                               (when-not (= coll-count (inc idx)) 
+                                 (if multi-line?
+                                   (if map-value? 
+                                     (color-result-gutter-space-char-two-lines separator)
+                                     (color-result-gutter-space-char separator))
+                                   separator)))]
               ret))
           coll))
         
@@ -402,7 +426,8 @@
                (spaces num-extra-spaces-after-key))
              (spaces defs/kv-gap)
              tagged-val
-             (when-not (= coll-count (inc idx)) separator))]
+             (when-not (= coll-count (inc idx))
+               (color-result-gutter-space-char separator)))]
     ret))
 
 
@@ -487,7 +512,8 @@
 
 (defn serialized
   [v]
-  (let [ret (tagged-val {:v         v
-                         :indent    0
-                         :val-props (meta v)})]
-    (str ret)))
+  (let [ret (str (tag/tag-entity! " " :result-gutter-start)
+                 (tagged-val {:v         v
+                              :indent    1
+                              :val-props (meta v)}))]
+    ret))

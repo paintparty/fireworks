@@ -2,7 +2,7 @@
 (:require
    [clojure.string :as string]
    [fireworks.defs :as defs]
-  ;;  [fireworks.pp :refer [?pp]]
+   [fireworks.pp :refer [?pp]]
    [fireworks.state :as state]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])))
@@ -121,7 +121,7 @@
 
         ;; Finally, calculate the final ellipsized-char-count. This count
         ;; should never exceed the :non-coll-length-limit, or the
-        ;; :map-key-width-limit, from @state/config.
+        ;; :map-key-length-limit, from @state/config.
         ecc             (+ (ellipsized-char-count badge
                                                   (str fn-display-name)
                                                   trunc-name?)
@@ -182,7 +182,8 @@
   [{:keys [t
            stringified
            stringified-len
-           num-chars-over]}]
+           num-chars-over
+           key?]}]
   (let [num-to-remove
         (+ num-chars-over (or defs/ellipsis-count 0))
 
@@ -194,24 +195,36 @@
           (let [end     (dec (- stringified-len num-to-remove))
                 spliced (subs stringified 0 end)]
             (str spliced (get defs/quoting-chars t \")))
-          stringified)]
+          (let [end     (- stringified-len num-to-remove)
+                spliced (subs stringified 0 end)]
+            spliced)
+          )]
+    #_(when key? 
+      (?pp (keyed [num-to-remove
+                   value-is-wrapped-in-some-kind-of-quotes?
+                   ret])))
     ret))
 
 
 (defn ellipsized
   "Ellipsizes longer-than acceptable self-evaluating values such as strings,
    regexes, keywords, #insts, fns, etc. Truncation is based on the following:
-   - :non-coll-mapkey-length-limit or :non-coll-length-limit values from config
+   - `:non-coll-mapkey-length-limit `or `:non-coll-length-limit` from config
    - Optional inline badge length e.g `#js`
    - Optional atom encapsulation e.g. `Atom<42>`"
   [x 
-   {:keys [t limit key? badge inline-badge? atom? sev? depth]
+   {:keys [t limit key? map-value? badge inline-badge? atom? sev? depth]
     :as   m}]
+
   (let [{:keys [non-coll-depth-1-length-limit
                 non-coll-result-length-limit
                 non-coll-mapkey-length-limit
                 non-coll-length-limit]}
         @state/config
+
+        ;; kv-member? (or key? map-value?)
+        ;; _ (js/console.log 'x  x)
+        ;; _ (js/console.log 'm  m)
 
         limit
         (if-let [level-k (cond @state/top-level-value-is-sev?
@@ -220,11 +233,21 @@
                                :level-1-sev)]
           (case level-k
             :level-0-sev non-coll-result-length-limit
-            :level-1-sev non-coll-depth-1-length-limit)
+            :level-1-sev (let [n    non-coll-depth-1-length-limit
+                               half (/ (dec n) 2)]
+                           (cond
+                             key?       half
+                             map-value? (max half non-coll-length-limit)
+                             :else      n)))
           (max (if key?
                  non-coll-mapkey-length-limit
                  non-coll-length-limit)
                (or limit 0)))]
+    
+    ;; (?pp 'limit limit)
+    ;; (println limit)
+    ;; (println "\n\n")
+
     (if (:ellipsized-char-count m)
       x
       (if (contains? #{:function :defmulti :java.lang.Class} t)
@@ -247,7 +270,8 @@
                                                   (keyed [t
                                                           stringified
                                                           stringified-len
-                                                          num-chars-over]))
+                                                          num-chars-over
+                                                          key?]))
                                       :else       stringified)
               num-chars-dropped     (when exceeds? num-chars-over)
               ellipsized-char-count (if-not exceeds?
@@ -260,15 +284,16 @@
                                              exceeds?             
                                              num-chars-dropped]))]
 
-      ;;  (when-not @state/formatting-form-to-be-evaled?
-      ;;    (?pp stringified)
-      ;;    (?pp (keyed [#_m
-      ;;                 t
-      ;;                 stringified
-      ;;                 stringified-len
-      ;;                 num-chars-over
-      ;;                 inline-badge-count
-      ;;                 s
-      ;;                 atom-wrap-count
-      ;;                 ellipsized-char-count])))
+       #_(when key?
+         (?pp stringified)
+         (?pp (keyed [#_m
+                      t
+                      stringified
+                      stringified-len
+                      num-chars-over
+                      exceeds?
+                      inline-badge-count
+                      s
+                      atom-wrap-count
+                      ellipsized-char-count])))
           ret)))))

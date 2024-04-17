@@ -1,5 +1,6 @@
 (ns fireworks.core
   (:require
+   [fireworks.pp :refer [?pp]]
    [clojure.walk :as walk]
    [clojure.set :as set]
    [clojure.data :as data]
@@ -22,7 +23,6 @@
 
   #?(:cljs (:require-macros 
             [fireworks.core :refer [?> !?> ? !?]])))
-
 
 (def core-defs 
   (set '(def defn defrecord defstruct defprotocol defmulti deftype defmethod)))
@@ -47,124 +47,9 @@
      [serialized len])))
 
 
-(defn arrow+linebreaks
-  "This formats the form-to-be-evaled (or user-supplied label),
-   evaled fat arrow, and associated linebreaks.
-
-   Examples of expected output. The expected output is wrapped
-   in `` (backticks) for examples below:
-
-
-   In this example, the user-supplied label + newline is shorter
-   than the non-coll-length-limit(from config), so no newline.
-
-   (? \"my form\" [1 2 3])
-
-   `my.namespace:12:1
-    my form [1 2 3]`
-   
-
-
-   In this example, the user-supplied label + newline is
-   longer than the non-coll-length-limit(from config), so newline.
-
-   (? \"my form\" [\"one\" \"two\" \"three\" \"four\" \"aadfasdfasd\"])
-     
-   `my.namespace:12:1
-    my form
-    [\"one\" \"two\" \"three\" \"four\" \"aadfasdfasd\"]`
-   
-   
-
-   In this example, the form-to-be-evaled + newline is shorter
-   than the non-coll-length-limit (from config), so no newline.
-
-   (? (+ 2 3))
-
-   `my.namespace:12:1
-    (+ 2 3) => 5`
-   
-
-   In this example, the form-to-be-evaled + newline + arrow + result is 
-   longer than the non-coll-length-limit (from config), but the arrow + result
-   is shorter than non-coll-length-limit, so newline + arrow + value.
-
-   (? (range 10))
-
-   `my.namespace:12:1
-    (range 10)
-    => (0 1 2 3 4 5 6 7 8 9)`
-   
-    
-   In this example, the form-to-be-evaled + newline + arrow + result is 
-   longer than the non-coll-length-limit (from config), and the arrow + result is
-   also longer than non-coll-length-limit, so newline + arrow + newline + value.
-   (? (range 20))
-
-   `my.namespace:12:1
-    (range 10)
-    =>
-    (0
-     1
-     2
-     3
-     4
-     5
-     6
-     7
-     8
-     9
-     10
-     11
-     12
-     13
-     14)`"
-
-  [{:keys [label label-len form form-len len tagged-arrow fmt] :as m}]
-  (when (or label form) 
-    (let [label-or-form-len
-          (if label label-len form-len)
-
-          space-between-label-or-form-and-result
-          " "
-
-          comment-or-form+arrow-len
-          (+ (or label-or-form-len 0)
-             (or (count space-between-label-or-form-and-result) 0)
-             (or (when form (count (str defs/fat-arrow " "))) 0))
-
-          comment-or-form+arrow+result-len
-          (+  (or comment-or-form+arrow-len 0) (or len 0))
-
-          wl
-          (:non-coll-length-limit @state/config)
-
-          comment-or-form+arrow+result-is-longer-than-non-coll-length-limit?
-          (> comment-or-form+arrow+result-len wl)
-
-          result-is-longer-than-non-coll-length-limit?
-          (> len (:non-coll-length-limit @state/config))
-          
-          formatted-is-multi-line?
-          (boolean (re-find #"\n" fmt))]
-
-      (if comment-or-form+arrow+result-is-longer-than-non-coll-length-limit?
-        (if form
-          (str "\n"
-               tagged-arrow 
-               (if (or formatted-is-multi-line?
-                       result-is-longer-than-non-coll-length-limit?)
-                 "\n"
-                 " "))
-          "\n")
-        (if form
-          (str " " tagged-arrow (if formatted-is-multi-line? "\n" " "))
-          (if formatted-is-multi-line? "\n" " "))))))
-
-
 (defn user-label! [label]
   (let [label-len (count (str label))
-        label     (some-> label
+        label     (some-> (some->> label (str " "))
                           (tag/tag-entity! :comment))]
     [label label-len]))
 
@@ -175,60 +60,49 @@
   [source
    {:keys [form-meta
            qf
+           ?-type
            p-data?
            label
            ns-str]
     :as   opts}] 
 
-  (let [file-info*      (when-let [{ln :line col :column} form-meta]
-                          (str ns-str ":" ln ":" col))
-        file-info       (some-> file-info*
-                                (tag/tag-entity! :file-info)
-                                (str "\n"))
-        [label
-         label-len]     (user-label! label)
-        [form form-len] (when-not label
-                          (when qf
-                            (reset! state/formatting-form-to-be-evaled?
-                                    true)
-                            (let [ret (formatted* qf
-                                                  {:evaled-form? true})]
+  (let [[label label-len] (user-label! label)
+        [form form-len]   (when-not label
+                            (when qf
                               (reset! state/formatting-form-to-be-evaled?
-                                      false)
-                              ret)))
+                                      true)
+                              (let [shortened (tag/tag-entity! 
+                                               ;; TODO - maybe use padding here instead of spaces?
+                                               (str " "
+                                                    (messaging/shortened qf 25)
+                                                    " ")
+                                               :eval-form) 
+                                    ret       [shortened (count shortened)]]
+                                (reset! state/formatting-form-to-be-evaled?
+                                        false)
+                                ret)))
 
-        ;; If form-to-be-evaled is going to be displayed, we
-        ;; need to tag the eval-fat-arrow here before formatting
-        ;; the result, so the syntax coloring is in order.
-        
-        tagged-arrow     (when form 
-                           (tag/tag-entity! defs/fat-arrow
-                                            :eval-fat-arrow))
-        num-styles       (count @state/styles)
-        [fmt len]        (formatted* source)
-        arrow+linebreaks (arrow+linebreaks 
-                          (keyed [label
-                                  label-len
-                                  form
-                                  form-len
-                                  len
-                                  tagged-arrow
-                                  fmt]))
-        fmt+             (str file-info
-                              (or label form)
-                              arrow+linebreaks
-                              fmt)]
+        file-info*        (when-let [{ln  :line
+                                      col :column} form-meta]
+                            (str ns-str ":" ln ":" col))
+        file-info         (some-> file-info* (tag/tag-entity! :file-info))
+        num-styles        (count @state/styles)
+        [fmt len]         (formatted* source)
+        fmt+              (str (or label form)
+                               file-info
+                               "\n"
+                               fmt)]
     (if p-data?
       (merge
        {:ns-str        ns-str
         :file-info-str file-info*
         :quoted-form   qf}
        form-meta
-       {:formatted+ (merge {:string     fmt+}
+       {:formatted+ (merge {:string fmt+}
                            #?(:cljs {:css-styles @state/styles}))
-        :formatted  (merge {:string     fmt}
-                            #?(:cljs {:css-styles (subvec @state/styles 
-                                                          num-styles)}))})
+        :formatted  (merge {:string fmt}
+                           #?(:cljs {:css-styles (subvec @state/styles 
+                                                         num-styles)}))})
       {:fmt fmt+})))
 
 
@@ -387,12 +261,13 @@
 
 (defn- cfg-opts
   "Helper for shaping opts arg to be passed to fireworks.core/_p"
-  [{:keys [p-data? a form-meta]}]
+  [{:keys [p-data? a form-meta ?-type]}]
   (let [cfg-opts  (when (map? a) a)
         label     (if cfg-opts (:label cfg-opts) a)
         cfg-opts  (merge (dissoc (or cfg-opts {}) :label)
                          {:ns-str    (some-> *ns* ns-name str)
-                          :p-data?       p-data?
+                          :?-type    ?-type  
+                          :p-data?   p-data?
                           :label     label
                           :form-meta form-meta
                           :user-opts cfg-opts})]
@@ -415,12 +290,12 @@
     (keyed [cfg-opts defd])))
 
 
-(defn p
+(defn ?
   "Prints the value. The value is formatted with fireworks.core/_p.
    Returns the value."
   ([])
   ([x]
-   (p nil x))
+   (? nil x))
   ([a x]
    (_p a (cfg-opts {:a a}) x)))
 
@@ -430,7 +305,48 @@
   (symbol (str "#'" ns-str "/" defd)))
 
 
-(defmacro ?
+(defmacro ??
+  "Prints the namespace info, then the form (or user-supplied
+   label), and then the value. The form (or optional label) and
+   value are formatted with fireworks.core/_p. Returns the value.
+   
+   If value is a list whose first element is a member of
+   fireworks.core/core-defs, the value gets evaluated first,
+   then the quoted var is printed and returned."
+
+  ([])
+
+  ([x]
+   (let [{:keys [cfg-opts
+                 defd]}   (helper2 {:x         x
+                                    :?-type    2
+                                    :form-meta (meta &form)})]
+     (if defd
+       `(do 
+          ~x
+          (fireworks.core/_p ~cfg-opts
+                             (cast-var ~defd ~cfg-opts)))
+       `(fireworks.core/_p ~cfg-opts
+                           ~x))))
+
+  ([a x]
+   (let [{:keys [cfg-opts
+                 defd]}   (helper2 {:a         a
+                                    :?-type    2
+                                    :x         x
+                                    :form-meta (meta &form)})]
+     (if
+      defd 
+       `(do 
+          ~x
+          (fireworks.core/_p ~a
+                             ~cfg-opts
+                             (cast-var ~defd ~cfg-opts)))
+       `(fireworks.core/_p ~a
+                           ~cfg-opts
+                           ~x)))))
+
+(defmacro ???
   "Prints the namespace info, then the form (or user-supplied
    label), and then the value. The form (or optional label) and
    value are formatted with fireworks.core/_p. Returns the value.
