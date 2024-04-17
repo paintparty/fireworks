@@ -32,22 +32,43 @@
    ;; :bracket-contrast "high"
    :tokens   {:classes {:background {:background-color "#f7f7f7"}
                         :string     {:color "#448C27"}
-                        :comment    {:color      "#AA3731"
-                                     :font-style :italic}
+                        :comment    {:color             "#2e6666"
+                                     :text-shadow       "0 0 2px #ffffff"
+                                     :background-color  "#e6fafa"
+                                     :margin-inline-end :1em
+                                     :font-style        :italic
+                                     :background-image  "linear-gradient(to right, #52cbcb 2px, transparent 2px)"}
                         :constant   {:color "#7A3E9D"}
                         :definition {:color "#4d6dba"}
                         :annotation {:color      "#8c8c8c" 
                                      :font-style :italic}
-                        :metadata   {:color            "#2e6666"
+                        :metadata   {:color            "#be55bb"
                                      :text-shadow      "0 0 2px #ffffff"
-                                     :background-color "#e6fafa"}}
+                                     :background-color "#fae8fd"}}
              :syntax  {:js-object-key {:color "#888888"}}
-             :printer {:eval-fat-arrow {:color "#28cc7d"}
-                       :function-args  {:color "#999999"}
-                       :atom-wrapper   {:color            "#256546"
-                                        :background-color "#e5fbe5"
-                                        :text-shadow      "0 0 2px #ffffff"
-                                        :font-style       :italic}}}})
+             :printer {:eval-fat-arrow     {:color            "#28cc7d"
+                                            :background-color "#e8fcf3"}
+                       :result-gutter      {:color            "#585858"
+                                            :background-image "linear-gradient(to right, #b8f4f4 2px, transparent 2px)"}
+                       :result-gutter-start {:color            "#585858"
+                                            :background-image "linear-gradient(to right, #b8f4f4 2px, transparent 2px)"
+                                            :margin-block-start :0.5em}
+                       :result-gutter-end  {:color            "#585858"
+                                            ;; :background-image "linear-gradient(to right, #b8f4f4 2px, transparent 2px)"
+                                            }
+                       :file-info          {:color                "#8c8c8c" 
+                                            :font-style           :italic
+                                            :padding-inline-start :1ch}
+                       :eval-form          {:color             "#2e6666"
+                                            :text-shadow       "0 0 2px #ffffff"
+                                            :background-color  "#e6fafa"
+                                            :margin-inline-end :1em
+                                            :background-image  "linear-gradient(to right, #52cbcb 2px, transparent 2px)"}
+                       :function-args      {:color "#999999"}
+                       :atom-wrapper       {:color            "#256546"
+                                            :background-color "#e5fbe5"
+                                            :text-shadow      "0 0 2px #ffffff"
+                                            :font-style       :italic}}}})
 
 
 (def alabaster-dark
