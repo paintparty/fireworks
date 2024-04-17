@@ -291,7 +291,12 @@
        ;; Need to sanitize user-meta here, because JVM clojure reader
        ;; automatically adds metadata with :line and :column entries
        ;; to quoted lists. ClojureScript, however, does not do this.
-       :fw/user-meta (dissoc val-meta :line :column)})))
+       
+       ;; Edit 4/4/2024 - This isn't reliable, might remove :line and
+       ;; :column when you actually need it. 
+      ;;  :fw/user-meta (dissoc val-meta :line :column)
+       :fw/user-meta val-meta
+       })))
 
 
 (defn- new-coll
