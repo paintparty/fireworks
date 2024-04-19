@@ -1,5 +1,6 @@
 (ns ^:dev/always fireworks.serialize 
   (:require
+   [fireworks.pp :refer [?pp]]
    [fireworks.brackets :refer [closing-bracket! 
                                opening-bracket!
                                closing-angle-bracket!]]
@@ -175,9 +176,11 @@
                                  metadata-position)))
 
         indent       
-        (or (when-not (or badge-above? user-meta-above?) 
+        (or (when-not (or badge-above?
+                          user-meta-above?) 
               (some->> badge 
                        count
+                            ;; dec
                        (+ (or indent 0))))
             indent)
 
@@ -371,7 +374,8 @@
                                tagged-val
                                (when-not (= coll-count (inc idx)) 
                                  (if multi-line?
-                                   (if map-value? 
+                                   separator
+                                   #_(if map-value? 
                                      (color-result-gutter-space-char-two-lines separator)
                                      (color-result-gutter-space-char separator))
                                    separator)))]
@@ -427,7 +431,8 @@
              (spaces defs/kv-gap)
              tagged-val
              (when-not (= coll-count (inc idx))
-               (color-result-gutter-space-char separator)))]
+               separator
+               #_(color-result-gutter-space-char separator)))]
     ret))
 
 
@@ -512,8 +517,8 @@
 
 (defn serialized
   [v]
-  (let [ret (str (tag/tag-entity! " " :result-gutter-start)
+  (let [ret (str #_(tag/tag-entity! " " :result-gutter-start)
                  (tagged-val {:v         v
-                              :indent    1
+                              :indent    0
                               :val-props (meta v)}))]
     ret))
