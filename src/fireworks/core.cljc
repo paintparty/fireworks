@@ -34,13 +34,19 @@
   ([source]
    (formatted* source nil))
   ([source opts]
-   (let [truncated      (truncate/truncate 0 source opts)
-         custom-printed (if (:evaled-form? opts)
-                          truncated
-                          (let [ret (walk/postwalk printers/custom truncated)]
-                            (when (some-> ret meta :fw/truncated :sev?)
-                              (reset! state/top-level-value-is-sev? true))
-                            ret))
+   (let [truncated      (truncate/truncate-new 0 source #_opts)
+         ;;             _ (?pp 'truncated (meta truncated))
+
+         custom-printed truncated
+
+         ;; Come back to this custom printing jazz later
+         ;;  custom-printed (if (:evaled-form? opts)
+         ;;                   truncated
+         ;;                   (let [ret (walk/postwalk printers/custom truncated)]
+         ;;                     (when (some-> ret meta :fw/truncated :sev?)
+         ;;                       (reset! state/top-level-value-is-sev? true))
+         ;;                     ret))
+
          profiled       (walk/prewalk profile/profile custom-printed)
          serialized     (serialize/serialized profiled)
          len            (-> profiled meta :str-len-with-badge)]
