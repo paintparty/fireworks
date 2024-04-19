@@ -13,6 +13,19 @@
    #?(:clj [fireworks.macros :refer [keyed let-map]])
    [reagent.core :as r]))
 
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn pre-truncated? [x]
   (let [mm (meta x)]
     (and (contains? mm :fw/truncated)
@@ -455,35 +468,19 @@
 
 
 
-;; For now
-;; Lock down on signature
-;; ?         eval + file-info + result
-;; ?-        file-info + result
-;; ?--       result
-;; ?>        js/console.log or pprint 
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;; Taps and returns the result
-;; ?tap>
-
-
-;; These print-and-return macros print using core printing fns and return the result
-;; ?pp       pprint
-;; ?println  println
-;; ?print    pp
-;; ?prn      pp
-;; ?pr       pp
-
-
-;; Fix color styling on eval form and meta
-;; Fix meta printing on colls (string quotes now)
-;; if top-level js, just use js/console.log for now
-
-;; look at those bugs
-
-;; TODO - Try to eliminate meta-map entries like :js-map-like?, which shadow stuff in :all-tags
-
-;; New code for v0.4
 
 
 ;; Performance gain?
@@ -532,7 +529,27 @@
           js-typed-array?     (contains? all-tags :js/TypedArray)
           js-map-like?        (contains? all-tags :js/map-like-object)])]
     (merge ret
-           (when map-like? {:sorted-map-keys (keys coll)}))))
+           (when map-like?
+             {:sorted-map-keys (keys coll)}))))
+
+
+(defn new-coll2
+  [x uid-entry? tag-map print-level t too-deep?]
+  (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))]
+    (if #?(:cljs (=  t :js/Object) :clj nil)
+
+      ;; This if for js objects
+      #?(:cljs
+         (let [ret (js-obj->array-map x coll-limit uid-entry?)]
+           ;; Maybe incorporate this into js-obj->array-map?
+           (into {}
+                 (map (partial truncate-new
+                               (inc print-level))
+                      ret)))
+         :clj nil)
+
+      ;; This if for everything else
+      (truncate-iterable x coll-limit tag-map print-level))))
 
 
 (defn truncate-new [print-level x]
@@ -546,49 +563,17 @@
         uid-entry?    (volatile! false)
         too-deep?     (> print-level (:print-level-limit @state/config))
         new-x         (cond
-                        (= t :keyword)
-                        x
-
-                        kv?
-                        (mapv (partial truncate-new print-level) x)
-
-                        coll-type?
-                        (let [coll-limit (if too-deep?
-                                           0
-                                           (:coll-limit @state/config))]
-                          (cond
-                            #?(:cljs (=  t :js/Object)
-                               :clj nil)
-                            #?(:cljs
-                               (let [ret (js-obj->array-map x
-                                                            coll-limit
-                                                            uid-entry?)]
-                                 ;; Maybe incorporate this into js-obj->array-map
-                                 (into {}
-                                       (map (partial truncate-new
-                                                     (inc print-level))
-                                            ret)))
-                               :clj nil)
-
-                            ;; Should cover all cljs colls, sets, seqs, etc.
-                            ;; Move this to :else
-                            #?(:cljs (js-iterable? x)
-                               :clj  coll-type?)
-                            (truncate-iterable x
-                                               coll-limit
-                                               tag-map
-                                               print-level)
-
-                                ;; TODO - if some other weird coll do this:
-                                ;; (some-other-kiond_of-coll) 
-                                ;; (symbol "#object[foo]") 
-                            
-                            :else
-                            (do (?pp :OTHER_COLL)
-                                x)))
-                        :else
-                        x)
-
+                        (= t :keyword) x
+                        kv?            (mapv 
+                                        (partial truncate-new print-level)
+                                        x)
+                        coll-type?     (new-coll2 x
+                                                  uid-entry?
+                                                  tag-map
+                                                  print-level
+                                                  t
+                                                  too-deep?)
+                        :else           x)
         new-coll-info (when (and (not kv?) coll-type?)
                         (new-coll-info new-x uid-entry? tag-map))
         mm*           (merge (dissoc tag-map :tag )
@@ -596,12 +581,10 @@
                              (keyed [print-level too-deep? atom?])
                              {:og-x x
                               :t t})
-        mm            {:fw/truncated mm*
-                       :fw/user-meta user-meta}
-        ret           (with-meta
-                        (if (or (:carries-meta? tag-map)
-                                (util/carries-meta? new-x))
-                          new-x
-                          (symbol (str x)))
-                        mm)]
+        ret           (with-meta (if (or (:carries-meta? tag-map)
+                                         (util/carries-meta? new-x))
+                                   new-x
+                                   (symbol (str x)))
+                        {:fw/truncated mm*
+                         :fw/user-meta user-meta})]
     ret))
