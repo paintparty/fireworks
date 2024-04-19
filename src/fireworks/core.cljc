@@ -53,12 +53,6 @@
      [serialized len])))
 
 
-(defn user-label! [label]
-  (let [label-len (count (str label))
-        label     (some-> (some->> label (str #_" "))
-                          (tag/tag-entity! :comment))]
-    [label label-len]))
-
 
 (defn user-label-or-form!
   [{:keys [qf template label]}]
@@ -71,7 +65,7 @@
                   (let [shortened (tag/tag-entity! 
                                    (messaging/shortened qf 25)
                                    :eval-form) 
-                        ret       [shortened (count shortened)]]
+                        ret       shortened]
                     (reset! state/formatting-form-to-be-evaled?
                             false)
                     ret)))]
