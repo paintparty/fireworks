@@ -1,14 +1,17 @@
 (ns ^:dev/always fireworks.truncate
   (:require
+   [fireworks.pp :refer [?pp]]
+   [clojure.string :as string]
    [clojure.set :as set]
    [fireworks.defs :as defs]
    [fireworks.state :as state]
    [fireworks.serialize :refer [seq->sorted-set seq->sorted-map]]
    [fireworks.util :as util]
    [lasertag.core :as lasertag]
-   #?(:cljs [fireworks.macros :refer-macros [keyed]])
+   #?(:cljs [fireworks.macros :refer-macros [keyed let-map]])
    #?(:cljs [lasertag.cljs-interop :refer [js-built-in-objects-by-object-map]])
-   #?(:clj [fireworks.macros :refer [keyed]])))
+   #?(:clj [fireworks.macros :refer [keyed let-map]])
+   [reagent.core :as r]))
 
 (defn pre-truncated? [x]
   (let [mm (meta x)]
@@ -62,6 +65,7 @@
        "Removes the \"closure_uid_*\" key from the converted object, because we
         don't want to print it."
        [o]
+       (?pp 'map-like-jsobj->cljs entries->map)
        (let [entries (js->clj (js/Object.entries o))]
          (if (seq entries)
            (entries->map entries)
@@ -86,7 +90,9 @@
    :list                #(apply vector %)
    :seq                 #(apply vector %)
    :java                #(apply vector %)
-   :js/Array            #?(:cljs #(js->clj %) :clj nil)
+   :js/Array            #?(:cljs #(do (js/console.log :js/Array)
+                                      (?pp %)
+                                      (?pp (js->clj %))) :clj nil)
    :js/Object           #?(:cljs #(-> % js->clj entries->map)
                            :clj nil)
    :js/Map              #?(:cljs #(-> % js->clj entries->map)
@@ -238,7 +244,12 @@
   "Gives the string length of a coll without things like commas in the case of
    maps (as in clojure.pprint/print). Includes num-dropped trailing annotation."
 
-  [{:keys [coll num-dropped map-like? set-like? new-coll-size]}]
+  [{:keys [coll
+           num-dropped
+           map-like?
+           set-like?
+           new-coll-size]
+    :as opts}]
 
   ;; The `(:non-coll-length-limit @state/config)` value the `or` branch of the
   ;; str-len binding is temp placeholder, in case an exception is caught from
@@ -265,6 +276,11 @@
                                  defs/num-dropped-prefix
                                  num-dropped)))
                   ret*)]
+    #_(when map-like?
+      (?pp {:str-len str-len
+             :ret*    ret*
+             :ret     ret
+             :opts    opts}))
     ret))
 
 
@@ -436,3 +452,156 @@
                            :fw/user-meta (when val-meta
                                            (dissoc val-meta :line :column))})] 
            ret))))))
+
+
+
+;; For now
+;; Lock down on signature
+;; ?         eval + file-info + result
+;; ?-        file-info + result
+;; ?--       result
+;; ?>        js/console.log or pprint 
+
+
+;; Taps and returns the result
+;; ?tap>
+
+
+;; These print-and-return macros print using core printing fns and return the result
+;; ?pp       pprint
+;; ?println  println
+;; ?print    pp
+;; ?prn      pp
+;; ?pr       pp
+
+
+;; Fix color styling on eval form and meta
+;; Fix meta printing on colls (string quotes now)
+;; if top-level js, just use js/console.log for now
+
+;; look at those bugs
+
+;; TODO - Try to eliminate meta-map entries like :js-map-like?, which shadow stuff in :all-tags
+
+;; New code for v0.4
+
+
+;; Performance gain?
+;; Maybe declare truncate new above this and
+#?(:cljs 
+   (defn- js-obj->array-map [x limit vol]
+     (let [keys    (take limit (.keys js/Object x))
+           reduced (reduce (fn [acc k]
+                             (if (string/starts-with? k "closure_uid_")
+                               (do (vreset! vol true)
+                                   acc)
+                               (conj acc
+                                     [(symbol (str "'" k "':"))
+                                      (aget x k)])))
+                           []
+                           keys)]
+       (into (array-map) reduced))))
+
+
+(declare truncate-new)
+
+
+(defn truncate-iterable
+  [x coll-limit tag-map print-level]
+  (let [ret (->> x
+                 (take coll-limit)
+                 (into [])
+                 (mapv (partial truncate-new (inc print-level))))]
+    (if (:map-like? tag-map)
+      (seq->sorted-map ret)
+      ret)))
+
+
+(defn new-coll-info
+  [coll uid-entry? tag-map]
+  (let [{:keys [coll-size all-tags map-like?]}
+        tag-map
+
+        ret
+        (let-map
+         ;; TODO maybe-change binding name to truncated-coll-size -> coll-size?
+         [truncated-coll-size (count coll)
+          coll-size-adjust    (- coll-size (if @uid-entry? 1 0))
+          num-dropped         (some->> truncated-coll-size
+                                       (- coll-size-adjust))
+          js-typed-array?     (contains? all-tags :js/TypedArray)
+          js-map-like?        (contains? all-tags :js/map-like-object)])]
+    (merge ret
+           (when map-like? {:sorted-map-keys (keys coll)}))))
+
+
+(defn truncate-new [print-level x]
+  (let [atom?         (cljc-atom? x)
+        x             (if atom? @x x)
+        user-meta     (meta x)
+        kv?           (map-entry? x)
+        tag-map       (when-not kv? (lasertag/tag-map x))
+        t             (:tag tag-map)
+        coll-type?    (:coll-type? tag-map)
+        uid-entry?    (volatile! false)
+        too-deep?     (> print-level (:print-level-limit @state/config))
+        new-x         (cond
+                        (= t :keyword)
+                        x
+
+                        kv?
+                        (mapv (partial truncate-new print-level) x)
+
+                        coll-type?
+                        (let [coll-limit (if too-deep?
+                                           0
+                                           (:coll-limit @state/config))]
+                          (cond
+                            #?(:cljs (=  t :js/Object)
+                               :clj nil)
+                            #?(:cljs
+                               (let [ret (js-obj->array-map x
+                                                            coll-limit
+                                                            uid-entry?)]
+                                 ;; Maybe incorporate this into js-obj->array-map
+                                 (into {}
+                                       (map (partial truncate-new
+                                                     (inc print-level))
+                                            ret)))
+                               :clj nil)
+
+                            ;; Should cover all cljs colls, sets, seqs, etc.
+                            ;; Move this to :else
+                            #?(:cljs (js-iterable? x)
+                               :clj  coll-type?)
+                            (truncate-iterable x
+                                               coll-limit
+                                               tag-map
+                                               print-level)
+
+                                ;; TODO - if some other weird coll do this:
+                                ;; (some-other-kiond_of-coll) 
+                                ;; (symbol "#object[foo]") 
+                            
+                            :else
+                            (do (?pp :OTHER_COLL)
+                                x)))
+                        :else
+                        x)
+
+        new-coll-info (when (and (not kv?) coll-type?)
+                        (new-coll-info new-x uid-entry? tag-map))
+        mm*           (merge (dissoc tag-map :tag )
+                             new-coll-info
+                             (keyed [print-level too-deep? atom?])
+                             {:og-x x
+                              :t t})
+        mm            {:fw/truncated mm*
+                       :fw/user-meta user-meta}
+        ret           (with-meta
+                        (if (or (:carries-meta? tag-map)
+                                (util/carries-meta? new-x))
+                          new-x
+                          (symbol (str x)))
+                        mm)]
+    ret))
