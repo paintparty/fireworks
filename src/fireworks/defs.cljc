@@ -66,7 +66,8 @@
 (def all-base-syntax-tokens (into #{} (keys base-syntax-tokens)))
 
 (def base-printer-tokens
-  {:foreground            :foreground
+  {:comment               :comment
+   :foreground            :foreground
    :function-args         :bracket
    :literal-label         :label
    :type-label            :label
@@ -126,7 +127,8 @@
             :padding-inline-start
             :opacity
             :line-height
-            :background-image]))
+            :background-image
+            :outline]))
 
 (def quoting-chars
   {:string \"
@@ -170,13 +172,13 @@
 
 (def lamda-symbol "λ")
 
-(def js-literal-badge "#js")
+(def js-literal-badge "#js ")
 
 (def js-built-in-method-nm-limit 5)
 
-(def inst-badge "#inst")
+(def inst-badge "#inst ")
 
-(def uuid-badge "#uuid")
+(def uuid-badge "#uuid ")
 
 (def fat-arrow "=>")
 
