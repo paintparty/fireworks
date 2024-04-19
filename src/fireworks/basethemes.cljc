@@ -92,6 +92,7 @@
                              :annotation {:color      "#9f9f9f"
                                           :font-style :italic}
                              :highlight  {:background-color "#ffee00"}
+                             ;; TODO - change this to badge?
                              :label      {:color            "#808080"
                                           :background-color "#ededed"
                                           :text-shadow      "0 0 2px #ffffff"
