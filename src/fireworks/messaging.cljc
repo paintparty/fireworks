@@ -1,5 +1,6 @@
 (ns fireworks.messaging
   (:require
+   [fireworks.pp :refer [?pp]]
    [expound.alpha :as expound]  
    [fireworks.specs.config :as config]
    [clojure.string :as string]))
@@ -287,13 +288,16 @@
 (defn print-formatted
   ([x]
    (print-formatted x nil))
-  ([{:keys [fmt err] :as x} f]
-   (if (instance? FireworksThrowable x)
-     (print-error err)
+  ([printing-opts f]
+   (if (instance? FireworksThrowable printing-opts)
+     (print-error (:err printing-opts))
      #?(:cljs
-        (f x)
+        (do 
+          #_(?pp printing-opts)
+          (f printing-opts)
+          #_(some-> printing-opts :x js/console.log))
         :clj
-        (do (print fmt)
+        (do (print (:fmt printing-opts))
             ;; Trailing line for readability.
             ;; Maybe make this a config option? (true by default).
             (println "\n"))))))

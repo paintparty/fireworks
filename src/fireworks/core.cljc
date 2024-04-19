@@ -1,13 +1,75 @@
+;; Taps and returns the result, no printing
+;; ?>
+
+;; Fireworks formatting
+;; ?         eval + file-info + result
+;; ?-        file-info + result
+;; ?--       result
+;; !?        eval + file-info + result (silenced)
+;; !?-       file-info + result        (silenced)
+;; !?--      result                    (silenced)
+
+;; JS formatting
+;; ?js       js/console.log
+;; ?js-      js/console.log
+;; ?js--     js/console.log
+;; !?js      js/console.log (silenced)
+;; !?js-     js/console.log (silenced)
+;; !?js--    js/console.log (silenced)
+
+;; PP formatting
+;; ?pp        pprint 
+;; ?pp-       pprint 
+;; ?pp--      pprint 
+;; !?pp       pprint (silenced)
+;; !?pp-      pprint (silenced)
+;; !?pp--     pprint (silenced)
+
+;; These print-and-return macros print using core printing fns and return the result
+;; ?println   println
+;; ?print     print
+;; ?prn       prn
+;; ?pr        pr
+;; !?println  println  (silenced)
+;; !?print    print    (silenced)
+;; !?prn      prn      (silenced)
+;; !?pr       pr       (silenced)
+
+
+;; Update test suite
+
+;; Remove old truncate code
+
+;; Add the tap jazz
+
+;; Fix color styling on eval form and meta - All themes
+
+;; Fix meta printing on colls (string quotes now)
+
+;; if top-level js, just use js/console.log for now
+
+;; Option for all the ?p* fns to print in monotone color with colored comment
+
+;; look at these bugs
+;; (??? (new (.-Color js/window) "hwb" #js[60 30 40]))
+
+;; IndexedSeq showing up as js/Iterable
+;; Should be like any other seq
+;; check if in babashka
+
+;; TODO - Try to eliminate meta-map entries like :js-map-like?, which shadow stuff in :all-tags
+
+;; TODO - Try to eliminate some of the redundant passing keys around in serialize
+
+
 (ns fireworks.core
   (:require
-   [fireworks.pp :as fireworks.pp]
+   [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
    [clojure.walk :as walk]
    [clojure.set :as set]
    [clojure.data :as data]
-   [fireworks.defs :as defs]
    [fireworks.messaging :as messaging]
    [fireworks.profile :as profile]
-   [fireworks.printers :as printers]
    [fireworks.serialize :as serialize]
    [fireworks.state :as state]
    [fireworks.tag :as tag]
@@ -17,12 +79,17 @@
              [keyed
               compile-time-warnings-and-errors]])
    #?(:clj [fireworks.macros :refer [keyed]])
-   [clojure.string :as string]
    [fireworks.config :as config]
-   [clojure.spec.alpha :as s])
+   [clojure.spec.alpha :as s]
+   [lasertag.core :as lasertag]
+   [fireworks.util :as util])
 
   #?(:cljs (:require-macros 
             [fireworks.core :refer [?> !?> ? !? ?println]])))
+
+
+;; Fireworks format/print/return functions  ------------------------------------------
+
 
 (def core-defs 
   (set '(def defn defrecord defstruct defprotocol defmulti deftype defmethod)))
@@ -35,8 +102,6 @@
    (formatted* source nil))
   ([source opts]
    (let [truncated      (truncate/truncate-new 0 source #_opts)
-         ;;             _ (?pp 'truncated (meta truncated))
-
          custom-printed truncated
 
          ;; Come back to this custom printing jazz later
@@ -71,7 +136,7 @@
                   (let [shortened (tag/tag-entity! 
                                    (messaging/shortened qf 25)
                                    :eval-form) 
-                        ret       [shortened (count shortened)]]
+                        ret       shortened]
                     (reset! state/formatting-form-to-be-evaled?
                             false)
                     ret)))]
@@ -84,10 +149,11 @@
    {:keys [form-meta
            qf
            template
+           log?
            p-data?
            ns-str]
     :as   opts}] 
-
+(ff :log? log?)
   (let [[label form] (user-label-or-form! opts)
         file-info*   (when (contains?
                             #{[:form-or-label :file-info :result]
@@ -97,10 +163,13 @@
                                    col :column} form-meta]
                          (str ns-str ":" ln ":" col)))
         file-info    (some-> file-info* (tag/tag-entity! :file-info))
-        [fmt _]      (formatted* source)
+        result-header (when-not (or (= template [:result])
+                                    log?)
+                        (tag/tag-entity! " \n" :result-header))
+        [fmt _]      (ff (when-not log? (formatted* source)))
         fmt+         (str (or label form)
                           file-info
-                          (when-not (= template [:result]) "\n")
+                          result-header
                           fmt)]
     (if p-data?
       (merge
@@ -245,42 +314,65 @@
    Pretty-prints the value with syntax coloring.
    Takes an optional leading argument (custom label or options map).
    Returns the value."
-
   ([opts x]
    (_p nil opts x))
 
   ([a opts x]
-  
-  (let [opts (if (map? a) (merge (dissoc opts x :label) a) opts)]
-    (reset-state! opts)
-    (let [printing-opts (try (formatted x opts)
-                             (catch #?(:cljs
-                                       js/Object
-                                       :clj Exception)
-                                    e
-                               (messaging/->FireworksThrowable e)))]
-      (if (:p-data? opts) 
-        printing-opts
-        (do 
-          (messaging/print-formatted printing-opts
-                                     #?(:cljs js-print))
-          (reset! state/formatting-form-to-be-evaled?
-                  false)
-          #_(?pp @state/styles)
-          x))))))
+
+   (let [opts (if (map? a)
+                (merge (dissoc opts x :label) a)
+                opts)]
+     (reset-state! opts)
+
+     (let [
+           ;; In cljs, if val is data structure but not cljs data structure
+           ;; TODO - You could add tag-map to the opts to save a call in truncate
+           native-logging 
+           #?(:cljs nil #_(let [{:keys [coll-type? carries-meta?] :as tag-map} 
+                          ;; Maybe add :exclude-all-extra-info? true
+                          ;; override opt to lasertag?
+                          (lasertag/tag-map 
+                           x
+                           {:include-function-info?           false
+                            :include-js-built-in-object-info? false})]
+                      (ff 'tag-map tag-map)
+                      (when (and coll-type?
+                                 (not carries-meta?))
+                        {:log? true}))
+              :clj nil)
+           opts          (merge opts native-logging)
+           printing-opts (try (formatted x opts)
+                              (catch #?(:cljs
+                                        js/Object
+                                        :clj Exception)
+                                     e
+                                (messaging/->FireworksThrowable e)))]
+
+       (if (:p-data? opts) 
+         printing-opts
+         (do 
+           (messaging/print-formatted printing-opts
+                                      #?(:cljs js-print))
+           #?(:cljs (when (:log? opts) (js/console.log x)))
+           (reset! state/formatting-form-to-be-evaled?
+                   false)
+           #_(?pp @state/styles)
+           x))))))
 
 
 (defn- cfg-opts
   "Helper for shaping opts arg to be passed to fireworks.core/_p"
-  [{:keys [p-data? a form-meta template]}]
+  [{:keys [a] :as m}]
   (let [cfg-opts  (when (map? a) a)
         label     (if cfg-opts (:label cfg-opts) a)
         cfg-opts  (merge (dissoc (or cfg-opts {}) :label)
+                         ;; maybe don't need the select-keys, just use m
+                         (select-keys m [:template
+                                         :log?
+                                         :p-data?
+                                         :form-meta] )
                          {:ns-str    (some-> *ns* ns-name str)
-                          :template  template  
-                          :p-data?   p-data?
                           :label     label
-                          :form-meta form-meta
                           :user-opts cfg-opts})]
     cfg-opts))
 
@@ -397,6 +489,56 @@
                    :template  [:form-or-label :file-info :result]
                    :x         x
                    :form-meta (meta &form)})]
+     (if
+      defd 
+       `(do 
+          ~x
+          (fireworks.core/_p ~a
+                             (assoc ~cfg-opts :qf (quote ~x))
+                             (cast-var ~defd ~cfg-opts)))
+       `(fireworks.core/_p ~a
+                           (assoc ~cfg-opts :qf (quote ~x))
+                           ~x)))))
+
+
+(defmacro ?log
+  "Prints the form (or user-supplied label), the namespace info,
+   and then logs the value using console.log
+   
+   The form (or optional label) and value are
+   formatted with fireworks.core/_p.
+   
+   Returns the value.
+   
+   If value is a list whose first element is a member of
+   fireworks.core/core-defs, the value gets evaluated first,
+   then the quoted var is printed and returned."
+
+  ([])
+
+  ([x]
+   (let [{:keys [cfg-opts
+                 defd]}
+         (helper2 {:x         x
+                   :template  [:form-or-label :file-info :result]
+                   :form-meta (meta &form)
+                   :log?      true})]
+     (if defd
+       `(do 
+          ~x
+          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                             (cast-var ~defd ~cfg-opts)))
+       `(fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                           ~x))))
+
+  ([a x]
+   (let [{:keys [cfg-opts
+                 defd]}   
+         (helper2 {:a         a
+                   :template  [:form-or-label :file-info :result]
+                   :x         x
+                   :form-meta (meta &form)
+                   :log?      true})]
      (if
       defd 
        `(do 
@@ -571,9 +713,6 @@
             (when *flush-on-newline* (-flush writer))))))))
 
 
-
-;; ?pp and supporting ns-str are add-on macros for basic print-and-return fn 
-;; Intended to be used for development of fireworks itself.
 (defn- ns-str
   [form-meta]
   (let [{:keys [line column]} form-meta
@@ -584,6 +723,8 @@
         ns-str                (str "\033[3;34;m" ns-str "\033[0m")]
     ns-str))
 
+
+;; Print-and-return macros that just use built-in printing fns
 (defmacro ?pp 
   ([x]
    (let [ns-str (ns-str (meta &form))]
@@ -631,41 +772,6 @@
        (f x))
      x)))
 
-
-;; API For now
-;; ?         eval + file-info + result
-;; ?-        file-info + result
-;; ?--       result
-;; ?>        js/console.log or pprint 
-
-;; Taps and returns the result
-;; ?tap>
-
-
-;; These print-and-return macros print using core printing fns and return the result
-;; ?pp       pprint
-;; ?println  println
-;; ?print    print
-;; ?prn      prn
-;; ?pr       pr
-
-
-
-;; Fix color styling on eval form and meta - All themes
-
-;; Fix meta printing on colls (string quotes now)
-
-;; if top-level js, just use js/console.log for now
-
-;; Option for all the ?p* fns to print in monotone color with colored comment
-
-;; look at these bugs
-;; (??? (new (.-Color js/window) "hwb" #js[60 30 40]))
-
-;; IndexedSeq showing up as js/Iterable
-;; Should be like any other seq
-
-;; TODO - Try to eliminate meta-map entries like :js-map-like?, which shadow stuff in :all-tags
 
 
 (defmacro ?println

@@ -509,6 +509,10 @@
                  (take coll-limit)
                  (into [])
                  (mapv (partial truncate-new (inc print-level))))]
+    #_(?pp (->> x
+                 (take coll-limit)
+                 (into [])
+                 (mapv (partial truncate-new (inc print-level)))))
     (if (:map-like? tag-map)
       (seq->sorted-map ret)
       ret)))
@@ -536,19 +540,25 @@
 (defn new-coll2
   [x uid-entry? tag-map print-level t too-deep?]
   (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))]
-    (if #?(:cljs (=  t :js/Object) :clj nil)
-
+    (cond
       ;; This if for js objects
+      #?(:cljs (contains? #{:SyntheticBaseEvent :js/Object} t) :clj nil)
       #?(:cljs
-         (let [ret (js-obj->array-map x coll-limit uid-entry?)]
+         (let [_  (when (= t :SyntheticBaseEvent)
+                    (doto x
+                      (js-delete "view")
+                      (js-delete "nativeEvent")
+                      (js-delete "target")))
+               ret (js-obj->array-map x coll-limit uid-entry?)]
            ;; Maybe incorporate this into js-obj->array-map?
            (into {}
                  (map (partial truncate-new
                                (inc print-level))
                       ret)))
          :clj nil)
-
+       
       ;; This if for everything else
+      :else
       (truncate-iterable x coll-limit tag-map print-level))))
 
 

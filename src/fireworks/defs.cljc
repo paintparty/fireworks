@@ -82,15 +82,20 @@
    :file-info             :annotation
    :line-number           :annotation
    :column-number         :annotation
-   :file-info-separator   :annotation
    :eval-form             :foreground
+   :result-header         :foreground
+   :seq-bracket           :bracket
+   :lazy-seq-bracket      :bracket
+   :max-print-level-label :annotation
+
+   ;; maybe nix these
    :eval-fat-arrow        :foreground
+   :file-info-separator   :annotation
    :result-gutter         :foreground
    :result-gutter-start   :foreground
    :result-gutter-end     :foreground
-   :seq-bracket           :bracket
-   :lazy-seq-bracket      :bracket
-   :max-print-level-label :annotation})
+
+   })
 
 (def all-base-printer-tokens (into #{} (keys base-printer-tokens)))
 

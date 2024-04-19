@@ -32,38 +32,35 @@
    ;; :bracket-contrast "high"
    :tokens   {:classes {:background {:background-color "#f7f7f7"}
                         :string     {:color "#448C27"}
-                        :comment    {:color             "#2e6666"
-                                     :text-shadow       "0 0 2px #ffffff"
-                                     :background-color  "#e6fafa"
-                                     :margin-inline-end :1em
-                                     :font-style        :italic
-                                     :background-image  "linear-gradient(to right, #52cbcb 2px, transparent 2px)"}
                         :constant   {:color "#7A3E9D"}
                         :definition {:color "#4d6dba"}
                         :annotation {:color      "#8c8c8c" 
                                      :font-style :italic}
                         :metadata   {:color            "#be55bb"
                                      :text-shadow      "0 0 2px #ffffff"
-                                     :background-color "#fae8fd"}}
+                                     :background-color "#fae8fd"}
+                        :label      {:color            "#808080"
+                                     :background-color "#ffffff"
+                                     :text-shadow      "0 0 2px #ffffff"
+                                     :font-style       :italic}}
              :syntax  {:js-object-key {:color "#888888"}}
              :printer {:eval-fat-arrow     {:color            "#28cc7d"
                                             :background-color "#e8fcf3"}
-                       :result-gutter      {:color            "#585858"
-                                            :background-image "linear-gradient(to right, #b8f4f4 2px, transparent 2px)"}
-                       :result-gutter-start {:color            "#585858"
-                                            :background-image "linear-gradient(to right, #b8f4f4 2px, transparent 2px)"
-                                            :margin-block-start :0.5em}
-                       :result-gutter-end  {:color            "#585858"
-                                            ;; :background-image "linear-gradient(to right, #b8f4f4 2px, transparent 2px)"
-                                            }
-                       :file-info          {:color                "#8c8c8c" 
+                       :result-header      {:color            "#28cc7d"
+                                            :margin-block-end     :0.5em}
+                       :file-info          {:color                "#737373" 
                                             :font-style           :italic
-                                            :padding-inline-start :1ch}
+                                            :padding-inline-start :0ch}
                        :eval-form          {:color             "#2e6666"
                                             :text-shadow       "0 0 2px #ffffff"
-                                            :background-color  "#e6fafa"
-                                            :margin-inline-end :1em
-                                            :background-image  "linear-gradient(to right, #52cbcb 2px, transparent 2px)"}
+                                            :background-color  "#e5f1fa"
+                                            :margin-inline-end :2ch}
+                       :comment            {:color             "#2e6666"
+                                            :text-shadow       "0 0 2px #ffffff"
+                                            :background-color  "#e5f1fa"
+                                            :outline           "2px solid #e5f1fa"
+                                            :margin-inline-end :2ch
+                                            :font-style        :italic}
                        :function-args      {:color "#999999"}
                        :atom-wrapper       {:color            "#256546"
                                             :background-color "#e5fbe5"

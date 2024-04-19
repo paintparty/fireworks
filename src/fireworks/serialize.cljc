@@ -113,21 +113,78 @@
        seq
        boolean))
 
+(defn multi-line?
+  [user-meta
+   meta-map
+   coll
+   coll-count]
+  (or (and user-meta
+           (contains? #{:inline "inline"} 
+                      (:metadata-position @state/config)))
+      (:some-elements-carry-user-metadata? meta-map)
+      (some-elements-have-block-level-badges? coll)
+      (boolean 
+       (when (< 1 coll-count)
+         (or (:single-column-map-layout? meta-map)
+             (< (:non-coll-length-limit @state/config)
+                (or (:str-len-with-badge meta-map) 0)))))))
+
+
+(defn coll-indent
+  [indent*
+   meta-map
+   user-meta
+   metadata-position
+   badge
+   atom?]
+  (let [{:keys [js-map-like? map-like? t]}
+        meta-map
+
+        t-for-indent
+        (if (or record? js-map-like? map-like?) :map t) 
+        
+        num-indent-spaces-for-t
+        (t-for-indent defs/num-indent-spaces)
+
+        indent       
+        (+ (or indent* 0)
+          (or num-indent-spaces-for-t 1))
+
+        badge-above?
+        (some->> badge (contains? defs/inline-badges) not)
+
+        user-meta-above?
+        (boolean (and user-meta
+                      (contains? #{:block "block"}
+                                metadata-position)))
+        
+        indent       
+        (or (when-not (or badge-above?
+                          user-meta-above?) 
+              (some->> badge 
+                       count
+                       (+ (or indent 0))))
+            indent)
+
+        ;; Add support for volatile! encapsultion
+        indent (if (and atom? (not badge-above?))
+                (+ (or (count (str defs/atom-label
+                                   defs/encapsulation-opening-bracket))
+                        0)
+                    indent)
+                indent)]
+
+        [indent badge-above?
+         user-meta-above?
+         num-indent-spaces-for-t]))
+
 
 (defn- reduce-coll-profile
   [coll indent*]
-  (let [{:keys [some-elements-carry-user-metadata?  
-                single-column-map-layout?
-                :fw/custom-badge-style
-                str-len-with-badge
-                :fw/user-meta
+  (let [{:keys [:fw/user-meta
                 js-map-like?
-                num-dropped         
-                map-like?
-                record?
                 badge
-                atom?
-                t]
+                atom?]
          :as   meta-map}
         (meta coll)
         user-meta    
@@ -136,60 +193,19 @@
         coll-count
         (count coll)
 
+        ;; maybe get rid of this?
         metadata-position
         (:metadata-position @state/config)
 
         ;; This is where multi-line for collections is determined
+        ;; TODO - move into helper fn
         multi-line?  
-        (or (and user-meta
-                 (contains? #{:inline "inline"} 
-                            metadata-position))
-            some-elements-carry-user-metadata?
-            (some-elements-have-block-level-badges? coll)
-            (boolean 
-             (when (< 1 coll-count)
-               (or single-column-map-layout?
-                   (< (:non-coll-length-limit @state/config)
-                      (or str-len-with-badge 0))))))
+        (multi-line? user-meta meta-map coll coll-count)
 
         ;; This is where indenting for multi-line collections is determined
-        t-for-indent
-        (cond
-          (or record? js-map-like? map-like?)
-          :map
-          :else
-          t) 
 
-        num-indent-spaces-for-t
-        (t-for-indent defs/num-indent-spaces)
-
-        indent       
-        (+ (or indent* 0)
-           (or num-indent-spaces-for-t 1))
-
-        badge-above?
-        (some->> badge (contains? defs/inline-badges) not)
-
-        user-meta-above?
-        (boolean (and user-meta
-                      (contains? #{:block "block"}
-                                 metadata-position)))
-
-        indent       
-        (or (when-not (or badge-above?
-                          user-meta-above?) 
-              (some->> badge 
-                       count
-                            ;; dec
-                       (+ (or indent 0))))
-            indent)
-
-        ;; Add support for volatile! encapsultion
-        indent (if (and atom? (not badge-above?))
-                 (+ (or (count (str defs/atom-label defs/encapsulation-opening-bracket))
-                        0)
-                    indent)
-                 indent)
+        [indent badge-above? user-meta-above? num-indent-spaces-for-t]
+        (coll-indent indent* meta-map user-meta metadata-position badge atom?)
 
         ;; Badge on its own line above data-structure.
         ;; for records, classes, js/Set, js/Map etc.
@@ -209,21 +225,20 @@
           (str maybe-comma " "))
 
         ret          
-        (keyed [num-dropped 
-                str-len-with-badge     
-                multi-line? 
-                user-meta-above?
-                metadata-position
-                atom?
-                separator   
-                coll-count
-                indent
-                badge
-                user-meta
-                annotation-newline
-                record?
-                custom-badge-style])]
+        (merge 
+         meta-map
+         (keyed [multi-line? 
+                 user-meta-above?
+                 ;; maybe get rid of this metadata-position?
+                 metadata-position
+                 separator   
+                 coll-count
+                 indent
+                 badge
+                 user-meta
+                 annotation-newline]))]
       ret))
+
 
 
 (defn- profile+ob
@@ -268,10 +283,8 @@
               {:user-meta         $
                :metadata-position :block
                :indent            indent*
-
                ;; maybe use this if you have a coll that is single-line,
                ;; but with multi-line metadata map
-
                ;; :str-len-with-badge str-len-with-badge
                })
              (tag-reset!))))
@@ -300,7 +313,6 @@
                :indent            indent*
                ;; maybe use this if you have a coll that is single-line,
                ;; but with multi-line metadata map
-
                ;; :str-len-with-badge str-len-with-badge
                })
 
@@ -310,31 +322,14 @@
                 (some-> user-meta-inline (str  separator)))]
     (assoc m :ob ob :record? record?)))
 
-(defn- color-result-gutter-space-char
-  [separator]
-  (str "\n"
-       (tag/tag-entity! " " :result-gutter)
-       (subs separator 2)))
-
-(defn- color-result-gutter-space-char-two-lines
-  [separator]
-  (let [num-newlines (->> separator (re-seq #"\n") count)
-        _            (dotimes [_ num-newlines]
-                       (tag/tag-entity! " " :result-gutter))
-        ret*         (string/replace separator
-                                     #"\n"
-                                     "\n%c %c")
-        ret          (if (> num-newlines 1)
-                       (subs ret* 0 (dec (count ret*)))
-                       ret*)]
-    ret))
 
 (defn- reduce-coll
   [coll indent*]
-  (let [{:keys [some-colls-as-keys?
-                some-syms-carrying-metadata-as-keys?
+  (let [{:keys [
+                ;; some-colls-as-keys?
+                ;; some-syms-carrying-metadata-as-keys?
                 single-column-map-layout?
-                truncated-coll-size
+                ;; truncated-coll-size
                 t
                 js-typed-array?]
          :as   meta-map}
@@ -346,12 +341,13 @@
           coll)
 
         {:keys [coll-count         
-                num-dropped 
+                ;; num-dropped 
                 separator
                 indent
-                multi-line?
-                ob]
-         :as b}     
+                ;; multi-line?
+                ;; ob
+                ]
+         :as profile+ob-map}     
         (profile+ob coll indent*)
 
         ret                 
@@ -373,27 +369,25 @@
                   ret         (str
                                tagged-val
                                (when-not (= coll-count (inc idx)) 
-                                 (if multi-line?
-                                   separator
-                                   #_(if map-value? 
-                                     (color-result-gutter-space-char-two-lines separator)
-                                     (color-result-gutter-space-char separator))
-                                   separator)))]
+                                 separator))]
               ret))
           coll))
         
         ret                 
         (stringified-bracketed-coll-with-num-dropped-syntax!
-         (keyed [coll
-                 ob
-                 ret
-                 indent
-                 num-dropped
-                 single-column-map-layout?
-                 some-colls-as-keys?
-                 some-syms-carrying-metadata-as-keys?
-                 multi-line?
-                 truncated-coll-size]))]
+         (merge meta-map ;; added this
+                profile+ob-map ;; added this
+                (keyed [coll
+                        ;; ob
+                        ret
+                        ;; indent
+                        ;; num-dropped
+                        ;; single-column-map-layout?
+                        ;; some-colls-as-keys?
+                        ;; some-syms-carrying-metadata-as-keys?
+                        ;; multi-line?
+                        ;; truncated-coll-size
+                        ])))]
     ret))
 
 
@@ -431,20 +425,23 @@
              (spaces defs/kv-gap)
              tagged-val
              (when-not (= coll-count (inc idx))
-               separator
-               #_(color-result-gutter-space-char separator)))]
+               separator))]
     ret))
 
 
 (defn- reduce-map
   [coll indent]
-  (let [{:keys [coll-count         
-                num-dropped 
-                separator
-                indent
+  (let [{:keys [
+                ;; coll-count         
+                ;; num-dropped 
+                ;; separator
+                ;; indent
                 multi-line?
-                ob
-                record?]}     
+                ;; ob
+                ;; record?
+                ]
+          ;; name this meta-map?
+         :as mm}     
         (profile+ob coll indent)
 
         untokenized
@@ -456,33 +453,39 @@
 
         max-keylen
         (->> untokenized 
-             (map #(-> %
-                       first
-                       :ellipsized-char-count))
+             (map #(-> % first :ellipsized-char-count))
              (apply max))
 
         ret        
         (string/join
          (map-indexed
           (partial reduce-map*
-                   (keyed [untokenized
-                           max-keylen
-                           indent
-                           coll-count
-                           separator
-                           multi-line?]))
+                   (merge 
+                    mm ;; added-this
+                    (keyed [untokenized
+                            max-keylen
+                          ;;  indent
+                          ;;  coll-count
+                          ;;  separator
+                          ;;  multi-line?
+                            ])))
           coll))
 
         ret        
         (stringified-bracketed-coll-with-num-dropped-syntax!
-         (keyed [coll
-                 ob
-                 ret
-                 indent
-                 num-dropped
-                 max-keylen
-                 multi-line?
-                 record?]))]
+         (merge 
+          ;; name this meta-map?
+          mm
+          (keyed [
+                ;;  coll
+                ;;  ob
+                  ret
+                  ;; indent
+                  ;; num-dropped
+                  max-keylen
+                  multi-line?
+                  ;; record?
+                  ])))]
      ret))
 
 
@@ -517,8 +520,7 @@
 
 (defn serialized
   [v]
-  (let [ret (str #_(tag/tag-entity! " " :result-gutter-start)
-                 (tagged-val {:v         v
+  (let [ret (str (tagged-val {:v         v
                               :indent    0
                               :val-props (meta v)}))]
     ret))
