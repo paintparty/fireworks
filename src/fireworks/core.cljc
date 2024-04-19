@@ -1,6 +1,6 @@
 (ns fireworks.core
   (:require
-   [fireworks.pp :refer [?pp]]
+   [fireworks.pp :as fireworks.pp]
    [clojure.walk :as walk]
    [clojure.set :as set]
    [clojure.data :as data]
@@ -22,7 +22,7 @@
    [clojure.spec.alpha :as s])
 
   #?(:cljs (:require-macros 
-            [fireworks.core :refer [?> !?> ? !?]])))
+            [fireworks.core :refer [?> !?> ? !? ?println]])))
 
 (def core-defs 
   (set '(def defn defrecord defstruct defprotocol defmulti deftype defmethod)))
@@ -493,13 +493,126 @@
   ([_ x] x))
 
 
+
+;; pprint function below is culled from https://github.com/eerohele/pp
+;; check out fireworks.pp ns for complete src
+
+(defn pprint
+  "Pretty-print an object.
+
+  Given one arg (an object), pretty-print the object into *out* using
+  the default options.
+
+  Given two args (an object and an options map), pretty-print the object
+  into *out* using the given options.
+
+  Given three args (a java.io.Writer, a object, and an options map),
+  pretty-print the object into the writer using the given options.
+
+  If *print-dup* is true, pprint does not attempt to pretty-print;
+  instead, it falls back to default print-dup behavior. ClojureScript
+  does not support *print-dup*.
+
+  Options:
+
+    :max-width (long or ##Inf, default: 72)
+      Avoid printing anything beyond the column indicated by this
+      value.
+
+    :map-entry-separator (string, default: \",\")
+      The string to print between map entries. To not print commas
+      between map entries, use an empty string."
+  ([x]
+   (pprint *out* x nil))
+  ([x opts]
+   (pprint *out* x opts))
+  ([writer x {:keys [max-width map-entry-separator]
+              :or {max-width 72 map-entry-separator ","}
+              :as opts}]
+   (assert (or (nat-int? max-width) (= max-width ##Inf))
+     ":max-width must be a natural int or ##Inf")
+
+   (letfn
+     [(pp [writer]
+        (let [writer (fireworks.pp/count-keeping-writer writer {:max-width max-width})]
+          (fireworks.pp/-pprint x writer
+            (assoc opts
+              :map-entry-separator map-entry-separator
+              :level 0
+              :indentation ""
+              :reserve-chars 0))
+          (fireworks.pp/nl writer)))]
+     #?(:clj
+        (do
+          (assert (instance? java.io.Writer writer)
+            "first arg to pprint must be a java.io.Writer")
+
+          (if *print-dup*
+            (do
+              (print-dup x writer)
+              (.write ^java.io.Writer writer "\n"))
+            (pp writer))
+
+          (when *flush-on-newline* (.flush ^java.io.Writer writer)))
+
+        :cljs
+        (if writer
+          (do
+            (assert (satisfies? cljs.core.IWriter writer)
+              "first arg to pprint must be a cljs.core.IWriter")
+
+            (pp writer))
+
+          ;; ClojureScript does not have *out* bound by default.
+          (let [sb (goog.string.StringBuffer.)
+                writer (StringBufferWriter. sb)]
+            (pp writer)
+            (-> sb str string-print)
+            (when *flush-on-newline* (-flush writer))))))))
+
+
+
+;; ?pp and supporting ns-str are add-on macros for basic print-and-return fn 
+;; Intended to be used for development of fireworks itself.
+(defn- ns-str
+  [form-meta]
+  (let [{:keys [line column]} form-meta
+        ns-str                (some-> *ns*
+                                      ns-name
+                                      str
+                                      (str ":" line ":" column))
+        ns-str                (str "\033[3;34;m" ns-str "\033[0m")]
+    ns-str))
+
+(defmacro ?pp 
+  ([x]
+   (let [ns-str (ns-str (meta &form))]
+     `(do
+        (println
+         (str ~ns-str
+              "\n"
+              (with-out-str (fireworks.pp/pprint ~x))))
+        ~x)))
+  ([label x]
+   (let [label (or (:label label) label)
+         ns-str (ns-str (meta &form))]
+     `(do
+        (println
+         (str ~ns-str
+              "\n"
+              ~label
+              "\n"
+              (with-out-str (fireworks.pp/pprint ~x))))
+        ~x))))
+
 (defn- ?>* 
-  [label ret]
-  [(< (:non-coll-length-limit @state/config)
-      (+ (or (-> label str count) 0)
-         (or (-> ret str count) 0)))
-   ;; should this be pprint?
-   #?(:cljs js/console.log :clj println)])
+  ([label ret]
+   (?>* label ret nil))
+  ([label ret f]
+   [(< (:non-coll-length-limit @state/config)
+       (+ (or (-> label str count) 0)
+          (or (-> ret str count) 0)))
+    #?(:cljs (or f js/console.log) :clj (or f fireworks.core/pprint))]))
 
 
 (defn ?> 
@@ -517,3 +630,108 @@
          (f label x))
        (f x))
      x)))
+
+
+;; API For now
+;; ?         eval + file-info + result
+;; ?-        file-info + result
+;; ?--       result
+;; ?>        js/console.log or pprint 
+
+;; Taps and returns the result
+;; ?tap>
+
+
+;; These print-and-return macros print using core printing fns and return the result
+;; ?pp       pprint
+;; ?println  println
+;; ?print    print
+;; ?prn      prn
+;; ?pr       pr
+
+
+
+;; Fix color styling on eval form and meta - All themes
+
+;; Fix meta printing on colls (string quotes now)
+
+;; if top-level js, just use js/console.log for now
+
+;; Option for all the ?p* fns to print in monotone color with colored comment
+
+;; look at these bugs
+;; (??? (new (.-Color js/window) "hwb" #js[60 30 40]))
+
+;; IndexedSeq showing up as js/Iterable
+;; Should be like any other seq
+
+;; TODO - Try to eliminate meta-map entries like :js-map-like?, which shadow stuff in :all-tags
+
+
+(defmacro ?println
+  "Prints the value using clojure.core/println`, and then
+   returns the value."
+  ([x]
+   (clojure.core/println ~x)
+   ~x)
+  ([label x]
+   ;; TODO use label style from theme
+   `(let [label#    (or (:label ~label) ~label)
+          [nl?# f#] (fireworks.core/?>* ~label ~x clojure.core/println)]
+      (if label#
+        (if nl?#
+          (f# (str label# "\n") ~x)
+          (f# label# ~x))
+        (f# ~x))
+      ~x)))
+
+(defmacro ?print
+  "Prints the value using clojure.core/println`, and then
+   returns the value."
+  ([x]
+   (clojure.core/print ~x)
+   ~x)
+  ([label x]
+   ;; TODO use label style from theme
+   `(let [label#    (or (:label ~label) ~label)
+          [nl?# f#] (fireworks.core/?>* ~label ~x clojure.core/print)]
+      (if label#
+        (if nl?#
+          (f# (str label# "\n") ~x)
+          (f# label# ~x))
+        (f# ~x))
+      ~x)))
+
+(defmacro ?prn
+  "Prints the value using clojure.core/println`, and then
+   returns the value."
+  ([x]
+   (clojure.core/prn ~x)
+   ~x)
+  ([label x]
+   ;; TODO use label style from theme
+   `(let [label#    (or (:label ~label) ~label)
+          [nl?# f#] (fireworks.core/?>* ~label ~x clojure.core/prn)]
+      (if label#
+        (if nl?#
+          (f# (str label# "\n") ~x)
+          (f# label# ~x))
+        (f# ~x))
+      ~x)))
+
+(defmacro ?pr
+  "Prints the value using clojure.core/println`, and then
+   returns the value."
+  ([x]
+   (clojure.core/pr ~x)
+   ~x)
+  ([label x]
+   ;; TODO use label style from theme
+   `(let [label#    (or (:label ~label) ~label)
+          [nl?# f#] (fireworks.core/?>* ~label ~x clojure.core/pr)]
+      (if label#
+        (if nl?#
+          (f# (str label# "\n") ~x)
+          (f# label# ~x))
+        (f# ~x))
+      ~x)))
