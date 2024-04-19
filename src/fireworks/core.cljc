@@ -49,10 +49,27 @@
 
 (defn user-label! [label]
   (let [label-len (count (str label))
-        label     (some-> (some->> label (str " "))
+        label     (some-> (some->> label (str #_" "))
                           (tag/tag-entity! :comment))]
     [label label-len]))
 
+
+(defn user-label-or-form!
+  [{:keys [qf template label]}]
+  (let [label (when (= template [:form-or-label :file-info :result])
+                (some-> label (tag/tag-entity! :comment)))
+        form  (when-not label
+                (when qf
+                  (reset! state/formatting-form-to-be-evaled?
+                          true)
+                  (let [shortened (tag/tag-entity! 
+                                   (messaging/shortened qf 25)
+                                   :eval-form) 
+                        ret       [shortened (count shortened)]]
+                    (reset! state/formatting-form-to-be-evaled?
+                            false)
+                    ret)))]
+    [label form]))
 
 (defn formatted
   "Formatted log with file-info, form/comment, fat-arrow and syntax-colored
@@ -60,38 +77,25 @@
   [source
    {:keys [form-meta
            qf
-           ?-type
+           template
            p-data?
-           label
            ns-str]
     :as   opts}] 
 
-  (let [[label label-len] (user-label! label)
-        [form form-len]   (when-not label
-                            (when qf
-                              (reset! state/formatting-form-to-be-evaled?
-                                      true)
-                              (let [shortened (tag/tag-entity! 
-                                               ;; TODO - maybe use padding here instead of spaces?
-                                               (str " "
-                                                    (messaging/shortened qf 25)
-                                                    " ")
-                                               :eval-form) 
-                                    ret       [shortened (count shortened)]]
-                                (reset! state/formatting-form-to-be-evaled?
-                                        false)
-                                ret)))
-
-        file-info*        (when-let [{ln  :line
-                                      col :column} form-meta]
-                            (str ns-str ":" ln ":" col))
-        file-info         (some-> file-info* (tag/tag-entity! :file-info))
-        num-styles        (count @state/styles)
-        [fmt len]         (formatted* source)
-        fmt+              (str (or label form)
-                               file-info
-                               "\n"
-                               fmt)]
+  (let [[label form] (user-label-or-form! opts)
+        file-info*   (when (contains?
+                            #{[:form-or-label :file-info :result]
+                              [:file-info :result]}
+                            template)
+                       (when-let [{ln  :line
+                                   col :column} form-meta]
+                         (str ns-str ":" ln ":" col)))
+        file-info    (some-> file-info* (tag/tag-entity! :file-info))
+        [fmt _]      (formatted* source)
+        fmt+         (str (or label form)
+                          file-info
+                          (when-not (= template [:result]) "\n")
+                          fmt)]
     (if p-data?
       (merge
        {:ns-str        ns-str
@@ -101,8 +105,9 @@
        {:formatted+ (merge {:string fmt+}
                            #?(:cljs {:css-styles @state/styles}))
         :formatted  (merge {:string fmt}
-                           #?(:cljs {:css-styles (subvec @state/styles 
-                                                         num-styles)}))})
+                           #?(:cljs {:css-styles (subvec
+                                                  @state/styles 
+                                                  (count @state/styles))}))})
       {:fmt fmt+})))
 
 
@@ -261,12 +266,12 @@
 
 (defn- cfg-opts
   "Helper for shaping opts arg to be passed to fireworks.core/_p"
-  [{:keys [p-data? a form-meta ?-type]}]
+  [{:keys [p-data? a form-meta template]}]
   (let [cfg-opts  (when (map? a) a)
         label     (if cfg-opts (:label cfg-opts) a)
         cfg-opts  (merge (dissoc (or cfg-opts {}) :label)
                          {:ns-str    (some-> *ns* ns-name str)
-                          :?-type    ?-type  
+                          :template  template  
                           :p-data?   p-data?
                           :label     label
                           :form-meta form-meta
@@ -290,14 +295,14 @@
     (keyed [cfg-opts defd])))
 
 
-(defn ?
+(defn ?--
   "Prints the value. The value is formatted with fireworks.core/_p.
    Returns the value."
   ([])
   ([x]
-   (? nil x))
+   (?-- nil x))
   ([a x]
-   (_p a (cfg-opts {:a a}) x)))
+   (_p a (cfg-opts {:a a :template [:result]}) x)))
 
 
 (defn cast-var
@@ -305,10 +310,13 @@
   (symbol (str "#'" ns-str "/" defd)))
 
 
-(defmacro ??
-  "Prints the namespace info, then the form (or user-supplied
-   label), and then the value. The form (or optional label) and
-   value are formatted with fireworks.core/_p. Returns the value.
+(defmacro ?-
+  "Prints the namespace info, and then the value.
+
+   The form (or optional label) and value are
+   formatted with fireworks.core/_p.
+   
+   Returns the value.
    
    If value is a list whose first element is a member of
    fireworks.core/core-defs, the value gets evaluated first,
@@ -319,7 +327,7 @@
   ([x]
    (let [{:keys [cfg-opts
                  defd]}   (helper2 {:x         x
-                                    :?-type    2
+                                    :template  [:file-info :result]
                                     :form-meta (meta &form)})]
      (if defd
        `(do 
@@ -332,7 +340,7 @@
   ([a x]
    (let [{:keys [cfg-opts
                  defd]}   (helper2 {:a         a
-                                    :?-type    2
+                                    :template  [:file-info :result]
                                     :x         x
                                     :form-meta (meta &form)})]
      (if
@@ -346,10 +354,14 @@
                            ~cfg-opts
                            ~x)))))
 
-(defmacro ???
-  "Prints the namespace info, then the form (or user-supplied
-   label), and then the value. The form (or optional label) and
-   value are formatted with fireworks.core/_p. Returns the value.
+(defmacro ?
+  "Prints the form (or user-supplied label), the namespace info,
+   and then the value.
+   
+   The form (or optional label) and value are
+   formatted with fireworks.core/_p.
+   
+   Returns the value.
    
    If value is a list whose first element is a member of
    fireworks.core/core-defs, the value gets evaluated first,
@@ -359,8 +371,11 @@
 
   ([x]
    (let [{:keys [cfg-opts
-                 defd]}   (helper2 {:x         x
-                                    :form-meta (meta &form)})]
+                 defd]}
+         (helper2 {:x         x
+                   :template  [:form-or-label :file-info :result]
+
+                   :form-meta (meta &form)})]
      (if defd
        `(do 
           ~x
@@ -371,9 +386,11 @@
 
   ([a x]
    (let [{:keys [cfg-opts
-                 defd]}   (helper2 {:a         a
-                                    :x         x
-                                    :form-meta (meta &form)})]
+                 defd]}   
+         (helper2 {:a         a
+                   :template  [:form-or-label :file-info :result]
+                   :x         x
+                   :form-meta (meta &form)})]
      (if
       defd 
        `(do 
@@ -433,7 +450,7 @@
 
   ([a x]
    (let [{:keys [cfg-opts
-                 defd]}   (helper2 {:p-data?       true
+                 defd]}   (helper2 {:p-data?   true
                                     :a         a
                                     :x         x
                                     :form-meta (meta &form)})]
@@ -485,7 +502,9 @@
   ([x]
    (?> nil x))
   ([label x]
-   (let [[nl? f] (?>* label x)]
+   ;; TODO use label style from theme
+   (let [label (or (:label label) label)
+         [nl? f] (?>* label x)]
      (if label
        (if nl?
          (f (str label "\n") x)
