@@ -486,18 +486,20 @@
 ;; Performance gain?
 ;; Maybe declare truncate new above this and
 #?(:cljs 
-   (defn- js-obj->array-map [x limit vol]
-     (let [keys    (take limit (.keys js/Object x))
-           reduced (reduce (fn [acc k]
-                             (if (string/starts-with? k "closure_uid_")
-                               (do (vreset! vol true)
-                                   acc)
-                               (conj acc
-                                     [(symbol (str "'" k "':"))
-                                      (aget x k)])))
-                           []
-                           keys)]
-       (into (array-map) reduced))))
+   (defn- js-obj->array-map [x limit print-level vol]
+     (if (> print-level 3)
+       {}
+       (let [keys    (take limit (.keys js/Object x))
+             reduced (reduce (fn [acc k]
+                               (if (string/starts-with? k "closure_uid_")
+                                 (do (vreset! vol true)
+                                     acc)
+                                 (conj acc
+                                       [(symbol (str "'" k "':"))
+                                        (aget x k)])))
+                             []
+                             keys)]
+         (into (array-map) reduced)))))
 
 
 (declare truncate-new)
@@ -536,11 +538,17 @@
 (defn new-coll2
   [x uid-entry? tag-map print-level t too-deep?]
   (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))]
-    (if #?(:cljs (=  t :js/Object) :clj nil)
 
+    ;; can we use cljc-friendly sequable?
+    (if #?(:cljs (not (satisfies? ISeqable x)) :clj nil)
       ;; This if for js objects
       #?(:cljs
-         (let [ret (js-obj->array-map x coll-limit uid-entry?)]
+         (let [_   (when (= t :SyntheticBaseEvent)
+                     (doto x
+                       (js-delete "view")
+                       (js-delete "nativeEvent")
+                       (js-delete "target")))
+               ret (js-obj->array-map x coll-limit print-level uid-entry?)]
            ;; Maybe incorporate this into js-obj->array-map?
            (into {}
                  (map (partial truncate-new
@@ -561,7 +569,7 @@
         t             (:tag tag-map)
         coll-type?    (:coll-type? tag-map)
         uid-entry?    (volatile! false)
-        too-deep?     (> print-level (:print-level-limit @state/config))
+        too-deep?     (> print-level (:print-level @state/config))
         new-x         (cond
                         (= t :keyword) x
                         kv?            (mapv 
