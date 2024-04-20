@@ -122,9 +122,11 @@
         ;; Finally, calculate the final ellipsized-char-count. This count
         ;; should never exceed the :non-coll-length-limit, or the
         ;; :map-key-length-limit, from @state/config.
+
+                           
         ecc             (+ (ellipsized-char-count badge
                                                   (str fn-display-name)
-                                                  trunc-name?)
+                                                  trunc-name?) ;; <-- TODO - don't think this fn sig is correct
                            (or (count (str fn-args)) 0))]
 
     (merge (keyed [fn-args fn-display-name drop-ns?])
@@ -155,8 +157,8 @@
 
 
 (defn- stringified 
-  "Stringifies self-evaluating values (non-colls). Wraps in appropriate quotes,
-   when appropriate."
+  "Stringifies self-evaluating values (non-colls). 
+   Wraps in appropriate quotes, when appropriate."
   [x t m]
   (let [s* (case t
              :nil        "nil"
@@ -213,7 +215,15 @@
    - Optional inline badge length e.g `#js`
    - Optional atom encapsulation e.g. `Atom<42>`"
   [x 
-   {:keys [t limit key? map-value? badge inline-badge? atom? sev? depth]
+   {:keys [t 
+           limit
+           key?
+           map-value?
+           badge
+           inline-badge?
+           atom?
+           sev?
+           depth]
     :as   m}]
 
   (let [{:keys [non-coll-depth-1-length-limit
@@ -276,7 +286,9 @@
               num-chars-dropped     (when exceeds? num-chars-over)
               ellipsized-char-count (if-not exceeds?
                                       char-len
-                                      (count s))
+                                      (ellipsized-char-count badge
+                                                             s
+                                                             num-chars-over))
               ret                   (merge 
                                      (keyed [s
                                              stringified
