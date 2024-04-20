@@ -24,7 +24,7 @@
 
 
 ;; Understand and doc how this works for custom types
-(defn- annotation-badge
+(defn annotation-badge
   [{:keys [t
            lamda?
            js-built-in-object?

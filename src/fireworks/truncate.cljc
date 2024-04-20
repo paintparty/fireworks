@@ -5,6 +5,7 @@
    [clojure.set :as set]
    [fireworks.defs :as defs]
    [fireworks.state :as state]
+   [fireworks.profile :as profile]
    [fireworks.serialize :refer [seq->sorted-set seq->sorted-map]]
    [fireworks.util :as util]
    [lasertag.core :as lasertag]
@@ -484,42 +485,45 @@
 
 
 ;; Performance gain?
-;; Maybe declare truncate new above this and
+;; Maybe declare truncate new above this and incorporate into kv
+;; Mabye use reduce-kv or transducer to speed this up?
 #?(:cljs 
-   (defn- js-obj->array-map [x limit print-level vol]
-     (if (> print-level 3)
+   (defn- js-obj->array-map 
+     [{:keys [x coll-limit depth uid-entry?]}]
+     (if (> depth 8)
        {}
-       (let [keys    (take limit (.keys js/Object x))
-             reduced (reduce (fn [acc k]
-                               (if (string/starts-with? k "closure_uid_")
-                                 (do (vreset! vol true)
-                                     acc)
-                                 (conj acc
-                                       [(symbol (str "'" k "':"))
-                                        (aget x k)])))
-                             []
-                             keys)]
-         (into (array-map) reduced)))))
+       (let [keys  (take coll-limit (.keys js/Object x))]
+         (into (array-map)
+               (reduce (fn [acc k]
+                         (if (string/starts-with? k "closure_uid_")
+                           (do (vreset! uid-entry? true)
+                               acc)
+                           (conj acc
+                                 [(symbol (str "'" k "':"))
+                                  (aget x k)])))
+                       []
+                       keys))))))
 
 
 (declare truncate-new)
 
 
 (defn truncate-iterable
-  [x coll-limit tag-map print-level]
+  [x coll-limit tag-map depth]
   (let [ret (->> x
                  (take coll-limit)
                  (into [])
-                 (mapv (partial truncate-new (inc print-level))))]
+                 (mapv (partial truncate-new {:depth (inc depth)})))]
     (if (:map-like? tag-map)
       (seq->sorted-map ret)
       ret)))
 
 
 (defn new-coll-info
-  [coll uid-entry? tag-map]
-  (let [{:keys [coll-size all-tags map-like?]}
-        tag-map
+  [coll {:keys [uid-entry? coll-size all-tags map-like?]}]
+  (let [
+        ;; {:keys [coll-size all-tags map-like?]}
+        ;; tag-map
 
         ret
         (let-map
@@ -536,8 +540,12 @@
 
 
 (defn new-coll2
-  [x uid-entry? tag-map print-level t too-deep?]
-  (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))]
+  ;; [x uid-entry? tag-map depth t too-deep?]
+  [{:keys [x  tag-map depth t too-deep?] :as opts}]
+  (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))
+        ;; TODO - maybe do this?
+        ;; opts* (assoc opts :coll-limit coll-limit)
+        ]
 
     ;; can we use cljc-friendly sequable?
     (if #?(:cljs (not (satisfies? ISeqable x)) :clj nil)
@@ -548,51 +556,79 @@
                        (js-delete "view")
                        (js-delete "nativeEvent")
                        (js-delete "target")))
-               ret (js-obj->array-map x coll-limit print-level uid-entry?)]
+               ret (js-obj->array-map (assoc opts
+                                             :coll-limit
+                                             coll-limit))]
            ;; Maybe incorporate this into js-obj->array-map?
            (into {}
                  (map (partial truncate-new
-                               (inc print-level))
+                               {:depth (inc depth)})
                       ret)))
          :clj nil)
 
       ;; This if for everything else
-      (truncate-iterable x coll-limit tag-map print-level))))
+      (truncate-iterable x coll-limit tag-map depth)
+     ;; Mabye do this?
+      ;; (truncate-iterable opts*)
+      )))
 
 
-(defn truncate-new [print-level x]
-  (let [atom?         (cljc-atom? x)
-        x             (if atom? @x x)
-        user-meta     (meta x)
-        kv?           (map-entry? x)
-        tag-map       (when-not kv? (lasertag/tag-map x))
-        t             (:tag tag-map)
-        coll-type?    (:coll-type? tag-map)
-        uid-entry?    (volatile! false)
-        too-deep?     (> print-level (:print-level @state/config))
-        new-x         (cond
-                        (= t :keyword) x
-                        kv?            (mapv 
-                                        (partial truncate-new print-level)
-                                        x)
-                        coll-type?     (new-coll2 x
-                                                  uid-entry?
-                                                  tag-map
-                                                  print-level
-                                                  t
-                                                  too-deep?)
-                        :else           x)
-        new-coll-info (when (and (not kv?) coll-type?)
-                        (new-coll-info new-x uid-entry? tag-map))
-        mm*           (merge (dissoc tag-map :tag )
-                             new-coll-info
-                             (keyed [print-level too-deep? atom?])
-                             {:og-x x
-                              :t t})
-        ret           (with-meta (if (or (:carries-meta? tag-map)
-                                         (util/carries-meta? new-x))
-                                   new-x
-                                   (symbol (str x)))
-                        {:fw/truncated mm*
-                         :fw/user-meta user-meta})]
+(defn- truncate-opts [opts x]
+  (let [ret 
+        (let-map
+         [atom?         (cljc-atom? x)
+          x             (if atom? @x x)
+          user-meta     (meta x)
+          kv?           (map-entry? x)
+          tag-map       (when-not kv?
+                          (set/rename-keys (lasertag/tag-map x)
+                                           {:tag :t}))
+          uid-entry?    (volatile! false)
+          too-deep?     (> (:depth opts) (:print-level @state/config))
+
+          sev?          (not (:coll-type? tag-map))
+
+          ;; TODO - get this badge and ellipsization working here
+          ;; badge         (profile/annotation-badge x)
+          ;; ellipsized    (when sev? (ellipsize x opts)) 
+
+          ])]
+    (merge (:tag-map ret)
+           (dissoc ret :tag-map))))
+
+
+(defn truncate-new
+  [{:keys [depth map-value? key?] :as opts} x]
+  (let [{:keys [x             
+                user-meta     
+                kv?           
+                t             
+                coll-type?]
+         :as   opts+}
+        (truncate-opts opts x)
+
+        new-x         
+        (cond
+          kv?        (let [[k v] x]
+                       [(truncate-new {:depth depth :key?  true} k)
+                        (truncate-new {:depth depth :map-value? true} v)])
+          coll-type? (new-coll2 opts+)
+          :else      x)
+
+        new-coll-info
+        (when (and (not kv?) coll-type?)
+          (new-coll-info new-x opts+))
+
+        mm*           
+        (merge opts+
+               new-coll-info
+               {:og-x x :t t :depth depth})
+
+        ret           
+        (with-meta (if (or (:carries-meta? mm*)
+                           (util/carries-meta? new-x))
+                     new-x
+                     (symbol (str x)))
+          {:fw/truncated mm*
+           :fw/user-meta user-meta})]
     ret))

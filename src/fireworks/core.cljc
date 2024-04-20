@@ -36,21 +36,24 @@
 ;; !?prn      prn      (silenced)
 ;; !?pr       pr       (silenced)
 
-;; Tests 
+
+
+
+
 
 ;; Update test suite
 
 ;; Remove old truncate code
 
-;; Add the tap jazz
+;; Add the tap jazz - DONE
 
 ;; Fix color styling on eval form and meta - All themes
 
 ;; Fix meta printing on colls (string quotes now)
 
-;; if top-level js, just use js/console.log for now
+;; if top-level js, just use js/console.log for now - DONE
 
-;; Option for all the ?p* fns to print in monotone color with colored comment
+;; Option for all the ?p* fns to print in monotone color with colored comment - DONE
 
 ;; look at these bugs
 ;; (??? (new (.-Color js/window) "hwb" #js[60 30 40]))
@@ -58,6 +61,9 @@
 ;; IndexedSeq showing up as js/Iterable
 ;; Should be like any other seq
 ;; check if in babashka
+
+
+;; Next
 
 ;; TODO - Try to eliminate meta-map entries like :js-map-like?, which shadow stuff in :all-tags
 
@@ -107,7 +113,7 @@
   ([source]
    (formatted* source nil))
   ([source opts]
-   (let [truncated      (truncate/truncate-new 0 source #_opts)
+   (let [truncated      (truncate/truncate-new {:depth 0} source #_opts)
                     ;;  _ (js/console.log truncated)
          ;;             _ (?pp 'truncated (meta truncated))
 
