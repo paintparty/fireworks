@@ -116,6 +116,13 @@
 
 
 (defn maybe-ellipsize
+  "Attaches badge and ellipsis, when appropriate.
+
+   Wraps atoms and volatiles.
+
+   Adds :strlen-with-badge entry to meta, to be used for formatting in
+   fireworks.serialize/serialized."
+   
   [{:keys [coll-type? ellipsized x t meta-map] :as m}]
   (let [ret* (cond 
                coll-type?
