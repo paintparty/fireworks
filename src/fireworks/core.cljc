@@ -39,21 +39,13 @@
 
 
 
-
-
-;; Update test suite
-
 ;; Remove old truncate code
-
-;; Add the tap jazz - DONE
-
-;; Fix color styling on eval form and meta - All themes
 
 ;; Fix meta printing on colls (string quotes now)
 
-;; if top-level js, just use js/console.log for now - DONE
+;; Fix color styling on eval form and meta - All themes
 
-;; Option for all the ?p* fns to print in monotone color with colored comment - DONE
+
 
 ;; look at these bugs
 ;; (??? (new (.-Color js/window) "hwb" #js[60 30 40]))
@@ -114,7 +106,7 @@
    (formatted* source nil))
   ([source opts]
    (let [truncated      (truncate/truncate-new {:depth 0} source #_opts)
-                    ;;  _ (js/console.log truncated)
+         ;;             _ (js/console.log truncated)
          ;;             _ (?pp 'truncated (meta truncated))
 
          custom-printed truncated
@@ -129,7 +121,7 @@
 
          profiled       (walk/prewalk profile/profile custom-printed)
 
-                    ;;  _ (js/console.log profiled)
+         ;;             _ (js/console.log profiled)
          serialized     (serialize/serialized profiled)
          len            (-> profiled meta :str-len-with-badge)]
      [serialized len])))
@@ -164,6 +156,7 @@
   [{:keys [qf template label]}]
   (let [label (when (= template [:form-or-label :file-info :result])
                 (some-> label (tag/tag-entity! :comment)))
+        label #?(:cljs label :clj (str label "  "))
         form  (when-not label
                 (when qf
                   (reset! state/formatting-form-to-be-evaled?
@@ -188,24 +181,23 @@
            p-data?
            ns-str]
     :as   opts}] 
-
-  (let [[label form] (user-label-or-form! opts)
-        file-info*   (when (contains?
-                            #{[:form-or-label :file-info :result]
-                              [:file-info :result]}
-                            template)
-                       (when-let [{ln  :line
-                                   col :column} form-meta]
-                         (str ns-str ":" ln ":" col)))
-        file-info    (some-> file-info* (tag/tag-entity! :file-info))
+  (let [[label form]  (user-label-or-form! opts)
+        file-info*    (when (contains?
+                             #{[:form-or-label :file-info :result]
+                               [:file-info :result]}
+                             template)
+                        (when-let [{ln  :line
+                                    col :column} form-meta]
+                          (str ns-str ":" ln ":" col)))
+        file-info     (some-> file-info* (tag/tag-entity! :file-info))
         result-header (when-not (or (= template [:result])
                                     log?)
                         (tag/tag-entity! " \n" :result-header))
-        [fmt _]      (when-not log? (formatted* source))
-        fmt+         (str (or label form)
-                          file-info
-                          result-header
-                          fmt)]
+        [fmt _]       (when-not log? (formatted* source))
+        fmt+          (str (or label form)
+                           file-info
+                           result-header
+                           fmt)]
     (if p-data?
       (merge
        {:ns-str        ns-str
@@ -387,7 +379,7 @@
           ;; In cljs, if val is data structure but not cljs data structure
           ;; TODO - You could add tag-map to the opts to save a call in truncate
           native-logging 
-          #?(:cljs (let [{:keys [coll-type? carries-meta?]
+          #?(:cljs (let [{:keys [coll-type? carries-meta? tag]
                                 :as   tag-map} 
                                ;; Maybe add :exclude-all-extra-info? true
                                ;; override opt to lasertag?
@@ -396,8 +388,10 @@
                                 {:include-function-info?           false
                                  :include-js-built-in-object-info? false})]
                            (when (and coll-type?
-                                      (not carries-meta?))
+                                      (not carries-meta?)
+                                      (not= tag :cljs.core/Atom))
                              {:log? true}))
+             ;; TODO - Add support for native logging in clj
              :clj nil)
           opts          (merge opts native-logging)
           printing-opts (try (formatted x opts)
@@ -778,8 +772,9 @@
 
   ([x]
    (let [{:keys [cfg-opts
-                 defd]}   (helper2 {:p-data?       true
+                 defd]}   (helper2 {:p-data?   true
                                     :x         x
+                                    :template  [:form-or-label :file-info :result]
                                     :form-meta (meta &form)})]
      (if defd
        `(do 
@@ -797,6 +792,7 @@
                  defd]}   (helper2 {:p-data?   true
                                     :a         a
                                     :x         x
+                                    :template  [:form-or-label :file-info :result]
                                     :form-meta (meta &form)})]
      (if defd 
        ;; If value is a list whose first element is a member of
