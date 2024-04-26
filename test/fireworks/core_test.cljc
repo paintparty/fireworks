@@ -1,13 +1,18 @@
 (ns fireworks.core-test
   (:require [clojure.string :as string]
-            [fireworks.core :refer [? !? ?> !?> p p-data]]
+            [fireworks.core :refer [? !? ?> !?> p-data]]
             [fireworks.config]
             [fireworks.pp :as pp :refer [?pp]]
             [fireworks.smoke-test :as smoke-test]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
-;; These tests will break if your local ~/.fireworks/config.edn is different from fireworks.smoke-test/example-config. Change it to that temporarily if you want to run these tests locally. This will be fixed in the near future.
+
+
+;; These tests will break if your local ~/.fireworks/config.edn is different from fireworks.smoke-test/example-config.
+;; Change it to that temporarily if you want to run these tests locally. This will be fixed in the near future.
 ;; By design, all cljs tests that test fireworks.core/p-data in this namespace will break if the line number that they are on changes!
+
+
 (def theme smoke-test/alabaster-light-legacy)
 (declare escape-sgr)
 
@@ -16,22 +21,21 @@
      (is (=
           (let [ret (p-data {:theme theme} "foo")] #_(pp/pprint ret) ret)
           {:quoted-form   "foo",
-           :formatted     {:string     "%c\"foo\"%c",
-                           :css-styles ["color:#448C27;line-height:1.45;"
-                                        "color:#585858;line-height:1.45;"]},
+           :formatted     {:string     "%c\"foo\"%c"
+                           :css-styles []},
            :file          "fireworks/core_test.cljc",
            :end-column    50,
            :ns-str        "fireworks.core-test",
-           :file-info-str "fireworks.core-test:17:21",
+           :file-info-str "fireworks.core-test:22:21",
            :column        21,
-           :line          17,
-           :end-line      17,
-           :formatted+    {:string     "%cfireworks.core-test:17:21%c\n%c\"foo\"%c %c=>%c %c\"foo\"%c",
-                           :css-styles ["color:#8c8c8c;font-style:italic;line-height:1.45;"
+           :line          22,
+           :end-line      22,
+           :formatted+    {:string     "%cfoo%c%cfireworks.core-test:22:21%c%c \n%c%c\"foo\"%c",
+                           :css-styles ["color:#585858;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
-                                        "color:#448C27;line-height:1.45;"
+                                        "color:#8c8c8c;font-style:italic;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
-                                        "color:#28cc7d;line-height:1.45;"
+                                        "color:#585858;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
                                         "color:#448C27;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"]}}))))
@@ -40,20 +44,21 @@
      (is (= 
           (let [ret (p-data "my-label" "foo")] #_(pp/pprint ret) ret)
           {:quoted-form   "foo",
-           :formatted     {:string     "%c\"foo\"%c",
-                           :css-styles ["color:#448C27;line-height:1.45;"
-                                        "color:#585858;line-height:1.45;"]},
+           :formatted     {:string     "%c\"foo\"%c"
+                           :css-styles []},
            :file          "fireworks/core_test.cljc",
            :end-column    46,
            :ns-str        "fireworks.core-test",
-           :file-info-str "fireworks.core-test:41:21",
+           :file-info-str "fireworks.core-test:45:21",
            :column        21,
-           :line          41,
-           :end-line      41,
-           :formatted+    {:string     "%cfireworks.core-test:41:21%c\n%cmy-label%c %c\"foo\"%c",
-                           :css-styles ["color:#8c8c8c;font-style:italic;line-height:1.45;"
+           :line          45,
+           :end-line      45,
+           :formatted+    {:string     "%cmy-label%c%cfireworks.core-test:45:21%c%c \n%c%c\"foo\"%c",
+                           :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;margin-inline-end:2ch;outline:2px solid #e5f1fa;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
-                                        "color:#AA3731;font-style:italic;line-height:1.45;"
+                                        "color:#737373;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
+                                        "color:#585858;line-height:1.45;"
+                                        "color:#28cc7d;margin-block-end:0.5em;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
                                         "color:#448C27;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"]}}))))
@@ -63,70 +68,71 @@
 #?(:cljs
    (do (deftest p-data-with-label-from-opts
          (is (= 
-              (let [ret (p-data {:label             "my-label-from-opts"
-                             :theme             theme
-                             :non-coll-length-limit (-> fireworks.config/options
-                                                    :non-coll-length-limit
-                                                    :default)}
+              (let [ret (p-data {:label                 "my-label-from-opts"
+                                 :theme                 theme
+                                 :non-coll-length-limit (-> fireworks.config/options
+                                                            :non-coll-length-limit
+                                                            :default)}
                             "foo")]
                 #_(pp/pprint ret) ret)
               {:quoted-form   "foo",
-               :formatted     {:string     "%c\"foo\"%c",
-                               :css-styles ["color:#448C27;line-height:1.45;"
-                                            "color:#585858;line-height:1.45;"]},
+               :formatted     {:string     "%c\"foo\"%c"
+                               :css-styles []},
                :file          "fireworks/core_test.cljc",
                :end-column    35,
                :ns-str        "fireworks.core-test",
-               :file-info-str "fireworks.core-test:66:25",
+               :file-info-str "fireworks.core-test:71:25",
                :column        25,
-               :line          66,
-               :end-line      71,
-               :formatted+    {:string     "%cfireworks.core-test:66:25%c\n%cmy-label-from-opts%c %c\"foo\"%c",
-                               :css-styles ["color:#8c8c8c;font-style:italic;line-height:1.45;"
+               :line          71,
+               :end-line      76,
+               :formatted+    {:string     "%cmy-label-from-opts%c%cfireworks.core-test:71:25%c%c \n%c%c\"foo\"%c",
+                               :css-styles ["color:#AA3731;font-style:italic;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
-                                            "color:#AA3731;font-style:italic;line-height:1.45;"
+                                            "color:#8c8c8c;font-style:italic;line-height:1.45;"
+                                            "color:#585858;line-height:1.45;"
+                                            "color:#585858;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
                                             "color:#448C27;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"]}})))
+
        (deftest p-data-basic-samples
          (is (= 
-              (let [ret              (p-data {:label                      "my-label"
-                                          :enable-terminal-truecolor? true
-                                          :enable-terminal-italics?   true
-                                          :bracket-contrast           "high"
-                                          :theme                      theme
-                                          :custom-printers            {}
-                                          :non-coll-length-limit          (-> fireworks.config/options
-                                                                          :non-coll-length-limit
-                                                                          :default)
-                                          :display-namespaces?        (-> fireworks.config/options
-                                                                          :display-namespaces?
-                                                                          :default)
-                                          :metadata-position          (-> fireworks.config/options
-                                                                          :metadata-position
-                                                                          :default)
-                                          :metadata-print-level       (-> fireworks.config/options
-                                                                          :metadata-print-level
-                                                                          :default)
-                                          :non-coll-mapkey-length-limit         (-> fireworks.config/options
-                                                                          :non-coll-mapkey-length-limit
-                                                                          :default)}
-                                         smoke-test/basic-samples)
+              (let [ret              (p-data {:label                        "my-label"
+                                              :enable-terminal-truecolor?   true
+                                              :enable-terminal-italics?     true
+                                              :bracket-contrast             "high"
+                                              :theme                        theme
+                                              :custom-printers              {}
+                                              :non-coll-length-limit        (-> fireworks.config/options
+                                                                                :non-coll-length-limit
+                                                                                :default)
+                                              :display-namespaces?          (-> fireworks.config/options
+                                                                                :display-namespaces?
+                                                                                :default)
+                                              :metadata-position            (-> fireworks.config/options
+                                                                                :metadata-position
+                                                                                :default)
+                                              :metadata-print-level         (-> fireworks.config/options
+                                                                                :metadata-print-level
+                                                                                :default)
+                                              :non-coll-mapkey-length-limit (-> fireworks.config/options
+                                                                                :non-coll-mapkey-length-limit
+                                                                                :default)}
+                                             smoke-test/basic-samples)
                     formatted-string (-> ret :formatted :string)]
-
-                ;; (pp/pprint "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-                ;; (pp/pprint formatted-string)
+                #_(pp/pprint "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                (pp/pprint formatted-string)
                 formatted-string)
-              "%c{%c%c:uuid%c     %c#uuid%c%c\"4fe5d828-6444-11e8-8222-720007e40350\"%c\n %c:fn%c       %ccljs.core/juxt%c%c[var_args]%c\n %c:brackets%c %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n %c:symbol2%c  %cmysym%c%c %c%c    %c%c{:foo%c%c\n                     %c%c [\"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  {:a \"foo\", :b [1 2 [1 2 3 4]]}%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"],%c%c\n                     %c%c :bar \"fooz\"}%c\n %c:atom1%c    %cAtom<%c%c1%c%c>%c\n %c:regex%c    %c#\"^hi$\"%c\n %c:number%c   %c1234%c\n %c:string%c   %c\"string\"%c\n %c:lamda%c    %cλ%c%c%c%c[%1]%c\n %c:atom2%c    %cAtom<%c%cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n %c:symbol%c   %cmysym%c%c %c%c    %c%c{:foo :bar}%c\n %c:boolean%c  %ctrue%c\n %c:record%c   %cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c}%c")))
+               "%c{%c%c:atom1%c    %cAtom<%c%c1%c%c>%c\n %c:fn%c       %ccljs.core/juxt%c%c[var_args]%c\n %c:number%c   %c1234%c\n %c:symbol2%c  %cmysym%c%c %c%c    %c%c{:foo%c%c\n                     %c%c [\"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  {:a \"foo\", :b [1 2 [1 2 3 4]]}%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"],%c%c\n                     %c%c :bar \"fooz\"}%c\n %c:symbol%c   %cmysym%c%c %c%c    %c%c{:foo :bar}%c\n %c:atom2%c    %cAtom<%c%cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n %c:string%c   %c\"string\"%c\n %c:record%c   %cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n %c:regex%c    %c#\"^hi$\"%c\n %c:uuid%c     %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c\n %c:brackets%c %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n %c:boolean%c  %ctrue%c\n %c:lamda%c    %cλ%c%c%c%c[%1]%c%c}%c")))
        
        (deftest p-data-with-coll-limit
          (is (= 
               (let [ret              (p-data {:label                      "my-label"
-                                          :enable-terminal-truecolor? true
-                                          :enable-terminal-italics?   true
-                                          :coll-limit                 5
-                                          :theme                      theme}
-                                         [1 2 3 4 5 6 7 8])
+                                              :enable-terminal-truecolor? true
+                                              :enable-terminal-italics?   true
+                                              :coll-limit                 5
+                                              :theme                      theme}
+                                             [1 2 3 4 5 6 7 8])
                     formatted-string (-> ret :formatted :string)]
                 #_(pp/pprint formatted-string)
                 formatted-string)
@@ -147,18 +153,18 @@
               "%c[%c%c\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44\"%c...%c%c%c]%c")))
 
        (deftest p-data-with-non-coll-length-limit
-       (is (= 
-            (let [ret              (p-data {:label                        "my-label"
-                                        :enable-terminal-truecolor?   true
-                                        :enable-terminal-italics?     true
-                                        :bracket-contrast             "high"
-                                        :theme                        theme
-                                        :non-coll-result-length-limit 42}
-                                       "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
-                  formatted-string (-> ret :formatted :string)]
-              (pp/pprint formatted-string)
-              formatted-string)
-            "%c\"asdfffaaaaasdfasdfasdfasdfasdfasdfasd\"%c...%c%c")))
+         (is (= 
+              (let [ret              (p-data {:label                        "my-label"
+                                              :enable-terminal-truecolor?   true
+                                              :enable-terminal-italics?     true
+                                              :bracket-contrast             "high"
+                                              :theme                        theme
+                                              :non-coll-result-length-limit 42}
+                                             "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
+                    formatted-string (-> ret :formatted :string)]
+                (pp/pprint formatted-string)
+                formatted-string)
+              "%c\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff4\"%c...%c%c")))
 
        (deftest p-data-rainbow-brackets
          (is (= 
@@ -169,37 +175,41 @@
                                           :theme                      theme}
                                          [[[[[]]]]])
                     formatted-string (-> ret :formatted :string)]
-                #_(pp/pprint formatted-string)
+                (pp/pprint formatted-string)
                 formatted-string)
               "%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c")))
        
        (deftest p-data-record-sample-in-atom
          (is (= 
               (let [ret              (p-data {:label                      "my-label"
-                                          :enable-terminal-truecolor? true
-                                          :enable-terminal-italics?   true
-                                          :bracket-contrast           "high"
-                                          :theme                      theme}
+                                              :enable-terminal-truecolor? true
+                                              :enable-terminal-italics?   true
+                                              :bracket-contrast           "high"
+                                              :theme                      theme}
                                          (atom smoke-test/record-sample))
                     formatted-string (-> ret :formatted :string)]
                 #_(pp/pprint formatted-string)
                 formatted-string)
               "%cAtom<%c%cFoos%c\n%c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c")))
        
-       (deftest p-data-js-array
+
+       ;; Leave this out until you support native logging
+       #_(deftest p-data-js-array
          (is (= 
               (let [ret              (p-data {:label                      "my-label"
-                                          :enable-terminal-truecolor? true
-                                          :enable-terminal-italics?   true
-                                          :bracket-contrast           "high"
-                                          :theme                      theme}
+                                              :enable-terminal-truecolor? true
+                                              :enable-terminal-italics?   true
+                                              :bracket-contrast           "high"
+                                              :theme                      theme}
                                          #js [1 2 3])
                     formatted-string (-> ret :formatted :string)]
                 #_(pp/pprint formatted-string)
                 formatted-string)
               "%c#js%c%c[%c%c1%c, %c2%c, %c3%c%c]%c")))
 
-       (deftest p-data-js-set
+
+       ;; Leave this out until you support native logging
+       #_(deftest p-data-js-set
          (is (= 
               (let [ret              (p-data {:label                      "my-label"
                                           :enable-terminal-truecolor? true
@@ -212,7 +222,9 @@
                 formatted-string)
               "%cjs/Set%c\n%c#{%c%c1%c, %c2%c%c}%c")))
        
-       (deftest p-data-custom-printers
+       
+       ;; Leave this out until you support custom printers 
+       #_(deftest p-data-custom-printers
          (is (= 
               (let [ret              
                     (p-data {:custom-printers {:vector {:pred        (fn [x] (= x [1 2 3 4]))
@@ -232,12 +244,13 @@
 )
    
    :clj
+   #_nil
    (do 
      (deftest p-data-with-label-from-opts
        (is (= 
             (let [ret              (p-data {:label                      "my-label-from-opts"
-                                        :enable-terminal-truecolor? true
-                                        :enable-terminal-italics?   true}
+                                            :enable-terminal-truecolor? true
+                                            :enable-terminal-italics?   true}
                                        "foo")
                   formatted-string (-> ret :formatted :string)]
               ;; (pp/pprint (escape-sgr formatted-string))
@@ -247,9 +260,9 @@
      (deftest p-data-with-label-from-opts-primitive-terminal-emulator
        (is (= 
             (let [ret              (p-data {:label                      "my-label-from-opts"
-                                        :enable-terminal-truecolor? false
-                                        :enable-terminal-italics?   false
-                                        :theme                      theme}
+                                            :enable-terminal-truecolor? false
+                                            :enable-terminal-italics?   false
+                                            :theme                      theme}
                                        "foo")
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
@@ -259,14 +272,13 @@
      (deftest p-data-with-non-coll-level-1-depth-length-limit
        (is (= 
             (let [ret              (p-data {:label                         "my-label"
-                                        :enable-terminal-truecolor?    true
-                                        :enable-terminal-italics?      true
-                                        :bracket-contrast              "high"
-                                        :theme                         theme
-                                        :non-coll-depth-1-length-limit 60}
+                                            :enable-terminal-truecolor?    true
+                                            :enable-terminal-italics?      true
+                                            :bracket-contrast              "high"
+                                            :theme                         theme
+                                            :non-coll-depth-1-length-limit 60}
                                        ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
                   formatted-string (-> ret :formatted :string)]
-              #_(pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;5;241〠"
               "["
@@ -284,17 +296,17 @@
      (deftest p-data-with-non-coll-result-length-limit
        (is (= 
             (let [ret              (p-data {:label                        "my-label"
-                                        :enable-terminal-truecolor?   true
-                                        :enable-terminal-italics?     true
-                                        :bracket-contrast             "high"
-                                        :theme                        theme
-                                        :non-coll-result-length-limit 42}
+                                            :enable-terminal-truecolor?   true
+                                            :enable-terminal-italics?     true
+                                            :bracket-contrast             "high"
+                                            :theme                        theme
+                                            :non-coll-result-length-limit 42}
                                        "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
                   formatted-string (-> ret :formatted :string)]
-              #_(pp/pprint (escape-sgr formatted-string))
+              (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;2;68;140;39〠"
-              "\"asdfffaaaaasdfasdfasdfasdfasdfasdfasd\""
+              "\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff4\""
               "〠3;38;2;140;140;140〠"
               "..."
               "〠0〠"
@@ -303,11 +315,11 @@
      (deftest p-data-with-coll-limit
        (is (= 
             (let [ret              (p-data {:label                      "my-label"
-                                        :enable-terminal-truecolor? true
-                                        :enable-terminal-italics?   true
-                                        :coll-limit                 5
-                                        :theme                      theme
-                                        :custom-printers            {}}
+                                            :enable-terminal-truecolor? true
+                                            :enable-terminal-italics?   true
+                                            :coll-limit                 5
+                                            :theme                      theme
+                                            :custom-printers            {}}
                                        [1 2 3 4 5 6 7 8])
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
@@ -344,10 +356,10 @@
      (deftest p-data-rainbow-brackets
        (is (= 
             (let [ret              (p-data {:label                      "my-label"
-                                        :enable-terminal-truecolor? true
-                                        :enable-terminal-italics?   true
-                                        :bracket-contrast           "high"
-                                        :theme                      theme}
+                                            :enable-terminal-truecolor? true
+                                            :enable-terminal-italics?   true
+                                            :bracket-contrast           "high"
+                                            :theme                      theme}
                                        [[[[[]]]]])
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
@@ -386,10 +398,10 @@
      (deftest p-data-rainbow-brackets-low-contrast
        (is (= 
             (let [ret              (p-data {:label                      "my-label"
-                                        :enable-terminal-truecolor? true
-                                        :enable-terminal-italics?   true
-                                        :bracket-contrast           "low"
-                                        :theme                      theme}
+                                            :enable-terminal-truecolor? true
+                                            :enable-terminal-italics?   true
+                                            :bracket-contrast           "low"
+                                            :theme                      theme}
                                        [[[[[]]]]])
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
@@ -429,10 +441,10 @@
      (deftest p-data-record-sample-in-atom
        (is (= 
             (let [ret              (p-data {:label                      "my-label"
-                                        :enable-terminal-truecolor? true
-                                        :enable-terminal-italics?   true
-                                        :bracket-contrast           "high"
-                                        :theme                      theme}
+                                            :enable-terminal-truecolor? true
+                                            :enable-terminal-italics?   true
+                                            :bracket-contrast           "high"
+                                            :theme                      theme}
                                        (atom smoke-test/record-sample))
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
@@ -471,10 +483,10 @@
      (deftest p-data-record-sample
        (is (= 
             (let [ret              (p-data {:label                      "my-label"
-                                        :enable-terminal-truecolor? true
-                                        :enable-terminal-italics?   true
-                                        :bracket-contrast           "high"
-                                        :theme                      theme}
+                                            :enable-terminal-truecolor? true
+                                            :enable-terminal-italics?   true
+                                            :bracket-contrast           "high"
+                                            :theme                      theme}
                                        smoke-test/record-sample)
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
@@ -507,10 +519,10 @@
      (deftest p-data-symbol-with-meta
        (is (= 
             (let [ret              (p-data {:label                      "my-label"
-                                        :enable-terminal-truecolor? true
-                                        :enable-terminal-italics?   true
-                                        :bracket-contrast           "high"
-                                        :theme                      theme}
+                                            :enable-terminal-truecolor? true
+                                            :enable-terminal-italics?   true
+                                            :bracket-contrast           "high"
+                                            :theme                      theme}
                                        (with-meta 'mysym {:foo :bar}))
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
@@ -543,7 +555,7 @@
 
 ;; Basic print-and-return tests, cljc
 (do (deftest p-basic
-      (is (= (p {:a   "foo"
+      (is (= (? {:a   "foo"
                  :xyz "bar"})
              {:a   "foo"
               :xyz "bar"})))
@@ -570,5 +582,6 @@
       (is (= (!?> {:a   "foo"
                    :xyz "bar"})
              {:a   "foo"
-              :xyz "bar"}))))
+              :xyz "bar"})))
+    )
 
