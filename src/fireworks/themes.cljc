@@ -39,11 +39,11 @@
                         :metadata   {:color            "#be55bb"
                                      :text-shadow      "0 0 2px #ffffff"
                                      :background-color "#fae8fd"}
-                        :label      {:color            "#808080"
-                                     :background-color "#ffffff"
+                        :label      {:color            "#256546"
+                                     :background-color "#e5fbe5"
                                      :text-shadow      "0 0 2px #ffffff"
                                      :font-style       :italic}}
-             :syntax  {:js-object-key {:color "#888888"}}
+             :syntax  {:js-object-key      {:color "#888888"}}
              :printer {:eval-fat-arrow     {:color            "#28cc7d"
                                             :background-color "#e8fcf3"}
                        :result-header      {:color            "#28cc7d"
