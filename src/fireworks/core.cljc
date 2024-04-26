@@ -37,15 +37,11 @@
 ;; !?pr       pr       (silenced)
 
 
-
-
 ;; Remove old truncate code
 
 ;; Fix meta printing on colls (string quotes now)
 
 ;; Fix color styling on eval form and meta - All themes
-
-
 
 ;; look at these bugs
 ;; (??? (new (.-Color js/window) "hwb" #js[60 30 40]))
@@ -54,15 +50,11 @@
 ;; Should be like any other seq
 ;; check if in babashka
 
-
 ;; Next
 
 ;; TODO - Try to eliminate meta-map entries like :js-map-like?, which shadow stuff in :all-tags
 
 ;; TODO - Try to eliminate some of the redundant passing keys around in serialize
-
-
-
 
 
 (ns fireworks.core
@@ -105,7 +97,7 @@
   ([source]
    (formatted* source nil))
   ([source opts]
-   (let [truncated      (truncate/truncate-new {:depth 0} source #_opts)
+   (let [truncated      (truncate/truncate {:depth 0} source)
          ;;             _ (js/console.log truncated)
          ;;             _ (?pp 'truncated (meta truncated))
 
