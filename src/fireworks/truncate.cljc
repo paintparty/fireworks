@@ -11,8 +11,7 @@
    [lasertag.core :as lasertag]
    #?(:cljs [fireworks.macros :refer-macros [keyed let-map]])
    #?(:cljs [lasertag.cljs-interop :refer [js-built-in-objects-by-object-map]])
-   #?(:clj [fireworks.macros :refer [keyed let-map]])
-   [reagent.core :as r]))
+   #?(:clj [fireworks.macros :refer [keyed let-map]])))
 
 ;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; New code for v0.4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -541,7 +540,12 @@
 
 (defn new-coll2
   ;; [x uid-entry? tag-map depth t too-deep?]
-  [{:keys [x  tag-map depth t too-deep?] :as opts}]
+  [{:keys [x
+           tag-map
+           depth
+           t
+           too-deep?]
+    :as opts}]
   (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))
         ;; TODO - maybe do this?
         ;; opts* (assoc opts :coll-limit coll-limit)
@@ -568,7 +572,7 @@
 
       ;; This if for everything else
       (truncate-iterable x coll-limit tag-map depth)
-     ;; Mabye do this?
+      ;; Mabye do this?
       ;; (truncate-iterable opts*)
       )))
 
@@ -576,17 +580,18 @@
 (defn- truncate-opts [opts x]
   (let [ret 
         (let-map
-         [atom?         (cljc-atom? x)
-          x             (if atom? @x x)
-          user-meta     (meta x)
-          kv?           (map-entry? x)
-          tag-map       (when-not kv?
+         [depth       (:depth opts)
+          atom?       (cljc-atom? x)
+          x           (if atom? @x x)
+          user-meta   (meta x)
+          kv?         (map-entry? x)
+          tag-map     (when-not kv?
                           (set/rename-keys (lasertag/tag-map x)
                                            {:tag :t}))
-          uid-entry?    (volatile! false)
-          too-deep?     (> (:depth opts) (:print-level @state/config))
+          uid-entry?  (volatile! false)
+          too-deep?   (> depth (:print-level @state/config))
 
-          sev?          (not (:coll-type? tag-map))
+          sev?        (not (:coll-type? tag-map))
 
           ;; TODO - get this badge and ellipsization working here
           ;; badge         (profile/annotation-badge x)
@@ -598,11 +603,15 @@
 
 
 (defn truncate-new
-  [{:keys [depth map-value? key?] :as opts} x]
+  [{:keys [depth
+           map-value?
+           key?]
+    :as opts}
+   x]
   (let [{:keys [x             
                 user-meta     
                 kv?           
-                t             
+                t         
                 coll-type?]
          :as   opts+}
         (truncate-opts opts x)
