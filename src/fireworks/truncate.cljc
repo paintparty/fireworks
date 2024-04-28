@@ -5,11 +5,12 @@
    [clojure.set :as set]
    [fireworks.state :as state]
    [fireworks.profile :as profile]
+   [fireworks.ellipsize :as ellipsize]
    [fireworks.serialize :refer [seq->sorted-map]]
    [fireworks.util :as util]
    [lasertag.core :as lasertag]
-   #?(:cljs [fireworks.macros :refer-macros [let-map]])
-   #?(:clj [fireworks.macros :refer [let-map]])))
+   #?(:cljs [fireworks.macros :refer-macros [keyed]])
+   #?(:clj [fireworks.macros :refer [keyed]])))
 
 (defn cljc-atom?
   [x]
@@ -53,23 +54,26 @@
 
 
 (defn new-coll-info
-  [coll {:keys [uid-entry? coll-size all-tags map-like?]}]
-  (let [
-        ;; {:keys [coll-size all-tags map-like?]}
-        ;; tag-map
-
-        ret
-        (let-map
-         ;; TODO maybe-change binding name to truncated-coll-size -> coll-size?
-         [truncated-coll-size (count coll)
-          coll-size-adjust    (- coll-size (if @uid-entry? 1 0))
-          num-dropped         (some->> truncated-coll-size
-                                       (- coll-size-adjust))
-          js-typed-array?     (contains? all-tags :js/TypedArray)
-          js-map-like?        (contains? all-tags :js/map-like-object)])]
-    (merge ret
-           (when map-like?
-             {:sorted-map-keys (keys coll)}))))
+  [coll {:keys [uid-entry?
+                coll-size
+                all-tags
+                map-like?]}]
+  ;; TODO maybe-change binding name to truncated-coll-size -> coll-size?
+  (let [truncated-coll-size (count coll)
+        coll-size-adjust    (- coll-size (if @uid-entry? 1 0))
+        num-dropped         (some->> truncated-coll-size
+                                     (- coll-size-adjust))
+        js-typed-array?     (contains? all-tags :js/TypedArray)
+        js-map-like?        (contains? all-tags :js/map-like-object)
+        ret*                (keyed [truncated-coll-size  
+                                    coll-size-adjust        
+                                    num-dropped                  
+                                    js-typed-array?          
+                                    js-map-like?])
+        ret                 (merge ret*
+                                   (when map-like?
+                                     {:sorted-map-keys (mapv #(nth % 0 nil) coll)}))]
+    ret))
 
 
 (defn new-coll2
@@ -111,35 +115,60 @@
       )))
 
 
-(defn- truncate-opts [opts x]
-  (let [ret 
-        (let-map
-         [depth       (:depth opts)
-          atom?       (cljc-atom? x)
-          x           (if atom? @x x)
-          user-meta   (meta x)
-          kv?         (map-entry? x)
-          tag-map     (when-not kv?
-                          (set/rename-keys (lasertag/tag-map x)
-                                           {:tag :t}))
-          uid-entry?  (volatile! false)
-          too-deep?   (> depth (:print-level @state/config))
-
-          sev?        (not (:coll-type? tag-map))
-
-          ;; TODO - get this badge and ellipsization working here
-          ;; badge         (profile/annotation-badge x)
-          ;; ellipsized    (when sev? (ellipsize x opts)) 
-
-          ])]
+(defn- truncate-opts
+  [opts x]
+  (let [depth      (:depth opts)
+        atom?      (cljc-atom? x)
+        x          (if atom? @x x)
+        user-meta  (meta x)
+        kv?        (map-entry? x)
+        tag-map    (when-not kv?
+                     (set/rename-keys (lasertag/tag-map x)
+                                      {:tag :t}))
+        uid-entry? (volatile! false)
+        too-deep?  (> depth (:print-level @state/config))
+        sev?       (boolean (when-not kv? (not (:coll-type? tag-map))))
+        ret        (keyed [depth       
+                           atom?       
+                           x           
+                           user-meta   
+                           kv?         
+                           tag-map     
+                           uid-entry?
+                           too-deep? 
+                           sev?])]
     (merge (:tag-map ret)
-           (dissoc ret :tag-map))))
+           (dissoc ret :tag-map)))) 
+
+
+(defn new-x
+  [depth
+   x
+   {:keys [coll-type? kv?]
+    :as opts+}]
+  (let [x (cond
+            kv?        (let [[k v] x]
+                         [(truncate {:depth depth :key?  true} k)
+                          (truncate {:depth depth :map-value? true} v)])
+            coll-type? (new-coll2 opts+)
+            :else      x)]
+    (if (or (:carries-meta? opts+)
+            (util/carries-meta? x))
+      x
+      (symbol (str x)))))
+
+
+(defn with-badge-and-ellipsized
+  [x kv? mm*]
+  (let [badge      (when-not kv? (profile/annotation-badge mm*))
+        mm         (merge mm* badge)
+        ellipsized (when (:sev? mm)
+                     (ellipsize/ellipsized x mm))] 
+    (merge mm* ellipsized)))
 
 
 (defn truncate
-  [{:keys [depth
-           map-value?
-           key?]
+  [{:keys [depth map-value? key?]
     :as opts}
    x]
   (let [{:keys [x             
@@ -150,28 +179,33 @@
          :as   opts+}
         (truncate-opts opts x)
 
-        new-x         
-        (cond
-          kv?        (let [[k v] x]
-                       [(truncate {:depth depth :key?  true} k)
-                        (truncate {:depth depth :map-value? true} v)])
-          coll-type? (new-coll2 opts+)
-          :else      x)
+        new-x 
+        (new-x depth x opts+)
+        
 
         new-coll-info
         (when (and (not kv?) coll-type?)
           (new-coll-info new-x opts+))
 
         mm*           
-        (merge opts+
+        (merge (dissoc opts+ :uid-entry?)
                new-coll-info
-               {:og-x x :t t :depth depth})
+               {:og-x  x
+                :t     t
+                :depth depth})
+
+        ;; TODO - Use this instead of what you are doing in profile
+        ;; mm*
+        ;; (with-badge-and-ellipsized
+        ;;   x
+        ;;   kv?
+        ;;   (merge mm*
+        ;;          ;; TODO - put this up in mm* binding
+        ;;          (keyed [key? map-value?])))
 
         ret           
-        (with-meta (if (or (:carries-meta? mm*)
-                           (util/carries-meta? new-x))
-                     new-x
-                     (symbol (str x)))
+        (with-meta new-x
           {:fw/truncated mm*
            :fw/user-meta user-meta})]
     ret))
+
