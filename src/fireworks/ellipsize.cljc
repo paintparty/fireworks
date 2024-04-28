@@ -129,6 +129,7 @@
                                                   trunc-name?) ;; <-- TODO - don't think this fn sig is correct
                            (or (count (str fn-args)) 0))]
 
+
     (merge (keyed [fn-args fn-display-name drop-ns?])
            {:ellipsized-char-count ecc
             :truncate-fn-name?     trunc-name?
@@ -207,13 +208,14 @@
                    ret])))
     ret))
 
-
 (defn ellipsized
   "Ellipsizes longer-than acceptable self-evaluating values such as strings,
-   regexes, keywords, #insts, fns, etc. Truncation is based on the following:
+   regexes, keywords, #insts, fns, etc.
+   
+   Truncation is based on the following:
    - `:non-coll-mapkey-length-limit `or `:non-coll-length-limit` from config
-   - Optional inline badge length e.g `#js`
-   - Optional atom encapsulation e.g. `Atom<42>`"
+   - Optional inline badge length e.g `#js `
+   - Optional atom or volatile encapsulation e.g. `Atom<42>`"
   [x 
    {:keys [t 
            limit
@@ -234,7 +236,7 @@
 
         ;; kv-member? (or key? map-value?)
         ;; _ (js/console.log 'x  x)
-        ;; _ (js/console.log 'm  m)
+        ;; _ (?pp 'm m)
 
         limit
         (if-let [level-k (cond @state/top-level-value-is-sev?
@@ -295,6 +297,8 @@
                                              ellipsized-char-count
                                              exceeds?             
                                              num-chars-dropped]))]
+
+
 
        #_(when key?
          (?pp stringified)
