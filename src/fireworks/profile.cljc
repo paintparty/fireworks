@@ -30,30 +30,32 @@
            js-built-in-object?
            js-built-in-object-name
            all-tags
-           :fw/custom-badge-text] :as m}]
-  (let [t (if lamda? :lamda t)
-        b (or custom-badge-text
-              (cond
-                (contains? all-tags :record)
-                (name t)
+           :fw/custom-badge-text]
+    :as m}]
+  (when (map? m)
+   (let [t (if lamda? :lamda t)
+         b (or custom-badge-text
+               (cond
+                 (contains? all-tags :record)
+                 (name t)
 
-                js-built-in-object?
-                (str "js/" js-built-in-object-name)
+                 js-built-in-object?
+                 (str "js/" js-built-in-object-name)
 
-                (and (not= t :js/Object)
-                     (or (contains? all-tags :js/map-like-object)
-                         (contains? all-tags :js/TypedArray)))
-                (or (t badges-by-lasertag)
-                    (subs (str t) 1))
+                 (and (not= t :js/Object)
+                      (or (contains? all-tags :js/map-like-object)
+                          (contains? all-tags :js/TypedArray)))
+                 (or (t badges-by-lasertag)
+                     (subs (str t) 1))
 
-                :else
-                (t badges-by-lasertag)))
-        b #?(:cljs b
-             :clj (if (= t :defmulti) "Multimethod" b))]
+                 :else
+                 (get badges-by-lasertag t nil)))
+         b #?(:cljs b
+              :clj (if (= t :defmulti) "Multimethod" b))]
 
     ;; If you want to signal React -> (str "⚛ " b)
-
-    (when b {:badge b})))
+     
+     (when b {:badge b}))))
                          
 
 (defn- highlighting*
