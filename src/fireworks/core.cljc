@@ -37,9 +37,9 @@
 ;; !?pr       pr       (silenced)
 
 
-;; Remove old truncate code
 
 ;; Fix meta printing on colls (string quotes now)
+;; Support volatile encapsultion
 
 ;; Fix color styling on eval form and meta - All themes
 
