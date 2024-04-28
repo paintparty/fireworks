@@ -257,7 +257,7 @@
 
 #?(:clj
    (do 
-     #_(do
+     (do
          ;; DataTypes ------------------------------------------------------
          (? "A def of deftype" (deftype MyType [a b]))
          
@@ -360,7 +360,7 @@
   
 
  ;; Testing all the options cljc
- #_(do 
+ (do 
 
   ;; :mood
   (? {:label :mood :mood "light" :theme nil}
