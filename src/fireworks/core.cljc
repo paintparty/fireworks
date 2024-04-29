@@ -99,7 +99,7 @@
   ([source opts]
    (let [truncated      (truncate/truncate {:depth 0} source)
          ;;             _ (js/console.log truncated)
-         ;;             _ (?pp 'truncated (meta truncated))
+                    ;;  _ (ff 'truncated (meta truncated))
 
          custom-printed truncated
 
@@ -113,7 +113,9 @@
 
          profiled       (walk/prewalk profile/profile custom-printed)
 
-         ;;             _ (js/console.log profiled)
+         ;; _ (js/console.log profiled)
+
+         ;; _ (ff 'profiled (meta profiled))
          serialized     (serialize/serialized profiled)
          len            (-> profiled meta :str-len-with-badge)]
      [serialized len])))
