@@ -3,7 +3,8 @@
    [fireworks.pp :refer [?pp]]
    [fireworks.brackets :refer [closing-bracket! 
                                opening-bracket!
-                               closing-angle-bracket!]]
+                               closing-angle-bracket!
+                               brackets-by-type]]
    [fireworks.order :as order]
    [clojure.string :as string]
    [fireworks.defs :as defs]
@@ -130,8 +131,9 @@
                 t]
          :as   meta-map}
         (meta coll)
+
         user-meta    
-        (when (seq user-meta) (str user-meta))
+        (when (seq user-meta) user-meta)
 
         coll-count
         (count coll)
@@ -226,6 +228,30 @@
       ret))
 
 
+(defn- user-meta-block
+  [indent*
+   metadata-position
+   {:keys [badge user-meta]}]
+  (when (and (:display-metadata? @state/config)
+             user-meta
+             (contains? #{:block "block"} metadata-position))
+    (as-> user-meta $
+      (str
+       (when badge " ")
+       (tag! :metadata)
+       (tag/stringified-user-meta 
+        {:user-meta         $
+         :metadata-position :block
+         :indent            indent*
+         ;; maybe use this if you have a coll that is single-line,
+         ;; but with multi-line metadata map
+         ;; :str-len-with-badge str-len-with-badge
+         })
+       (tag-reset!)))))
+
+(defn- user-meta-inline-indent []
+  )
+
 (defn- profile+ob
   [coll indent*]
   (let [{:keys [badge
@@ -257,24 +283,7 @@
 
         ;; move up?
         user-meta-block
-        (when (and (:display-metadata? @state/config)
-                   user-meta
-                   (contains? #{:block "block"} metadata-position))
-          (as-> user-meta $
-            (str
-             (when badge " ")
-             (tag! :metadata)
-             (tag/stringified-user-meta 
-              {:user-meta         $
-               :metadata-position :block
-               :indent            indent*
-
-               ;; maybe use this if you have a coll that is single-line,
-               ;; but with multi-line metadata map
-
-               ;; :str-len-with-badge str-len-with-badge
-               })
-             (tag-reset!))))
+        (user-meta-block indent* metadata-position m)
 
         ob*                  
         (str atom-opening-encapsulation
@@ -284,7 +293,6 @@
              (opening-bracket! (keyed [coll record?]))
              (when (-> coll meta :too-deep?)
                (tagged "#" {:theme-token :max-print-level-label})))
-        
         
         user-meta-inline
         (when (and (:display-metadata? @state/config)
@@ -297,10 +305,18 @@
              (tag/stringified-user-meta 
               {:user-meta         $
                :metadata-position :inline
-               :indent            indent*
+               :indent            (let [ob (str atom-opening-encapsulation
+                                                badge
+                                                (some-> user-meta-block
+                                                        (str (when badge " ")))
+                                                (some-> coll
+                                                        meta
+                                                        brackets-by-type
+                                                        first))]
+                                    (+ (or (count ob) 0) indent*))
                ;; maybe use this if you have a coll that is single-line,
                ;; but with multi-line metadata map
-
+               
                ;; :str-len-with-badge str-len-with-badge
                })
 
@@ -310,24 +326,6 @@
                 (some-> user-meta-inline (str  separator)))]
     (assoc m :ob ob :record? record?)))
 
-(defn- color-result-gutter-space-char
-  [separator]
-  (str "\n"
-       (tag/tag-entity! " " :result-gutter)
-       (subs separator 2)))
-
-(defn- color-result-gutter-space-char-two-lines
-  [separator]
-  (let [num-newlines (->> separator (re-seq #"\n") count)
-        _            (dotimes [_ num-newlines]
-                       (tag/tag-entity! " " :result-gutter))
-        ret*         (string/replace separator
-                                     #"\n"
-                                     "\n%c %c")
-        ret          (if (> num-newlines 1)
-                       (subs ret* 0 (dec (count ret*)))
-                       ret*)]
-    ret))
 
 (defn- reduce-coll
   [coll indent*]

@@ -1,6 +1,5 @@
 (ns ^:dev/always fireworks.sev
   (:require
-   [fireworks.pp :refer [?pp]]
    [fireworks.defs :as defs]
    [fireworks.state :as state]
    [fireworks.tag :as tag :refer [tagged tag! tag-reset!]]
@@ -51,7 +50,6 @@
            :fw/custom-badge-style
            sev?]
     :as m}]
-  ;; (?pp user-meta)
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
 
