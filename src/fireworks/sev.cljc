@@ -1,5 +1,6 @@
 (ns ^:dev/always fireworks.sev
   (:require
+   [fireworks.pp :refer [?pp]]
    [fireworks.defs :as defs]
    [fireworks.state :as state]
    [fireworks.tag :as tag :refer [tagged tag! tag-reset!]]
@@ -50,6 +51,7 @@
            :fw/custom-badge-style
            sev?]
     :as m}]
+  ;; (?pp user-meta)
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
 
@@ -73,7 +75,8 @@
         ;; user-meta-block (displays user-meta inline, after value), optional
         
         user-meta-block-tagged
-        (when (and user-meta
+        (when (and (:display-metadata? @state/config)
+                   (seq user-meta)
                    (contains? #{:block "block"} metadata-position))
           (tag/stringified-user-meta
            (keyed [user-meta
@@ -129,7 +132,7 @@
 
         user-meta-inline-tagged
         (when (and (:display-metadata? @state/config)
-                   user-meta
+                   (seq user-meta)
                    (contains? #{:inline "inline"} metadata-position))
           (tag/stringified-user-meta
            (keyed [user-meta indent str-len-with-badge metadata-position])))

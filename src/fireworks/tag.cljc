@@ -111,7 +111,7 @@
            indent
            str-len-with-badge
            block?
-           optional-caret-char]}]
+           optional-caret-char] }]
   (let [ret       (string/replace 
                    (with-out-str 
                      (binding [*print-level*
@@ -176,7 +176,5 @@
                                  (metamap-offset-background inline-offset))
                                (tagged (str stringified)
                                        {:theme-token :metadata})))]
-
-
     (str ret
          (when block? (str (when sev? "\n") (spaces indent))))))
