@@ -43,12 +43,15 @@
 
 
 (defn truncate-iterable
-  [x coll-limit tag-map depth]
+  [x
+   coll-limit
+   map-like?
+   depth]
   (let [ret (->> x
                  (take coll-limit)
                  (into [])
                  (mapv (partial truncate {:depth (inc depth)})))]
-    (if (:map-like? tag-map)
+    (if map-like?
       (seq->sorted-map ret)
       ret)))
 
@@ -79,11 +82,11 @@
 (defn new-coll2
   ;; [x uid-entry? tag-map depth t too-deep?]
   [{:keys [x
-           tag-map
            depth
            t
+           map-like?
            too-deep?]
-    :as opts}]
+    :as opts+}]
   (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))
         ;; TODO - maybe do this?
         ;; opts* (assoc opts :coll-limit coll-limit)
@@ -98,7 +101,7 @@
                        (js-delete "view")
                        (js-delete "nativeEvent")
                        (js-delete "target")))
-               ret (js-obj->array-map (assoc opts
+               ret (js-obj->array-map (assoc opts+
                                              :coll-limit
                                              coll-limit))]
            ;; Maybe incorporate this into js-obj->array-map?
@@ -109,7 +112,7 @@
          :clj nil)
 
       ;; This if for everything else
-      (truncate-iterable x coll-limit tag-map depth)
+      (truncate-iterable x coll-limit map-like? depth)
       ;; Mabye do this?
       ;; (truncate-iterable opts*)
       )))
