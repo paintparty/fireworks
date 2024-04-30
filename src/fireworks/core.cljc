@@ -1,62 +1,3 @@
-;; Taps and returns the result, no printing
-;; ?>
-;; !?> (untap)
-
-;; Fireworks formatting
-;; ?         eval + file-info + result
-;; ?-        file-info + result
-;; ?--       result
-;; !?        eval + file-info + result (silenced)
-;; !?-       file-info + result        (silenced)
-;; !?--      result                    (silenced)
-
-;; JS formatting
-;; ?log       js/console.log
-;; ?log-      js/console.log
-;; ?log--     js/console.log
-;; !?log      js/console.log (silenced)
-;; !?log-     js/console.log (silenced)
-;; !?log--    js/console.log (silenced)
-
-;; PP formatting
-;; ?pp        pprint 
-;; ?pp-       pprint 
-;; ?pp--      pprint 
-;; !?pp       pprint (silenced)
-;; !?pp-      pprint (silenced)
-;; !?pp--     pprint (silenced)
-
-;; These print-and-return macros print using core printing fns and return the result
-;; ?println   println
-;; ?print     print
-;; ?prn       prn
-;; ?pr        pr
-;; !?println  println  (silenced)
-;; !?print    print    (silenced)
-;; !?prn      prn      (silenced)
-;; !?pr       pr       (silenced)
-
-
-
-;; Fix meta printing on colls (string quotes now)
-;; Support volatile encapsultion
-
-;; Fix color styling on eval form and meta - All themes
-
-;; look at these bugs
-;; (??? (new (.-Color js/window) "hwb" #js[60 30 40]))
-
-;; IndexedSeq showing up as js/Iterable
-;; Should be like any other seq
-;; check if in babashka
-
-;; Next
-
-;; TODO - Try to eliminate meta-map entries like :js-map-like?, which shadow stuff in :all-tags
-
-;; TODO - Try to eliminate some of the redundant passing keys around in serialize
-
-
 (ns fireworks.core
   (:require
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
@@ -98,8 +39,6 @@
    (formatted* source nil))
   ([source opts]
    (let [truncated      (truncate/truncate {:depth 0} source)
-         ;;             _ (js/console.log truncated)
-                    ;;  _ (ff 'truncated (meta truncated))
 
          custom-printed truncated
 
@@ -113,9 +52,6 @@
 
          profiled       (walk/prewalk profile/profile custom-printed)
 
-         ;; _ (js/console.log profiled)
-
-         ;; _ (ff 'profiled (meta profiled))
          serialized     (serialize/serialized profiled)
          len            (-> profiled meta :str-len-with-badge)]
      [serialized len])))
