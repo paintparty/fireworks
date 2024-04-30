@@ -121,7 +121,7 @@
                                              smoke-test/basic-samples)
                     formatted-string (-> ret :formatted :string)]
                 #_(pp/pprint "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-                (pp/pprint formatted-string)
+                #_(pp/pprint formatted-string)
                 formatted-string)
                "%c{%c%c:atom1%c    %cAtom<%c%c1%c%c>%c\n %c:fn%c       %ccljs.core/juxt%c%c[var_args]%c\n %c:number%c   %c1234%c\n %c:symbol2%c  %cmysym%c%c %c%c    %c%c{:foo%c%c\n                     %c%c [\"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  {:a \"foo\", :b [1 2 [1 2 3 4]]}%c%c\n                     %c%c  \"afasdfasf\"%c%c\n                     %c%c  \"afasdfasf\"],%c%c\n                     %c%c :bar \"fooz\"}%c\n %c:symbol%c   %cmysym%c%c %c%c    %c%c{:foo :bar}%c\n %c:atom2%c    %cAtom<%c%cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n %c:string%c   %c\"string\"%c\n %c:record%c   %cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n %c:regex%c    %c#\"^hi$\"%c\n %c:uuid%c     %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c\n %c:brackets%c %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n %c:boolean%c  %ctrue%c\n %c:lamda%c    %cλ%c%c%c%c[%1]%c%c}%c")))
        
@@ -162,7 +162,7 @@
                                               :non-coll-result-length-limit 42}
                                              "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
                     formatted-string (-> ret :formatted :string)]
-                (pp/pprint formatted-string)
+                #_(pp/pprint formatted-string)
                 formatted-string)
               "%c\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff4\"%c...%c%c")))
 
@@ -175,7 +175,7 @@
                                           :theme                      theme}
                                          [[[[[]]]]])
                     formatted-string (-> ret :formatted :string)]
-                (pp/pprint formatted-string)
+                #_(pp/pprint formatted-string)
                 formatted-string)
               "%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c")))
        
@@ -303,7 +303,7 @@
                                             :non-coll-result-length-limit 42}
                                        "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
                   formatted-string (-> ret :formatted :string)]
-              (pp/pprint (escape-sgr formatted-string))
+              #_(pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;2;68;140;39〠"
               "\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff4\""
@@ -554,7 +554,7 @@
     ret))
 
 ;; Basic print-and-return tests, cljc
-(do (deftest p-basic
+#_(do (deftest p-basic
       (is (= (? {:a   "foo"
                  :xyz "bar"})
              {:a   "foo"

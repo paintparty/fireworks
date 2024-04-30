@@ -1,6 +1,7 @@
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [?]]
             [clojure.string :as string] [fireworks.pp :as pp]
+            [clojure.pprint :refer [pprint]]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
@@ -253,8 +254,6 @@
    :brackets [[[[[[]]]]]]})
 
 
-
-
 #?(:clj
    (do 
      (do
@@ -457,5 +456,4 @@
      {:string "string"})
 
   #?(:clj
-     (? {:label "java.util.ArrayList" :coll-limit 10} (java.util.ArrayList. [1 2 3 4 5 6 7 8 9 10 11 12 13])))
-  )  
+     (? {:label "java.util.ArrayList" :coll-limit 10} (java.util.ArrayList. [1 2 3 4 5 6 7 8 9 10 11 12 13]))))  
