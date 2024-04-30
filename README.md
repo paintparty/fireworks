@@ -1,10 +1,17 @@
 # Fireworks 
 
 
+<p align="center"><sub>Light themes, clockwise from top left:<br><b><i>Alabaster, Neutral, Monokai, Solarized, Zenburn, Degas.</i></b></sub></p>
 
-
+![](./resources/fireworks-light-themes.jpg)
 
 <br>
+<p align="center"><sub>Dark themes, clockwise from top left:<br><b><i>Solarized, Monokai, Neutral, Zenburn, Degas, Alabaster.</i></b></sub></p>
+
+![](./resources/fireworks-dark-themes.jpg)
+
+
+<!-- <br>
 
 <p align="center"><sub><i>Neutral Light</i>&nbsp; & &nbsp;<i>Neutral Dark</i></sub></p>
 
@@ -45,7 +52,7 @@
 
 <p align="center"><sub><i>Monokai Light</i>&nbsp; & &nbsp;<i>Monokai Dark</i></sub></p>
 
-![](./resources/monokai-theme.png)
+![](./resources/monokai-theme.png) -->
 
 
 
@@ -114,7 +121,7 @@ Add as a dependency to your project:
 [![Clojars Project](https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg)](https://clojars.org/io.github.paintparty/fireworks)
 
 ```clojure
-[io.github.paintparty/fireworks "0.2.0"]
+[io.github.paintparty/fireworks "0.3.0"]
 ```
 <br>
 
@@ -123,7 +130,7 @@ Import into your namespace:
 ```clojure
 (ns myns.core
   (:require
-    [fireworks.core :refer [? !? ?> !?> p p-data]]))
+    [fireworks.core :refer [? ?- ?--]]))
 ```
 <br>
 
@@ -134,20 +141,66 @@ Import into your namespace:
 ## Usage 
 
 ### Print & return
-Fireworks provides 3 different print-and-return functions so that you can print values from your source without altering the execution of your program:
+Fireworks provides a bevy of print-and-return macros and functions so that you can print values from your source without altering the execution of your program.
 
-#### `?`
+`?`, `?log`, and `?pp` all print the evaled form (or user-supplied label), file info (line + column), and the result. The variants with a single trailing dash omit the form/label. The variants with a trailing double dash just print only the result. 
+
+
+Printing with Fireworks (colorized & justified):<br>
+`?` <br>
+`?-` <br>
+`?--`
+
+Printing with `js/console.log` or `pp/pprint` (JVM):<br>
+`?log` <br>
+`?log-` <br>
+`?log--` <br>
+
+Printing with `pp/pprint`:<br>
+`?pp` <br>
+`?pp-` <br>
+`?pp--` <br>
+
+<br>
+You can also print and return with core clojure printing functions. The following functions just print the result: <br>
+
+`?println` <br>
+`?print` <br>
+`?prn` <br>
+`?pr` <br>
+
+The following will `tap>` & return the result, with no printing:<br>
+`?>` <br>
+
+<br>
+
+All of the above functions have a respective "silencing" function, which will just return the result. This is useful if you want to leave something marked for observability, but temporarily silence the printing:
+
+`!?`<br>
+`!?-`<br>
+`!?--`<br>
+`!?log`<br>
+`!?log-`<br>
+`!?log--`<br>
+`!?pp`<br>
+`!?pp-`<br>
+`!?pp--`<br>
+`!?println`<br>
+`!?print`<br>
+`!?prn`<br>
+`!?pr`<br>    
+
+<br>
+
+### Using `?` 
 **`fireworks.core/?`** is a macro that prints the namespace info, the form, and the result, and returns the result.
 
 ```Clojure
-(ns myns.core
- (:require [fireworks.core :refer [? ?> !? !?>]]))
-
 (def x {:a "foo" :xyz "bar"})
 
 (? x)
 ```
-<img src="resources/fireworks-core-par.png" width="336px" />
+<img src="resources/fireworks-core-par.png" width="475px" />
 
 
 Calling **`fireworks.core/?`** with two arguments will print the namespace info, a label (instead of the form), and the result:
@@ -155,10 +208,10 @@ Calling **`fireworks.core/?`** with two arguments will print the namespace info,
 ```Clojure
 (? "My label" x)
 ```
-<img src="resources/fireworks-core-par-label.png" width="390px" />
+<img src="resources/fireworks-core-par-label.png" width="475px" />
 
 
-The first argument can also be a map, which supplies various config options:
+The first argument can also be a map, which supplies various [config options](#options):
 
 ```Clojure
 (? {:label      "My label"
@@ -166,28 +219,6 @@ The first argument can also be a map, which supplies various config options:
     :coll-limit 10}
    x)
 ```
-
-<br>
-
-#### `p`
-
-**`fireworks.core/p`** pretty-prints a value with syntax coloring, and returns the value. It also takes an optional leading argument (custom-label or options map), same as **`?`**.  Unlike **`?`**, **`p`** will not print the namespace, file info, or quoted form that is being evaluated.
-
-<br>
-
-#### `?>`
-
-**`fireworks.core/?>`** will simply print the value using `js/console.log` in (ClojureScript) or `pprint` (Clojure). It returns the value. In other words, it offers the same ergonomics as **`?`**, but does not use fireworks to format or colorize the output. This may be preferable if you want more succinct output. It may also be useful if you want to print a large data structure and spend time looking at it. In a JVM Clojure context, **`?>`** uses [pp](https://github.com/eerohele/pp) under the hood, a performant replacement for `clojure.pprint/pprint`.
-
-Similar to **`?`**, **`?>`** can take 2 args, the first of which will be used as a label. Unlike **`?`**, **`?>`** does not take a map of options. 
-
-
-<br>
-
-### Temporary silencers
- 
-#### `!?` and  `!?>`
-These are no-op functions which just return the value. Useful when you want to temporarily silence the printing of a form that is currently wrapped in **`?`**, or **`?>`**.
 
 <br>
 
@@ -232,7 +263,7 @@ Calling **`fireworks.core/p-data`** in a ClojureScript (browser) context also pr
 
 
 
-## Configuration / Options
+## Options
 
 
 For cutting & pasting into your [system-wide config](#system-wide-config), or trying things out at the call site: 
@@ -275,7 +306,7 @@ export FIREWORKS_CONFIG="/Users/your-home-folder/.fireworks/config.edn"
 
 You will need to substitute `your-home-folder` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `FIREWORKS_CONFIG` env var will be accessible in your dev environment.
 
-For the actual `config.edn` file, you can use the example at the end of this section as a starting point. Prior to doing this you can experiment with the various configuration options via passing a leading options map to `fireworks.core/p` or `fireworks.core/?`.
+For the actual `config.edn` file, you can use the example at the end of this section as a starting point. Prior to doing this you can experiment with the various configuration options via passing a leading options map to or `fireworks.core/?`.
 
 <br>
 
@@ -346,7 +377,7 @@ Sets the max depth of printing for nested collections.
 
 **`:non-coll-length-limit`** `33`
 
-Sets the max length of things like strings, keywords, function names, etc., when they are nested more than 1 level deep inside a data structure. Values whose length exceeds this will be ellipsized.
+Sets the max length of things like strings, keywords, function names, etc., when they are nested more than one level deep inside a data structure. Values whose length exceeds this will be ellipsized.
 
 
 <br>
@@ -371,7 +402,7 @@ Sets the max length of a non-collection value such as a string, keyword, functio
 
 **`:non-coll-depth-1-length-limit`** `69`
 
-Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value is nested 1 level deep inside the result, which would be a non-associative collection such as a vector or seq.
+Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value is nested one level deep inside the result, which would be a non-associative collection such as a vector or seq.
 
 
 <br>
@@ -438,12 +469,12 @@ Determines position of metadata relative to value that is carrying it. Options a
 <br>
 <br>
 
-**`:custom-printers`** `nil`
+<!-- **`:custom-printers`** `nil`
 
 Custom print handlers for objects and collections. See [Custom Printers](#custom-printers) section.
 
 <br>
-<br>
+<br> -->
 
 **`:find`** `nil`
 
