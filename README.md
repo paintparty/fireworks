@@ -1,12 +1,16 @@
 # Fireworks 
+A color printer for Clojure, ClojureScript, and Babashka.
 
+[![Clojars Project](https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg)](https://clojars.org/io.github.paintparty/fireworks)
 
-<p align="center"><sub>Light themes, clockwise from top left:<br><b><i>Alabaster, Neutral, Monokai, Solarized, Zenburn, Degas.</i></b></sub></p>
+<br>
+
+<p align="left"><sub>Clockwise from top left:<b><i> Alabaster, Neutral, Monokai, Solarized, Zenburn, Degas.</i></b></sub></p>
 
 ![](./resources/fireworks-light-themes.jpg)
 
 <br>
-<p align="center"><sub>Dark themes, clockwise from top left:<br><b><i>Solarized, Monokai, Neutral, Zenburn, Degas, Alabaster.</i></b></sub></p>
+<p align="left"><sub>Clockwise from top left:<b><i> Solarized, Monokai, Neutral, Zenburn, Degas, Alabaster.</i></b></sub></p>
 
 ![](./resources/fireworks-dark-themes.jpg)
 
@@ -86,10 +90,6 @@
 - Call site options let you easily try out different themes and formatting options. -->
 
 
-<br>
-
-## What
-A color printer for Clojure, ClojureScript, and Babashka.
 
 
 <br>
@@ -118,8 +118,6 @@ If using with Babashka, requires Babashka `v1.3.187` or higher
 
 Add as a dependency to your project:
 
-[![Clojars Project](https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg)](https://clojars.org/io.github.paintparty/fireworks)
-
 ```clojure
 [io.github.paintparty/fireworks "0.3.0"]
 ```
@@ -146,7 +144,7 @@ Fireworks provides a bevy of print-and-return macros and functions so that you c
 `?`, `?log`, and `?pp` all print the evaled form (or user-supplied label), file info (line + column), and the result. The variants with a single trailing dash omit the form/label. The variants with a trailing double dash just print only the result. 
 
 
-Printing with Fireworks (colorized & justified):<br>
+Printing with Fireworks formatting (colorized & justified):<br>
 `?` <br>
 `?-` <br>
 `?--`
@@ -174,7 +172,7 @@ The following will `tap>` & return the result, with no printing:<br>
 
 <br>
 
-All of the above functions have a respective "silencing" function, which will just return the result. This is useful if you want to leave something marked for observability, but temporarily silence the printing:
+All of the above functions have a respective "silencing" function, which will just return the result. This is useful if you want to leave something marked, but temporarily silence the printing:
 
 `!?`<br>
 `!?-`<br>
