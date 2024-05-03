@@ -32,22 +32,48 @@
    ;; :bracket-contrast "high"
    :tokens   {:classes {:background {:background-color "#f7f7f7"}
                         :string     {:color "#448C27"}
-                        :comment    {:color      "#AA3731"
-                                     :font-style :italic}
                         :constant   {:color "#7A3E9D"}
                         :definition {:color "#4d6dba"}
                         :annotation {:color      "#8c8c8c" 
                                      :font-style :italic}
-                        :metadata   {:color            "#2e6666"
+                        :metadata   {:color            "#be55bb"
                                      :text-shadow      "0 0 2px #ffffff"
-                                     :background-color "#e6fafa"}}
-             :syntax  {:js-object-key {:color "#888888"}}
-             :printer {:eval-fat-arrow {:color "#28cc7d"}
-                       :function-args  {:color "#999999"}
-                       :atom-wrapper   {:color            "#256546"
-                                        :background-color "#e5fbe5"
-                                        :text-shadow      "0 0 2px #ffffff"
-                                        :font-style       :italic}}}})
+                                     :background-color "#fae8fd"}
+                        :label      {:color            "#256546"
+                                     :background-color "#e5fbe5"
+                                     :text-shadow      "0 0 2px #ffffff"
+                                     :font-style       :italic}}
+             :syntax  {:js-object-key      {:color "#888888"}}
+             :printer {:eval-fat-arrow     {:color            "#28cc7d"
+                                            :background-color "#e8fcf3"}
+                       :result-header      {:color            "#28cc7d"
+                                            ;; :background-color "#e8fcf3"
+                                            :margin-block-end     :0.5em
+                                            }
+                       :file-info          {:color                "#737373" 
+                                            :font-style           :italic
+                                            :padding-inline-start :0ch
+                                            ;; :margin-block-end     :0.5em
+                                            }
+                       :eval-form          {:color             "#2e6666"
+                                            :text-shadow       "0 0 2px #ffffff"
+                                            :background-color  "#e5f1fa"
+                                            :margin-inline-end :2ch
+                                            ;; :margin-block-end  :0.5em
+                                            }
+                       :comment            {:color             "#2e6666"
+                                            :text-shadow       "0 0 2px #ffffff"
+                                            :background-color  "#e5f1fa"
+                                            :outline           "2px solid #e5f1fa"
+                                            :margin-inline-end :2ch
+                                            :font-style        :italic
+                                            ;; :margin-block-end  :0.5em
+                                            }
+                       :function-args      {:color "#999999"}
+                       :atom-wrapper       {:color            "#256546"
+                                            :background-color "#e5fbe5"
+                                            :text-shadow      "0 0 2px #ffffff"
+                                            :font-style       :italic}}}})
 
 
 (def alabaster-dark

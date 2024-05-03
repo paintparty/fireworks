@@ -1,5 +1,9 @@
 (ns ^:dev/always fireworks.defs)
 
+;; Tokens must be present in one of the maps below in order to pick up
+;; styling specified in theme.
+;; Style props also need to be registered in valid-stylemap-keys
+
 (def base-classes
   {:foreground    nil ;; -> foreground
    :background nil 
@@ -62,7 +66,8 @@
 (def all-base-syntax-tokens (into #{} (keys base-syntax-tokens)))
 
 (def base-printer-tokens
-  {:foreground               :foreground
+  {:comment               :comment
+   :foreground            :foreground
    :function-args         :bracket
    :literal-label         :label
    :type-label            :label
@@ -77,11 +82,20 @@
    :file-info             :annotation
    :line-number           :annotation
    :column-number         :annotation
-   :file-info-separator   :annotation
-   :eval-fat-arrow        :foreground
+   :eval-form             :foreground
+   :result-header         :foreground
    :seq-bracket           :bracket
    :lazy-seq-bracket      :bracket
-   :max-print-level-label :annotation})
+   :max-print-level-label :annotation
+
+   ;; maybe nix these
+   :eval-fat-arrow        :foreground
+   :file-info-separator   :annotation
+   :result-gutter         :foreground
+   :result-gutter-start   :foreground
+   :result-gutter-end     :foreground
+
+   })
 
 (def all-base-printer-tokens (into #{} (keys base-printer-tokens)))
 
@@ -108,8 +122,18 @@
             :font-size
             :font-weight
             :border-radius
+            :margin-block-end
+            :margin-block-start
+            :padding-block-end
+            :padding-block-start
+            :margin-inline-end
+            :margin-inline-start
+            :padding-inline-end
+            :padding-inline-start
             :opacity
-            :line-height]))
+            :line-height
+            :background-image
+            :outline]))
 
 (def quoting-chars
   {:string \"
@@ -153,15 +177,18 @@
 
 (def lamda-symbol "λ")
 
-(def js-literal-badge "#js")
+(def js-literal-badge "#js ")
 
 (def js-built-in-method-nm-limit 5)
 
-(def inst-badge "#inst")
+(def inst-badge "#inst ")
 
-(def uuid-badge "#uuid")
+(def uuid-badge "#uuid ")
 
 (def fat-arrow "=>")
+
+;; TODO - Implement this for js Map*
+(def js-map-arrow "->")
 
 (def inline-badges
   #{js-literal-badge inst-badge uuid-badge lamda-symbol})

@@ -73,7 +73,8 @@
         ;; user-meta-block (displays user-meta inline, after value), optional
         
         user-meta-block-tagged
-        (when (and user-meta
+        (when (and (:display-metadata? @state/config)
+                   (seq user-meta)
                    (contains? #{:block "block"} metadata-position))
           (tag/stringified-user-meta
            (keyed [user-meta
@@ -129,7 +130,7 @@
 
         user-meta-inline-tagged
         (when (and (:display-metadata? @state/config)
-                   user-meta
+                   (seq user-meta)
                    (contains? #{:inline "inline"} metadata-position))
           (tag/stringified-user-meta
            (keyed [user-meta indent str-len-with-badge metadata-position])))

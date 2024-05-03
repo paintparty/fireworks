@@ -12,6 +12,38 @@
 
 
 ;; Helpers ----------------------------------------------------------------
+(defn string-like? [v]
+  (or (string? v)
+      #?(:clj (-> v type str (= "java.util.regex.Pattern"))
+         :cljs (-> v type str (= "#object[RegExp]")))
+      (symbol? v)
+      (keyword? v)
+      (number? v)))
+
+(defn shortened
+  "Stringifies a collection and truncates the result with ellipsis 
+   so that it fits on one line."
+  [v limit]
+  (let [limit  limit
+        as-str (str v)]
+    (if (> limit (count as-str))
+      as-str
+      (let [[_ end-bracket] (re-find #"(\)|\}|\])$" as-str)
+            shortened*      (-> as-str
+                                (string/split #"\n")
+                                first)
+            shortened       (if (< limit (count shortened*))
+                              (let [ret          (take limit shortened*)
+                                    string-like? (string-like? v)]
+                                (str (string/join ret)
+                                     (when-not string-like? " ")
+                                     "..."
+                                     (when (and end-bracket
+                                                (not string-like?))
+                                       end-bracket)))
+                              shortened*)]
+        shortened))))
+
 (defn sgr-bold [s]
   (str "\033[1;m" s "\033[0;m"))
 

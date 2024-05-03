@@ -6,7 +6,7 @@
    [fireworks.tag :as tag :refer [tag! tag-reset! style-from-theme]]
    [fireworks.util :refer [badge-type]]))
 
-(defn- brackets-by-type
+(defn brackets-by-type
   [{:keys [t map-like? js-map-like? js-typed-array?] :as m}]
   (cond (or (= t :set) (= t :js/Set))
         ["#{" "}"]

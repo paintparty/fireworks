@@ -24,36 +24,38 @@
 
 
 ;; Understand and doc how this works for custom types
-(defn- annotation-badge
+(defn annotation-badge
   [{:keys [t
            lamda?
            js-built-in-object?
            js-built-in-object-name
            all-tags
-           :fw/custom-badge-text] :as m}]
-  (let [t (if lamda? :lamda t)
-        b (or custom-badge-text
-              (cond
-                (contains? all-tags :record)
-                (name t)
+           :fw/custom-badge-text]
+    :as m}]
+  (when (map? m)
+   (let [t (if lamda? :lamda t)
+         b (or custom-badge-text
+               (cond
+                 (contains? all-tags :record)
+                 (name t)
 
-                js-built-in-object?
-                (str "js/" js-built-in-object-name)
+                 js-built-in-object?
+                 (str "js/" js-built-in-object-name)
 
-                (and (not= t :js/Object)
-                     (or (contains? all-tags :js/map-like-object)
-                         (contains? all-tags :js/TypedArray)))
-                (or (t badges-by-lasertag)
-                    (subs (str t) 1))
+                 (and (not= t :js/Object)
+                      (or (contains? all-tags :js/map-like-object)
+                          (contains? all-tags :js/TypedArray)))
+                 (or (t badges-by-lasertag)
+                     (subs (str t) 1))
 
-                :else
-                (t badges-by-lasertag)))
-        b #?(:cljs b
-             :clj (if (= t :defmulti) "Multimethod" b))]
+                 :else
+                 (get badges-by-lasertag t nil)))
+         b #?(:cljs b
+              :clj (if (= t :defmulti) "Multimethod" b))]
 
     ;; If you want to signal React -> (str "⚛ " b)
-
-    (when b {:badge b})))
+     
+     (when b {:badge b}))))
                          
 
 (defn- highlighting*
@@ -116,6 +118,13 @@
 
 
 (defn maybe-ellipsize
+  "Attaches badge and ellipsis, when appropriate.
+
+   Wraps atoms and volatiles.
+
+   Adds :strlen-with-badge entry to meta, to be used for formatting in
+   fireworks.serialize/serialized."
+   
   [{:keys [coll-type? ellipsized x t meta-map] :as m}]
   (let [ret* (cond 
                coll-type?
@@ -284,8 +293,10 @@
           (map-indexed 
            (fn [i [k v]]
              (let [k (f k {:key?             true
+                           :associated-value v
                            :js-map-like-key? (:js-map-like? meta-map)
-                           :index            i})]
+                           :index            i})
+                   v (vary-meta v assoc-in [:fw/truncated :map-value?] true)]
                [k v]))
            x))
     x))
@@ -293,7 +304,11 @@
 (defn profile
   ([x]
    (profile x nil))
-  ([x {:keys [key? js-map-like-key? index] :as mapkey}]
+  ([x {:keys [key?
+              associated-value
+              js-map-like-key?
+              index]
+       :as mapkey}]
    ;; TODO - doc when (-> x meta :ellipsized-char-count) happen?
    (if (-> x meta :ellipsized-char-count)
      x
@@ -305,12 +320,12 @@
              (ellipsize/ellipsized x meta-map*))
            
            meta-map
-           (merge 
-                  meta-map*
+           (merge meta-map*
                   ellipsized
                   (when (contains? (:all-tags meta-map*) :record)
                     {:record? true})
                   (when key? {:key? true})
+                  (when associated-value {:associated-value associated-value})
                   (when js-map-like-key? {:js-map-like-key? true})
                   (when key? {:fw/pre-profiled-mapkey true})
                   (when index {:index index}) )

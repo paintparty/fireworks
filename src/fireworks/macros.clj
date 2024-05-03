@@ -7,6 +7,17 @@
   [clojure.edn :as edn]
   [clojure.spec.alpha :as s]))
 
+(defmacro let-map
+  "Equivalent of
+   (let [a 5
+         b (+ a 5)]
+     {:a a :b b})"
+  [kvs]
+  (let [keys (keys (apply hash-map kvs))
+        keyword-symbols (mapcat #(vector (keyword (str %)) %) keys)]
+    `(let [~@kvs]
+       (hash-map ~@keyword-symbols))))
+
 (let [transforms {:keys keyword
                   :strs str
                   :syms identity}]

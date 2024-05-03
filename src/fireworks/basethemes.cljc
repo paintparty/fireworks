@@ -92,6 +92,7 @@
                              :annotation {:color      "#9f9f9f"
                                           :font-style :italic}
                              :highlight  {:background-color "#ffee00"}
+                             ;; TODO - change this to badge?
                              :label      {:color            "#808080"
                                           :background-color "#ededed"
                                           :text-shadow      "0 0 2px #ffffff"
@@ -99,6 +100,8 @@
                              :metadata   {:color            "#808080"
                                           :text-shadow      "0 0 2px #ffffff"
                                           :background-color "#e6fafa"}})
+
+   ;; TODO - I don't think these currently merge if we were to use maps
    :syntax           defs/base-syntax-tokens
    :printer          defs/base-printer-tokens})
 

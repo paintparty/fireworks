@@ -54,7 +54,7 @@
     (set? coll) "}"
     :else ")"))
 
-(defprotocol ^:private CountKeepingWriter
+(defprotocol CountKeepingWriter
   (^:private write [this s]
     "Write a string into the underlying java.io.Writer while keeping
     count of the length of the strings written into the writer.")
@@ -62,7 +62,7 @@
   (^:private remaining [this]
     "Return the number of characters available on the current line.")
 
-  (^:private nl [this]
+  (nl [this]
     "Write a newline into the underlying java.io.Writer.
 
     Resets the number of characters allotted to the current line to
@@ -82,7 +82,7 @@
   [s]
   #?(:clj (.length ^String s) :cljs (.-length s)))
 
-(defn ^:private count-keeping-writer
+(defn count-keeping-writer
   "Given a java.io.Writer and an options map, wrap the java.io.Writer
   such that it becomes a CountKeepingWriter: a writer that keeps count
   of the length of the strings written into each line.
@@ -320,11 +320,11 @@
     (write writer " ")))
 
 #?(:cljs
-   (declare ^:private -pprint)
+   (declare -pprint)
 
    :clj
    (defprotocol ^:private PrettyPrintable
-     (^:private -pprint [this writer opts]
+     (-pprint [this writer opts]
       "Given a form, a CountKeepingWriter, and an options map,
       pretty-print the form into the writer.
 
@@ -636,7 +636,8 @@
               (with-out-str (fireworks.pp/pprint ~x))))
         ~x)))
   ([label x]
-   (let [ns-str (ns-str (meta &form))]
+   (let [label (or (:label label) label)
+         ns-str (ns-str (meta &form))]
      `(do
         (println
          (str ~ns-str
