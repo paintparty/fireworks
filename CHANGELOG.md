@@ -9,6 +9,23 @@ For a list of breaking changes, check [here](#breaking-changes)
 ## Unreleased
 - 
 
+## 0.3.0
+2024-05-03
+
+### Added
+- Multiple variants of print-and-return macros - see readme for more info.
+
+### Changed
+- Evaled forms are now printed in monotone (themeable) color, and always truncated
+- File info is now printed as:
+  - evaled form or user-supplied label (Optional)
+  - namespace-info
+  - linebreak
+  - result.
+- `fireworks.core/?>` is now a "`tap>` and return" macro. It just taps the value and returns the result (no printing).
+- When using `?`, `?-`, or `?--` in ClojureScript, and the resulting value is a native js data structure, the result is printed with `js/console.log`.
+
+
 ## 0.2.0
 2024-03-02
 
