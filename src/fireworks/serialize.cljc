@@ -728,10 +728,10 @@
 
 
 (defn serialized
-  [v]
+  [v indent]
   (let [ret (str #_(tag/tag-entity! " " :result-gutter-start)
                  (tagged-val {:v         v
-                              :indent    (if (state/formatting-meta?)
+                              :indent    indent #_(if (state/formatting-meta?)
                                            (state/formatting-meta-indent)
                                            0)
                               :val-props (meta v)}))]
@@ -740,7 +740,9 @@
 (defn formatted*
   ([source]
    (formatted* source nil))
-  ([source opts]
+  ([source {:keys [indent]
+            :or   {indent 0}
+            :as   opts}]
    (let [truncated      (truncate/truncate {:depth 0} source)
          custom-printed truncated
          ;; Come back to this custom printing jazz later
@@ -751,7 +753,7 @@
          ;;                       (reset! state/top-level-value-is-sev? true))
          ;;                     ret))
          profiled       (walk/prewalk profile/profile custom-printed)
-         serialized     (serialized profiled)
+         serialized     (serialized profiled indent)
          len            (-> profiled meta :str-len-with-badge)
          ]
      serialized)))
