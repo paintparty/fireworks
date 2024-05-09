@@ -6,7 +6,7 @@
    [fireworks.state :as state]
    [fireworks.profile :as profile]
    [fireworks.ellipsize :as ellipsize]
-   [fireworks.serialize :refer [seq->sorted-map]]
+   [fireworks.order :refer [seq->sorted-map]]
    [fireworks.util :as util]
    [lasertag.core :as lasertag]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])

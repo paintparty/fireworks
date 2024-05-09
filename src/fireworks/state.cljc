@@ -483,3 +483,11 @@
       (vector? x)
       (mapv highlight-style* x))
     (messaging/invalid-find-value-option x)))   
+
+
+(defn formatting-meta? []
+  false)
+
+
+(defn formatting-meta-indent []
+  10)

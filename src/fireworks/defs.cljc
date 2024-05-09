@@ -5,18 +5,19 @@
 ;; Style props also need to be registered in valid-stylemap-keys
 
 (def base-classes
-  {:foreground    nil ;; -> foreground
-   :background nil 
-   :bracket    :foreground
-   :string     :foreground
-   :comment    :foreground
-   :constant   :foreground ;; numbers, symbols, keywords, boolean values
-   :definition :foreground ;; global definitions
-   :annotation :foreground ;; ns/file info, user-label, num-dropped 
-   :metadata   :foreground
-   :highlight  :foreground ;; default bg-color, inherited by [:printer :find]
-   :label      :foreground ;; literal labels, type labels, atom wrappers, etc.
-
+  {:foreground   nil ;; -> foreground
+   :background   nil 
+   :bracket      :foreground
+   :string       :foreground
+   :comment      :foreground
+   :constant     :foreground ;; numbers, symbols, keywords, boolean values
+   :definition   :foreground ;; global definitions
+   :annotation   :foreground ;; ns/file info, user-label, num-dropped 
+   :metadata     :foreground
+   :metadata-key :foreground
+   :highlight    :foreground ;; default bg-color, inherited by [:printer :find]
+   :label        :foreground ;; literal labels, type labels, atom wrappers, etc.
+   
   ;; Experimental, not working yet
   ;;  :modifier   :foreground ;; earmuffs, deref, unused-arg, whitespace
    })
@@ -74,6 +75,7 @@
    :lamda-label           :label
    :atom-wrapper          :label
    :metadata              :metadata
+   :metadata-key          :metadata-key
    :annotation            :annotation
    :ellipsis              :annotation
    :coll-trunction        :annotation

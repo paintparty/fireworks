@@ -1,5 +1,6 @@
 (ns ^:dev/always fireworks.tag
   (:require
+   [fireworks.pp :refer [?pp]]
    [clojure.string :as string]
    [fireworks.defs :as defs]
    [fireworks.state :as state]
@@ -41,9 +42,26 @@
   ([t bgc]
    (tag! t bgc nil))
   ([t bgc custom-badge-style]
-   (let [s (style-from-theme (if (= t :type-label-inline) :type-label t)
+   (let [formatting-metadata? (and 
+                               (state/formatting-meta?)
+                               (not (contains? #{:eval-form
+                                                 :file-info
+                                                 :result-header
+                                                 :metadata-key}
+                                               t)))
+         s (style-from-theme (cond
+                               formatting-metadata?
+                               :metadata
+
+                               (= t :type-label-inline)
+                               :type-label
+
+                               :else
+                               t)
                              bgc
-                             custom-badge-style)]
+                             custom-badge-style)
+        ;;  _ (when (= t :metadata-key) (?pp s))
+         ]
      #?(:cljs (let [s (cond
                         (= t :type-label)
                         (str s)

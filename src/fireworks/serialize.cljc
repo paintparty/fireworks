@@ -1,14 +1,15 @@
 (ns ^:dev/always fireworks.serialize 
   (:require
+   [clojure.walk :as walk]
+   [fireworks.profile :as profile]
+   [fireworks.truncate :as truncate]
    [fireworks.pp :refer [?pp]]
    [fireworks.brackets :refer [closing-bracket! 
                                opening-bracket!
                                closing-angle-bracket!
                                brackets-by-type]]
-   [fireworks.order :as order]
    [clojure.string :as string]
    [fireworks.defs :as defs]
-   [fireworks.sev :refer [sev!]]
    [fireworks.state :as state]
    [fireworks.tag :as tag :refer [tag! tag-reset! tagged]]
    [fireworks.util :refer [spaces badge-type]]
@@ -21,25 +22,238 @@
 
 (declare reduce-coll)                                                                             
 
+;;; For dealing with self-evaluating values
 
-(defn seq->array-map
-  [coll]
-  (apply array-map (sequence cat coll)))
+(defn collection-type? [k]
+  (contains? #{:set
+               :map
+               :js/Array 
+               :js/Object
+               :interop
+               :record
+               :vector
+               :list
+               :seq}
+             k))
 
 
-(defn seq->sorted-set
-  [coll]
-  (apply (partial sorted-set-by order/rank) coll))
+(defn add-truncation-annotation! 
+  [{:keys [num-chars-dropped t truncate-fn-name?]}]
+  (when (or truncate-fn-name?
+            (some-> num-chars-dropped pos?))
+    (if (collection-type? t)
+      (str (tag! :ellipsis) "+" num-chars-dropped (tag-reset!))
+      (str (tag! :ellipsis) defs/ellipsis (tag-reset!)))))
 
 
-(defn seq->sorted-map
-  [coll]
-  (if (< 8 (count coll))
-    (seq->array-map (sort order/rank coll))
-    (if (map? coll)
-      coll
-      (into {} coll))))
+(defn sev!
+  "Creates a string with the properly placed \"%c\" (or sgr) formatting tags.
+   The tag! and tag-reset! fns mutate the styles atom for syntax coloring."
+  [{:keys [x
+           s
+           str-len-with-badge
+           fn-display-name
+           t
+           num-chars-dropped
+           ellipsized-char-count
+           highlighting
+           fn-args
+           badge
+           number-type?
+           atom?
+           js-map-like-key?
+           key?
+           all-tags
+           :fw/user-meta
+           indent
+           :fw/custom-badge-style
+           sev?]
+    :as m}]
+  ;; (?pp m)
+  (let [encapsulated?
+        (or (= t :uuid) (contains? all-tags :inst))
 
+        metadata-position
+        (when user-meta (:metadata-position @state/config))
+
+        ;; State mutation start  ---------------------------------------------
+        
+        ;; The next set of bindings mutate state/styles.
+        ;; They must happen in the following order:
+        
+        ;; user-meta-block (displays user-meta above value), optional
+        ;; atom-opening,  optional
+        ;; annotation (badge), optional
+        ;; value tag
+        ;; num-chars-dropped-syntax
+        ;; value tag-reset 
+        ;; fn-args-tag, optional
+        ;; fn-args-tag reset, optional
+        ;; atom-closing, optional
+        ;; user-meta-block (displays user-meta inline, after value), optional
+        
+        user-meta-block-tagged
+        (when (and (:display-metadata? @state/config)
+                   (seq user-meta)
+                   (contains? #{:block "block"} metadata-position))
+          (tag/stringified-user-meta
+           (keyed [user-meta
+                   indent
+                   str-len-with-badge
+                   metadata-position
+                   sev?])))
+
+        atom-tagged
+        (tagged (str defs/atom-label
+                     defs/encapsulation-opening-bracket) 
+                {:theme-token  :atom-wrapper
+                 :display?     atom?
+                 :highlighting highlighting})
+
+        badge-tagged
+        (tagged badge
+                {:custom-badge-style custom-badge-style 
+                 :theme-token        (if (= badge defs/lamda-symbol) 
+                                       :lamda-label 
+                                       :literal-label)})
+
+        theme-tag
+        (cond
+          number-type?
+          :number
+          js-map-like-key?
+          :js-object-key
+          encapsulated?
+          :string
+          :else
+          t)
+
+        formatting-meta? (and (state/formatting-meta?)
+                              (not (contains? #{:eval-form
+                                                :file-info
+                                                :result-header}
+                                              t)))
+        theme-tag
+        (if formatting-meta?
+          (if key? :metadata-key :metadata)
+          theme-tag)
+
+        ;; _ (when key? (?pp x theme-tag))
+
+        main-entity-tag                  
+        (tag! theme-tag highlighting)
+
+        ;; Additional tagging (and atom mutation) happens within
+        ;; fireworks.serialize/add-truncation-annotation!
+        chars-dropped-syntax 
+        (add-truncation-annotation! m)
+
+        main-entity-tag-reset            
+        (tag-reset! (if formatting-meta? :metadata :foreground))
+
+        fn-args-tagged
+        (tagged fn-args {:theme-token :function-args})
+
+        atom-closing-bracket-tagged
+        (tagged defs/encapsulation-closing-bracket
+                {:theme-token  :atom-wrapper 
+                 :display?     atom?
+                 :highlighting highlighting})
+
+        user-meta-inline-tagged
+        (when (and (:display-metadata? @state/config)
+                   (seq user-meta)
+                   (contains? #{:inline "inline"} metadata-position))
+          (tag/stringified-user-meta
+           (keyed [user-meta indent str-len-with-badge metadata-position])))
+
+        ;; Atom mutation end  ------------------------------------------------
+        
+        
+        
+
+        ;; Putting all the colorization tagged bits together
+        escaped              
+        (str 
+         ;; Optional, conditional metadata of coll element
+         ;; positioned block-level, above element
+         ;; :metadata-postition must be set to :block (in user config)
+         user-meta-block-tagged
+         
+         ;; Conditional `Atom`, positioned inline, to left of value 
+         atom-tagged
+
+         ;; Conditional `badge` (for `#uuid`, or `#inst`),
+         ;; positioned inline, to left of value 
+         badge-tagged
+
+         ;; The self-evaluating value
+         main-entity-tag
+         (or s fn-display-name)
+         chars-dropped-syntax
+         main-entity-tag-reset
+
+         ;; Conditional fn-args, positioned inline, to right of value 
+         fn-args-tagged         
+
+         ;; Conditional `Atom`, closing parts,
+         ;; positioned inline, to right of value 
+         atom-closing-bracket-tagged
+
+         ;; Optional, conditional metadata of coll element
+         ;; positioned inline, to right of element
+         ;; Default position.
+         ;; Will not display if :metadata-postition is set
+         ;; explicitly to :block (in user config).
+         user-meta-inline-tagged
+         )
+
+        ret                  
+        (keyed [x
+                s
+                fn-display-name
+                t
+                num-chars-dropped 
+                ellipsized-char-count
+                escaped])
+        locals (merge ret
+                      (keyed [main-entity-tag
+                              chars-dropped-syntax
+                              main-entity-tag-reset]))]
+
+    ;; (when-not @state/formatting-form-to-be-evaled?
+    ;;   (when (= s "bar")
+    ;;     #> m
+    ;;     #> locals))
+    ;; (!? locals)
+
+    ret))
+
+
+;;                               ooo OOO OOO ooo
+;;                           oOO                 OOo
+;;                       oOO                         OOo
+;;                    oOO                               OOo
+;;                  oOO                                   OOo
+;;                oOO                                       OOo
+;;               oOO                                         OOo
+;;              oOO                                           OOo
+;;             oOO                                             OOo
+;;             oOO                                             OOo
+;;             oOO                                             OOo
+;;             oOO                                             OOo
+;;             oOO                                             OOo
+;;              oOO                                           OOo
+;;               oOO                                         OOo
+;;                oOO                                       OOo
+;;                  oOO                                   OOo
+;;                    oO                                OOo
+;;                       oOO                         OOo
+;;                           oOO                 OOo
+;;                               ooo OOO OOO ooo
+
+
+;;;; For dealing with collections
 
 (defn- num-dropped-annotation!
   [{:keys [max-keylen
@@ -517,6 +731,27 @@
   [v]
   (let [ret (str #_(tag/tag-entity! " " :result-gutter-start)
                  (tagged-val {:v         v
-                              :indent    0
+                              :indent    (if (state/formatting-meta?)
+                                           (state/formatting-meta-indent)
+                                           0)
                               :val-props (meta v)}))]
     ret))
+
+(defn formatted*
+  ([source]
+   (formatted* source nil))
+  ([source opts]
+   (let [truncated      (truncate/truncate {:depth 0} source)
+         custom-printed truncated
+         ;; Come back to this custom printing jazz later
+         ;;  custom-printed (if (:evaled-form? opts)
+         ;;                   truncated
+         ;;                   (let [ret (walk/postwalk printers/custom truncated)]
+         ;;                     (when (some-> ret meta :fw/truncated :sev?)
+         ;;                       (reset! state/top-level-value-is-sev? true))
+         ;;                     ret))
+         profiled       (walk/prewalk profile/profile custom-printed)
+         serialized     (serialized profiled)
+         len            (-> profiled meta :str-len-with-badge)
+         ]
+     serialized)))

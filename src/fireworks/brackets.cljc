@@ -76,11 +76,17 @@
 
 (defn- tag-bracket!
   "Adds the appropriate style to the state/styles vector.
-   Currently rainbow parens by default.
-   Currently, function args vector not included in rainbow parens."
+   Rainbow parens by default.
+   Function args vector not included in rainbow parens."
   [{:keys [t mm]}]
-  (let [style (if (= t :fn-args)
+  (let [style (cond
+                (state/formatting-meta?)
+                (-> @state/merged-theme :metadata)
+
+                (= t :fn-args)
                 (-> @state/merged-theme t)
+
+                :else
                 (if (:enable-rainbow-brackets? @state/config)
                   (rainbow-bracket-mixin mm)
                   (style-from-theme :bracket nil)))]
@@ -91,15 +97,16 @@
 
 (defn- bracket!*
   [{:keys [s t] :as m}]
-  #?(:cljs (if t (do (tag-bracket! m)
-                     (tag-reset!)
-                     (str "%c" s "%c"))
-               (do (tag-reset!)
-                   (tag-reset!)
-                   (str "%c" s "%c")))
-     :clj (if t 
-            (str (tag-bracket! m) s (tag-reset!))
-            (str (tag-reset!) s (tag-reset!)))))
+  (let [reset-theme-token (if (state/formatting-meta?) :metadata :foreground)]
+    #?(:cljs (if t (do (tag-bracket! m)
+                       (tag-reset! reset-theme-token)
+                       (str "%c" s "%c"))
+                 (do (tag-reset! reset-theme-token)
+                     (tag-reset! reset-theme-token)
+                     (str "%c" s "%c")))
+       :clj (if t 
+              (str (tag-bracket! m) s (tag-reset!))
+              (str (tag-reset!) s (tag-reset!))))))
 
 (defn- bracket!
   [m kw]

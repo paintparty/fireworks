@@ -1,17 +1,17 @@
 (ns fireworks.core
   (:require
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
-   [clojure.walk :as walk]
+  ;;  [clojure.walk :as walk]
    [clojure.set :as set]
    [clojure.data :as data]
-   [fireworks.defs :as defs]
+  ;;  [fireworks.defs :as defs]
    [fireworks.messaging :as messaging]
-   [fireworks.profile :as profile]
-   [fireworks.printers :as printers]
+  ;;  [fireworks.profile :as profile]
+  ;;  [fireworks.printers :as printers]
    [fireworks.serialize :as serialize]
    [fireworks.state :as state]
    [fireworks.tag :as tag]
-   [fireworks.truncate :as truncate]
+  ;;  [fireworks.truncate :as truncate]
    #?(:cljs [fireworks.macros
              :refer-macros
              [keyed
@@ -34,27 +34,7 @@
 (def core-defs-clj-classes 
   (set '(defrecord deftype)))
 
-(defn formatted*
-  ([source]
-   (formatted* source nil))
-  ([source opts]
-   (let [truncated      (truncate/truncate {:depth 0} source)
 
-         custom-printed truncated
-
-         ;; Come back to this custom printing jazz later
-         ;;  custom-printed (if (:evaled-form? opts)
-         ;;                   truncated
-         ;;                   (let [ret (walk/postwalk printers/custom truncated)]
-         ;;                     (when (some-> ret meta :fw/truncated :sev?)
-         ;;                       (reset! state/top-level-value-is-sev? true))
-         ;;                     ret))
-
-         profiled       (walk/prewalk profile/profile custom-printed)
-
-         serialized     (serialize/serialized profiled)
-         len            (-> profiled meta :str-len-with-badge)]
-     [serialized len])))
 
 
 
@@ -123,7 +103,7 @@
         result-header (when-not (or (= template [:result])
                                     log?)
                         (tag/tag-entity! " \n" :result-header))
-        [fmt _]       (when-not log? (formatted* source))
+        fmt           (when-not log? (serialize/formatted* source))
         fmt+          (str (or label form)
                            file-info
                            result-header
