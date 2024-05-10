@@ -484,10 +484,7 @@
       (mapv highlight-style* x))
     (messaging/invalid-find-value-option x)))   
 
+(def *formatting-meta? (atom false))
 
 (defn formatting-meta? []
-  false)
-
-
-(defn formatting-meta-indent []
-  10)
+  @*formatting-meta?)

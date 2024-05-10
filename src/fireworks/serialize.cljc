@@ -22,6 +22,8 @@
 
 (declare reduce-coll)                                                                             
 
+(declare formatted*)                                                                             
+
 ;;; For dealing with self-evaluating values
 
 (defn collection-type? [k]
@@ -36,14 +38,14 @@
                :seq}
              k))
 
-
 (defn add-truncation-annotation! 
   [{:keys [num-chars-dropped t truncate-fn-name?]}]
   (when (or truncate-fn-name?
             (some-> num-chars-dropped pos?))
-    (if (collection-type? t)
-      (str (tag! :ellipsis) "+" num-chars-dropped (tag-reset!))
-      (str (tag! :ellipsis) defs/ellipsis (tag-reset!)))))
+    (let [theme-tag (if (state/formatting-meta?) :metadata :ellipsis)]
+      (if (collection-type? t)
+        (str (tag! theme-tag) "+" num-chars-dropped (tag-reset!))
+        (str (tag! theme-tag) defs/ellipsis (tag-reset!))))))
 
 
 (defn sev!
@@ -96,7 +98,10 @@
         (when (and (:display-metadata? @state/config)
                    (seq user-meta)
                    (contains? #{:block "block"} metadata-position))
-          (tag/stringified-user-meta
+          (reset! state/*formatting-meta? true)
+          (formatted* user-meta)
+          (reset! state/*formatting-meta? false)
+          #_(tag/stringified-user-meta
            (keyed [user-meta
                    indent
                    str-len-with-badge
@@ -113,8 +118,12 @@
         badge-tagged
         (tagged badge
                 {:custom-badge-style custom-badge-style 
-                 :theme-token        (if (= badge defs/lamda-symbol) 
+                 :theme-token        (cond
+                                       (state/formatting-meta?)
+                                       :metadata
+                                       (= badge defs/lamda-symbol) 
                                        :lamda-label 
+                                       :else
                                        :literal-label)})
 
         theme-tag
@@ -128,17 +137,10 @@
           :else
           t)
 
-        formatting-meta? (and (state/formatting-meta?)
-                              (not (contains? #{:eval-form
-                                                :file-info
-                                                :result-header}
-                                              t)))
         theme-tag
-        (if formatting-meta?
+        (if (state/formatting-meta?)
           (if key? :metadata-key :metadata)
           theme-tag)
-
-        ;; _ (when key? (?pp x theme-tag))
 
         main-entity-tag                  
         (tag! theme-tag highlighting)
@@ -149,7 +151,7 @@
         (add-truncation-annotation! m)
 
         main-entity-tag-reset            
-        (tag-reset! (if formatting-meta? :metadata :foreground))
+        (tag-reset! (if (state/formatting-meta?) :metadata :foreground))
 
         fn-args-tagged
         (tagged fn-args {:theme-token :function-args})
@@ -164,7 +166,18 @@
         (when (and (:display-metadata? @state/config)
                    (seq user-meta)
                    (contains? #{:inline "inline"} metadata-position))
-          (tag/stringified-user-meta
+          (reset! state/*formatting-meta? true)
+          (let [offset        defs/metadata-position-inline-offset
+                inline-offset (tagged (spaces (dec offset))
+                                      {:theme-token :metadata})
+                ret           (formatted* user-meta
+                                          {:indent (+ indent
+                                                      offset
+                                                      (or str-len-with-badge
+                                                          0))})]
+            (reset! state/*formatting-meta? false)
+            (str " " inline-offset ret))
+          #_(tag/stringified-user-meta
            (keyed [user-meta indent str-len-with-badge metadata-position])))
 
         ;; Atom mutation end  ------------------------------------------------
@@ -396,13 +409,14 @@
                           user-meta-above?) 
               (some->> badge 
                        count
-                            ;; dec
+                       ;; dec
                        (+ (or indent 0))))
             indent)
 
-        ;; Add support for volatile! encapsultion
+        ;; Add support for volatile! encapsulation
         indent (if (and atom? (not badge-above?))
-                 (+ (or (count (str defs/atom-label defs/encapsulation-opening-bracket))
+                 (+ (or (count (str defs/atom-label
+                                    defs/encapsulation-opening-bracket))
                         0)
                     indent)
                  indent)
@@ -421,7 +435,9 @@
 
         separator    
         (if multi-line?
-          (str maybe-comma "\n" (spaces indent))
+          (str maybe-comma
+               "\n"
+               (spaces indent))
           (str maybe-comma " "))
 
         ret          
@@ -537,7 +553,7 @@
              (tag-reset!))))
         
         ob (str ob*
-                (some-> user-meta-inline (str  separator)))]
+                (some-> user-meta-inline (str separator)))]
     (assoc m :ob ob :record? record?)))
 
 
@@ -643,7 +659,9 @@
              (spaces defs/kv-gap)
              tagged-val
              (when-not (= coll-count (inc idx))
-               separator
+               (tagged separator
+                       (when multi-line?
+                         {:theme-token :foreground}))
                #_(color-result-gutter-space-char separator)))]
     ret))
 
@@ -743,6 +761,7 @@
   ([source {:keys [indent]
             :or   {indent 0}
             :as   opts}]
+  ;;  (?pp opts)
    (let [truncated      (truncate/truncate {:depth 0} source)
          custom-printed truncated
          ;; Come back to this custom printing jazz later

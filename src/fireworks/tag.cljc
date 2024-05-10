@@ -42,16 +42,9 @@
   ([t bgc]
    (tag! t bgc nil))
   ([t bgc custom-badge-style]
-   (let [formatting-metadata? (and 
-                               (state/formatting-meta?)
-                               (not (contains? #{:eval-form
-                                                 :file-info
-                                                 :result-header
-                                                 :metadata-key}
-                                               t)))
-         s (style-from-theme (cond
-                               formatting-metadata?
-                               :metadata
+   (let [s (style-from-theme (cond
+                               (contains? #{:metadata :metadata-key} t)
+                               (?pp t)
 
                                (= t :type-label-inline)
                                :type-label
