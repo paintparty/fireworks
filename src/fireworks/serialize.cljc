@@ -47,6 +47,14 @@
         (str (tag! theme-tag) "+" num-chars-dropped (tag-reset!))
         (str (tag! theme-tag) defs/ellipsis (tag-reset!))))))
 
+(defn sev-user-meta-position-match? [user-meta position]
+  (and (:display-metadata? @state/config)
+       (seq user-meta)
+       (contains? (if (= position :block)
+                    #{:block "block"}
+                    #{:inline "inline"})
+                  (:metadata-position @state/config))))
+
 
 (defn sev!
   "Creates a string with the properly placed \"%c\" (or sgr) formatting tags.
@@ -74,13 +82,8 @@
            separator
            ]
     :as m}]
-  (when (= x 'foo)
-    (?pp :foo (keys m)))
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
-
-        metadata-position
-        (when user-meta (:metadata-position @state/config))
 
         ;; State mutation start  ---------------------------------------------
         
@@ -99,11 +102,9 @@
         ;; user-meta-block (displays user-meta inline, after value), optional
         
         user-meta-block-tagged
-        (when (and (:display-metadata? @state/config)
-                   (seq user-meta)
-                   (contains? #{:block "block"} metadata-position))
+        (when (sev-user-meta-position-match? user-meta :block)
           (reset! state/*formatting-meta? true)
-          (let [ret (formatted* user-meta)]
+          (let [ret (formatted* user-meta {:indent indent})]
             (reset! state/*formatting-meta? false)
             ret))
         
@@ -166,9 +167,7 @@
                  :highlighting highlighting})
 
         user-meta-inline-tagged
-        (when (and (:display-metadata? @state/config)
-                   (seq user-meta)
-                   (contains? #{:inline "inline"} metadata-position))
+        (when (sev-user-meta-position-match? user-meta :inline)
           (reset! state/*formatting-meta? true)
           (let [offset        defs/metadata-position-inline-offset
                 inline-offset (tagged (spaces (dec offset))
@@ -179,9 +178,7 @@
                                                       (or str-len-with-badge
                                                           0))})]
             (reset! state/*formatting-meta? false)
-            (str " " inline-offset ret))
-          #_(tag/stringified-user-meta
-           (keyed [user-meta indent str-len-with-badge metadata-position])))
+            (str " " inline-offset ret)))
 
         ;; Atom mutation end  ------------------------------------------------
         
@@ -461,8 +458,8 @@
    metadata-position
    {:keys [badge user-meta] :as m}]
   (when (and (:display-metadata? @state/config)
-             (?pp user-meta)
-             (?pp (contains? #{:block "block"} metadata-position)))
+             user-meta
+             (contains? #{:block "block"} metadata-position))
     (reset! state/*formatting-meta? true)
     (let [ret (formatted* user-meta)]
       (reset! state/*formatting-meta? false)
@@ -592,15 +589,13 @@
                 separator
                 indent
                 multi-line?
-                ob]
-         :as b}     
+                ob]}
         (profile+ob coll indent*)
 
         ret                 
         (string/join
          (map-indexed
           (fn [idx v]
-            (when (= v 'foo) (?pp separator))
             (let [val-props   (meta v)
                   tagged-val  (tagged-val (keyed [v
                                                   val-props
@@ -676,9 +671,8 @@
              tagged-val
              (when-not (= coll-count (inc idx))
                (tagged separator
-                       (when multi-line?
-                         {:theme-token :foreground}))
-               #_(color-result-gutter-space-char separator)))]
+                       (when-not multi-line?
+                         {:theme-token :metadata}))))]
     ret))
 
 
