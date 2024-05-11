@@ -69,9 +69,13 @@
            :fw/user-meta
            indent
            :fw/custom-badge-style
-           sev?]
+           sev?
+           multi-line?
+           separator
+           ]
     :as m}]
-  ;; (?pp m)
+  (when (= x 'foo)
+    (?pp :foo (keys m)))
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
 
@@ -99,14 +103,13 @@
                    (seq user-meta)
                    (contains? #{:block "block"} metadata-position))
           (reset! state/*formatting-meta? true)
-          (formatted* user-meta)
-          (reset! state/*formatting-meta? false)
-          #_(tag/stringified-user-meta
-           (keyed [user-meta
-                   indent
-                   str-len-with-badge
-                   metadata-position
-                   sev?])))
+          (let [ret (formatted* user-meta)]
+            (reset! state/*formatting-meta? false)
+            ret))
+        
+        user-meta-block-tagged-separator
+        (when (and user-meta-block-tagged multi-line?)
+          (tagged separator))
 
         atom-tagged
         (tagged (str defs/atom-label
@@ -192,6 +195,9 @@
          ;; positioned block-level, above element
          ;; :metadata-postition must be set to :block (in user config)
          user-meta-block-tagged
+
+         ;; Only when user-meta-block-tagged is present
+         user-meta-block-tagged-separator
          
          ;; Conditional `Atom`, positioned inline, to left of value 
          atom-tagged
@@ -453,14 +459,15 @@
 (defn- user-meta-block
   [indent*
    metadata-position
-   {:keys [badge user-meta]}]
+   {:keys [badge user-meta] :as m}]
   (when (and (:display-metadata? @state/config)
-             user-meta
-             (contains? #{:block "block"} metadata-position))
+             (?pp user-meta)
+             (?pp (contains? #{:block "block"} metadata-position)))
     (reset! state/*formatting-meta? true)
-    (formatted* user-meta)
-    (reset! state/*formatting-meta? false)
-
+    (let [ret (formatted* user-meta)]
+      (reset! state/*formatting-meta? false)
+      ret)
+    
     #_(as-> user-meta $
         (str
          (when badge " ")
@@ -593,8 +600,13 @@
         (string/join
          (map-indexed
           (fn [idx v]
+            (when (= v 'foo) (?pp separator))
             (let [val-props   (meta v)
-                  tagged-val  (tagged-val (keyed [v val-props indent]))
+                  tagged-val  (tagged-val (keyed [v
+                                                  val-props
+                                                  indent
+                                                  multi-line?
+                                                  separator]))
                   map-value?  (and single-column-map-layout?
                                    (odd? idx))
                   maybe-comma (when (or js-typed-array?
@@ -721,7 +733,7 @@
 
 
 (defn- tagged-val
-  [{:keys [v val-props t indent]}]
+  [{:keys [v val-props t indent multi-line? separator]}]
   (let [t                          
         (or t (:t val-props))
 
@@ -746,7 +758,10 @@
       (reduce-coll v indent)
 
       :else
-      (:escaped (sev! (assoc val-props :indent indent))))))
+      (:escaped (sev! (merge val-props
+                             (keyed [indent
+                                     multi-line?
+                                     separator])))))))
 
 
 (defn serialized
