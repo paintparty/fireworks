@@ -42,7 +42,7 @@
   [{:keys [num-chars-dropped t truncate-fn-name?]}]
   (when (or truncate-fn-name?
             (some-> num-chars-dropped pos?))
-    (let [theme-tag (if (state/formatting-meta?) :metadata :ellipsis)]
+    (let [theme-tag (if (pos? (state/formatting-meta-level)) :metadata :ellipsis)]
       (if (collection-type? t)
         (str (tag! theme-tag) "+" num-chars-dropped (tag-reset!))
         (str (tag! theme-tag) defs/ellipsis (tag-reset!))))))
@@ -103,9 +103,9 @@
         
         user-meta-block-tagged
         (when (sev-user-meta-position-match? user-meta :block)
-          (reset! state/*formatting-meta? true)
+          (swap! state/*formatting-meta-level inc)
           (let [ret (formatted* user-meta {:indent indent})]
-            (reset! state/*formatting-meta? false)
+            (swap! state/*formatting-meta-level dec)
             ret))
         
         user-meta-block-tagged-separator
@@ -123,7 +123,7 @@
         (tagged badge
                 {:custom-badge-style custom-badge-style 
                  :theme-token        (cond
-                                       (state/formatting-meta?)
+                                       (pos? (state/formatting-meta-level))
                                        :metadata
                                        (= badge defs/lamda-symbol) 
                                        :lamda-label 
@@ -142,7 +142,7 @@
           t)
 
         theme-tag
-        (if (state/formatting-meta?)
+        (if (pos? (state/formatting-meta-level))
           (if key? :metadata-key :metadata)
           theme-tag)
 
@@ -155,7 +155,7 @@
         (add-truncation-annotation! m)
 
         main-entity-tag-reset            
-        (tag-reset! (if (state/formatting-meta?) :metadata :foreground))
+        (tag-reset! (if (pos? (state/formatting-meta-level)) :metadata :foreground))
 
         fn-args-tagged
         (tagged fn-args {:theme-token :function-args})
@@ -168,7 +168,7 @@
 
         user-meta-inline-tagged
         (when (sev-user-meta-position-match? user-meta :inline)
-          (reset! state/*formatting-meta? true)
+          (swap! state/*formatting-meta-level inc)
           (let [offset        defs/metadata-position-inline-offset
                 inline-offset (tagged (spaces (dec offset))
                                       {:theme-token :metadata})
@@ -177,7 +177,7 @@
                                                       offset
                                                       (or str-len-with-badge
                                                           0))})]
-            (reset! state/*formatting-meta? false)
+            (swap! state/*formatting-meta-level dec)
             (str " " inline-offset ret)))
 
         ;; Atom mutation end  ------------------------------------------------
@@ -460,9 +460,9 @@
   (when (and (:display-metadata? @state/config)
              user-meta
              (contains? #{:block "block"} metadata-position))
-    (reset! state/*formatting-meta? true)
+    (swap! state/*formatting-meta-level inc)
     (let [ret (formatted* user-meta)]
-      (reset! state/*formatting-meta? false)
+      (swap! state/*formatting-meta-level dec)
       ret)
     
     #_(as-> user-meta $
@@ -491,7 +491,7 @@
   (when (and (:display-metadata? @state/config)
                    (seq user-meta)
                    (contains? #{:inline "inline"} metadata-position))
-    (reset! state/*formatting-meta? true)
+    (swap! state/*formatting-meta-level inc)
     (let [offset        defs/metadata-position-inline-offset
           inline-offset (tagged (spaces (dec offset))
                                 {:theme-token :metadata})
@@ -508,7 +508,7 @@
                                   indent+ob
                                   (+ (or (count ob) 0) indent*)]
                             (+ indent+ob offset))})]
-      (reset! state/*formatting-meta? false)
+      (swap! state/*formatting-meta-level dec)
       (str " " inline-offset ret))))
 
 (defn- profile+ob
@@ -762,7 +762,7 @@
   [v indent]
   (let [ret (str #_(tag/tag-entity! " " :result-gutter-start)
                  (tagged-val {:v         v
-                              :indent    indent #_(if (state/formatting-meta?)
+                              :indent    indent #_(if (pos? (state/formatting-meta-level))
                                            (state/formatting-meta-indent)
                                            0)
                               :val-props (meta v)}))]

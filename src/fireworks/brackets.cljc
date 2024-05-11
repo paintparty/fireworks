@@ -80,7 +80,7 @@
    Function args vector not included in rainbow parens."
   [{:keys [t mm]}]
   (let [style (cond
-                (state/formatting-meta?)
+                (pos? (state/formatting-meta-level))
                 (-> @state/merged-theme :metadata)
 
                 (= t :fn-args)
@@ -97,7 +97,7 @@
 
 (defn- bracket!*
   [{:keys [s t] :as m}]
-  (let [reset-theme-token (if (state/formatting-meta?) :metadata :foreground)]
+  (let [reset-theme-token (if (pos? (state/formatting-meta-level)) :metadata :foreground)]
     #?(:cljs (if t (do (tag-bracket! m)
                        (tag-reset! reset-theme-token)
                        (str "%c" s "%c"))

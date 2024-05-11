@@ -1,12 +1,7 @@
 (ns ^:dev/always fireworks.tag
   (:require
-   [fireworks.pp :refer [?pp]]
    [clojure.string :as string]
-   [fireworks.defs :as defs]
-   [fireworks.state :as state]
-   [fireworks.util :refer [spaces]]
-   #?(:cljs [fireworks.macros :refer-macros [keyed]])
-   #?(:clj [fireworks.macros :refer [keyed]])))
+   [fireworks.state :as state]))
 
 
 
@@ -103,92 +98,3 @@
             closing-tag (tag-reset!)]
         (str opening-tag s closing-tag)))))
 
-
-;; TODO NIX this
-(defn- metamap-offset-background [l]
-  (str (tagged " " {:theme-token :foreground})
-       (tagged (subs l 1) {:theme-token :metadata})))
-
-
-;; TODO NIX this
-(defn- metamap-offset-dashes [l]
-  (str (tagged " "
-               {:theme-token :foreground})
-       (tagged (string/join (take (dec (count l)) (repeat "-")))
-               {:theme-token :metadata-offset})))
-
-;; TODO nix this
-(defn- multi-line-meta-map 
-  [{:keys [user-meta
-           inline-offset
-           indent
-           str-len-with-badge
-           block?
-           optional-caret-char] }]
-  (let [ret       (string/replace 
-                   (with-out-str 
-                     (binding [*print-level*
-                               (:metadata-print-level @state/config)]
-                       (fireworks.pp/pprint user-meta)))
-                   #"\n$" "")
-        lines     (string/split-lines ret)
-        w-indent* (interleave 
-                   (map-indexed (fn [i _]
-                                  (if (zero? i)
-                                    inline-offset
-                                    (str "\n"
-                                         (spaces indent)
-                                         (when-not block?
-                                           (spaces str-len-with-badge))
-                                         inline-offset)))
-                                lines)
-                   (if optional-caret-char
-                     (map-indexed (fn [i v]
-                                    (str (if (zero? i)
-                                           optional-caret-char
-                                           " ")
-                                         v))
-                                  lines)
-                     lines))
-        w-indent  (map-indexed (fn [i l]
-                                 (let [theme-token (cond
-                                                     (zero? i) :metadata
-                                                     (even? i) :foreground
-                                                     :else     :metadata)]
-                                   (if (zero? i) 
-                                     #_(metamap-offset-dashes l) ;; alt style
-                                     (when inline-offset (metamap-offset-background l))
-                                     (tagged l {:theme-token theme-token}))))
-                               w-indent*)]
-    (string/join w-indent)))
-
-
-;; TODO nix this
-(defn stringified-user-meta
-  [{:keys [user-meta
-           metadata-position
-           indent
-           str-len-with-badge
-           sev?]}]
-  (let [block?              (contains? #{"block" :block} metadata-position)
-        optional-caret-char (when block? "^") 
-        stringified         (str optional-caret-char user-meta)
-        multi-line?         (< (:non-coll-length-limit @state/config)
-                               (count stringified))
-        inline-offset       (when-not block?
-                              (spaces defs/metadata-position-inline-offset))
-        ret                 (if multi-line?
-                              (multi-line-meta-map
-                               (keyed [user-meta
-                                       inline-offset 
-                                       indent
-                                       str-len-with-badge
-                                       optional-caret-char
-                                       block?]))
-                              (str
-                               (when-not block?
-                                 (metamap-offset-background inline-offset))
-                               (tagged (str stringified)
-                                       {:theme-token :metadata})))]
-    (str ret
-         (when block? (str (when sev? "\n") (spaces indent))))))

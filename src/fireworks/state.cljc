@@ -484,7 +484,7 @@
       (mapv highlight-style* x))
     (messaging/invalid-find-value-option x)))   
 
-(def *formatting-meta? (atom false))
+(def *formatting-meta-level (atom 0))
 
-(defn formatting-meta? []
-  @*formatting-meta?)
+(defn formatting-meta-level []
+  @*formatting-meta-level)
