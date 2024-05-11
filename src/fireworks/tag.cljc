@@ -44,7 +44,7 @@
   ([t bgc custom-badge-style]
    (let [s (style-from-theme (cond
                                (contains? #{:metadata :metadata-key} t)
-                               (?pp t)
+                               t
 
                                (= t :type-label-inline)
                                :type-label
@@ -104,18 +104,20 @@
         (str opening-tag s closing-tag)))))
 
 
+;; TODO NIX this
 (defn- metamap-offset-background [l]
   (str (tagged " " {:theme-token :foreground})
        (tagged (subs l 1) {:theme-token :metadata})))
 
 
+;; TODO NIX this
 (defn- metamap-offset-dashes [l]
   (str (tagged " "
                {:theme-token :foreground})
        (tagged (string/join (take (dec (count l)) (repeat "-")))
                {:theme-token :metadata-offset})))
 
-
+;; TODO nix this
 (defn- multi-line-meta-map 
   [{:keys [user-meta
            inline-offset
@@ -161,6 +163,7 @@
     (string/join w-indent)))
 
 
+;; TODO nix this
 (defn stringified-user-meta
   [{:keys [user-meta
            metadata-position

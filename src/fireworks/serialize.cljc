@@ -218,8 +218,7 @@
          ;; Default position.
          ;; Will not display if :metadata-postition is set
          ;; explicitly to :block (in user config).
-         user-meta-inline-tagged
-         )
+         user-meta-inline-tagged)
 
         ret                  
         (keyed [x
@@ -233,13 +232,6 @@
                       (keyed [main-entity-tag
                               chars-dropped-syntax
                               main-entity-tag-reset]))]
-
-    ;; (when-not @state/formatting-form-to-be-evaled?
-    ;;   (when (= s "bar")
-    ;;     #> m
-    ;;     #> locals))
-    ;; (!? locals)
-
     ret))
 
 
@@ -465,22 +457,55 @@
   (when (and (:display-metadata? @state/config)
              user-meta
              (contains? #{:block "block"} metadata-position))
-    (as-> user-meta $
-      (str
-       (when badge " ")
-       (tag! :metadata)
-       (tag/stringified-user-meta 
-        {:user-meta         $
-         :metadata-position :block
-         :indent            indent*
+    (reset! state/*formatting-meta? true)
+    (formatted* user-meta)
+    (reset! state/*formatting-meta? false)
+
+    #_(as-> user-meta $
+        (str
+         (when badge " ")
+         (tag! :metadata)
+
+       ;; TODO - replace this with formatting
+         (tag/stringified-user-meta 
+          {:user-meta         $
+           :metadata-position :block
+           :indent            indent*
          ;; maybe use this if you have a coll that is single-line,
          ;; but with multi-line metadata map
          ;; :str-len-with-badge str-len-with-badge
-         })
-       (tag-reset!)))))
+           })
+         (tag-reset!)))))
 
-(defn- user-meta-inline-indent []
-  )
+(defn- user-meta-inline
+  [{:keys [user-meta
+           metadata-position
+           atom-opening-encapsulation
+           badge
+           coll
+           indent*]}]
+  (when (and (:display-metadata? @state/config)
+                   (seq user-meta)
+                   (contains? #{:inline "inline"} metadata-position))
+    (reset! state/*formatting-meta? true)
+    (let [offset        defs/metadata-position-inline-offset
+          inline-offset (tagged (spaces (dec offset))
+                                {:theme-token :metadata})
+          ret           (formatted* 
+                          user-meta
+                          {:indent 
+                            (let [ob (str atom-opening-encapsulation
+                                          badge
+                                          (some-> coll
+                                                  meta
+                                                  brackets-by-type
+                                                  first))
+
+                                  indent+ob
+                                  (+ (or (count ob) 0) indent*)]
+                            (+ indent+ob offset))})]
+      (reset! state/*formatting-meta? false)
+      (str " " inline-offset ret))))
 
 (defn- profile+ob
   [coll indent*]
@@ -511,11 +536,11 @@
         metadata-position
         (:metadata-position @state/config)
 
-        ;; move up?
+        ;; Move up?
         user-meta-block
         (user-meta-block indent* metadata-position m)
 
-        ob*                  
+        ob* 
         (str atom-opening-encapsulation
              badge
              (some-> user-meta-block (str (when badge " ")))
@@ -525,35 +550,17 @@
                (tagged "#" {:theme-token :max-print-level-label})))
         
         user-meta-inline
-        (when (and (:display-metadata? @state/config)
-                   user-meta
-                   (contains? #{:inline "inline"} metadata-position))
-          (as-> user-meta $
-            (str
-             (when badge " ")
-             (tag! :metadata)
-             (tag/stringified-user-meta 
-              {:user-meta         $
-               :metadata-position :inline
-               :indent            (let [ob (str atom-opening-encapsulation
-                                                badge
-                                                (some-> user-meta-block
-                                                        (str (when badge " ")))
-                                                (some-> coll
-                                                        meta
-                                                        brackets-by-type
-                                                        first))]
-                                    (+ (or (count ob) 0) indent*))
-               ;; maybe use this if you have a coll that is single-line,
-               ;; but with multi-line metadata map
-               
-               ;; :str-len-with-badge str-len-with-badge
-               })
+        (user-meta-inline (keyed [user-meta
+                                  metadata-position
+                                  atom-opening-encapsulation
+                                  badge
+                                  coll
+                                  indent*]))
 
-             (tag-reset!))))
-        
-        ob (str ob*
-                (some-> user-meta-inline (str separator)))]
+        ob
+        (str ob* (some-> user-meta-inline
+                         (str (tagged separator
+                                      {:theme-token :foreground}))))]
     (assoc m :ob ob :record? record?)))
 
 
@@ -602,10 +609,7 @@
                                tagged-val
                                (when-not (= coll-count (inc idx)) 
                                  (if multi-line?
-                                   separator
-                                   #_(if map-value? 
-                                     (color-result-gutter-space-char-two-lines separator)
-                                     (color-result-gutter-space-char separator))
+                                   (tagged separator {:theme-token :foreground})
                                    separator)))]
               ret))
           coll))
