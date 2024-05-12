@@ -61,7 +61,7 @@
   [{:keys [qf template label]}]
   (let [label (when (= template [:form-or-label :file-info :result])
                 (some-> label (tag/tag-entity! :comment)))
-        label #?(:cljs label :clj (str label "  "))
+        label #?(:cljs label :clj label)
         form  (when-not label
                 (when qf
                   (reset! state/formatting-form-to-be-evaled?
@@ -100,6 +100,7 @@
                         (tag/tag-entity! " \n" :result-header))
         fmt           (when-not log? (serialize/formatted* source))
         fmt+          (str (or label form)
+                           #?(:clj (when (or label form) "  "))
                            file-info
                            result-header
                            fmt)]
