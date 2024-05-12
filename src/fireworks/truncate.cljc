@@ -117,13 +117,21 @@
       ;; (truncate-iterable opts*)
       )))
 
+(defn- user-meta* [x]
+  (let [m (meta x)
+        m (when m 
+            (when-not (and (list? x)
+                           (= '(:line :column)
+                              (keys m)))
+              m))]
+    m))
 
 (defn- truncate-opts
   [opts x]
   (let [depth      (:depth opts)
         atom?      (cljc-atom? x)
         x          (if atom? @x x)
-        user-meta  (meta x)
+        user-meta  (user-meta* x)
         kv?        (map-entry? x)
         tag-map    (when-not kv?
                      (set/rename-keys (lasertag/tag-map x)
@@ -171,7 +179,7 @@
 
 
 (defn truncate
-  [{:keys [depth map-value? key?]
+  [{:keys [depth map-value? key? user-meta?]
     :as opts}
    x]
   (let [{:keys [x             
@@ -208,7 +216,8 @@
 
         ret           
         (with-meta new-x
-          {:fw/truncated mm*
-           :fw/user-meta user-meta})]
+          (merge {:fw/truncated mm*
+                  :fw/user-meta user-meta}
+                 (when user-meta? {:fw/user-meta-map? user-meta?})))]
     ret))
 

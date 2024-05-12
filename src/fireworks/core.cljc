@@ -1,17 +1,15 @@
+;; TODO - refactor profile ns into truncate
+
+
 (ns fireworks.core
   (:require
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
-  ;;  [clojure.walk :as walk]
    [clojure.set :as set]
    [clojure.data :as data]
-  ;;  [fireworks.defs :as defs]
    [fireworks.messaging :as messaging]
-  ;;  [fireworks.profile :as profile]
-  ;;  [fireworks.printers :as printers]
    [fireworks.serialize :as serialize]
    [fireworks.state :as state]
    [fireworks.tag :as tag]
-  ;;  [fireworks.truncate :as truncate]
    #?(:cljs [fireworks.macros
              :refer-macros
              [keyed
@@ -22,7 +20,6 @@
    [clojure.spec.alpha :as s]
    [lasertag.core :as lasertag]
    [fireworks.util :as util])
-
   #?(:cljs (:require-macros 
             [fireworks.core :refer [?> ? !? ?println]])))
 
@@ -33,8 +30,6 @@
 
 (def core-defs-clj-classes 
   (set '(defrecord deftype)))
-
-
 
 
 

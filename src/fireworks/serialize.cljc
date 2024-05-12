@@ -3,11 +3,13 @@
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
    [fireworks.truncate :as truncate]
-   [fireworks.pp :refer [?pp]]
-   [fireworks.brackets :refer [closing-bracket! 
-                               opening-bracket!
-                               closing-angle-bracket!
-                               brackets-by-type]]
+   [fireworks.pp :refer [?pp !?pp]]
+   [fireworks.brackets
+    :as brackets
+    :refer [closing-bracket! 
+            opening-bracket!
+            closing-angle-bracket!
+            brackets-by-type]]
    [clojure.string :as string]
    [fireworks.defs :as defs]
    [fireworks.state :as state]
@@ -42,7 +44,10 @@
   [{:keys [num-chars-dropped t truncate-fn-name?]}]
   (when (or truncate-fn-name?
             (some-> num-chars-dropped pos?))
-    (let [theme-tag (if (pos? (state/formatting-meta-level)) :metadata :ellipsis)]
+    (let [meta-level (state/formatting-meta-level)
+          theme-tag  (if (pos? meta-level)
+                       (state/metadata-token)
+                       :ellipsis)]
       (if (collection-type? t)
         (str (tag! theme-tag) "+" num-chars-dropped (tag-reset!))
         (str (tag! theme-tag) defs/ellipsis (tag-reset!))))))
@@ -80,8 +85,10 @@
            sev?
            multi-line?
            separator
+           max-keylen
            ]
     :as m}]
+  #_(?pp (keyed [x multi-line?]))
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
 
@@ -104,13 +111,17 @@
         user-meta-block-tagged
         (when (sev-user-meta-position-match? user-meta :block)
           (swap! state/*formatting-meta-level inc)
-          (let [ret (formatted* user-meta {:indent indent})]
+          (let [ret (formatted* user-meta {:indent indent :user-meta? true})]
             (swap! state/*formatting-meta-level dec)
             ret))
         
         user-meta-block-tagged-separator
-        (when (and user-meta-block-tagged multi-line?)
-          (tagged separator))
+        (when (and user-meta-block-tagged
+                   multi-line?)
+          (tagged (str separator
+                       (some-> max-keylen
+                               (+ defs/kv-gap)
+                               spaces))))
 
         atom-tagged
         (tagged (str defs/atom-label
@@ -124,7 +135,7 @@
                 {:custom-badge-style custom-badge-style 
                  :theme-token        (cond
                                        (pos? (state/formatting-meta-level))
-                                       :metadata
+                                       (state/metadata-token)
                                        (= badge defs/lamda-symbol) 
                                        :lamda-label 
                                        :else
@@ -142,9 +153,13 @@
           t)
 
         theme-tag
-        (if (pos? (state/formatting-meta-level))
-          (if key? :metadata-key :metadata)
-          theme-tag)
+        (let [meta-level (state/formatting-meta-level)]
+          (if (pos? meta-level)
+            (let [l2? (= 2 meta-level)]
+              (if key?
+                (if l2? :metadata-key2 :metadata-key)
+                (if l2? :metadata2 :metadata)))
+            theme-tag))
 
         main-entity-tag                  
         (tag! theme-tag highlighting)
@@ -155,7 +170,9 @@
         (add-truncation-annotation! m)
 
         main-entity-tag-reset            
-        (tag-reset! (if (pos? (state/formatting-meta-level)) :metadata :foreground))
+        (tag-reset! (if (pos? (state/formatting-meta-level))
+                      (state/metadata-token)
+                      :foreground))
 
         fn-args-tagged
         (tagged fn-args {:theme-token :function-args})
@@ -171,12 +188,13 @@
           (swap! state/*formatting-meta-level inc)
           (let [offset        defs/metadata-position-inline-offset
                 inline-offset (tagged (spaces (dec offset))
-                                      {:theme-token :metadata})
+                                      {:theme-token (state/metadata-token)})
                 ret           (formatted* user-meta
-                                          {:indent (+ indent
-                                                      offset
-                                                      (or str-len-with-badge
-                                                          0))})]
+                                          {:indent     (+ indent
+                                                          offset
+                                                          (or str-len-with-badge
+                                                              0))
+                                           :user-meta? true})]
             (swap! state/*formatting-meta-level dec)
             (str " " inline-offset ret)))
 
@@ -343,6 +361,7 @@
                 single-column-map-layout?
                 :fw/custom-badge-style
                 str-len-with-badge
+                :fw/user-meta-map?
                 :fw/user-meta
                 js-map-like?
                 num-dropped         
@@ -379,13 +398,15 @@
         ;; This is where indenting for multi-line collections is determined
         t-for-indent
         (cond
+          user-meta-map?
+          :meta-map
           (or record? js-map-like? map-like?)
           :map
           :else
           t) 
 
         num-indent-spaces-for-t
-        (t-for-indent defs/num-indent-spaces)
+        (t-for-indent brackets/num-indent-spaces)
 
         indent       
         (+ (or indent* 0)
@@ -461,25 +482,9 @@
              user-meta
              (contains? #{:block "block"} metadata-position))
     (swap! state/*formatting-meta-level inc)
-    (let [ret (formatted* user-meta)]
+    (let [ret (formatted* user-meta {:user-meta? true :indent indent*})]
       (swap! state/*formatting-meta-level dec)
-      ret)
-    
-    #_(as-> user-meta $
-        (str
-         (when badge " ")
-         (tag! :metadata)
-
-       ;; TODO - replace this with formatting
-         (tag/stringified-user-meta 
-          {:user-meta         $
-           :metadata-position :block
-           :indent            indent*
-         ;; maybe use this if you have a coll that is single-line,
-         ;; but with multi-line metadata map
-         ;; :str-len-with-badge str-len-with-badge
-           })
-         (tag-reset!)))))
+      ret)))
 
 (defn- user-meta-inline
   [{:keys [user-meta
@@ -494,19 +499,21 @@
     (swap! state/*formatting-meta-level inc)
     (let [offset        defs/metadata-position-inline-offset
           inline-offset (tagged (spaces (dec offset))
-                                {:theme-token :metadata})
+                                {:theme-token (state/metadata-token)})
           ret           (formatted* 
                           user-meta
-                          {:indent 
-                            (let [ob (str atom-opening-encapsulation
-                                          badge
-                                          (some-> coll
-                                                  meta
-                                                  brackets-by-type
-                                                  first))
+                          {:user-meta?
+                           true
+                           :indent 
+                           (let [ob (str atom-opening-encapsulation
+                                         badge
+                                         (some-> coll
+                                                 meta
+                                                 brackets-by-type
+                                                 first))
 
-                                  indent+ob
-                                  (+ (or (count ob) 0) indent*)]
+                                 indent+ob
+                                 (+ (or (count ob) 0) indent*)]
                             (+ indent+ob offset))})]
       (swap! state/*formatting-meta-level dec)
       (str " " inline-offset ret))))
@@ -656,7 +663,12 @@
         (sev! (merge key-props {:indent indent}))
 
         tagged-val          
-        (tagged-val (keyed [v val-props indent]))
+        (tagged-val (keyed [v
+                            val-props
+                            indent
+                            multi-line?
+                            separator
+                            max-keylen]))
 
         num-extra-spaces-after-key
         (if multi-line?
@@ -667,12 +679,14 @@
         (str escaped-key
              (when (some-> num-extra-spaces-after-key pos?) 
                (spaces num-extra-spaces-after-key))
-             (spaces defs/kv-gap)
+             (tagged (spaces defs/kv-gap)
+                     (when-not multi-line?
+                         {:theme-token (state/metadata-token)}))
              tagged-val
              (when-not (= coll-count (inc idx))
-               (tagged separator
+               (tagged (str separator)
                        (when-not multi-line?
-                         {:theme-token :metadata}))))]
+                         {:theme-token (state/metadata-token)}))))]
     ret))
 
 
@@ -727,7 +741,13 @@
 
 
 (defn- tagged-val
-  [{:keys [v val-props t indent multi-line? separator]}]
+  [{:keys [v
+           val-props
+           t
+           indent
+           multi-line?
+           separator
+           max-keylen]}]
   (let [t                          
         (or t (:t val-props))
 
@@ -755,27 +775,29 @@
       (:escaped (sev! (merge val-props
                              (keyed [indent
                                      multi-line?
-                                     separator])))))))
+                                     separator
+                                     max-keylen])))))))
 
 
 (defn serialized
   [v indent]
-  (let [ret (str #_(tag/tag-entity! " " :result-gutter-start)
-                 (tagged-val {:v         v
+  (let [ret (str (tagged-val {:v         v
                               :indent    indent #_(if (pos? (state/formatting-meta-level))
-                                           (state/formatting-meta-indent)
-                                           0)
+                                                    (state/formatting-meta-indent)
+                                                    0)
                               :val-props (meta v)}))]
     ret))
 
 (defn formatted*
   ([source]
    (formatted* source nil))
-  ([source {:keys [indent]
+  ([source {:keys [indent user-meta?]
             :or   {indent 0}
             :as   opts}]
   ;;  (?pp opts)
-   (let [truncated      (truncate/truncate {:depth 0} source)
+   (let [truncated      (truncate/truncate {:depth      0
+                                            :user-meta? user-meta?}
+                                           source)
          custom-printed truncated
          ;; Come back to this custom printing jazz later
          ;;  custom-printed (if (:evaled-form? opts)
@@ -788,4 +810,6 @@
          serialized     (serialized profiled indent)
          len            (-> profiled meta :str-len-with-badge)
          ]
+    ;;  (?pp :meta-truncated (meta truncated))
+    ;;  (?pp :meta-profiled (meta profiled))
      serialized)))

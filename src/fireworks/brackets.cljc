@@ -7,26 +7,57 @@
    [fireworks.util :refer [badge-type]]))
 
 (defn brackets-by-type
-  [{:keys [t map-like? js-map-like? js-typed-array?] :as m}]
-  (cond (or (= t :set) (= t :js/Set))
-        ["#{" "}"]
-        (or map-like?
-            (contains? #{:map :js/Object :record :js/Map} t)
-            js-map-like?)
-        ["{" "}"]
-        (or (= t :vector)
-            (= t :js/Array)
-            js-typed-array?)
-        ["[" "]"]
-        (or (= :seq t) (= :list t))
-        ["(" ")"]
-        (or (= :function t) (= :lamda t))
-        ["" ""]
-        :else
+  [{:keys [t map-like? js-map-like? js-typed-array? :fw/user-meta-map?] :as m}]
+  (cond 
+    (or map-like?
+        (contains? #{:map :js/Object :record :js/Map} t)
+        js-map-like?)
+    (if user-meta-map?
+      ["^{" "}"]
+      ["{" "}"])
+
+    (or (= t :vector)
+        (= t :js/Array)
+        js-typed-array?)
+    ["[" "]"]
+
+    (or (= :seq t) (= :list t))
+    ["(" ")"]
+
+    (or (= t :set) (= t :js/Set))
+    ["#{" "}"]
+
+    (= t :meta-map)
+    ["^{" "}"]
+
+    (or (= :function t) (= :lamda t))
+    ["" ""]
+    :else
         ;; This should probably be ["" ""]
         ;; We need more granularity from lasertag first
         ;; :list-like? :array-like?
-        ["[" "]"]))
+    ["[" "]"]))
+
+
+(def num-indent-spaces
+  (reduce (fn [acc k] 
+            (assoc acc
+                   k 
+                   (-> {:t k}
+                       brackets-by-type
+                       first
+                       count)))
+          {}
+          [:meta-map
+           :map       
+           :js/Object 
+           :js/Array  
+           :record    
+           :set       
+           :js/Set    
+           :vector    
+           :list      
+           :seq]))
 
 (defn- rainbow-bracket-color
   []
@@ -59,7 +90,7 @@
                        (let [style-maps
                              @state/merged-theme-with-unserialized-style-maps]
                          (or (get style-maps label-type nil)
-                             (get style-maps :metadata nil)))))]
+                             (get style-maps (state/metadata-token) nil)))))]
                   bgc)]
     #?(:cljs
        (str "color:" color 
@@ -81,7 +112,7 @@
   [{:keys [t mm]}]
   (let [style (cond
                 (pos? (state/formatting-meta-level))
-                (-> @state/merged-theme :metadata)
+                (get @state/merged-theme (state/metadata-token) nil)
 
                 (= t :fn-args)
                 (-> @state/merged-theme t)

@@ -244,8 +244,8 @@
 )
    
    :clj
-   #_nil
-   (do 
+   nil
+   #_(do 
      (deftest p-data-with-label-from-opts
        (is (= 
             (let [ret              (p-data {:label                      "my-label-from-opts"

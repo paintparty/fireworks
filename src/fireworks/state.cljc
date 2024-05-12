@@ -488,3 +488,6 @@
 
 (defn formatting-meta-level []
   @*formatting-meta-level)
+
+(defn metadata-token []
+  (if (= 2 (formatting-meta-level)) :metadata2 :metadata))

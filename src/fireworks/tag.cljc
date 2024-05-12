@@ -48,7 +48,6 @@
                                t)
                              bgc
                              custom-badge-style)
-        ;;  _ (when (= t :metadata-key) (?pp s))
          ]
      #?(:cljs (let [s (cond
                         (= t :type-label)

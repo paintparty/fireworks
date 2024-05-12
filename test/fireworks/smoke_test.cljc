@@ -253,10 +253,27 @@
    :atom1    (atom 1)
    :brackets [[[[[[]]]]]]})
 
+(? (+ 1 2))
+#_(? (with-meta 
+         {(with-meta (symbol :a)
+            {:abc "bar"
+             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+          (with-meta (symbol "foo")
+            {:abc "bar"
+             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+          :b 2 }
+         {:a                (with-meta (symbol "foo")
+                              {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
+                               :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                               ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+                               })
+          ;; :xyz              "bar" 
+          ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+          }))
 
 #?(:clj
    (do 
-     (do
+     #_(do
          ;; DataTypes ------------------------------------------------------
          (? "A def of deftype" (deftype MyType [a b]))
          
@@ -359,7 +376,7 @@
   
 
  ;; Testing all the options cljc
- (do 
+ #_(do 
 
   ;; :mood
   (? {:label :mood :mood "light" :theme nil}

@@ -253,7 +253,8 @@
                           meta
                           (select-keys [:fw/custom-badge-style
                                         :fw/custom-badge-text
-                                        :fw/user-meta])))
+                                        :fw/user-meta
+                                        :fw/user-meta-map?])))
 
             ;; TODO - make dedicated badge fn?
            badge (annotation-badge ret)

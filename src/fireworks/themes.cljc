@@ -30,19 +30,28 @@
    :langs   ["Clojure" "ClojureScript" "Babashka"]
    :mood    :light
    ;; :bracket-contrast "high"
-   :tokens   {:classes {:background {:background-color "#f7f7f7"}
-                        :string     {:color "#448C27"}
-                        :constant   {:color "#7A3E9D"}
-                        :definition {:color "#4d6dba"}
-                        :annotation {:color      "#8c8c8c" 
-                                     :font-style :italic}
-                        :metadata   {:color            "#be55bb"
-                                     :text-shadow      "0 0 2px #ffffff"
-                                     :background-color "#fae8fd"}
-                        :label      {:color            "#256546"
-                                     :background-color "#e5fbe5"
-                                     :text-shadow      "0 0 2px #ffffff"
-                                     :font-style       :italic}}
+   :tokens   {:classes {:background   {:background-color "#f7f7f7"}
+                        :string       {:color "#448C27"}
+                        :constant     {:color "#7A3E9D"}
+                        :definition   {:color "#4d6dba"}
+                        :annotation   {:color      "#8c8c8c" 
+                                       :font-style :italic}
+                        :metadata     {:color            "#be55bb"
+                                       :text-shadow      "0 0 2px #ffffff"
+                                       :background-color "#fae8fd"}
+                        :metadata-key {:color            "#6349d4"
+                                       :text-shadow      "0 0 2px #ffffff"
+                                       :background-color "#fae8fd"}
+                        :metadata2    {:color            "#be55bb"
+                                       :text-shadow      "0 0 2px #ffffff"
+                                       :background-color "#e9e5ff"}
+                        :metadata-key2 {:color            "#6349d4"
+                                       :text-shadow      "0 0 2px #ffffff"
+                                       :background-color "#e9e5ff"}
+                        :label        {:color            "#256546"
+                                       :background-color "#e5fbe5"
+                                       :text-shadow      "0 0 2px #ffffff"
+                                       :font-style       :italic}}
              :syntax  {:js-object-key      {:color "#888888"}}
              :printer {:eval-fat-arrow     {:color            "#28cc7d"
                                             :background-color "#e8fcf3"}

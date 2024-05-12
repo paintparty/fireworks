@@ -15,6 +15,8 @@
    :annotation   :foreground ;; ns/file info, user-label, num-dropped 
    :metadata     :foreground
    :metadata-key :foreground
+   :metadata2    :foreground
+   :metadata-key2 :foreground
    :highlight    :foreground ;; default bg-color, inherited by [:printer :find]
    :label        :foreground ;; literal labels, type labels, atom wrappers, etc.
    
@@ -75,7 +77,9 @@
    :lamda-label           :label
    :atom-wrapper          :label
    :metadata              :metadata
+   :metadata2             :metadata2
    :metadata-key          :metadata-key
+   :metadata-key2         :metadata-key2
    :annotation            :annotation
    :ellipsis              :annotation
    :coll-trunction        :annotation
@@ -101,16 +105,6 @@
 
 (def all-base-printer-tokens (into #{} (keys base-printer-tokens)))
 
-(def num-indent-spaces
-  {:map       1
-   :js/Object 1
-   :js/Array  1
-   :record    1
-   :set       2
-   :js/Set    2
-   :vector    1
-   :list      1
-   :seq       1})
 
 (def valid-stylemap-keys
   #?(:clj [:color
