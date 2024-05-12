@@ -44,8 +44,7 @@
   [{:keys [num-chars-dropped t truncate-fn-name?]}]
   (when (or truncate-fn-name?
             (some-> num-chars-dropped pos?))
-    (let [meta-level (state/formatting-meta-level)
-          theme-tag  (if (pos? meta-level)
+    (let [theme-tag  (if (pos? (state/formatting-meta-level))
                        (state/metadata-token)
                        :ellipsis)]
       (if (collection-type? t)
@@ -624,7 +623,9 @@
                                (when-not (= coll-count (inc idx)) 
                                  (if multi-line?
                                    (tagged separator {:theme-token :foreground})
-                                   separator)))]
+                                   (if (pos? (state/formatting-meta-level))
+                                     (tagged separator {:theme-token (state/metadata-token)})
+                                     separator))))]
               ret))
           coll))
         
@@ -675,18 +676,32 @@
           (- (or max-keylen 0) (or key-char-count 0))
           0)
 
+        kv-gap-spaces
+        (spaces defs/kv-gap)
+
+        theme-token-map
+        {:theme-token (state/metadata-token)}
+        
+        formatting-meta?
+        (pos? (state/formatting-meta-level))
+
         ret                  
         (str escaped-key
              (when (some-> num-extra-spaces-after-key pos?) 
                (spaces num-extra-spaces-after-key))
-             (tagged (spaces defs/kv-gap)
-                     (when-not multi-line?
-                         {:theme-token (state/metadata-token)}))
+
+             (if formatting-meta?
+               (tagged kv-gap-spaces theme-token-map)
+               kv-gap-spaces)
+
              tagged-val
+
              (when-not (= coll-count (inc idx))
-               (tagged (str separator)
-                       (when-not multi-line?
-                         {:theme-token (state/metadata-token)}))))]
+               (if formatting-meta?
+                 (tagged separator (when-not multi-line?
+                                     theme-token-map))
+                 separator)
+               ))]
     ret))
 
 
@@ -782,9 +797,7 @@
 (defn serialized
   [v indent]
   (let [ret (str (tagged-val {:v         v
-                              :indent    indent #_(if (pos? (state/formatting-meta-level))
-                                                    (state/formatting-meta-indent)
-                                                    0)
+                              :indent    indent 
                               :val-props (meta v)}))]
     ret))
 
