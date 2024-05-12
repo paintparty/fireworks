@@ -1,5 +1,6 @@
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [?]]
+            [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
             #?(:cljs [cljs.test :refer [deftest is]])
@@ -29,89 +30,6 @@
  :find                       nil}
 
 
-;; This is for tests in core_tests
-(def alabaster-light-legacy
-  {:name    "Alabaster Light"
-   :desc    "Based on @tonsky's Alabaster theme."
-   :about   "This is additional documentation. Should support markdown here."
-   :url     "url goes here"
-   :author  "Author Name"
-   :langs   ["Clojure" "ClojureScript" "Babashka"]
-   :mood    :light
-   ;; :bracket-contrast "high"
-   :tokens   {:classes {:background {:background-color "#f7f7f7"}
-                        :string     {:color "#448C27"}
-                        :comment    {:color      "#AA3731"
-                                     :font-style :italic}
-                        :constant   {:color "#7A3E9D"}
-                        :definition {:color "#4d6dba"}
-                        :annotation {:color      "#8c8c8c" 
-                                     :font-style :italic}
-                        :metadata   {:color            "#2e6666"
-                                     :text-shadow      "0 0 2px #ffffff"
-                                     :background-color "#e6fafa"}}
-             :syntax  {:js-object-key {:color "#888888"}}
-             :printer {:eval-fat-arrow {:color "#28cc7d"}
-                       :function-args  {:color "#999999"}
-                       :atom-wrapper   {:color            "#256546"
-                                        :background-color "#d6f5d6"
-                                        :text-shadow      "0 0 2px #ffffff"
-                                        :font-style       :italic}}}})
-
-;; new
-(def alabaster-light
-  {:name   "Alabaster Light"
-   :desc   "Based on @tonsky's Alabaster theme."
-   :about  "This is additional documentation. Should support markdown here."
-   :url    "url goes here"
-   :author "Author Name"
-   :langs  ["Clojure" "ClojureScript" "Babashka"]
-   :mood   :light
-   ;; :bracket-contrast "high"
-   :tokens {:classes {:background {:background-color "#f7f7f7"}
-                      :string     {:color "#448C27"}
-                      :constant   {:color "#7A3E9D"}
-                      :definition {:color "#4d6dba"}
-                      :annotation {:color      "#8c8c8c" 
-                                   :font-style :italic}
-                      :metadata   {:color            "#7A3E9D"
-                                   :text-shadow      "0 0 2px #ffffff"
-                                   :background-color "#f8e8f3"}
-                      :label      {:color            "#256546"
-                                   :background-color "#e5fbe5"
-                                   :text-shadow      "0 0 2px #ffffff"
-                                   :font-style       :italic}}
-            :syntax  {:js-object-key {:color "#888888"}}
-            :printer {:eval-fat-arrow {:color            "#28cc7d"
-                                       :background-color "#e8fcf3"}
-                      :result-header  {:color            "#28cc7d"
-                                            ;; :background-color "#e8fcf3"
-                                       :margin-block-end :0.5em
-                                       }
-                      :file-info      {:color                "#737373" 
-                                       :font-style           :italic
-                                       :padding-inline-start :0ch
-                                            ;; :margin-block-end     :0.5em
-                                       }
-                      :eval-form      {:color             "#2e6666"
-                                       :text-shadow       "0 0 2px #ffffff"
-                                       :background-color  "#e5f1fa"
-                                       :margin-inline-end :2ch
-                                            ;; :margin-block-end  :0.5em
-                                       }
-                      :comment        {:color             "#2e6666"
-                                       :text-shadow       "0 0 2px #ffffff"
-                                       :background-color  "#e5f1fa"
-                                       :outline           "2px solid #e5f1fa"
-                                       :margin-inline-end :2ch
-                                       :font-style        :italic
-                                            ;; :margin-block-end  :0.5em
-                                       }
-                      :function-args  {:color "#999999"}
-                      :atom-wrapper   {:color            "#256546"
-                                       :background-color "#e5fbe5"
-                                       :text-shadow      "0 0 2px #ffffff"
-                                       :font-style       :italic}}}})
 
 ;; Formatting
 
@@ -251,26 +169,25 @@
    :record   record-sample
    :atom2    (atom record-sample)
    :atom1    (atom 1)
-   :brackets [[[[[[]]]]]]})
+   :brackets [[[[[[]]]]]]
+   :meta-map (with-meta 
+               {(with-meta (symbol :a)
+                  {:abc "bar"
+                   :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"}) (with-meta (symbol "foo")
+                                                                            {:abc "bar"
+                                                                             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+                :b                                                        2 }
+               {:a (with-meta (symbol "foo")
+                     {:abc (with-meta (symbol "bar") {:a 1})
+                      :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+                })
+   :map      {:abc "bar"
+              "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+              ;; 'c [1 2 2 3 8 8 8 8  8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8]
+              [:a :b] 123444}})
 
-(? (+ 1 2))
+(? basic-samples)
 
-#_(? (with-meta 
-         {(with-meta (symbol :a)
-            {:abc "bar"
-             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-          (with-meta (symbol "foo")
-            {:abc "bar"
-             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-          :b 2 }
-         {:a                (with-meta (symbol "foo")
-                              {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
-                               :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                               ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-                               })
-          ;; :xyz              "bar" 
-          ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-          }))
 
 #?(:clj
    (do 
@@ -351,28 +268,66 @@
          (? {:label      "Basic samples"
              :coll-limit 15
             ;;  :theme      "Alabaster Light"
-             :theme      alabaster-light
+             :theme      themes/alabaster-light
              :find       {:pred #(= 1234 %)}}
             basic-samples)
 
 
 
 
-         ;; Custom printing
-         (? {:custom-printers {:vector {:pred        (fn [x] (= x [765 233 444 21]))
-                                        :f           (fn [x] (into #{} x))
-                                        :badge-text  " Set💩 "
-                                        :badge-style {:color            "#000"
-                                                      :background-color "lime"
-                                                      :border-radius    "999px"
-                                                      :text-shadow      "none"
-                                                      :font-style       "normal"}}}
-             }
-            [765 233 444 21])
+         ;; Custom printing -- ! Leave this off until feature re-implemented
+        
+        ;;  (? {:custom-printers {:vector {:pred        (fn [x] (= x [765 233 444 21]))
+        ;;                                 :f           (fn [x] (into #{} x))
+        ;;                                 :badge-text  " Set💩 "
+        ;;                                 :badge-style {:color            "#000"
+        ;;                                               :background-color "lime"
+        ;;                                               :border-radius    "999px"
+        ;;                                               :text-shadow      "none"
+        ;;                                               :font-style       "normal"}}}
+        ;;      }
+        ;;     [765 233 444 21])
+
+         ;; Metadata
+         (?
+            {:label             "Nested metadata, :block positioning"
+              :metadata-position :block}
+            (with-meta 
+                    {(with-meta (symbol :a)
+                        {:abc "bar"
+                        :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+                      (with-meta (symbol "foo")
+                        {:abc "bar"
+                        :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+                      :b {:foo 'bar}}
+                    {:a                (with-meta (symbol "foo")
+                                          {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
+                                          :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                                          ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+                                          })
+                      ;; :xyz              "bar" 
+                      ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+                      }))
 
          
-
-         
+         (?
+          "Nested metadata, :inline positioning"
+          (with-meta 
+            {(with-meta (symbol :a)
+               {:abc "bar"
+                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+             (with-meta (symbol "foo")
+               {:abc "bar"
+                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+             :b {:foo 'bar}}
+            {:a                (with-meta (symbol "foo")
+                                 {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
+                                  :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                                          ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+                                  })
+                      ;; :xyz              "bar" 
+                      ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+             }))
          )))
   
 

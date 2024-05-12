@@ -4,16 +4,16 @@
             [fireworks.config]
             [fireworks.pp :as pp :refer [?pp]]
             [fireworks.smoke-test :as smoke-test]
+            [fireworks.themes :as themes]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
-
 
 ;; These tests will break if your local ~/.fireworks/config.edn is different from fireworks.smoke-test/example-config.
 ;; Change it to that temporarily if you want to run these tests locally. This will be fixed in the near future.
 ;; By design, all cljs tests that test fireworks.core/p-data in this namespace will break if the line number that they are on changes!
 
 
-(def theme smoke-test/alabaster-light-legacy)
+(def theme themes/alabaster-light)
 (declare escape-sgr)
 
 #?(:cljs
