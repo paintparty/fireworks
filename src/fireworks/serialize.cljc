@@ -707,13 +707,7 @@
 
 (defn- reduce-map
   [coll indent]
-  (let [{:keys [coll-count         
-                num-dropped 
-                separator
-                indent
-                multi-line?
-                ob
-                record?]}     
+  (let [m
         (profile+ob coll indent)
 
         untokenized
@@ -734,24 +728,12 @@
         (string/join
          (map-indexed
           (partial reduce-map*
-                   (keyed [untokenized
-                           max-keylen
-                           indent
-                           coll-count
-                           separator
-                           multi-line?]))
+                   (merge m (keyed [untokenized max-keylen])))
           coll))
 
         ret        
         (stringified-bracketed-coll-with-num-dropped-syntax!
-         (keyed [coll
-                 ob
-                 ret
-                 indent
-                 num-dropped
-                 max-keylen
-                 multi-line?
-                 record?]))]
+         (merge m (keyed [ret max-keylen])))]
      ret))
 
 
