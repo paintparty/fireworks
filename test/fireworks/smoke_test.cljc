@@ -186,8 +186,29 @@
               ;; 'c [1 2 2 3 8 8 8 8  8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8]
               [:a :b] 123444}})
 
-(? basic-samples)
+#_(? basic-samples)
 
+#_(? (with-meta 
+         {(with-meta (symbol :a)
+            {:abc "bar"
+             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+          (with-meta (symbol "foo")
+            {:abc "bar"
+             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+          :b "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+          :122222 5555555}
+         {:a                (with-meta (symbol "foo")
+                              {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
+                               :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                               ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+                               })
+          ;; :xyz              "bar" 
+          ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+          }))
+
+(? {'a (with-meta (symbol "foo")
+         {:abc "bar"
+          :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
 
 #?(:clj
    (do 
