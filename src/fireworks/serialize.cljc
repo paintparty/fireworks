@@ -353,28 +353,63 @@
        seq
        boolean))
 
-;; This is where indenting for multi-line collections is determined
-(defn- coll-indent-map
-  [{:keys [:fw/user-meta-map?
-           :fw/user-meta
-           js-map-like?
-           map-like?
-           record?
-           badge
-           atom?
-           t]}
-   indent*]
-  (let [t-for-indent
-        (cond 
-          user-meta-map?                      :meta-map
-          (or record? js-map-like? map-like?) :map
-          :else                               t) 
+
+(defn- reduce-coll-profile
+  [coll indent*]
+  (let [{:keys [some-elements-carry-user-metadata?  
+                single-column-map-layout?
+                :fw/custom-badge-style
+                str-len-with-badge
+                :fw/user-meta-map?
+                :fw/user-meta
+                js-map-like?
+                num-dropped         
+                map-like?
+                record?
+                badge
+                atom?
+                t]
+         :as   meta-map}
+        (meta coll)
+
+        user-meta    
+        (when (seq user-meta) user-meta)
+
+        coll-count
+        (count coll)
+
+        metadata-position
+        (:metadata-position @state/config)
+
+        ;; This is where multi-line for collections is determined
+        multi-line?  
+        (or (and user-meta
+                 (contains? #{:inline "inline"} 
+                            metadata-position))
+            some-elements-carry-user-metadata?
+            (some-elements-have-block-level-badges? coll)
+            (boolean 
+             (when (< 1 coll-count)
+               (or single-column-map-layout?
+                   (< (:non-coll-length-limit @state/config)
+                      (or str-len-with-badge 0))))))
+
+        ;; This is where indenting for multi-line collections is determined
+        t-for-indent
+        (cond
+          user-meta-map?
+          :meta-map
+          (or record? js-map-like? map-like?)
+          :map
+          :else
+          t) 
 
         num-indent-spaces-for-t
         (t-for-indent brackets/num-indent-spaces)
 
         indent       
-        (+ (or indent* 0) (or num-indent-spaces-for-t 1))
+        (+ (or indent* 0)
+           (or num-indent-spaces-for-t 1))
 
         badge-above?
         (some->> badge (contains? defs/inline-badges) not)
@@ -382,70 +417,24 @@
         user-meta-above?
         (boolean (and user-meta
                       (contains? #{:block "block"}
-                                 (:metadata-position @state/config))))
+                                 metadata-position)))
 
         indent       
         (or (when-not (or badge-above?
                           user-meta-above?) 
               (some->> badge 
                        count
+                       ;; dec
                        (+ (or indent 0))))
             indent)
 
-        ;; TODO - Add support for volatile! encapsulation
+        ;; Add support for volatile! encapsulation
         indent (if (and atom? (not badge-above?))
                  (+ (or (count (str defs/atom-label
                                     defs/encapsulation-opening-bracket))
                         0)
                     indent)
-                 indent)]
-    (keyed [badge-above? 
-            user-meta-above?
-            indent
-            num-indent-spaces-for-t])))
-
-
-;; This is where multi-line for collections is determined
-(defn- coll-multiline-map
-    [coll
-     {:keys [some-elements-carry-user-metadata?
-             single-column-map-layout?
-             str-len-with-badge
-             :fw/user-meta]}]
-    (let [user-meta   (when (seq user-meta) user-meta)
-          coll-count  (count coll)
-          multi-line? (or (and user-meta
-                               (contains? #{:inline "inline"} 
-                                          (:metadata-position @state/config)))
-                          some-elements-carry-user-metadata?
-                          (some-elements-have-block-level-badges? coll)
-                          (boolean 
-                           (when (< 1 coll-count)
-                             (or single-column-map-layout?
-                                 (< (:non-coll-length-limit @state/config)
-                                    (or str-len-with-badge 0))))))]
-      (keyed [user-meta
-              multi-line?
-              coll-count])))
-
-
-(defn- reduce-coll-profile
-  [coll indent*]
-  (let [{:keys [:fw/custom-badge-style
-                js-map-like?]
-         :as   meta-map}
-        (meta coll)
-
-        {:keys [multi-line?]
-         :as coll-multiline-map}
-        (coll-multiline-map coll meta-map)
-
-        {:keys [badge-above? 
-                user-meta-above?
-                indent
-                num-indent-spaces-for-t]
-         :as coll-indent-map}
-        (coll-indent-map meta-map indent*)
+                 indent)
 
         ;; Badge on its own line above data-structure.
         ;; for records, classes, js/Set, js/Map etc.
@@ -466,19 +455,21 @@
                (spaces indent))
           (str maybe-comma " "))
 
-        metadata-position
-        (:metadata-position @state/config)
-
         ret          
-        (merge 
-         meta-map
-         coll-indent-map
-         coll-multiline-map
-         (keyed [multi-line? 
-                 metadata-position
-                 separator   
-                 annotation-newline
-                 custom-badge-style]))]
+        (keyed [num-dropped 
+                str-len-with-badge     
+                multi-line? 
+                user-meta-above?
+                metadata-position
+                atom?
+                separator   
+                coll-count
+                indent
+                badge
+                user-meta
+                annotation-newline
+                record?
+                custom-badge-style])]
       ret))
 
 
