@@ -576,7 +576,10 @@
 
 (defn- reduce-coll
   [coll indent*]
-  (let [{:keys [single-column-map-layout?
+  (let [{:keys [some-colls-as-keys?
+                some-syms-carrying-metadata-as-keys?
+                single-column-map-layout?
+                truncated-coll-size
                 t
                 js-typed-array?]
          :as   meta-map}
@@ -628,17 +631,16 @@
         
         ret                 
         (stringified-bracketed-coll-with-num-dropped-syntax!
-         (merge (select-keys meta-map
-                             [:some-colls-as-keys?
-                              :some-syms-carrying-metadata-as-keys?
-                              :truncated-coll-size])
-                (keyed [coll
-                        ob
-                        ret
-                        indent
-                        num-dropped
-                        single-column-map-layout?
-                        multi-line?])))]
+         (keyed [coll
+                 ob
+                 ret
+                 indent
+                 num-dropped
+                 single-column-map-layout?
+                 some-colls-as-keys?
+                 some-syms-carrying-metadata-as-keys?
+                 multi-line?
+                 truncated-coll-size]))]
     ret))
 
 
