@@ -225,6 +225,7 @@
 
     ;; TODO - add some observability here
     (reset! state/styles [])
+    (reset! state/*formatting-meta-level 0)
     (reset! state/rainbow-level 0)
     (reset! state/top-level-value-is-sev? false)
     (reset! messaging/warnings-and-errors [])

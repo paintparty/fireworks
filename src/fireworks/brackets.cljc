@@ -110,17 +110,24 @@
    Rainbow parens by default.
    Function args vector not included in rainbow parens."
   [{:keys [t mm]}]
-  (let [style (cond
-                (pos? (state/formatting-meta-level))
-                (get @state/merged-theme (state/metadata-token) nil)
+  (let [theme-token (cond
+                      (pos? (state/formatting-meta-level))
+                      (state/metadata-token)
 
-                (= t :fn-args)
-                (-> @state/merged-theme t)
+                      (= t :fn-args)
+                      t
 
-                :else
+                      :else
+                      :rainbow-brackets)
+        style (if (= theme-token :rainbow-brackets) 
                 (if (:enable-rainbow-brackets? @state/config)
                   (rainbow-bracket-mixin mm)
-                  (style-from-theme :bracket nil)))]
+                  (style-from-theme :bracket nil))
+                (get @state/merged-theme theme-token nil))]
+
+    #_(println "tag-bracket!    theme-token is   "
+             theme-token
+             (str ",  style is:   " style))
     #?(:cljs
        (swap! state/styles conj style)
        :clj
@@ -128,13 +135,18 @@
 
 (defn- bracket!*
   [{:keys [s t] :as m}]
-  (let [reset-theme-token (if (pos? (state/formatting-meta-level)) :metadata :foreground)]
-    #?(:cljs (if t (do (tag-bracket! m)
-                       (tag-reset! reset-theme-token)
-                       (str "%c" s "%c"))
-                 (do (tag-reset! reset-theme-token)
-                     (tag-reset! reset-theme-token)
-                     (str "%c" s "%c")))
+  (let [reset-theme-token (if (pos? (state/formatting-meta-level))
+                            :metadata
+                            :foreground)]
+    #_(println "\nbracket!*  " s ",  t: " t)
+    #?(:cljs (if t 
+               (do (tag-bracket! m)
+                   (tag-reset! reset-theme-token)
+                   (str "%c" s "%c"))
+               (do
+                 (tag-reset! reset-theme-token)
+                 (tag-reset! reset-theme-token)
+                 (str "%c" s "%c")))
        :clj (if t 
               (str (tag-bracket! m) s (tag-reset!))
               (str (tag-reset!) s (tag-reset!))))))
@@ -169,6 +181,7 @@
    so they can be printed like `Atom<[1 2 3]>`"
   [m]
   (when (-> m :coll meta :atom?)
+    #_(println "\ntagging " defs/encapsulation-closing-bracket " with " :atom-wrapper)
     (str (tag! :atom-wrapper)
          defs/encapsulation-closing-bracket
          (tag-reset!))))

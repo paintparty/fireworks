@@ -44,12 +44,14 @@
   [{:keys [num-chars-dropped t truncate-fn-name?]}]
   (when (or truncate-fn-name?
             (some-> num-chars-dropped pos?))
-    (let [theme-tag  (if (pos? (state/formatting-meta-level))
-                       (state/metadata-token)
-                       :ellipsis)]
-      (if (collection-type? t)
-        (str (tag! theme-tag) "+" num-chars-dropped (tag-reset!))
-        (str (tag! theme-tag) defs/ellipsis (tag-reset!))))))
+    (let [theme-tag (if (pos? (state/formatting-meta-level))
+                      (state/metadata-token)
+                      :ellipsis)
+          s         (if (collection-type? t)
+                      (str "+" num-chars-dropped)
+                      defs/ellipsis)]
+      #_(println "\nserialize/add-truncation-annotation:  tagging \"" s "\" with " theme-tag )
+      (str (tag! theme-tag) s (tag-reset!)))))
 
 (defn sev-user-meta-position-match? [user-meta position]
   (and (:display-metadata? @state/config)
@@ -110,7 +112,8 @@
         user-meta-block-tagged
         (when (sev-user-meta-position-match? user-meta :block)
           (swap! state/*formatting-meta-level inc)
-          (let [ret (formatted* user-meta {:indent indent :user-meta? true})]
+          (let [ret (formatted* user-meta {:indent     indent
+                                           :user-meta? true})]
             (swap! state/*formatting-meta-level dec)
             ret))
         
@@ -160,8 +163,12 @@
                 (if l2? :metadata2 :metadata)))
             theme-tag))
 
+        ;; _ (println "\nsev!   tagging " s " with " theme-tag )
         main-entity-tag                  
         (tag! theme-tag highlighting)
+
+        ;; _ (when true #_(= x "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz")
+        ;;         (!?pp x theme-tag))
 
         ;; Additional tagging (and atom mutation) happens within
         ;; fireworks.serialize/add-truncation-annotation!
@@ -302,8 +309,7 @@
                                (spaces num-spaces)))
         num-indent-chars   indent      
         indent-chars       (spaces num-indent-chars)      
-        extra              (str (tag! :ellipsis)
-                                (if single-column-map-layout? 
+        extra*             (str (if single-column-map-layout? 
                                   "\n\n"
                                   (if multi-line?
                                     "\n"
@@ -314,7 +320,11 @@
                                   map-key-ghost
                                   num-dropped-syntax)
                                 spaces-between-k-v
-                                (when coll-is-map? num-dropped-syntax)
+                                (when coll-is-map? num-dropped-syntax))
+
+        ;; _ (println "\nnum-dropped-annotion! : tagging " extra* " with " :ellipsis)
+        extra              (str (tag! :ellipsis)
+                                extra*
                                 (tag-reset!))
         locals             (keyed [max-keylen
                                    indent
@@ -690,9 +700,13 @@
              (when (some-> num-extra-spaces-after-key pos?) 
                (spaces num-extra-spaces-after-key))
 
-             (if formatting-meta?
-               (tagged kv-gap-spaces theme-token-map)
-               kv-gap-spaces)
+             #?(:cljs
+                kv-gap-spaces
+                :clj
+                (if formatting-meta?
+                  (do #_(println "tagging kv-gap-spaces in metadata map")
+                      (tagged kv-gap-spaces theme-token-map))
+                  kv-gap-spaces))
 
              tagged-val
 
@@ -807,7 +821,8 @@
   ([source {:keys [indent user-meta?]
             :or   {indent 0}
             :as   opts}]
-  ;;  (?pp opts)
+   #?(:cljs (js/console.clear))
+   
    (let [truncated      (truncate/truncate {:depth      0
                                             :user-meta? user-meta?}
                                            source)
@@ -823,6 +838,15 @@
          serialized     (serialized profiled indent)
          len            (-> profiled meta :str-len-with-badge)
          ]
-    ;;  (?pp :meta-truncated (meta truncated))
-    ;;  (?pp :meta-profiled (meta profiled))
+    ;; (?pp (string/split serialized "%c"))
+    ;; (?pp @state/styles)
+     
+     #_(?pp (map 
+             (fn [a b]
+               [a b])
+             (rest (string/split serialized "%c"))
+             @state/styles))
+    ;;  (?pp :serialized serialized)
+    ;;  (?pp @state/styles)
+     
      serialized)))

@@ -65,6 +65,7 @@
    (tag-reset! :foreground))
   ([theme-token]
    #?(:cljs (let [theme-token (or theme-token :foreground)]
+              #_(println "tag/tag-reset!  with  " theme-token )
               (swap! state/styles
                      conj
                      (-> @state/merged-theme theme-token))
@@ -93,6 +94,7 @@
                    (symbol? s)
                    (vector? s))
                display?)
+      #_(println "\ntag/tagged    :   tagging \"" s "\" with " theme-token)
       (let [opening-tag (tag! theme-token highlighting custom-badge-style)
             closing-tag (tag-reset!)]
         (str opening-tag s closing-tag)))))
