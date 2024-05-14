@@ -89,7 +89,8 @@
    :line-number           :annotation
    :column-number         :annotation
    :eval-form             :foreground
-   :result-header         :foreground
+   :result-header         {:color            :foreground
+                           :margin-block-end :0.5em}
    :seq-bracket           :bracket
    :lazy-seq-bracket      :bracket
    :max-print-level-label :annotation
