@@ -87,6 +87,39 @@
 (defn hexa->x256 [s]
   (->> s hexa->rgb (apply rgb->x256)))
 
+(defn ->fixed-float [points n]
+  #?(:cljs
+     (.toFixed (.parseFloat js/Number n) points)
+     :clj
+     (format (str "%." points "f") (double n))))
+
+;; ;; TODO - test this
+;; (defn hex->hsl [s]
+;;   (let [[r g b] (hexa->rgb s)
+;;         r       (/ r 255)
+;;         g       (/ g 255)
+;;         b       (/ b 255)
+;;         cmin    (min r g b)
+;;         cmax    (max r g b)
+;;         delta   (- cmax cmin)
+;;         h       0
+;;         s       0
+;;         l       0
+;;         h       (cond (= delta 0) 0
+;;                       (= cmax r)  (mod (/ (- g b) delta) 6)
+;;                       (= cmax g)  (/ (- b r) (+ delta 2))
+;;                       :else       (/ (- b r) (+ delta 4)))
+;;         h       #?(:cljs
+;;                    (js/Math.round (* h 60))
+;;                    :clj
+;;                    (Math/round (* h 60)))
+;;         h       (if (< h 0) (+ h 360) h)
+;;         l       (/ (+ cmax cmin) 2)
+;;         s       (if (= delta 0) 0 (/ delta (- 1 (abs (* 2 (- l 1))))))
+;;         s       (->fixed-float s 1)
+;;         l       (->fixed-float l 1)]
+;;     (str "hsl(" h "," s "%," l "%)")))
+
 (def xterm-colors-by-id
    {32  "#0087d7",
     64  "#5f8700",
