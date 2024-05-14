@@ -373,6 +373,7 @@
                                       (-> base :rainbow-brackets)))}))
 
 
+;; TODO - don't use xterm for bracket colors
 (defn- rainbow-brackets [mood theme]
   (let [contrast (let [x (or (:bracket-contrast theme) 
                              (:bracket-contrast @config))]
@@ -391,6 +392,24 @@
                     :clj (map xterm-id->sgr ret))]
     ret))
 
+;; TODO v0.5.0
+;; (defn metadata-bgcs
+;;   [mood
+;;    theme
+;;    base-theme]
+;;   (let [printer-metadata (some-> theme
+;;                                  :printer
+;;                                  :metadata)
+;;         bgc              (when (map? printer-metadata)
+;;                            (:background-color printer-metadata))
+;;         bgc              (or bgc
+;;                              (-> base-theme
+;;                                  :classes
+;;                                  :metadata
+;;                                  :background-color))
+;;         ;; rgb              ()
+;;         ]
+;;     (?pp :bgc bgc)))
 
 (defn merged-theme*
   ([]
@@ -432,9 +451,13 @@
 
          rainbow-brackets (rainbow-brackets mood theme)
 
+        ;;  metadata-bgcs    (metadata-bgcs mood theme base-theme)
+
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
 
-         ret              (merge-theme+ base-theme theme)]
+         ret              (merge-theme+ base-theme theme)
+         
+         ]
      ;; TODO - Add observability for theme
      ret)))
 
@@ -483,6 +506,11 @@
       (vector? x)
       (mapv highlight-style* x))
     (messaging/invalid-find-value-option x)))   
+
+(def *debug-tagging? (atom false))
+
+(defn debug-tagging? []
+  @*debug-tagging?)
 
 (def *formatting-meta-level (atom 0))
 
