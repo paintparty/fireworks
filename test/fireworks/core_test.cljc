@@ -190,8 +190,8 @@
                                               :theme                      theme}
                                              (atom smoke-test/record-sample))
                     formatted-string (-> ret :formatted :string)]
-                (pp/pprint 'p-data-record-sample-in-atom)
-                (pp/pprint formatted-string)
+                ;; (pp/pprint 'p-data-record-sample-in-atom)
+                ;; (pp/pprint formatted-string)
                 formatted-string)
               "%cAtom<%c%cFoos%c\n%c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c")))
        
@@ -435,8 +435,8 @@
                                             :theme                      theme}
                                            (atom smoke-test/record-sample))
                   formatted-string (-> ret :formatted :string)]
-              (pp/pprint p-data-record-sample-in-atom)
-              (pp/pprint (escape-sgr formatted-string))
+              ;; (pp/pprint p-data-record-sample-in-atom)
+              ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠3;38;2;37;101;70;48;2;229;251;229〠"
               "Atom<"
@@ -517,8 +517,8 @@
                                             :theme                      theme}
                                            (with-meta 'mysym {:foo :bar}))
                   formatted-string (-> ret :formatted :string)]
-              (pp/pprint 'p-data-symbol-with-meta)
-              (pp/pprint (escape-sgr formatted-string))
+              ;; (pp/pprint 'p-data-symbol-with-meta)
+              ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;2;77;109;186〠"
               "mysym"

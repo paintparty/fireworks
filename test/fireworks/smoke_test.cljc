@@ -10,24 +10,24 @@
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
 ;; If you don't do this, the tests will break.
 ;; TODO - Fix the above situation.
-{:theme                      "Alabaster Light"
- :mood                       :light
- :line-height                1.45
- :print-level                7
- :non-coll-length-limit          33
- :non-coll-mapkey-length-limit         20
- :coll-limit                 15
- :evaled-form-coll-limit     7
- :display-namespaces?        true
- :metadata-print-level       7
- :display-metadata?          true
- :metadata-position          :inline 
- :enable-rainbow-brackets?   true
- :bracket-contrast           :high
- :enable-terminal-truecolor? true
- :enable-terminal-italics?   true
- :custom-printers            nil
- :find                       nil}
+{:theme                        "Alabaster Light"
+ :mood                         :light
+ :line-height                  1.45
+ :print-level                  7
+ :non-coll-length-limit        33
+ :non-coll-mapkey-length-limit 20
+ :coll-limit                   15
+ :evaled-form-coll-limit       7
+ :display-namespaces?          true
+ :metadata-print-level         7
+ :display-metadata?            true
+ :metadata-position            :inline 
+ :enable-rainbow-brackets?     true
+ :bracket-contrast             :high
+ :enable-terminal-truecolor?   true
+ :enable-terminal-italics?     true
+ :custom-printers              nil
+ :find                         nil}
 
 
 
@@ -149,44 +149,44 @@
 (def record-sample (->Foos 1 2))
 
 (def basic-samples 
-  {:string   "string"
-   :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number   1234
-   :symbol   (with-meta 'mysym {:foo :bar})
-   :symbol2  (with-meta 'mysym
-               {:foo ["afasdfasf"
-                      "afasdfasf"
-                      {:a "foo"
-                       :b [1 2 [1 2 3 4]]}
-                      "afasdfasf"
-                      "afasdfasf"]
+  {:abcdefg {:string   "string"
+             :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+             :number   1234
+             :symbol   (with-meta 'mysym {:foo :bar})
+             :symbol2  (with-meta 'mysym
+                         {:foo ["afasdfasf"
+                                "afasdfasf"
+                                {:a "foo"
+                                 :b [1 2 [1 2 3 4]]}
+                                "afasdfasf"
+                                "afasdfasf"]
 
-                :bar "fooz"})
-   :boolean  true
-   :lamda    #(inc %)
-   :fn       juxt
-   :regex    #"^hi$"
-   :record   record-sample
-   :atom2    (atom record-sample)
-   :atom1    (atom 1)
-   :brackets [[[[[[]]]]]]
-   :meta-map (with-meta 
-               {(with-meta (symbol :a)
-                  {:abc "bar"
-                   :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"}) (with-meta (symbol "foo")
-                                                                            {:abc "bar"
-                                                                             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-                :b                                                        2 }
-               {:a (with-meta (symbol "foo")
-                     {:abc (with-meta (symbol "bar") {:a 1})
-                      :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-                })
-   :map      {:abc "bar"
-              "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                          :bar "fooz"})
+             :boolean  true
+             :lamda    #(inc %)
+             :fn       juxt
+             :regex    #"^hi$"
+             :record   record-sample
+             :atom2    (atom record-sample)
+             :atom1    (atom 1)
+             :brackets [[[[[[]]]]]]
+             :meta-map (with-meta 
+                         {(with-meta (symbol :a)
+                            {:abc "bar"
+                             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"}) (with-meta (symbol "foo")
+                                                                                      {:abc "bar"
+                                                                                       :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+                          :b                                                                                         2 }
+                         {:a (with-meta (symbol "foo")
+                               {:abc (with-meta (symbol "bar") {:a 1})
+                                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+                          })
+             :map      {:abc      "bar"
+                        "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
               ;; 'c [1 2 2 3 8 8 8 8  8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8]
-              [:a :b] 123444}})
+                        [:a :b]   123444}}})
 
-#_(? basic-samples)
+(? basic-samples)
 
 #_(? (with-meta 
          {(with-meta (symbol :a)
