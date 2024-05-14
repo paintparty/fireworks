@@ -50,8 +50,10 @@
           s         (if (collection-type? t)
                       (str "+" num-chars-dropped)
                       defs/ellipsis)]
-      #_(println "\nserialize/add-truncation-annotation:  tagging \"" s "\" with " theme-tag )
-      (str (tag! theme-tag) s (tag-reset!)))))
+
+      (when (state/debug-tagging?)
+        (println "\nserialize/add-truncation-annotation:  tagging \"" s "\" with " theme-tag ))
+        (str (tag! theme-tag) s (tag-reset!)))))
 
 (defn sev-user-meta-position-match? [user-meta position]
   (and (:display-metadata? @state/config)
@@ -112,6 +114,7 @@
         user-meta-block-tagged
         (when (sev-user-meta-position-match? user-meta :block)
           (swap! state/*formatting-meta-level inc)
+          (?pp (state/formatting-meta-level))
           (let [ret (formatted* user-meta {:indent     indent
                                            :user-meta? true})]
             (swap! state/*formatting-meta-level dec)
@@ -163,13 +166,17 @@
                 (if l2? :metadata2 :metadata)))
             theme-tag))
 
-        ;; _ (println "\nsev!   tagging " s " with " theme-tag )
+
+        _ 
+        (when (state/debug-tagging?)
+            (println "\nsev!   tagging " s " with " theme-tag))
+
         main-entity-tag                  
         (tag! theme-tag highlighting)
 
         ;; _ (when true #_(= x "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz")
         ;;         (!?pp x theme-tag))
-
+        
         ;; Additional tagging (and atom mutation) happens within
         ;; fireworks.serialize/add-truncation-annotation!
         chars-dropped-syntax 
@@ -192,6 +199,7 @@
         user-meta-inline-tagged
         (when (sev-user-meta-position-match? user-meta :inline)
           (swap! state/*formatting-meta-level inc)
+          #_(?pp (state/formatting-meta-level))
           (let [offset        defs/metadata-position-inline-offset
                 inline-offset (tagged (spaces (dec offset))
                                       {:theme-token (state/metadata-token)})
@@ -322,7 +330,9 @@
                                 spaces-between-k-v
                                 (when coll-is-map? num-dropped-syntax))
 
-        ;; _ (println "\nnum-dropped-annotion! : tagging " extra* " with " :ellipsis)
+        _ (when (state/debug-tagging?)
+            (println "\nnum-dropped-annotion! : tagging " extra* " with " :ellipsis))
+
         extra              (str (tag! :ellipsis)
                                 extra*
                                 (tag-reset!))
@@ -490,7 +500,7 @@
   (when (and (:display-metadata? @state/config)
              user-meta
              (contains? #{:block "block"} metadata-position))
-    (swap! state/*formatting-meta-level inc)
+    (?pp 'formatting-meta-level (swap! state/*formatting-meta-level inc))
     (let [ret (formatted* user-meta {:user-meta? true :indent indent*})]
       (swap! state/*formatting-meta-level dec)
       ret)))
@@ -506,6 +516,7 @@
                    (seq user-meta)
                    (contains? #{:inline "inline"} metadata-position))
     (swap! state/*formatting-meta-level inc)
+    #_(?pp (state/formatting-meta-level))
     (let [offset        defs/metadata-position-inline-offset
           inline-offset (tagged (spaces (dec offset))
                                 {:theme-token (state/metadata-token)})
@@ -667,7 +678,9 @@
         (nth untokenized idx)
 
         indent               
-        (+ (or max-keylen 0) (or defs/kv-gap 0) (or indent 0))
+        (+ (or max-keylen 0)
+           (or defs/kv-gap 0)
+           (or indent 0))
 
         {escaped-key    :escaped
          key-char-count :ellipsized-char-count}
@@ -675,10 +688,10 @@
 
         tagged-val          
         (tagged-val (keyed [v
-                            val-props
                             indent
-                            multi-line?
+                            val-props
                             separator
+                            multi-line?
                             max-keylen]))
 
         num-extra-spaces-after-key
@@ -704,7 +717,8 @@
                 kv-gap-spaces
                 :clj
                 (if formatting-meta?
-                  (do #_(println "tagging kv-gap-spaces in metadata map")
+                  (do (when (state/debug-tagging?)
+                        (println "tagging kv-gap-spaces in metadata map"))
                       (tagged kv-gap-spaces theme-token-map))
                   kv-gap-spaces))
 
@@ -821,7 +835,7 @@
   ([source {:keys [indent user-meta?]
             :or   {indent 0}
             :as   opts}]
-   #?(:cljs (js/console.clear))
+  ;;  #?(:cljs (js/console.clear))
    
    (let [truncated      (truncate/truncate {:depth      0
                                             :user-meta? user-meta?}

@@ -125,9 +125,11 @@
                   (style-from-theme :bracket nil))
                 (get @state/merged-theme theme-token nil))]
 
-    #_(println "tag-bracket!    theme-token is   "
-             theme-token
-             (str ",  style is:   " style))
+    (when (state/debug-tagging?)
+      (println "tag-bracket!    theme-token is   "
+               theme-token
+               (str ",  style is:   " style)))
+
     #?(:cljs
        (swap! state/styles conj style)
        :clj
@@ -136,9 +138,13 @@
 (defn- bracket!*
   [{:keys [s t] :as m}]
   (let [reset-theme-token (if (pos? (state/formatting-meta-level))
-                            :metadata
+                            ;; :metadata
+                            :foreground
                             :foreground)]
-    #_(println "\nbracket!*  " s ",  t: " t)
+
+    (when (state/debug-tagging?)
+      (println "\nbracket!*  " s ",  t: " t))
+
     #?(:cljs (if t 
                (do (tag-bracket! m)
                    (tag-reset! reset-theme-token)
@@ -181,7 +187,8 @@
    so they can be printed like `Atom<[1 2 3]>`"
   [m]
   (when (-> m :coll meta :atom?)
-    #_(println "\ntagging " defs/encapsulation-closing-bracket " with " :atom-wrapper)
+    (when (state/debug-tagging?)
+      (println "\ntagging " defs/encapsulation-closing-bracket " with " :atom-wrapper))
     (str (tag! :atom-wrapper)
          defs/encapsulation-closing-bracket
          (tag-reset!))))
