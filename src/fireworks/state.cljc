@@ -424,17 +424,20 @@
    ;; from env-vars, parsed and validated.
    (let [theme*           (when (:theme user-options) (:theme @config))
 
-         fallback-theme   (if (dark? (:mood @config))
-                            themes/alabaster-dark
-                            themes/alabaster-light)
+         fallback-theme   (fallback-theme)
 
          valid-user-theme (when (map? theme*) 
                             (if (s/valid? ::theme/theme theme*)
                               theme*
-                              (messaging/invalid-user-theme-warning
-                               theme*
-                               (:mood @config)
-                               fallback-theme)))
+                              (messaging/bad-option-value-warning
+                               (let [m (:theme config/options)]
+                                 (merge m
+                                        {:k      :theme
+                                         :v      theme*
+                                         :header (str "[fireworks.core/p]."
+                                                      "Problem with the supplied Fireworks theme \""
+                                                      (:name theme*)
+                                                      "\":")})))))
 
          theme            (cond
                             (string? theme*)
