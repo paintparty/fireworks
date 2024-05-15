@@ -71,56 +71,57 @@
                                             :font-style       :italic}}}})
 
 
-{:name   "Alabaster Dark"
-         :desc   "Based on @tonsky's Alabaster Dark theme."
-         :about  "This is additional documentation. Should support markdown here."
-         :url    "url goes here"
-         :mood   :dark
-         :author "Author Name"
-         :langs  ["Clojure" "ClojureScript" "Babashka"]
-         :tokens {:classes {:background    {:background-color "#0e1415"}
-                            :string        {:color "#8cbd7a"}
-                            :comment       {:color      "#DFDF8E"
-                                            :font-style :italic}
-                            :constant      {:color "#b696b5"}
-                            :definition    {:color "#71ADE7"}
-                            :annotation    {:color      "#DFDF8E"
-                                            :font-style :italic}
-                            :metadata      {:color            "#bb7777"
-                                            :text-shadow      "0 0 2px #003538"
-                                            :background-color "#351d1d"}
-                            :metadata-key  {:color            "#bb7777"
-                                            :font-weight      :bold
-                                            :text-shadow      "0 0 2px #003538"
-                                            :background-color "#351d1d"}
-                            :metadata2     {:color            "#9773b5"
-                                            :text-shadow      "0 0 2px #003538"
-                                            :background-color "#321f42"}
-                            :metadata-key2 {:color            "#9773b5"
-                                            :font-weight      :bold
-                                            :text-shadow      "0 0 2px #003538"
-                                            :background-color "#321f42"}
-                            :label         {:color            "#5abf8e"
-                                            :background-color "#004222"
-                                            :text-shadow      "0 0 2px #00381d"
-                                            :font-style       :italic}}
-                  :syntax  {:js-object-key {:color "#b2b2b2"}}
-                  :printer {:file-info     {:color                "#71ADE7"
-                                            :font-style           :italic
-                                            :padding-inline-start :0ch}
-                            :eval-form     {:color             "#85b7e5"
-                                            :font-style        :italic
-                                            :text-shadow       "0 0 2px #003d6b"
-                                            :background-color  "#00345c"
-                                            :margin-inline-end :2ch}
-                            :comment       {:color             "#2e6666"
-                                            :text-shadow       "0 0 2px #ffffff"
-                                            :background-color  "#e5f1fa"
-                                            :outline           "2px solid #e5f1fa"
-                                            :margin-inline-end :2ch
-                                            :font-style        :italic}
-                            :function-args {:color "#999999"}
-                            :atom-wrapper  :label}}}
+(def alabaster-dark 
+  {:name   "Alabaster Dark"
+   :desc   "Based on @tonsky's Alabaster Dark theme."
+   :about  "This is additional documentation. Should support markdown here."
+   :url    "url goes here"
+   :mood   :dark
+   :author "Author Name"
+   :langs  ["Clojure" "ClojureScript" "Babashka"]
+   :tokens {:classes {:background    {:background-color "#0e1415"}
+                      :string        {:color "#8cbd7a"}
+                      :comment       {:color      "#DFDF8E"
+                                      :font-style :italic}
+                      :constant      {:color "#b696b5"}
+                      :definition    {:color "#71ADE7"}
+                      :annotation    {:color      "#DFDF8E"
+                                      :font-style :italic}
+                      :metadata      {:color            "#bb7777"
+                                      :text-shadow      "0 0 2px #003538"
+                                      :background-color "#351d1d"}
+                      :metadata-key  {:color            "#bb7777"
+                                      :font-weight      :bold
+                                      :text-shadow      "0 0 2px #003538"
+                                      :background-color "#351d1d"}
+                      :metadata2     {:color            "#9773b5"
+                                      :text-shadow      "0 0 2px #003538"
+                                      :background-color "#321f42"}
+                      :metadata-key2 {:color            "#9773b5"
+                                      :font-weight      :bold
+                                      :text-shadow      "0 0 2px #003538"
+                                      :background-color "#321f42"}
+                      :label         {:color            "#5abf8e"
+                                      :background-color "#004222"
+                                      :text-shadow      "0 0 2px #00381d"
+                                      :font-style       :italic}}
+            :syntax  {:js-object-key {:color "#b2b2b2"}}
+            :printer {:file-info     {:color                "#71ADE7"
+                                      :font-style           :italic
+                                      :padding-inline-start :0ch}
+                      :eval-form     {:color             "#85b7e5"
+                                      :font-style        :italic
+                                      :text-shadow       "0 0 2px #003d6b"
+                                      :background-color  "#00345c"
+                                      :margin-inline-end :2ch}
+                      :comment       {:color             "#2e6666"
+                                      :text-shadow       "0 0 2px #ffffff"
+                                      :background-color  "#e5f1fa"
+                                      :outline           "2px solid #e5f1fa"
+                                      :margin-inline-end :2ch
+                                      :font-style        :italic}
+                      :function-args {:color "#999999"}
+                      :atom-wrapper  :label}}})
 
 
 (def degas-light
