@@ -411,15 +411,18 @@
 ;;         ]
 ;;     (?pp :bgc bgc)))
 
+(defn fallback-theme []
+  (if (dark? (:mood @config))
+    themes/alabaster-dark
+    themes/alabaster-light))
+
 (defn merged-theme*
   ([]
    (merged-theme* nil))
   ([reset]
    ;; TODO - Add observability for theme, user-config.
    ;; from env-vars, parsed and validated.
-   (let [supplied-theme?  (:theme user-options)
-
-         theme*           (when supplied-theme? (:theme @config))
+   (let [theme*           (when (:theme user-options) (:theme @config))
 
          fallback-theme   (if (dark? (:mood @config))
                             themes/alabaster-dark
