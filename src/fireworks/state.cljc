@@ -462,7 +462,6 @@
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
 
          ret              (merge-theme+ base-theme theme)
-         
          ]
      ;; TODO - Add observability for theme
      ret)))
