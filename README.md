@@ -141,7 +141,7 @@ Import into your namespace:
 ### Print & return
 Fireworks provides a bevy of print-and-return macros and functions so that you can print values from your source without altering the execution of your program.
 
-`?`, `?log`, and `?pp` all print the evaled form (or user-supplied label), file info (line + column), and the result. The variants with a single trailing dash omit the form/label. The variants with a trailing double dash just print only the result. 
+`?`, `?log`, and `?pp` all print the evaled form (or user-supplied label), file info (line + column), and the result. The variants with a single trailing dash, such as `?-` omit the form/label. The variants with a trailing double dash, such as `?--`,  print only the result. 
 
 
 Printing with Fireworks formatting (colorized & justified):<br>
