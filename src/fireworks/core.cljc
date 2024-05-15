@@ -135,12 +135,15 @@
                         config/options
                         :spec
                         (s/valid? new-val))]
-
-    #_(when (contains? #{:theme} #_#{:enable-terminal-italics? :display-metadata?} k)
-      (println "Current value of" k "is" (k @state/config))
-      (println "New value of" k "is valid?:" valid?))
-    (when valid?
+    (if valid?
       (swap! state/config assoc k new-val)
+      (messaging/bad-option-value-warning
+       (let [m (k config/options)]
+         (merge m
+                {:k       k
+                 :v       new-val
+                 :header  "[fireworks.core/p] Invalid option value."})))
+      
       #_(println "Current value of" k "after swap! is" (k @state/config)))))
 
 
@@ -193,7 +196,6 @@
                         (doseq [k ks]
                           (reset-user-opt! k opts))
                         ks)]
-
     (when (or (diff-call-site-theme-option-keys opts-to-reset)
               (diff-from-merged-user-config config-before))
       (let [{:keys [with-style-maps
