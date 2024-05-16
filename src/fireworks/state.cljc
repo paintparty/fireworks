@@ -1,5 +1,6 @@
 (ns ^:dev/always fireworks.state
   (:require 
+   [fireworks.pp :refer [?pp]]
    [clojure.string :as string]
    [clojure.spec.alpha :as s]
    [fireworks.basethemes :as basethemes]
@@ -174,6 +175,7 @@
 
 
 (defn x->sgr [x k]
+  ;; (?pp x k)
   (when x
     (let [n (if (= k :fg) 38 48)]
       (if (int? x)

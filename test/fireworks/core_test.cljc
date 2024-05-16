@@ -19,7 +19,7 @@
 #?(:cljs
    (deftest p-data-basic 
      (is (=
-          (let [ret (p-data {:theme theme} "foo")] #_(pp/pprint "p-data basic") #_(pp/pprint ret) ret)
+          (let [ret (p-data {:theme theme} "foo")] (pp/pprint "p-data basic") (pp/pprint ret) ret)
           {:quoted-form   "foo",
            :formatted     {:string     "%c\"foo\"%c"
                            :css-styles []},
@@ -35,14 +35,14 @@
                                         "color:#585858;line-height:1.45;"
                                         "color:#737373;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
-                                        "color:#28cc7d;margin-block-end:0.5em;line-height:1.45;"
+                                        "color:;margin-block-end:0.5em;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
                                         "color:#448C27;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"]}}))))
 #?(:cljs
    (deftest p-data-with-label
      (is (= 
-          (let [ret (p-data "my-label" "foo")] #_(pp/pprint ret) ret)
+          (let [ret (p-data "my-label" "foo")] #_ #_(pp/pprint "p-data-with-label") (pp/pprint ret) ret)
           {:quoted-form   "foo",
            :formatted     {:string     "%c\"foo\"%c"
                            :css-styles []},
@@ -58,7 +58,7 @@
                                         "color:#585858;line-height:1.45;"
                                         "color:#737373;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
-                                        "color:#28cc7d;margin-block-end:0.5em;line-height:1.45;"
+                                        "color:;margin-block-end:0.5em;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
                                         "color:#448C27;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"]}}))))
@@ -74,8 +74,8 @@
                                                             :non-coll-length-limit
                                                             :default)}
                                 "foo")]
-              ;;  (pp/pprint 'p-data-with-label-from-opts)
-              ;;  (pp/pprint ret)
+                ;; (pp/pprint 'p-data-with-label-from-opts)
+                ;; (pp/pprint ret)
                 ret)
               {:quoted-form   "foo",
                :formatted     {:string     "%c\"foo\"%c"
@@ -92,7 +92,7 @@
                                             "color:#585858;line-height:1.45;"
                                             "color:#737373;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
-                                            "color:#28cc7d;margin-block-end:0.5em;line-height:1.45;"
+                                            "color:;margin-block-end:0.5em;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
                                             "color:#448C27;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"]}})))
@@ -125,7 +125,7 @@
                 ;; (pp/pprint 'p-data-basic-samples)
                 ;; (pp/pprint formatted-string)
                 formatted-string)
-              "%c{%c%c:atom1%c    %cAtom<%c%c1%c%c>%c\n %c:atom2%c    %cAtom<%c%cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n %c:boolean%c  %ctrue%c\n %c:brackets%c %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n %c:fn%c       %ccljs.core/juxt%c%c[var_args]%c\n %c:lamda%c    %cλ%c%c%c%c[%1]%c\n %c:map%c      %c{%c%c:abc%c%c\n            %c%c\"bar\"%c%c\n            \n            %c%c\"asdfasdfa\"%c%c\n            %c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n            \n            %c%c[%c%c:a%c %c:b%c%c]%c%c\n            %c%c123444%c%c}%c\n %c:meta-map%c %c{%c %c    %c%c^{%c%c:a%c %cfoo%c %c    %c%c^{%c%c:abc%c %cbar%c %c    %c%c^{%c%c:a%c %c1%c%c}%c%c\n                                %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c}%c%c\n            %c%ca%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c\n                    %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c\n            %c%cfoo%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c\n                      %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c\n            \n            %c%c:b%c%c\n            %c%c2%c%c}%c\n %c:number%c   %c1234%c\n %c:record%c   %cFoos%c\n           %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n %c:regex%c    %c#\"^hi$\"%c\n %c:string%c   %c\"string\"%c\n %c:symbol%c   %cmysym%c %c    %c%c^{%c%c:foo%c %c:bar%c%c}%c\n %c:symbol2%c  %cmysym%c %c    %c%c^{%c%c:foo%c %c[%c%c\"afasdfasf\"%c%c\n                             %c%c\"afasdfasf\"%c%c\n                             %c%c{%c%c:a%c %c\"foo\"%c%c %c%c:b%c %c[%c%c1%c%c %c%c2%c%c %c%c[%c%c1%c%c %c%c2%c%c %c%c3%c%c %c%c4%c%c]%c%c]%c%c}%c%c\n                             %c%c\"afasdfasf\"%c%c\n                             %c%c\"afasdfasf\"%c%c]%c%c\n                       %c%c:bar%c %c\"fooz\"%c%c}%c\n %c:uuid%c     %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c%c}%c")))
+                "%c{%c%c:abcdefg%c %c{%c%c:atom1%c    %cAtom<%c%c1%c%c>%c\n           %c:atom2%c    %cAtom<%c%cFoos%c\n                     %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n           %c:boolean%c  %ctrue%c\n           %c:brackets%c %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n           %c:fn%c       %ccljs.core/juxt%c%c[var_args]%c\n           %c:lamda%c    %cλ%c%c%c%c[%1]%c\n           %c:map%c      %c{%c%c:abc%c%c\n                      %c%c\"bar\"%c%c\n                      \n                      %c%c\"asdfasdfa\"%c%c\n                      %c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                      \n                      %c%c[%c%c:a%c %c:b%c%c]%c%c\n                      %c%c123444%c%c}%c\n           %c:meta-map%c %c{%c %c    %c%c^{%c%c:a%c %cfoo%c %c    %c%c^{%c%c:abc%c %cbar%c %c    %c%c^{%c%c:a%c %c1%c%c}%c%c\n                                          %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c}%c%c\n                      %c%ca%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c\n                              %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c\n                      %c%cfoo%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c\n                                %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c\n                      \n                      %c%c:b%c%c\n                      %c%c2%c%c}%c\n           %c:number%c   %c1234%c\n           %c:record%c   %cFoos%c\n                     %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n           %c:regex%c    %c#\"^hi$\"%c\n           %c:string%c   %c\"string\"%c\n           %c:symbol%c   %cmysym%c %c    %c%c^{%c%c:foo%c %c:bar%c%c}%c\n           %c:symbol2%c  %cmysym%c %c    %c%c^{%c%c:foo%c %c[%c%c\"afasdfasf\"%c%c\n                                       %c%c\"afasdfasf\"%c%c\n                                       %c%c{%c%c:a%c %c\"foo\"%c%c %c%c:b%c %c[%c%c1%c%c %c%c2%c%c %c%c[%c%c1%c%c %c%c2%c%c %c%c3%c%c %c%c4%c%c]%c%c]%c%c}%c%c\n                                       %c%c\"afasdfasf\"%c%c\n                                       %c%c\"afasdfasf\"%c%c]%c%c\n                                 %c%c:bar%c %c\"fooz\"%c%c}%c\n           %c:uuid%c     %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c%c}%c%c}%c")))
        
        (deftest p-data-with-coll-limit
          (is (= 
