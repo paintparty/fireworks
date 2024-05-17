@@ -114,7 +114,7 @@
         user-meta-block-tagged
         (when (sev-user-meta-position-match? user-meta :block)
           (swap! state/*formatting-meta-level inc)
-          (?pp (state/formatting-meta-level))
+          ;; (?pp (state/formatting-meta-level))
           (let [ret (formatted* user-meta {:indent     indent
                                            :user-meta? true})]
             (swap! state/*formatting-meta-level dec)
@@ -199,7 +199,7 @@
         user-meta-inline-tagged
         (when (sev-user-meta-position-match? user-meta :inline)
           (swap! state/*formatting-meta-level inc)
-          #_(?pp (state/formatting-meta-level))
+          ;; (?pp (state/formatting-meta-level))
           (let [offset        defs/metadata-position-inline-offset
                 inline-offset (tagged (spaces (dec offset))
                                       {:theme-token (state/metadata-token)})
@@ -500,7 +500,7 @@
   (when (and (:display-metadata? @state/config)
              user-meta
              (contains? #{:block "block"} metadata-position))
-    (?pp 'formatting-meta-level (swap! state/*formatting-meta-level inc))
+    ;; (?pp 'formatting-meta-level (swap! state/*formatting-meta-level inc))
     (let [ret (formatted* user-meta {:user-meta? true :indent indent*})]
       (swap! state/*formatting-meta-level dec)
       ret)))
