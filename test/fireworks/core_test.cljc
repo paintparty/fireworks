@@ -19,7 +19,7 @@
 #?(:cljs
    (deftest p-data-basic 
      (is (=
-          (let [ret (p-data {:theme theme} "foo")] (pp/pprint "p-data basic") (pp/pprint ret) ret)
+          (let [ret (p-data {:theme theme} "foo")] #_ #_(pp/pprint "p-data basic") (pp/pprint ret) ret)
           {:quoted-form   "foo",
            :formatted     {:string     "%c\"foo\"%c"
                            :css-styles []},
@@ -30,10 +30,10 @@
            :column        21,
            :line          22,
            :end-line      22,
-           :formatted+    {:string     "%cfoo%c%cfireworks.core-test:22:21%c%c \n%c%c\"foo\"%c",
-                           :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;margin-inline-end:2ch;line-height:1.45;"
+           :formatted+    {:string     "%cfoo%c  %cfireworks.core-test:22:21%c%c \n%c%c\"foo\"%c",
+                           :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
-                                        "color:#737373;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
+                                        "color:#2e6666;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
                                         "color:;margin-block-end:0.5em;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
@@ -53,10 +53,10 @@
            :column        21,
            :line          45,
            :end-line      45,
-           :formatted+    {:string     "%cmy-label%c%cfireworks.core-test:45:21%c%c \n%c%c\"foo\"%c",
-                           :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;margin-inline-end:2ch;outline:2px solid #e5f1fa;line-height:1.45;"
+           :formatted+    {:string     "%cmy-label%c  %cfireworks.core-test:45:21%c%c \n%c%c\"foo\"%c",
+                           :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;outline:2px solid #e5f1fa;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
-                                        "color:#737373;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
+                                        "color:#2e6666;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
                                         "color:;margin-block-end:0.5em;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
@@ -87,10 +87,10 @@
                :column        25,
                :line          71,
                :end-line      76,
-               :formatted+    {:string     "%cmy-label-from-opts%c%cfireworks.core-test:71:25%c%c \n%c%c\"foo\"%c",
-                               :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;margin-inline-end:2ch;outline:2px solid #e5f1fa;line-height:1.45;"
+               :formatted+    {:string     "%cmy-label-from-opts%c  %cfireworks.core-test:71:25%c%c \n%c%c\"foo\"%c",
+                               :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;outline:2px solid #e5f1fa;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
-                                            "color:#737373;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
+                                            "color:#2e6666;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
                                             "color:;margin-block-end:0.5em;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
@@ -120,12 +120,12 @@
                                               :non-coll-mapkey-length-limit (-> fireworks.config/options
                                                                                 :non-coll-mapkey-length-limit
                                                                                 :default)}
-                                             smoke-test/basic-samples)
+                                             smoke-test/basic-samples-cljc)
                     formatted-string (-> ret :formatted :string)]
                 ;; (pp/pprint 'p-data-basic-samples)
                 ;; (pp/pprint formatted-string)
                 formatted-string)
-                "%c{%c%c:abcdefg%c %c{%c%c:atom1%c    %cAtom<%c%c1%c%c>%c\n           %c:atom2%c    %cAtom<%c%cFoos%c\n                     %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n           %c:boolean%c  %ctrue%c\n           %c:brackets%c %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n           %c:fn%c       %ccljs.core/juxt%c%c[var_args]%c\n           %c:lamda%c    %cλ%c%c%c%c[%1]%c\n           %c:map%c      %c{%c%c:abc%c%c\n                      %c%c\"bar\"%c%c\n                      \n                      %c%c\"asdfasdfa\"%c%c\n                      %c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                      \n                      %c%c[%c%c:a%c %c:b%c%c]%c%c\n                      %c%c123444%c%c}%c\n           %c:meta-map%c %c{%c %c    %c%c^{%c%c:a%c %cfoo%c %c    %c%c^{%c%c:abc%c %cbar%c %c    %c%c^{%c%c:a%c %c1%c%c}%c%c\n                                          %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c}%c%c\n                      %c%ca%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c\n                              %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c\n                      %c%cfoo%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c\n                                %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c\n                      \n                      %c%c:b%c%c\n                      %c%c2%c%c}%c\n           %c:number%c   %c1234%c\n           %c:record%c   %cFoos%c\n                     %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n           %c:regex%c    %c#\"^hi$\"%c\n           %c:string%c   %c\"string\"%c\n           %c:symbol%c   %cmysym%c %c    %c%c^{%c%c:foo%c %c:bar%c%c}%c\n           %c:symbol2%c  %cmysym%c %c    %c%c^{%c%c:foo%c %c[%c%c\"afasdfasf\"%c%c\n                                       %c%c\"afasdfasf\"%c%c\n                                       %c%c{%c%c:a%c %c\"foo\"%c%c %c%c:b%c %c[%c%c1%c%c %c%c2%c%c %c%c[%c%c1%c%c %c%c2%c%c %c%c3%c%c %c%c4%c%c]%c%c]%c%c}%c%c\n                                       %c%c\"afasdfasf\"%c%c\n                                       %c%c\"afasdfasf\"%c%c]%c%c\n                                 %c%c:bar%c %c\"fooz\"%c%c}%c\n           %c:uuid%c     %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c%c}%c%c}%c")))
+                "%c{%c%c:abcdefg%c %c{%c%c:boolean%c            %ctrue%c\n           %c:brackets%c           %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n           %c:fn%c                 %ccljs.core/juxt%c%c[var_args]%c\n           %c:lamda%c              %cλ%c%c%c%c[%1]%c\n           %c:number%c             %c1234%c\n           %c:record%c             %cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n           %c:regex%c              %c#\"^hi$\"%c\n           %c:string%c             %c\"string\"%c\n           %c:symbol%c             %cmysym%c %c    %c%c^{%c%c:foo%c %c:bar%c%c}%c\n           %c:symbol2%c            %cmysym%c %c    %c%c^{%c%c:foo%c %c[%c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c{%c%c:a%c %c\"foo\"%c%c %c%c:b%c %c[%c%c1%c%c %c%c2%c%c %c%c[%c%c1%c%c %c%c2%c%c %c%c3%c%c %c%c4%c%c]%c%c]%c%c}%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c]%c%c\n                                           %c%c:bar%c %c\"fooz\"%c%c}%c\n           %c:uuid%c               %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c\n           %c:atom/number%c        %cAtom<%c%c1%c%c>%c\n           %c:atom/record%c        %cAtom<%c%cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n           %c:map/multi-line%c     %c{%c%c:abc%c%c\n                                %c%c\"bar\"%c%c\n                                \n                                %c%c\"asdfasdfa\"%c%c\n                                %c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                \n                                %c%c[%c%c:a%c %c:b%c%c]%c%c\n                                %c%c123444%c%c}%c\n           %c:map/nested-meta%c    %c{%c %c    %c%c^{%c%c:a%c %cfoo%c %c    %c%c^{%c%c:abc%c %cbar%c%c\n                                                    %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c}%c%c\n                                %c%ca%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                %c%cfoo%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                \n                                %c%c:b%c%c\n                                %c%c2%c%c}%c\n           %c:map/single-line%c    %c{%c%c:a%c %c1%c %c:b%c %c2%c %c:c%c %c\"three\"%c%c}%c\n           %c:set/multi-line%c     %c#{%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                 %c%c3333333%c%c\n                                 %c%c:22222%c%c}%c\n           %c:set/single-line%c    %c#{%c%c1%c %c\"three\"%c %c:2%c%c}%c\n           %c:vector/multi-line%c  %c[%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                %c%c:22222%c%c\n                                %c%c3333333%c%c]%c\n           %c:vector/single-line%c %c[%c%c1%c %c:2%c %c\"three\"%c%c]%c%c}%c%c}%c")))
        
        (deftest p-data-with-coll-limit
          (is (= 
@@ -530,7 +530,7 @@
               "〠38;2;190;85;187;48;2;250;232;253〠"
               "^{"
               "〠0〠"
-              "〠38;2;99;73;212;48;2;250;232;253〠"
+              "〠38;2;190;85;187;48;2;250;232;253〠"
               ":foo"
               "〠0〠"
               "〠38;2;190;85;187;48;2;250;232;253〠"

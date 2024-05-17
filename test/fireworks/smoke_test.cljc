@@ -148,71 +148,59 @@
 
 (def record-sample (->Foos 1 2))
 
-(def basic-samples 
-  {:abcdefg {:string   "string"
-             :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-             :number   1234
-             :symbol   (with-meta 'mysym {:foo :bar})
-             :symbol2  (with-meta 'mysym
-                         {:foo ["afasdfasf"
-                                "afasdfasf"
-                                {:a "foo"
-                                 :b [1 2 [1 2 3 4]]}
-                                "afasdfasf"
-                                "afasdfasf"]
+(def basic-samples-cljc 
+  {:abcdefg {:string             "string"
+             :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+             :number             1234
+             :symbol             (with-meta 'mysym {:foo :bar})
+             :symbol2            (with-meta 'mysym
+                                   {:foo ["afasdfasf"
+                                          "afasdfasf"
+                                          {:a "foo"
+                                           :b [1 2 [1 2 3 4]]}
+                                          "afasdfasf"
+                                          "afasdfasf"]
 
-                          :bar "fooz"})
-             :boolean  true
-             :lamda    #(inc %)
-             :fn       juxt
-             :regex    #"^hi$"
-             :record   record-sample
-             :atom2    (atom record-sample)
-             :atom1    (atom 1)
-             :brackets [[[[[[]]]]]]
-             :meta-map (with-meta 
-                         {(with-meta (symbol :a)
-                            {:abc "bar"
-                             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"}) (with-meta (symbol "foo")
-                                                                                      {:abc "bar"
-                                                                                       :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-                          :b                                                                                         2 }
-                         {:a (with-meta (symbol "foo")
-                               {:abc (with-meta (symbol "bar") {:a 1})
-                                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-                          })
-             :map      {:abc      "bar"
-                        "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-              ;; 'c [1 2 2 3 8 8 8 8  8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8]
-                        [:a :b]   123444}}})
+                                    :bar "fooz"})
+             :boolean            true
+             :lamda              #(inc %)
+             :fn                 juxt
+             :regex              #"^hi$"
+             :record             record-sample
+             :atom/record        (atom record-sample)
+             :atom/number        (atom 1)
+             :brackets           [[[[[[]]]]]]
+             :map/nested-meta    (with-meta 
+                                   {(with-meta (symbol :a)
+                                      {:abc "bar"
+                                       :xyz "abc"}) (with-meta (symbol "foo")
+                                                      {:abc "bar"
+                                                       :xyz "abc"})
+                                    :b                                               2}
+                                   {:a (with-meta (symbol "foo")
+                                         {:abc (symbol "bar")
+                                          :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
+             :map/single-line    {:a 1
+                                  :b 2
+                                  :c "three"}
+             :map/multi-line     {:abc      "bar"
+                                  "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                                  [:a :b]   123444}
+             :vector/single-line [1 :2 "three"]
+             :vector/multi-line  ["abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                                  :22222
+                                  3333333]
+             :set/single-line    #{1 :2 "three"}
+             :set/multi-line     #{"abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                                   :22222
+                                   3333333}}})
 
-(? basic-samples)
+(? basic-samples-cljc)
 
-#_(? (with-meta 
-         {(with-meta (symbol :a)
-            {:abc "bar"
-             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-          (with-meta (symbol "foo")
-            {:abc "bar"
-             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-          :b "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-          :122222 5555555}
-         {:a                (with-meta (symbol "foo")
-                              {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
-                               :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                               ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-                               })
-          ;; :xyz              "bar" 
-          ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-          }))
-
-(? {'a (with-meta (symbol "foo")
-         {:abc "bar"
-          :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
 
 #?(:clj
    (do 
-     #_(do
+     (do
          ;; DataTypes ------------------------------------------------------
          (? "A def of deftype" (deftype MyType [a b]))
          
@@ -291,7 +279,7 @@
             ;;  :theme      "Alabaster Light"
              :theme      themes/alabaster-light
              :find       {:pred #(= 1234 %)}}
-            basic-samples)
+            basic-samples-cljc)
 
 
 
@@ -353,7 +341,7 @@
   
 
  ;; Testing all the options cljc
- #_(do 
+ (do 
 
   ;; :mood
   (? {:label :mood :mood "light" :theme nil}
@@ -451,3 +439,124 @@
 
   #?(:clj
      (? {:label "java.util.ArrayList" :coll-limit 10} (java.util.ArrayList. [1 2 3 4 5 6 7 8 9 10 11 12 13]))))  
+
+
+;; Random js data structure tests
+
+;; (let [
+;;         ;; itInt8Array  (new js/Int8Array
+;;         ;;                   #js[1 2 3 4 5 6 7 8 9])
+;;         ;; jsarray  #js[1 2 3 4 5 6 7 8 9]
+;;         itmap (new js/Map
+;;                    #js[#js["a", 1],
+;;                        #js["b", 2]
+;;                        #js["c", 3]
+;;                        #js["d", 4]])
+;;         ;; it #_[1 2 3 [1 2 3 [1 2 3]]]
+;;         ;; {:a           [1 3 8 7 5 9 3 99 88]
+;;         ;;  :bee         {:a 'foo
+;;         ;;                :b {:a 'foo
+;;         ;;                    :b [:wtf]}}
+;;         ;;  :b           "hello, world"
+;;         ;;  :c           (new js/Date) 
+;;         ;;  :d           #js {:a "bar"
+;;         ;;                    :b "bar"}
+;;         ;;  :jsmap       (new js/Map
+;;         ;;                    #js[#js["a", 1],
+;;         ;;                        #js["b", 2]
+;;         ;;                        #js["c", 3]
+;;         ;;                        #js["d", 4]])
+;;         ;;  :itInt8Array (new js/Int8Array
+;;         ;;                    #js[1 2 3 4 5 6 7 8 9])
+;;         ;;  :e           #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+;;         ;;  }
+;;         ;; pw (truncate 0 it)
+;;         ts (with-meta
+;;              {"asfasdfasdfasdfasdfasdfasdfasdfasfadf"                          12
+;;               :foo                                                           (with-meta #{:a 1}
+;;                                                                                {:foo  "on a sev blah blah"
+;;                                                                                 :ffoo "adfadsfadsfasfdasdfasdfassasfsdfasd"
+;;                                                                                 :baz  "adfadsfadsfasfdasdfasdfassasdfadsfasdf"}) 
+;;               #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc" itmap
+;;               ;; :itmap itmap
+;;               }
+;;              {:foo  "adfadsfadsfasfdasdfasdfas"
+;;               :ffoo "adfadsfadsfasfdasdfasdfas"
+;;               :baz  [123 9898 8989898 89898989 988989]})
+;;         ;; tss {:foo "bar"}
+;;         ]
+
+;;     (? basic-samples-cljc)
+
+;;     #_(? {:theme monokai-light}
+;;      {:a (with-meta (symbol "foo")
+;;            {:abc "bar"
+;;             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+;;       :b 1})
+
+;;     #_(? {:theme degas-light} (with-meta 
+;;                                 {(with-meta (symbol :a)
+;;                                    {:abc "bar"
+;;                                     :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"}) (with-meta (symbol "foo")
+;;                                                                                              {:abc "bar"
+;;                                                                                               :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+;;                                  :b                                                                                         2}
+;;                                 {:a (with-meta (symbol "foo")
+;;                                       {:abc (with-meta (symbol "bar") {:a   (with-meta (symbol "a")
+;;                                                                               {:abc (with-meta (symbol "a")
+;;                                                                                       {:abc (with-meta (symbol "a")
+;;                                                                                               {:abc "abc"
+;;                                                                                                :xyz "xyz"})
+;;                                                                                        :xyz "xyz"})
+;;                                                                                :xyz "xyz"})
+;;                                                                        :xyz "abcdefghijklmnopqrstuv"})
+;;                                        :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})}))
+
+;;     ;; (? {[1 2] "afjasljfalsjdalsfk" #{1 2 3} "afsdfasdfsdfasfas"})
+
+;;     #_(? {:a         1234
+;;         :abc       3333
+;;         :goldenrod "97bda55b-6175-4c39-9e04-7c0205c709dc"})
+
+;;     #_(? {:theme alabaster-lightx}
+;;        {:a                 "foo"
+;;         :xyz               {:a         1234
+;;                             :abc       3333
+;;                             :goldenrod "97bda55b-6175-4c39-9e04-7c0205c709dc"}
+;;         2222               :wtf
+;;         :hi-there-everyone #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"})
+
+;;     #_(? {:theme             alabaster-lightx
+;;         :metadata-position :inline}
+;;        (with-meta 
+;;          {(with-meta (symbol :a)
+;;             {:abc "bar"
+;;              :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+;;           (with-meta (symbol "foo")
+;;             {:abc "bar"
+;;              :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
+;;           :b "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+;;           :122222 5555555}
+;;          {:a                (with-meta (symbol "foo")
+;;                               {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
+;;                                :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+;;                                ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+;;                                })
+;;           ;; :xyz              "bar" 
+;;           ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
+;;           }))
+
+
+;;     #_(?-- (with-meta [] #_(symbol "foo")
+;;          {:xyz "abcdefghijklmnopqrstuvwxyzzzzzzz"}
+;;          #_{:xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"}
+;;          ))
+;;     #_(? {:theme             alabaster-lightx
+;;         :metadata-position :inline}
+;;        (with-meta
+;;          [:b]
+;;          {:a                "foo"
+;;           :xyz              "bar" 
+;;           "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"}))
+
+;;     #_(?println ts))
