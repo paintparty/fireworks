@@ -19,6 +19,7 @@
    :metadata-key2 :foreground
    :highlight    :foreground ;; default bg-color, inherited by [:printer :find]
    :label        :foreground ;; literal labels, type labels, atom wrappers, etc.
+   :eval-label   :foreground ;; literal labels, type labels, atom wrappers, etc.
    
   ;; Experimental, not working yet
   ;;  :modifier   :foreground ;; earmuffs, deref, unused-arg, whitespace
@@ -88,7 +89,8 @@
    :file-info             :annotation
    :line-number           :annotation
    :column-number         :annotation
-   :eval-form             :foreground
+   :eval-label            :eval-label
+   :eval-form             :eval-label
    :result-header         {:color            nil
                            :margin-block-end :0.5em}
    :seq-bracket           :bracket
