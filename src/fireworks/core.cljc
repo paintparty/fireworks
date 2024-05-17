@@ -57,6 +57,7 @@
 
 
 
+;; TODO - use correct tags for label or form
 (defn user-label-or-form!
   [{:keys [qf template label]}]
   (let [label (when (= template [:form-or-label :file-info :result])
@@ -100,7 +101,7 @@
                         (tag/tag-entity! " \n" :result-header))
         fmt           (when-not log? (serialize/formatted* source))
         fmt+          (str (or label form)
-                           #?(:clj (when (or label form) "  "))
+                           (when (or label form) "  ")
                            file-info
                            result-header
                            fmt)]
