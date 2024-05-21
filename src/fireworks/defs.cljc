@@ -69,6 +69,7 @@
 
 (def all-base-syntax-tokens (into #{} (keys base-syntax-tokens)))
 
+;; TODO add style for print-level terminus character
 (def base-printer-tokens
   {:comment               :comment
    :foreground            :foreground

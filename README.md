@@ -167,7 +167,7 @@ You can also print and return with core clojure printing functions. The followin
 `?prn` <br>
 `?pr` <br>
 
-The following will `tap>` & return the result, with no printing:<br>
+You can also just `tap>` & return the result, with no printing:<br>
 `?>` <br>
 
 <br>
@@ -191,7 +191,7 @@ All of the above functions have a respective "silencing" function, which will ju
 <br>
 
 ### Using `?` 
-**`fireworks.core/?`** is a macro that prints the namespace info, the form, and the result, and returns the result.
+**`fireworks.core/?`** is a macro that prints the form, namespace info, and resulting value. It returns the resulting value.
 
 ```Clojure
 (def x {:a "foo" :xyz "bar"})
