@@ -56,13 +56,10 @@
 ;;                               ooo OOO OOO ooo
 
 
-
-;; TODO - use correct tags for label or form
 (defn user-label-or-form!
   [{:keys [qf template label]}]
   (let [label (when (= template [:form-or-label :file-info :result])
-                (some-> label (tag/tag-entity! :comment)))
-        label #?(:cljs label :clj label)
+                (some-> label (tag/tag-entity! :eval-label)))
         form  (when-not label
                 (when qf
                   (reset! state/formatting-form-to-be-evaled?
@@ -75,6 +72,7 @@
                             false)
                     ret)))]
     [label form]))
+
 
 (defn formatted
   "Formatted log with file-info, form/comment, fat-arrow and syntax-colored

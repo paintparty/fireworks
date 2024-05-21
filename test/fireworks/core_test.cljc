@@ -42,7 +42,7 @@
 #?(:cljs
    (deftest p-data-with-label
      (is (= 
-          (let [ret (p-data "my-label" "foo")] #_ #_(pp/pprint "p-data-with-label") (pp/pprint ret) ret)
+          (let [ret (p-data "my-label" "foo")] (pp/pprint "p-data-with-label") (pp/pprint ret) ret)
           {:quoted-form   "foo",
            :formatted     {:string     "%c\"foo\"%c"
                            :css-styles []},
@@ -54,7 +54,7 @@
            :line          45,
            :end-line      45,
            :formatted+    {:string     "%cmy-label%c  %cfireworks.core-test:45:21%c%c \n%c%c\"foo\"%c",
-                           :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;outline:2px solid #e5f1fa;line-height:1.45;"
+                           :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
                                         "color:#2e6666;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
@@ -88,7 +88,7 @@
                :line          71,
                :end-line      76,
                :formatted+    {:string     "%cmy-label-from-opts%c  %cfireworks.core-test:71:25%c%c \n%c%c\"foo\"%c",
-                               :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;outline:2px solid #e5f1fa;line-height:1.45;"
+                               :css-styles ["color:#2e6666;background-color:#e5f1fa;text-shadow:0 0 2px #ffffff;font-style:italic;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
                                             "color:#2e6666;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
@@ -585,6 +585,5 @@
       (is (= (!?> {:a   "foo"
                    :xyz "bar"})
              {:a   "foo"
-              :xyz "bar"})))
-    )
+              :xyz "bar"}))))
 

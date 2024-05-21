@@ -92,9 +92,7 @@
         :int                  1
         :float                (float 1.50)
         :char                 (char 97)
-        :java.math.BigInteger (java.math.BigInteger. "171")}
-       )
-     ))
+        :java.math.BigInteger (java.math.BigInteger. "171")})))
 
 (def everything
   {:primitives   {:a                              9999
@@ -195,7 +193,7 @@
                                    :22222
                                    3333333}}})
 
-(? basic-samples-cljc)
+;; (? basic-samples-cljc)
 
 
 #?(:clj
