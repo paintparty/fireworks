@@ -336,6 +336,12 @@
        ret     (reduce-from-base (merge base tokens*) classes)]
    ret))
 
+(defn- add-metadata-key-entries [m]
+  (assoc m
+         :metadata-key
+         (assoc (:metadata m) :font-weight :bold)
+         :metadata-key2
+         (assoc (:metadata2 m) :font-weight :bold)))
 
 (defn merge-theme+
   "Merges a theme (light or dark) with base theme (light or dark).
@@ -363,7 +369,7 @@
   (let [classes (hydrated-classes base theme)
         syntax  (hydrated* base theme classes :syntax)
         printer (hydrated* base theme classes :printer)
-        merged  (merge classes syntax printer)
+        merged  (add-metadata-key-entries (merge classes syntax printer))
         merged2 (serialize-style-maps merged)]
     {:with-style-maps            merged
      :with-serialized-style-maps (assoc

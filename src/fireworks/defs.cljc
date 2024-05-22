@@ -14,9 +14,7 @@
    :definition   :foreground ;; global definitions
    :annotation   :foreground ;; ns/file info, user-label, num-dropped 
    :metadata     :foreground
-   :metadata-key :foreground
    :metadata2    :foreground
-   :metadata-key2 :foreground
    :highlight    :foreground ;; default bg-color, inherited by [:printer :find]
    :label        :foreground ;; literal labels, type labels, atom wrappers, etc.
    :eval-label   :foreground ;; literal labels, type labels, atom wrappers, etc.
@@ -80,8 +78,8 @@
    :atom-wrapper          :label
    :metadata              :metadata
    :metadata2             :metadata2
-   :metadata-key          :metadata-key
-   :metadata-key2         :metadata-key2
+   :metadata-key          :metadata
+   :metadata-key2         :metadata
    :annotation            :annotation
    :ellipsis              :annotation
    :coll-trunction        :annotation
