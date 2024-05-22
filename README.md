@@ -119,7 +119,7 @@ If using with Babashka, requires Babashka `v1.3.187` or higher
 Add as a dependency to your project:
 
 ```clojure
-[io.github.paintparty/fireworks "0.3.0"]
+[io.github.paintparty/fireworks "0.4.0"]
 ```
 <br>
 
