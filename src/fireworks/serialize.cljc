@@ -174,9 +174,6 @@
         main-entity-tag                  
         (tag! theme-tag highlighting)
 
-        ;; _ (when true #_(= x "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz")
-        ;;         (!?pp x theme-tag))
-        
         ;; Additional tagging (and atom mutation) happens within
         ;; fireworks.serialize/add-truncation-annotation!
         chars-dropped-syntax 
@@ -500,7 +497,7 @@
   (when (and (:display-metadata? @state/config)
              user-meta
              (contains? #{:block "block"} metadata-position))
-    ;; (?pp 'formatting-meta-level (swap! state/*formatting-meta-level inc))
+    (swap! state/*formatting-meta-level inc)
     (let [ret (formatted* user-meta {:user-meta? true :indent indent*})]
       (swap! state/*formatting-meta-level dec)
       ret)))
