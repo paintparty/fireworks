@@ -481,6 +481,33 @@ Find and highlight values in the printed output. See [Highlighting values](#high
 <br>
 <br>
 
+### Displaying metadata
+By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value (or values) which carry it. In practice, I find this kind of formatting faster to read than the traditional approach of always printing metadata in the "block" position (above the carrying value), especially when working with metadata-heavy code.
+
+For data structures, the metadata map is displayed inline, immediately following the opening bracket. This means that any collection carrying metadata will always be display multi-line, with each value on its own line. Below is an example vector of three quoted symbols:
+
+
+```Clojure
+(? ^{:a "a"} ['foo 'bar 'baz]
+```
+
+<img src="resources/metadata-coll-inline.png" width="256px" />
+
+Here is the same vector, with the second symbol in carrying metadata:  
+
+```Clojure
+(? ^{:a "a"} ['foo (with-meta (symbol "bar") {:b "b"}) 'baz]
+```
+<img src="resources/metadata-coll-and-symbol-inline.png" width="256px" />
+
+If you would rather print metadata in the traditional "block" position, you can set the config value of `:metadata-positioning` to `:block`:
+
+<img src="resources/metadata-coll-and-symbol-block.png" width="256px" />
+
+
+
+<br>
+<br>
 
 ### Highlighting values in printed output
 
