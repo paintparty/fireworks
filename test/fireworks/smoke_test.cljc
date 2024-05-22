@@ -193,8 +193,24 @@
                                    :22222
                                    3333333}}})
 
-;; (? basic-samples-cljc)
+(def basic-samples-cljc-theme
+  {:string             "string"
+   :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number             1234
+   :symbol             (with-meta 'mysym {:foo :bar})
+   :boolean            true
+   :lamda              #(inc %)
+   :fn                 juxt
+   :regex              #"^hi$"
+   :record             record-sample
+   :atom/number        (atom 1)
+   :brackets           [[[[[[]]]]]]
+   :map/nested-meta    (with-meta {:a :foo :b 2}
+                         {:a (with-meta (symbol "foo")
+                               {:abc (symbol "bar")
+                                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
 
+;; (? basic-samples-cljc)
 
 #?(:clj
    (do 
@@ -338,8 +354,21 @@
          )))
   
 
+ ;; Testing all the stock themes cljc
+ #_(do
+   (doseq [mood ["Light" "Dark"]]
+     (doseq [theme ["Neutral"
+                    "Alabaster"
+                    "Zenburn"
+                    "Degas"
+                    "Solarized"
+                    "Monokai"]]
+      (let [x (str theme " " mood)]
+        (? {:label x :theme x}
+           basic-samples-cljc-theme)))))
+
  ;; Testing all the options cljc
- (do 
+ #_(do 
 
   ;; :mood
   (? {:label :mood :mood "light" :theme nil}
