@@ -179,6 +179,7 @@ All of the above functions have a respective "silencing" function, which will ju
 `!?print`<br>
 `!?prn`<br>
 `!?pr`<br>    
+`!?>`<br>    
 
 <br>
 
@@ -281,7 +282,7 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
  :find                          nil}
 ```
 
-You can configure all of the above options ala-carte. A leading options map arg works with **`fireworks.core/?`**, **`fireworks.core/p`**, and **`fireworks.core/p-data`**.
+You can configure all of the above options ala-carte. A leading options map arg works with **`fireworks.core/?`**, and **`fireworks.core/p-data`**.
 
 <br>
 
@@ -296,7 +297,7 @@ export FIREWORKS_CONFIG="/Users/your-home-folder/.fireworks/config.edn"
 
 You will need to substitute `your-home-folder` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `FIREWORKS_CONFIG` env var will be accessible in your dev environment.
 
-For the actual `config.edn` file, you can use the example at the end of this section as a starting point. Prior to doing this you can experiment with the various configuration options via passing a leading options map to or `fireworks.core/?`.
+For the actual `config.edn` file, you can use the example at the end of this section as a starting point. Prior to doing this you can experiment with the various configuration options via passing a leading options map to or **`fireworks.core/?`**.
 
 <br>
 
@@ -485,7 +486,7 @@ For data structures, the metadata map is displayed inline, immediately following
 
 <img src="resources/metadata-coll-inline.png" width="256px" />
 
-Here is the same vector, with the second symbol in carrying metadata:  
+Here is the same vector, with the second symbol in the vector carrying metadata:  
 
 ```Clojure
 (? ^{:a "a"} ['foo (with-meta (symbol "bar") {:b "b"}) 'baz]
