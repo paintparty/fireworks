@@ -4,6 +4,7 @@
 (ns fireworks.order
   "This namespace provides a total-ordering comparator for Clojure values.")
 
+
 (defn- regex? [x]
   #?(:clj (= java.util.regex.Pattern (type x))
      :cljs (= js/RegExp (type x))))
@@ -138,3 +139,23 @@
                       (compare (str a) (str b)))
                :cljs (compare a b))
             class-diff))))))
+
+
+(defn- seq->array-map
+  [coll]
+  (apply array-map (sequence cat coll)))
+
+
+;; Maybe remove?
+;; (defn seq->sorted-set
+;;   [coll]
+;;   (apply (partial sorted-set-by rank) coll))
+
+
+(defn seq->sorted-map
+  [coll]
+  (if (< 8 (count coll))
+    (seq->array-map (sort rank coll))
+    (if (map? coll)
+      coll
+      (into {} coll))))

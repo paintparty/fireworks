@@ -7,26 +7,57 @@
    [fireworks.util :refer [badge-type]]))
 
 (defn brackets-by-type
-  [{:keys [t map-like? js-map-like? js-typed-array?] :as m}]
-  (cond (or (= t :set) (= t :js/Set))
-        ["#{" "}"]
-        (or map-like?
-            (contains? #{:map :js/Object :record :js/Map} t)
-            js-map-like?)
-        ["{" "}"]
-        (or (= t :vector)
-            (= t :js/Array)
-            js-typed-array?)
-        ["[" "]"]
-        (or (= :seq t) (= :list t))
-        ["(" ")"]
-        (or (= :function t) (= :lamda t))
-        ["" ""]
-        :else
+  [{:keys [t map-like? js-map-like? js-typed-array? :fw/user-meta-map?] :as m}]
+  (cond 
+    (or map-like?
+        (contains? #{:map :js/Object :record :js/Map} t)
+        js-map-like?)
+    (if user-meta-map?
+      ["^{" "}"]
+      ["{" "}"])
+
+    (or (= t :vector)
+        (= t :js/Array)
+        js-typed-array?)
+    ["[" "]"]
+
+    (or (= :seq t) (= :list t))
+    ["(" ")"]
+
+    (or (= t :set) (= t :js/Set))
+    ["#{" "}"]
+
+    (= t :meta-map)
+    ["^{" "}"]
+
+    (or (= :function t) (= :lamda t))
+    ["" ""]
+    :else
         ;; This should probably be ["" ""]
         ;; We need more granularity from lasertag first
         ;; :list-like? :array-like?
-        ["[" "]"]))
+    ["[" "]"]))
+
+
+(def num-indent-spaces
+  (reduce (fn [acc k] 
+            (assoc acc
+                   k 
+                   (-> {:t k}
+                       brackets-by-type
+                       first
+                       count)))
+          {}
+          [:meta-map
+           :map       
+           :js/Object 
+           :js/Array  
+           :record    
+           :set       
+           :js/Set    
+           :vector    
+           :list      
+           :seq]))
 
 (defn- rainbow-bracket-color
   []
@@ -59,7 +90,7 @@
                        (let [style-maps
                              @state/merged-theme-with-unserialized-style-maps]
                          (or (get style-maps label-type nil)
-                             (get style-maps :metadata nil)))))]
+                             (get style-maps (state/metadata-token) nil)))))]
                   bgc)]
     #?(:cljs
        (str "color:" color 
@@ -76,14 +107,29 @@
 
 (defn- tag-bracket!
   "Adds the appropriate style to the state/styles vector.
-   Currently rainbow parens by default.
-   Currently, function args vector not included in rainbow parens."
+   Rainbow parens by default.
+   Function args vector not included in rainbow parens."
   [{:keys [t mm]}]
-  (let [style (if (= t :fn-args)
-                (-> @state/merged-theme t)
+  (let [theme-token (cond
+                      (pos? (state/formatting-meta-level))
+                      (state/metadata-token)
+
+                      (= t :fn-args)
+                      t
+
+                      :else
+                      :rainbow-brackets)
+        style (if (= theme-token :rainbow-brackets) 
                 (if (:enable-rainbow-brackets? @state/config)
                   (rainbow-bracket-mixin mm)
-                  (style-from-theme :bracket nil)))]
+                  (style-from-theme :bracket nil))
+                (get @state/merged-theme theme-token nil))]
+
+    (when (state/debug-tagging?)
+      (println "tag-bracket!    theme-token is   "
+               theme-token
+               (str ",  style is:   " style)))
+
     #?(:cljs
        (swap! state/styles conj style)
        :clj
@@ -91,15 +137,25 @@
 
 (defn- bracket!*
   [{:keys [s t] :as m}]
-  #?(:cljs (if t (do (tag-bracket! m)
-                     (tag-reset!)
-                     (str "%c" s "%c"))
-               (do (tag-reset!)
-                   (tag-reset!)
-                   (str "%c" s "%c")))
-     :clj (if t 
-            (str (tag-bracket! m) s (tag-reset!))
-            (str (tag-reset!) s (tag-reset!)))))
+  (let [reset-theme-token (if (pos? (state/formatting-meta-level))
+                            ;; :metadata
+                            :foreground
+                            :foreground)]
+
+    (when (state/debug-tagging?)
+      (println "\nbracket!*  " s ",  t: " t))
+
+    #?(:cljs (if t 
+               (do (tag-bracket! m)
+                   (tag-reset! reset-theme-token)
+                   (str "%c" s "%c"))
+               (do
+                 (tag-reset! reset-theme-token)
+                 (tag-reset! reset-theme-token)
+                 (str "%c" s "%c")))
+       :clj (if t 
+              (str (tag-bracket! m) s (tag-reset!))
+              (str (tag-reset!) s (tag-reset!))))))
 
 (defn- bracket!
   [m kw]
@@ -131,6 +187,8 @@
    so they can be printed like `Atom<[1 2 3]>`"
   [m]
   (when (-> m :coll meta :atom?)
+    (when (state/debug-tagging?)
+      (println "\ntagging " defs/encapsulation-closing-bracket " with " :atom-wrapper))
     (str (tag! :atom-wrapper)
          defs/encapsulation-closing-bracket
          (tag-reset!))))

@@ -79,9 +79,10 @@
   (str "font-weight:bold;"
        "text-decoration-line: underline;"
        "text-decoration-style: wavy;"
-       "text-decoration-color: red;"
+       "text-decoration-color: #ff5252;"
        "text-underline-offset: 0.4em;"
-       "line-height: 2em;"))
+       "text-decoration-thickness: 1.5px;"
+       "line-height: 2.5em;"))
 
 (def kv-with-bad-value
   ["font-weight:bold; line-height: 2em;"
@@ -132,23 +133,6 @@
                              {:print-specs? false})
         "\n\n"
         "Nothing will be highlighted")))
-
-
-(defn invalid-user-theme-warning [theme* mood fallback-theme]
-  (println 
-   (str "Problem with the supplied Fireworks theme \"" (:name theme*) "\":"
-        "\n\n"
-        (expound/expound-str ::config/theme
-                             theme*
-                             {:print-specs? false})
-        "\n\n"
-        "Falling back to default "
-        (name mood)
-        " Fireworks theme \""
-        (:name fallback-theme)
-        "\".")))
-
-
 
 
 (defn bad-option-value-warning

@@ -1,5 +1,6 @@
 (ns ^:dev/always fireworks.state
   (:require 
+   [fireworks.pp :refer [?pp]]
    [clojure.string :as string]
    [clojure.spec.alpha :as s]
    [fireworks.basethemes :as basethemes]
@@ -174,6 +175,7 @@
 
 
 (defn x->sgr [x k]
+  ;; (?pp x k)
   (when x
     (let [n (if (= k :fg) 38 48)]
       (if (int? x)
@@ -334,6 +336,12 @@
        ret     (reduce-from-base (merge base tokens*) classes)]
    ret))
 
+(defn- add-metadata-key-entries [m]
+  (assoc m
+         :metadata-key
+         (assoc (:metadata m) :font-weight :bold)
+         :metadata-key2
+         (assoc (:metadata2 m) :font-weight :bold)))
 
 (defn merge-theme+
   "Merges a theme (light or dark) with base theme (light or dark).
@@ -361,7 +369,7 @@
   (let [classes (hydrated-classes base theme)
         syntax  (hydrated* base theme classes :syntax)
         printer (hydrated* base theme classes :printer)
-        merged  (merge classes syntax printer)
+        merged  (add-metadata-key-entries (merge classes syntax printer))
         merged2 (serialize-style-maps merged)]
     {:with-style-maps            merged
      :with-serialized-style-maps (assoc
@@ -373,6 +381,7 @@
                                       (-> base :rainbow-brackets)))}))
 
 
+;; TODO - don't use xterm for bracket colors
 (defn- rainbow-brackets [mood theme]
   (let [contrast (let [x (or (:bracket-contrast theme) 
                              (:bracket-contrast @config))]
@@ -391,6 +400,29 @@
                     :clj (map xterm-id->sgr ret))]
     ret))
 
+;; TODO v0.5.0
+;; (defn metadata-bgcs
+;;   [mood
+;;    theme
+;;    base-theme]
+;;   (let [printer-metadata (some-> theme
+;;                                  :printer
+;;                                  :metadata)
+;;         bgc              (when (map? printer-metadata)
+;;                            (:background-color printer-metadata))
+;;         bgc              (or bgc
+;;                              (-> base-theme
+;;                                  :classes
+;;                                  :metadata
+;;                                  :background-color))
+;;         ;; rgb              ()
+;;         ]
+;;     (?pp :bgc bgc)))
+
+(defn fallback-theme []
+  (if (dark? (:mood @config))
+    themes/alabaster-dark
+    themes/alabaster-light))
 
 (defn merged-theme*
   ([]
@@ -398,21 +430,22 @@
   ([reset]
    ;; TODO - Add observability for theme, user-config.
    ;; from env-vars, parsed and validated.
-   (let [supplied-theme?  (:theme user-options)
+   (let [theme*           (when (:theme user-options) (:theme @config))
 
-         theme*           (when supplied-theme? (:theme @config))
-
-         fallback-theme   (if (dark? (:mood @config))
-                            themes/alabaster-dark
-                            themes/alabaster-light)
+         fallback-theme   (fallback-theme)
 
          valid-user-theme (when (map? theme*) 
                             (if (s/valid? ::theme/theme theme*)
                               theme*
-                              (messaging/invalid-user-theme-warning
-                               theme*
-                               (:mood @config)
-                               fallback-theme)))
+                              (messaging/bad-option-value-warning
+                               (let [m (:theme config/options)]
+                                 (merge m
+                                        {:k      :theme
+                                         :v      theme*
+                                         :header (str "[fireworks.core/p]."
+                                                      "Problem with the supplied Fireworks theme \""
+                                                      (:name theme*)
+                                                      "\":")})))))
 
          theme            (cond
                             (string? theme*)
@@ -432,9 +465,12 @@
 
          rainbow-brackets (rainbow-brackets mood theme)
 
+        ;;  metadata-bgcs    (metadata-bgcs mood theme base-theme)
+
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
 
-         ret              (merge-theme+ base-theme theme)]
+         ret              (merge-theme+ base-theme theme)
+         ]
      ;; TODO - Add observability for theme
      ret)))
 
@@ -483,3 +519,16 @@
       (vector? x)
       (mapv highlight-style* x))
     (messaging/invalid-find-value-option x)))   
+
+(def *debug-tagging? (atom false))
+
+(defn debug-tagging? []
+  @*debug-tagging?)
+
+(def *formatting-meta-level (atom 0))
+
+(defn formatting-meta-level []
+  @*formatting-meta-level)
+
+(defn metadata-token []
+  (if (= 2 (formatting-meta-level)) :metadata2 :metadata))

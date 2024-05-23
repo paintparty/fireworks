@@ -1,11 +1,7 @@
 (ns ^:dev/always fireworks.tag
   (:require
    [clojure.string :as string]
-   [fireworks.defs :as defs]
-   [fireworks.state :as state]
-   [fireworks.util :refer [spaces]]
-   #?(:cljs [fireworks.macros :refer-macros [keyed]])
-   #?(:clj [fireworks.macros :refer [keyed]])))
+   [fireworks.state :as state]))
 
 
 
@@ -41,9 +37,18 @@
   ([t bgc]
    (tag! t bgc nil))
   ([t bgc custom-badge-style]
-   (let [s (style-from-theme (if (= t :type-label-inline) :type-label t)
+   (let [s (style-from-theme (cond
+                               (contains? #{:metadata :metadata-key} t)
+                               t
+
+                               (= t :type-label-inline)
+                               :type-label
+
+                               :else
+                               t)
                              bgc
-                             custom-badge-style)]
+                             custom-badge-style)
+         ]
      #?(:cljs (let [s (cond
                         (= t :type-label)
                         (str s)
@@ -60,11 +65,13 @@
    (tag-reset! :foreground))
   ([theme-token]
    #?(:cljs (let [theme-token (or theme-token :foreground)]
+              (when (state/debug-tagging?)
+                (println "tag/tag-reset!  with  " theme-token))
               (swap! state/styles
                      conj
                      (-> @state/merged-theme theme-token))
               "%c")
-      :clj "\033[0m")))
+              :clj "\033[0m")))
 
 (defn tag-entity! 
   ([x t]
@@ -88,93 +95,9 @@
                    (symbol? s)
                    (vector? s))
                display?)
+      (when (state/debug-tagging?)
+        (println "\ntag/tagged    :   tagging \"" s "\" with " theme-token))
       (let [opening-tag (tag! theme-token highlighting custom-badge-style)
             closing-tag (tag-reset!)]
         (str opening-tag s closing-tag)))))
 
-
-(defn- metamap-offset-background [l]
-  (str (tagged " " {:theme-token :foreground})
-       (tagged (subs l 1) {:theme-token :metadata})))
-
-
-(defn- metamap-offset-dashes [l]
-  (str (tagged " "
-               {:theme-token :foreground})
-       (tagged (string/join (take (dec (count l)) (repeat "-")))
-               {:theme-token :metadata-offset})))
-
-
-(defn- multi-line-meta-map 
-  [{:keys [user-meta
-           inline-offset
-           indent
-           str-len-with-badge
-           block?
-           optional-caret-char] }]
-  (let [ret       (string/replace 
-                   (with-out-str 
-                     (binding [*print-level*
-                               (:metadata-print-level @state/config)]
-                       (fireworks.pp/pprint user-meta)))
-                   #"\n$" "")
-        lines     (string/split-lines ret)
-        w-indent* (interleave 
-                   (map-indexed (fn [i _]
-                                  (if (zero? i)
-                                    inline-offset
-                                    (str "\n"
-                                         (spaces indent)
-                                         (when-not block?
-                                           (spaces str-len-with-badge))
-                                         inline-offset)))
-                                lines)
-                   (if optional-caret-char
-                     (map-indexed (fn [i v]
-                                    (str (if (zero? i)
-                                           optional-caret-char
-                                           " ")
-                                         v))
-                                  lines)
-                     lines))
-        w-indent  (map-indexed (fn [i l]
-                                 (let [theme-token (cond
-                                                     (zero? i) :metadata
-                                                     (even? i) :foreground
-                                                     :else     :metadata)]
-                                   (if (zero? i) 
-                                     #_(metamap-offset-dashes l) ;; alt style
-                                     (when inline-offset (metamap-offset-background l))
-                                     (tagged l {:theme-token theme-token}))))
-                               w-indent*)]
-    (string/join w-indent)))
-
-
-(defn stringified-user-meta
-  [{:keys [user-meta
-           metadata-position
-           indent
-           str-len-with-badge
-           sev?]}]
-  (let [block?              (contains? #{"block" :block} metadata-position)
-        optional-caret-char (when block? "^") 
-        stringified         (str optional-caret-char user-meta)
-        multi-line?         (< (:non-coll-length-limit @state/config)
-                               (count stringified))
-        inline-offset       (when-not block?
-                              (spaces defs/metadata-position-inline-offset))
-        ret                 (if multi-line?
-                              (multi-line-meta-map
-                               (keyed [user-meta
-                                       inline-offset 
-                                       indent
-                                       str-len-with-badge
-                                       optional-caret-char
-                                       block?]))
-                              (str
-                               (when-not block?
-                                 (metamap-offset-background inline-offset))
-                               (tagged (str stringified)
-                                       {:theme-token :metadata})))]
-    (str ret
-         (when block? (str (when sev? "\n") (spaces indent))))))

@@ -626,6 +626,12 @@
         ns-str                (str "\033[3;34;m" ns-str "\033[0m")]
     ns-str))
 
+(defn !?pp
+  ([x]
+   x)
+  ([label x]
+   x))
+
 (defmacro ?pp 
   ([x]
    (let [ns-str (ns-str (meta &form))]

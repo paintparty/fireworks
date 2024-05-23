@@ -1,17 +1,15 @@
+;; TODO - refactor profile ns into truncate
+
+
 (ns fireworks.core
   (:require
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
-   [clojure.walk :as walk]
    [clojure.set :as set]
    [clojure.data :as data]
-   [fireworks.defs :as defs]
    [fireworks.messaging :as messaging]
-   [fireworks.profile :as profile]
-   [fireworks.printers :as printers]
    [fireworks.serialize :as serialize]
    [fireworks.state :as state]
    [fireworks.tag :as tag]
-   [fireworks.truncate :as truncate]
    #?(:cljs [fireworks.macros
              :refer-macros
              [keyed
@@ -22,7 +20,6 @@
    [clojure.spec.alpha :as s]
    [lasertag.core :as lasertag]
    [fireworks.util :as util])
-
   #?(:cljs (:require-macros 
             [fireworks.core :refer [?> ? !? ?println]])))
 
@@ -33,28 +30,6 @@
 
 (def core-defs-clj-classes 
   (set '(defrecord deftype)))
-
-(defn formatted*
-  ([source]
-   (formatted* source nil))
-  ([source opts]
-   (let [truncated      (truncate/truncate {:depth 0} source)
-
-         custom-printed truncated
-
-         ;; Come back to this custom printing jazz later
-         ;;  custom-printed (if (:evaled-form? opts)
-         ;;                   truncated
-         ;;                   (let [ret (walk/postwalk printers/custom truncated)]
-         ;;                     (when (some-> ret meta :fw/truncated :sev?)
-         ;;                       (reset! state/top-level-value-is-sev? true))
-         ;;                     ret))
-
-         profiled       (walk/prewalk profile/profile custom-printed)
-
-         serialized     (serialize/serialized profiled)
-         len            (-> profiled meta :str-len-with-badge)]
-     [serialized len])))
 
 
 
@@ -81,12 +56,10 @@
 ;;                               ooo OOO OOO ooo
 
 
-
 (defn user-label-or-form!
   [{:keys [qf template label]}]
   (let [label (when (= template [:form-or-label :file-info :result])
-                (some-> label (tag/tag-entity! :comment)))
-        label #?(:cljs label :clj (str label "  "))
+                (some-> label (tag/tag-entity! :eval-label)))
         form  (when-not label
                 (when qf
                   (reset! state/formatting-form-to-be-evaled?
@@ -99,6 +72,7 @@
                             false)
                     ret)))]
     [label form]))
+
 
 (defn formatted
   "Formatted log with file-info, form/comment, fat-arrow and syntax-colored
@@ -123,8 +97,9 @@
         result-header (when-not (or (= template [:result])
                                     log?)
                         (tag/tag-entity! " \n" :result-header))
-        [fmt _]       (when-not log? (formatted* source))
+        fmt           (when-not log? (serialize/formatted* source))
         fmt+          (str (or label form)
+                           (when (or label form) "  ")
                            file-info
                            result-header
                            fmt)]
@@ -159,12 +134,15 @@
                         config/options
                         :spec
                         (s/valid? new-val))]
-
-    #_(when (contains? #{:theme} #_#{:enable-terminal-italics? :display-metadata?} k)
-      (println "Current value of" k "is" (k @state/config))
-      (println "New value of" k "is valid?:" valid?))
-    (when valid?
+    (if valid?
       (swap! state/config assoc k new-val)
+      (messaging/bad-option-value-warning
+       (let [m (k config/options)]
+         (merge m
+                {:k       k
+                 :v       new-val
+                 :header  "[fireworks.core/p] Invalid option value."})))
+      
       #_(println "Current value of" k "after swap! is" (k @state/config)))))
 
 
@@ -217,7 +195,6 @@
                         (doseq [k ks]
                           (reset-user-opt! k opts))
                         ks)]
-
     (when (or (diff-call-site-theme-option-keys opts-to-reset)
               (diff-from-merged-user-config config-before))
       (let [{:keys [with-style-maps
@@ -249,6 +226,7 @@
 
     ;; TODO - add some observability here
     (reset! state/styles [])
+    (reset! state/*formatting-meta-level 0)
     (reset! state/rainbow-level 0)
     (reset! state/top-level-value-is-sev? false)
     (reset! messaging/warnings-and-errors [])

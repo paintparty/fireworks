@@ -1,9 +1,16 @@
-;; Shape and documentation of a single token stylemap in a :theme entry
+;; EXAMPLE FULL FIREWORKS THEME
 
-;; Example applies to any token stylemap in the :classes, :syntax,
-;; or :printer entries under :theme
+;; For more example themes (without comments) that would more closely
+;; resemble what you would write for a custom theme, check out any of the
+;; stock themes in the `fireworks.themes` namespace.
 
-;; For :color or :background-color, val should be one of the following:
+;; The only required entries in a Fireworks theme are :name, :mood, and :theme.
+;; All others are optional.
+
+;; NOTE - Values of entries in the :classes, :syntax, or :printer maps that
+;; are keywords which correspond to the keys of the :classes map will inherit
+;; that value, as specified in the :classes map.
+
 
 ;; For a token's `:color` or `:background-color`, the value must be a string
 ;; which is a valid css hex(a) color. This hex will be used for both browser
@@ -16,22 +23,6 @@
 ;; then all theme colors will be automatically converted to their closest
 ;; `x256` equivalents.
 
-{:highlight {:color            "#7A3E9D"
-             :background-color "#ffee00"
-             :font-style       :normal  ;; :italic | :normal(default)
-             :font-weight      :bold    ;; :bold | :regular(default)
-             }}
-
-
-
-;; EXAMPLE FULL FIREWORKS THEME
-
-;; The only required entries are :name, :mood, and :theme.
-;; All others are optional.
-
-;; NOTE - Values of entries in the :classes, :syntax, or :printer maps that
-;; are keywords which correspond to the keys of the :classes map will inherit
-;; that value, as specified in the :classes map.
 
 {
  ;; REQUIRED.
@@ -77,6 +68,11 @@
             :string     {:color "#95CB82"}
             :comment    {:color "#5f875f"}
 
+            ;; Currently, the :background value doesn't actually do anything
+            ;; See "Aligning your console background color and font" in README.
+            ;; Good practice to include this for reference and future-proofing.
+            :background {:background-color "#0e1415"}
+
             ;; By default extends to numbers, symbols, keywords,
             ;; boolean values
             :constant   {:color "#c0a1bf"}
@@ -98,22 +94,24 @@
                          :text-shadow      "0 0 2px #ffffff"
                          :background-color "#e6fafa"}
 
+            ;; :metadata2 is for metadata on metadata
+            ;; This will be deprecated in future when issue #8 is closed
+            :metadata2  {:color            "#9773b5"
+                         :text-shadow      "0 0 2px #003538"
+                         :background-color "#321f42"}
+
             ;; literal labels, type labels, atom wrappers, etc.
             :label      {:color            "#808080"
                          :background-color "#ededed"
                          :text-shadow      "0 0 2px #ffffff"
                          :font-style       :italic} 
             
-            ;; Experimental, not working yet
-            
-            ;; :modifier   :default ;; earmuffs, deref, unused-arg, whitespace
-
-
-            ;; user-selection of text, should live in :syntax as it is relavant
-            ;; for both :printer context and future-supported :editor context.
-
-            ;; :selection  :default 
-            }
+            ;; By default, this is inherited by `[:printer :eval-label]`, and 
+            ;; also by `[:printer :eval-form]`
+            :eval-label {:color            "#85b7e5"
+                         :font-style       :italic
+                         :text-shadow      "0 0 2px #003d6b"
+                         :background-color "#00345c"}}
 
   ;; The :syntax entry show below is identical to the :syntax entry in the
   ;; internal base theme within fireworks. You don't need to specify any of
@@ -135,13 +133,9 @@
             :datatype      :definition
             :record        :definition
             :multimethod   :definition
-
-            ;; Experimental, not working yet
-            ;; :modifier      :modifier
-            ;; :selection     :selection
             }
 
-  ;; The :syntax entry show below is identical to the :printer internal base
+  ;; The :printer entry show below is identical to the :printer internal base
   ;; theme within fireworks. You don't need to specify any of these in your
   ;; own theme, unless you want to override them with different values, as
   ;; shown with the :function-args token.

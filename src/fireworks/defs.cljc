@@ -5,18 +5,20 @@
 ;; Style props also need to be registered in valid-stylemap-keys
 
 (def base-classes
-  {:foreground    nil ;; -> foreground
-   :background nil 
-   :bracket    :foreground
-   :string     :foreground
-   :comment    :foreground
-   :constant   :foreground ;; numbers, symbols, keywords, boolean values
-   :definition :foreground ;; global definitions
-   :annotation :foreground ;; ns/file info, user-label, num-dropped 
-   :metadata   :foreground
-   :highlight  :foreground ;; default bg-color, inherited by [:printer :find]
-   :label      :foreground ;; literal labels, type labels, atom wrappers, etc.
-
+  {:foreground   nil ;; -> foreground
+   :background   nil 
+   :bracket      :foreground
+   :string       :foreground
+   :comment      :foreground
+   :constant     :foreground ;; numbers, symbols, keywords, boolean values
+   :definition   :foreground ;; global definitions
+   :annotation   :foreground ;; ns/file info, user-label, num-dropped 
+   :metadata     :foreground
+   :metadata2    :foreground
+   :highlight    :foreground ;; default bg-color, inherited by [:printer :find]
+   :label        :foreground ;; literal labels, type labels, atom wrappers, etc.
+   :eval-label   :foreground ;; literal labels, type labels, atom wrappers, etc.
+   
   ;; Experimental, not working yet
   ;;  :modifier   :foreground ;; earmuffs, deref, unused-arg, whitespace
    })
@@ -65,6 +67,7 @@
 
 (def all-base-syntax-tokens (into #{} (keys base-syntax-tokens)))
 
+;; TODO add style for print-level terminus character
 (def base-printer-tokens
   {:comment               :comment
    :foreground            :foreground
@@ -74,6 +77,9 @@
    :lamda-label           :label
    :atom-wrapper          :label
    :metadata              :metadata
+   :metadata2             :metadata2
+   :metadata-key          :metadata
+   :metadata-key2         :metadata
    :annotation            :annotation
    :ellipsis              :annotation
    :coll-trunction        :annotation
@@ -82,33 +88,17 @@
    :file-info             :annotation
    :line-number           :annotation
    :column-number         :annotation
-   :eval-form             :foreground
-   :result-header         :foreground
+   :eval-label            :eval-label
+   :eval-form             :eval-label
+   :result-header         {:color            nil
+                           :margin-block-end :0.5em}
    :seq-bracket           :bracket
    :lazy-seq-bracket      :bracket
    :max-print-level-label :annotation
-
-   ;; maybe nix these
-   :eval-fat-arrow        :foreground
-   :file-info-separator   :annotation
-   :result-gutter         :foreground
-   :result-gutter-start   :foreground
-   :result-gutter-end     :foreground
-
    })
 
 (def all-base-printer-tokens (into #{} (keys base-printer-tokens)))
 
-(def num-indent-spaces
-  {:map       1
-   :js/Object 1
-   :js/Array  1
-   :record    1
-   :set       2
-   :js/Set    2
-   :vector    1
-   :list      1
-   :seq       1})
 
 (def valid-stylemap-keys
   #?(:clj [:color
