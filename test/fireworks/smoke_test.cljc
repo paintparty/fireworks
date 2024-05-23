@@ -355,8 +355,8 @@
   
 
  ;; Testing all the stock themes cljc
- #_(do
-   (doseq [mood ["Light" "Dark"]]
+ (do
+   (doseq [mood ["Light" #_"Dark"]]
      (doseq [theme ["Neutral"
                     "Alabaster"
                     "Zenburn"
