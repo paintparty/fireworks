@@ -1,5 +1,5 @@
 # Fireworks 
-A color printer for Clojure, ClojureScript, and Babashka.
+Print-and-return utilities for Clojure, ClojureScript, and Babashka. Features color theming and rich typographic formatting.
 
 [![Clojars Project](https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg)](https://clojars.org/io.github.paintparty/fireworks)
 
@@ -95,15 +95,7 @@ A color printer for Clojure, ClojureScript, and Babashka.
 <br>
 
 ## Why 
-If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
-
-<br>
-
-## Alts 
-
-Discovery: [Reveal](https://vlaaad.github.io/reveal/) and [Portal](https://github.com/djblue/portal).
-
-Serialization: [pp](https://github.com/eerohele/pp), [fipp](https://github.com/brandonbloom/fipp), or [zprint](https://github.com/kkinnear/zprint).
+Fireworks offers a range of print-and-return macros designed to make print debugging easier and faster. If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
 
 
 <br>
@@ -482,7 +474,7 @@ Find and highlight values in the printed output. See [Highlighting values](#high
 <br>
 
 ### Displaying metadata
-By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value (or values) which carry it. In practice, I find this kind of formatting faster to read than the traditional approach of always printing metadata in the "block" position (above the carrying value), especially when working with metadata-heavy code.
+By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value (or values) to which it is attached. In practice, I find this kind of formatting faster to read than the traditional approach of always printing metadata in the "block" position (above the carrying value), especially when working with metadata-heavy code.
 
 For data structures, the metadata map is displayed inline, immediately following the opening bracket. This means that any collection carrying metadata will always be display multi-line, with each value on its own line. Below is an example vector of three quoted symbols:
 
@@ -869,6 +861,33 @@ Alpha, subject to change. Currently, the enhanced interop reflection / print han
 ## Contributing
 Issues for bugs, improvements, or features are very welcome. Please file an issue for discussion before starting or issuing a PR.
 
+
+<br>
+
+## Alternatives 
+
+Discovery:<br>
+[FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), [Portal](https://github.com/djblue/portal).
+
+Serialization:<br>
+[pp](https://github.com/eerohele/pp), [fipp](https://github.com/brandonbloom/fipp), [zprint](https://github.com/kkinnear/zprint).
+
+Debugging, tracing, observability:<br>
+[playback](https://github.com/gnl/playback),
+[debux](https://github.com/philoskim/debux),
+[hashp](https://github.com/weavejester/hashp),
+[telemere](https://github.com/taoensso/telemere),
+[ken](https://github.com/amperity/ken) 
+[spyscope](https://github.com/dgrnbrg/spyscope),
+[omni-trace](https://github.com/cyrik/omni-trace),
+[postmortem](https://github.com/athos/postmortem),
+[sayid](https://github.com/clojure-emacs/sayid),
+
+
+
+Visualization:<br>
+[coll-pen](https://github.com/dscarpetti/coll-pen),
+[pp-grid](https://github.com/rorokimdim/pp-grid)
 
 <br>
 
