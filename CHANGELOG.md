@@ -21,6 +21,9 @@ For a list of breaking changes, check [here](#breaking-changes)
 #### Changed
 - Metadata maps now formatted with left-justified values. In all stock themes, they are styled monotone, in a contrasting color, with all keys styled bold.
 
+#### Fixed
+- Invalid user-theme warning.
+
 <br>
 <br>
 
