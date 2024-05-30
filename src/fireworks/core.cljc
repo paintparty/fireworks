@@ -59,7 +59,11 @@
 (defn user-label-or-form!
   [{:keys [qf template label]}]
   (let [label (when (= template [:form-or-label :file-info :result])
-                (some-> label (tag/tag-entity! :eval-label)))
+                (when label
+                  (tag/tag-entity! (if (map? label)
+                                     (with-out-str (pprint label))
+                                     label)
+                                   :eval-label) ))
         form  (when-not label
                 (when qf
                   (reset! state/formatting-form-to-be-evaled?
@@ -99,7 +103,9 @@
                         (tag/tag-entity! " \n" :result-header))
         fmt           (when-not log? (serialize/formatted* source))
         fmt+          (str (or label form)
-                           (when (or label form) "  ")
+                           (when-let [label-or-form (or label form)]
+                             (when-not (re-find #"\n" label-or-form)
+                               "  "))
                            file-info
                            result-header
                            fmt)]
