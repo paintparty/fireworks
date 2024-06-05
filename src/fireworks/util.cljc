@@ -20,3 +20,7 @@
 (defn carries-meta? [x]
   #?(:clj  (instance? clojure.lang.IObj x)
      :cljs (satisfies? IWithMeta x)))
+
+(defn readable-sgr [x]
+  #?(:cljs x
+     :clj (str "\\033" (subs x 1))))
