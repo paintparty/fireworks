@@ -28,8 +28,7 @@
         as-str (str v)]
     (if (> limit (count as-str))
       as-str
-      (let [[_ end-bracket] (re-find #"(\)|\}|\])$" as-str)
-            shortened*      (-> as-str
+      (let [shortened*      (-> as-str
                                 (string/split #"\n")
                                 first)
             shortened       (if (< limit (count shortened*))
@@ -37,10 +36,7 @@
                                     string-like? (string-like? v)]
                                 (str (string/join ret)
                                      (when-not string-like? " ")
-                                     "..."
-                                     (when (and end-bracket
-                                                (not string-like?))
-                                       end-bracket)))
+                                     "..."))
                               shortened*)]
         shortened))))
 
