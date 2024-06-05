@@ -225,7 +225,8 @@
            inline-badge?
            atom?
            sev?
-           depth]
+           depth
+           top-level-sev?]
     :as   m}]
 
   (let [{:keys [non-coll-depth-1-length-limit
@@ -235,7 +236,7 @@
         @state/config
 
         limit
-        (if-let [level-k (cond @state/top-level-value-is-sev?
+        (if-let [level-k (cond top-level-sev?
                                :level-0-sev
                                (and sev? (< depth 2))
                                :level-1-sev)]
