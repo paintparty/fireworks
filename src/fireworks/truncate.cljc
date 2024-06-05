@@ -199,11 +199,15 @@
           (new-coll-info new-x opts+))
 
         mm*           
-        (merge (dissoc opts+ :uid-entry?)
-               new-coll-info
-               {:og-x  x
-                :t     t
-                :depth depth})
+        (let [opts+ (dissoc opts+ :uid-entry?)]
+          (merge opts+
+                 new-coll-info
+                 {:og-x  x
+                  :t     t
+                  :depth depth}
+                 (when (and (zero? depth)
+                            (:sev? opts+))
+                   {:top-level-sev? true})))
 
         ;; TODO - Use this instead of what you are doing in profile
         ;; mm*

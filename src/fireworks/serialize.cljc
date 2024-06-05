@@ -41,7 +41,7 @@
              k))
 
 (defn add-truncation-annotation! 
-  [{:keys [num-chars-dropped t truncate-fn-name?]}]
+  [{:keys [num-chars-dropped t truncate-fn-name? top-level-sev?]}]
   (when (or truncate-fn-name?
             (some-> num-chars-dropped pos?))
     (let [theme-tag (if (pos? (state/formatting-meta-level))
@@ -53,7 +53,10 @@
 
       (when (state/debug-tagging?)
         (println "\nserialize/add-truncation-annotation:  tagging \"" s "\" with " theme-tag ))
-        (str (tag! theme-tag) s (tag-reset!)))))
+
+      (if top-level-sev?
+        s
+        (str (tag! theme-tag) s (tag-reset!))))))
 
 (defn sev-user-meta-position-match? [user-meta position]
   (and (:display-metadata? @state/config)
@@ -839,24 +842,19 @@
                                            source)
          custom-printed truncated
          ;; Come back to this custom printing jazz later
-         ;;  custom-printed (if (:evaled-form? opts)
-         ;;                   truncated
-         ;;                   (let [ret (walk/postwalk printers/custom truncated)]
-         ;;                     (when (some-> ret meta :fw/truncated :sev?)
-         ;;                       (reset! state/top-level-value-is-sev? true))
-         ;;                     ret))
+         ;; custom-printed (if (:evaled-form? opts)
+         ;;                  truncated
+         ;;                  (walk/postwalk printers/custom truncated))
          profiled       (walk/prewalk profile/profile custom-printed)
          serialized     (serialized profiled indent)
          len            (-> profiled meta :str-len-with-badge)
          ]
-    ;; (?pp (string/split serialized "%c"))
-    ;; (?pp @state/styles)
-     
-     #_(?pp (map 
-             (fn [a b]
-               [a b])
-             (rest (string/split serialized "%c"))
-             @state/styles))
+
+    ;;  (?pp (map 
+    ;;        (fn [a b]
+    ;;          [a b])
+    ;;        (rest (string/split serialized "%c"))
+    ;;        @state/styles))
     ;;  (?pp :serialized serialized)
     ;;  (?pp @state/styles)
      

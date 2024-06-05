@@ -234,10 +234,6 @@
                 non-coll-length-limit]}
         @state/config
 
-        ;; kv-member? (or key? map-value?)
-        ;; _ (js/console.log 'x  x)
-        ;; _ (?pp 'm m)
-
         limit
         (if-let [level-k (cond @state/top-level-value-is-sev?
                                :level-0-sev
@@ -256,10 +252,6 @@
                  non-coll-length-limit)
                (or limit 0)))]
     
-    ;; (?pp 'limit limit)
-    ;; (println limit)
-    ;; (println "\n\n")
-
     (if (:ellipsized-char-count m)
       x
       (if (contains? #{:function :defmulti :java.lang.Class} t)
