@@ -12,7 +12,28 @@
             [fireworks.specs.config :as config.specs]
             [fireworks.specs.theme :as theme]
             [fireworks.specs.tokens :as tokens]
-            [fireworks.themes :as themes]))
+            [fireworks.themes :as themes]
+            [fireworks.util :as util]))
+
+;; Internal state atoms for development debugging ------------------------
+
+;; Temp for debugging theme tokens
+(def debug-on-token? (atom false))
+(def token-debugging-target
+  #_:nothing
+  #_:annotation
+  #_:definition
+  #_:constant
+  #_:comment)
+
+(defn reset-token-debugging! [k]
+  (reset! debug-on-token? (= k token-debugging-target)))
+
+;; Temp for debugging tagging 
+(def *debug-tagging? (atom false))
+
+(defn debug-tagging? []
+  @*debug-tagging?)
 
 
 ;; Internal state atoms for printing and formatting ------------------------
@@ -32,19 +53,6 @@
 ;; When top-level-form is not coll, this should be set to `true`.
 ;; This will disable truncation.
 (def top-level-value-is-sev? (atom false))
-
-
-;; Temp for debugging theme tokens
-(def debug-on-token? (atom false))
-(def token-debugging-target
-  #_:nothing
-  #_:annotation
-  #_:definition
-  #_:constant
-  #_:comment)
-
-(defn reset-token-debugging! [k]
-  (reset! debug-on-token? (= k token-debugging-target)))
 
 
 ;; Helpers for creating printing options state ------------------------------
@@ -213,7 +221,7 @@
     (when  @debug-on-token?
       (?pp "\nCombining the fg and bg into a single sgr..." m)
       (println "=>\n"
-               (str "\\033" (subs ret 1))
+               (util/readable-sgr ret)
                "\n"))
     ret))
 
@@ -539,10 +547,6 @@
       (mapv highlight-style* x))
     (messaging/invalid-find-value-option x)))   
 
-(def *debug-tagging? (atom false))
-
-(defn debug-tagging? []
-  @*debug-tagging?)
 
 (def *formatting-meta-level (atom 0))
 
