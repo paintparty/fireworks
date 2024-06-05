@@ -749,11 +749,11 @@
              coll)
 
         max-keylen
-        (->> untokenized 
-             (map #(-> %
-                       first
-                       :ellipsized-char-count))
-             (apply max))
+        (or (some->> untokenized
+                     (map #(-> % first :ellipsized-char-count))
+                     seq
+                     (apply max))
+            0)
 
         ret        
         (string/join
