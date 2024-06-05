@@ -4,7 +4,7 @@
    [fireworks.defs :as defs]
    [fireworks.state :as state]
    [fireworks.tag :as tag :refer [tag! tag-reset! style-from-theme]]
-   [fireworks.util :refer [badge-type]]))
+   [fireworks.util :refer [badge-type readable-sgr]]))
 
 (defn brackets-by-type
   [{:keys [t map-like? js-map-like? js-typed-array? :fw/user-meta-map?] :as m}]
@@ -109,7 +109,7 @@
   "Adds the appropriate style to the state/styles vector.
    Rainbow parens by default.
    Function args vector not included in rainbow parens."
-  [{:keys [t mm]}]
+  [{:keys [t mm]} s]
   (let [theme-token (cond
                       (pos? (state/formatting-meta-level))
                       (state/metadata-token)
@@ -126,9 +126,11 @@
                 (get @state/merged-theme theme-token nil))]
 
     (when (state/debug-tagging?)
-      (println "tag-bracket!    theme-token is   "
+      (println "tag-bracket! "
+               #?(:clj (str style s "\033[0m"))
+               "   theme-token is   "
                theme-token
-               (str ",  style is:   " style)))
+               (str ",  style is:   " (readable-sgr style))))
 
     #?(:cljs
        (swap! state/styles conj style)
@@ -146,7 +148,7 @@
       (println "\nbracket!*  " s ",  t: " t))
 
     #?(:cljs (if t 
-               (do (tag-bracket! m)
+               (do (tag-bracket! m s)
                    (tag-reset! reset-theme-token)
                    (str "%c" s "%c"))
                (do
@@ -154,7 +156,7 @@
                  (tag-reset! reset-theme-token)
                  (str "%c" s "%c")))
        :clj (if t 
-              (str (tag-bracket! m) s (tag-reset!))
+              (str (tag-bracket! m s) s (tag-reset!))
               (str (tag-reset!) s (tag-reset!))))))
 
 (defn- bracket!

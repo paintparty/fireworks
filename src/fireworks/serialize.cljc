@@ -94,7 +94,6 @@
            max-keylen
            ]
     :as m}]
-  #_(?pp (keyed [x multi-line?]))
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
 
@@ -117,7 +116,6 @@
         user-meta-block-tagged
         (when (sev-user-meta-position-match? user-meta :block)
           (swap! state/*formatting-meta-level inc)
-          ;; (?pp (state/formatting-meta-level))
           (let [ret (formatted* user-meta {:indent     indent
                                            :user-meta? true})]
             (swap! state/*formatting-meta-level dec)
@@ -199,7 +197,6 @@
         user-meta-inline-tagged
         (when (sev-user-meta-position-match? user-meta :inline)
           (swap! state/*formatting-meta-level inc)
-          ;; (?pp (state/formatting-meta-level))
           (let [offset        defs/metadata-position-inline-offset
                 inline-offset (tagged (spaces (dec offset))
                                       {:theme-token (state/metadata-token)})
@@ -516,7 +513,6 @@
                    (seq user-meta)
                    (contains? #{:inline "inline"} metadata-position))
     (swap! state/*formatting-meta-level inc)
-    #_(?pp (state/formatting-meta-level))
     (let [offset        defs/metadata-position-inline-offset
           inline-offset (tagged (spaces (dec offset))
                                 {:theme-token (state/metadata-token)})
@@ -664,6 +660,19 @@
                  truncated-coll-size]))]
     ret))
 
+(defn- gap-spaces
+  [{:keys [s k formatting-meta? theme-token-map]}]
+  #?(:cljs s
+     :clj  (if formatting-meta?
+             (do (when (state/debug-tagging?)
+                   (println (str "\ntagging "
+                                 (name k)
+                                 " in metadata map")))
+                 (tagged s
+                         (assoc theme-token-map
+                                (keyword (str (name k) "?"))
+                                true)))
+             s)))
 
 (defn- reduce-map*
   [{:keys [untokenized
@@ -686,6 +695,26 @@
          key-char-count :ellipsized-char-count}
         (sev! (merge key-props {:indent indent}))
 
+        theme-token-map
+        {:theme-token (state/metadata-token)}
+        
+        formatting-meta?
+        (pos? (state/formatting-meta-level))
+
+        spaces-after-key
+        (let [num-extra (if multi-line?
+                          (- (or max-keylen 0) (or key-char-count 0))
+                          0)
+              s         (when (some-> num-extra pos?) 
+                          (spaces num-extra))
+              k         :spaces-after-key]
+          (gap-spaces (keyed [s k formatting-meta? theme-token-map])))
+
+        kv-gap-spaces
+        (let [s (spaces defs/kv-gap)
+              k :kv-gap-spaces]
+          (gap-spaces (keyed [s k formatting-meta? theme-token-map])))
+
         tagged-val          
         (tagged-val (keyed [v
                             indent
@@ -694,42 +723,20 @@
                             multi-line?
                             max-keylen]))
 
-        num-extra-spaces-after-key
-        (if multi-line?
-          (- (or max-keylen 0) (or key-char-count 0))
-          0)
-
-        kv-gap-spaces
-        (spaces defs/kv-gap)
-
-        theme-token-map
-        {:theme-token (state/metadata-token)}
-        
-        formatting-meta?
-        (pos? (state/formatting-meta-level))
+        sep 
+        (when-not (= coll-count (inc idx))
+          (if formatting-meta?
+            (tagged separator
+                    (when-not multi-line?
+                      theme-token-map))
+            separator))
 
         ret                  
         (str escaped-key
-             (when (some-> num-extra-spaces-after-key pos?) 
-               (spaces num-extra-spaces-after-key))
-
-             #?(:cljs
-                kv-gap-spaces
-                :clj
-                (if formatting-meta?
-                  (do (when (state/debug-tagging?)
-                        (println "tagging kv-gap-spaces in metadata map"))
-                      (tagged kv-gap-spaces theme-token-map))
-                  kv-gap-spaces))
-
+             spaces-after-key
+             kv-gap-spaces
              tagged-val
-
-             (when-not (= coll-count (inc idx))
-               (if formatting-meta?
-                 (tagged separator (when-not multi-line?
-                                     theme-token-map))
-                 separator)
-               ))]
+             sep)]
     ret))
 
 

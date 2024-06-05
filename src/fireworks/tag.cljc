@@ -1,7 +1,6 @@
 (ns ^:dev/always fireworks.tag
-  (:require
-   [clojure.string :as string]
-   [fireworks.state :as state]))
+  (:require [clojure.string :as string]
+            [fireworks.state :as state]))
 
 
 
@@ -47,8 +46,7 @@
                                :else
                                t)
                              bgc
-                             custom-badge-style)
-         ]
+                             custom-badge-style)]
      #?(:cljs (let [s (cond
                         (= t :type-label)
                         (str s)
@@ -87,7 +85,7 @@
              display? 
              highlighting
              custom-badge-style]
-      :or   {display? true
+      :or   {display?    true
              theme-token :foreground}}]
 
     ;; s is always a string or vector (in the case of fn-args)
@@ -95,9 +93,14 @@
                    (symbol? s)
                    (vector? s))
                display?)
+
       (when (state/debug-tagging?)
         (println "\ntag/tagged    :   tagging \"" s "\" with " theme-token))
+
+      
+
       (let [opening-tag (tag! theme-token highlighting custom-badge-style)
-            closing-tag (tag-reset!)]
-        (str opening-tag s closing-tag)))))
+            closing-tag (tag-reset!)
+            ret (str opening-tag s closing-tag)]
+        ret))))
 
