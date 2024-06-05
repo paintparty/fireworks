@@ -1,19 +1,18 @@
 (ns ^:dev/always fireworks.state
-  (:require 
-   [fireworks.pp :refer [?pp]]
-   [clojure.string :as string]
-   [clojure.spec.alpha :as s]
-   [fireworks.basethemes :as basethemes]
-   [fireworks.color :as color]
-   [fireworks.config :as config]
-   [fireworks.defs :as defs]
-   [fireworks.messaging :as messaging]
-   [fireworks.specs.theme :as theme]
-   [fireworks.specs.config :as config.specs]
-   [fireworks.specs.tokens :as tokens]
-   [fireworks.themes :as themes]
-   #?(:cljs [fireworks.macros :refer-macros [get-user-configs keyed]]
-      :clj  [fireworks.macros :refer        [get-user-configs keyed]])))
+  (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs keyed]]
+      :clj  [fireworks.macros :refer        [get-user-configs keyed]])
+            [clojure.spec.alpha :as s]
+            [clojure.string :as string]
+            [fireworks.basethemes :as basethemes]
+            [fireworks.color :as color]
+            [fireworks.config :as config]
+            [fireworks.defs :as defs]
+            [fireworks.messaging :as messaging]
+            [fireworks.pp :refer [?pp]]
+            [fireworks.specs.config :as config.specs]
+            [fireworks.specs.theme :as theme]
+            [fireworks.specs.tokens :as tokens]
+            [fireworks.themes :as themes]))
 
 
 ;; Internal state atoms for printing and formatting ------------------------
@@ -175,23 +174,22 @@
 
 
 (defn x->sgr [x k]
-  ;; (?pp x k)
   (when x
     (let [n (if (= k :fg) 38 48)]
       (if (int? x)
         (str n ";5;" x)
         (let [[r g b _] x
               ret       (str n ";2;" r ";" g ";" b)]
-          #_(when (string? x)
-            (println "x->sgr " x " => " ret))
           ret)))))
 
 
 (defn m->sgr
-  [{fgc*       :color
-    bgc*       :background-color
-    font-style :font-style
-    :as        m}]
+  [{fgc*        :color
+    bgc*        :background-color
+    font-style  :font-style
+    font-weight :font-weight
+    k           :k
+    :as         m}]
   (when @debug-on-token?
     (println "\n(fireworks.state/m->sgr " m ")"))
   (let [fgc    (x->sgr fgc* :fg)
@@ -200,23 +198,36 @@
         italic (when (and (:enable-terminal-italics? @config)
                           (contains? #{"italic" :italic} font-style))
                  "3;")
-        ret    (str "\033[" italic fgc (when (and fgc bgc) ";") bgc "m")]
-    (when @debug-on-token?
-      (println (str "\n Combining the fg and bg into a single sgr...\n"
-                    "(fireworks.state/m->sgr " m ") => "
-                    (str "033[" fgc (when (and fgc bgc) ";") bgc "m"))))
+        weight (when (and (:enable-terminal-font-weights? @config)
+                          (contains? #{"bold" :bold} font-weight))
+                 ";1")
+        ret    (str "\033[" 
+                    italic
+                    fgc
+                    weight
+                    (when (or (and fgc bgc)
+                              (and weight bgc))
+                      ";")
+                    bgc
+                    "m")]
+    (when  @debug-on-token?
+      (?pp "\nCombining the fg and bg into a single sgr..." m)
+      (println "=>\n"
+               (str "\\033" (subs ret 1))
+               "\n"))
     ret))
 
 
 ;; This is used for dynmically colorizing brackets when they need bg colors
 ;; Maybe refactor to use x->sgr? But first refactor x->sgr to handle italics?
 (defn kv->sgr
-  [{:keys [color background-color font-style]}]
+  [{:keys [color background-color font-style font-weight]}]
   ;; `color` is an xterm id such as 67
   (let [fgc    (some->> color (str "38;5;"))
         bgc    (some->> background-color (str "48;5;"))
         italic (when (contains? #{"italic" :italic} font-style) "3;")
-        ret    (str "\033[" italic fgc (when bgc ";") bgc "m")]
+        weight (when (contains? #{"bold" :bold} font-weight) ";1")
+        ret    (str "\033[" italic fgc weight (when bgc ";") bgc "m")]
     ret))
 
 
@@ -295,9 +306,14 @@
     #?(:cljs
        ret
        :clj
-       (if (:enable-terminal-italics? @config)
-         ret
-         (dissoc ret :font-style)))))
+       ;; TODO remove font-weight
+       (let [ret* (if (:enable-terminal-italics? @config)
+                    ret
+                    (dissoc ret :font-style))
+             ret (if (:enable-terminal-font-weights @config)
+                   ret*
+                   (dissoc ret* :font-weight))]
+         ret))))
 
 
 (defn with-line-height [m]
@@ -309,14 +325,15 @@
 
 (defn serialize-style-maps [merged]
   (map-vals (fn [[k m]] 
-              (let [m (sanitize-style-map m)] 
+              (let [m-with-k (assoc m :k k)
+                    m        (sanitize-style-map m-with-k)] 
                 #?(:cljs (let [m (with-line-height m)]
                            [k (string/join (map kv->css2 m))])
                    :clj (do
                           (reset-token-debugging! k)
                           (when @debug-on-token?
                             (println "\n" "(serialize-style-maps) => \n" k m))
-                          [k (m->sgr m)]))))
+                          [k (m->sgr m-with-k)]))))
             merged))
 
 
@@ -481,6 +498,8 @@
            (catch #?(:cljs js/Object :clj Exception)
                   e
              (messaging/->FireworksThrowable e)))]
+
+      #_(?pp (:metadata-key with-style-maps))
   (if err 
     (messaging/print-error err)
     (do 

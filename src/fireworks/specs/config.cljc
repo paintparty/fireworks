@@ -85,6 +85,9 @@
 (s/def ::enable-terminal-italics?
   boolean?)
 
+(s/def ::enable-terminal-font-weights?
+  boolean?)
+
 ;; flesh out this spec
 (s/def ::custom-printers
   map?)

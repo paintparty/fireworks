@@ -103,7 +103,8 @@
 (def valid-stylemap-keys
   #?(:clj [:color
            :background-color
-           :font-style]
+           :font-style
+           :font-weight]
      :cljs [:color
             :background-color
             :width
