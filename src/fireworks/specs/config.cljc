@@ -59,10 +59,10 @@
   (s/and int? #(<= 5 % 80)))
 
 (s/def ::print-level
-  (s/and int? #(<= 3 % 20)))
+  (s/and int? #(<= 1 % 20)))
 
 (s/def ::metadata-print-level
-  (s/and int? #(<= 3 % 10)))
+  (s/and int? #(<= 1 % 10)))
 
 (s/def ::display-namespaces? 
   boolean?)
