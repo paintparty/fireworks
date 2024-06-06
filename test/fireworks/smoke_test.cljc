@@ -210,11 +210,19 @@
                                {:abc (symbol "bar")
                                 :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
 
+(? {:print-level 1} {:a {:b {:a 1 :b 2}
+                         :c #{1 2 3 4 5}}})
+
 ;; (? basic-samples-cljc)
+
+#_(? (with-meta [1]
+     {:file       "mvp/frontend.cljs"
+      :end-column 5}))
+
 
 #?(:clj
    (do 
-     (do
+     #_(do
          ;; DataTypes ------------------------------------------------------
          (? "A def of deftype" (deftype MyType [a b]))
          
@@ -355,7 +363,7 @@
   
 
  ;; Testing all the stock themes cljc
- (do
+ #_(do
    (doseq [mood ["Light" #_"Dark"]]
      (doseq [theme ["Neutral"
                     "Alabaster"
@@ -366,6 +374,7 @@
       (let [x (str theme " " mood)]
         (? {:label x :theme x}
            basic-samples-cljc-theme)))))
+
 
  ;; Testing all the options cljc
  #_(do 

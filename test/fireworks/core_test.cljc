@@ -164,9 +164,10 @@
                                               :non-coll-result-length-limit 42}
                                              "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
                     formatted-string (-> ret :formatted :string)]
-                #_(pp/pprint formatted-string)
+                ;; (pp/pprint 'p-data-with-non-coll-length-limit)
+                ;; (pp/pprint formatted-string)
                 formatted-string)
-              "%c\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff4\"%c...%c%c")))
+              "%c\"asdfffaaaaasdfasdfasdfasdfasdfasdfasd\"...%c")))
 
        (deftest p-data-rainbow-brackets
          (is (= 
@@ -234,16 +235,20 @@
    
    :clj
    (do 
-     (deftest p-data-with-label-from-opts
+     ;; Use this to effectively silence all other clj tests
+     #_(deftest ^:test-refresh/focus p-data-with-label-from-opts
+        (is true))
+
+     (deftest  p-data-with-label-from-opts
        (is (= 
-            (let [ret              (p-data {:label                      "my-label-from-opts"
-                                            :enable-terminal-truecolor? true
-                                            :enable-terminal-italics?   true}
-                                       "foo")
-                  formatted-string (-> ret :formatted :string)]
+              (let [ret              (p-data {:label                      "my-label-from-opts"
+                                              :enable-terminal-truecolor? true
+                                              :enable-terminal-italics?   true}
+                                             "foo")
+                    formatted-string (-> ret :formatted :string)]
               ;; (pp/pprint (escape-sgr formatted-string))
-              (escape-sgr formatted-string))
-            '("〠38;2;68;140;39〠" "\"foo\"" "〠0〠"))))
+                (escape-sgr formatted-string))
+              '("〠38;2;68;140;39〠" "\"foo\"" "〠0〠"))))
 
      (deftest p-data-with-label-from-opts-primitive-terminal-emulator
        (is (= 
@@ -251,7 +256,7 @@
                                             :enable-terminal-truecolor? false
                                             :enable-terminal-italics?   false
                                             :theme                      theme}
-                                       "foo")
+                                           "foo")
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
@@ -265,7 +270,7 @@
                                             :bracket-contrast              "high"
                                             :theme                         theme
                                             :non-coll-depth-1-length-limit 60}
-                                       ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
+                                           ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
                   formatted-string (-> ret :formatted :string)]
               (escape-sgr formatted-string))
             '("〠38;5;241〠"
@@ -289,15 +294,13 @@
                                             :bracket-contrast             "high"
                                             :theme                        theme
                                             :non-coll-result-length-limit 42}
-                                       "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
+                                           "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
                   formatted-string (-> ret :formatted :string)]
-              #_(pp/pprint (escape-sgr formatted-string))
+              ;; (pp/pprint 'p-data-with-non-coll-result-length-limit)
+              ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;2;68;140;39〠"
-              "\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff4\""
-              "〠3;38;2;140;140;140〠"
-              "..."
-              "〠0〠"
+              "\"asdfffaaaaasdfasdfasdfasdfasdfasdfasd\"..."
               "〠0〠"))))
 
      (deftest p-data-with-coll-limit
@@ -308,7 +311,7 @@
                                             :coll-limit                 5
                                             :theme                      theme
                                             :custom-printers            {}}
-                                       [1 2 3 4 5 6 7 8])
+                                           [1 2 3 4 5 6 7 8])
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
@@ -348,7 +351,7 @@
                                             :enable-terminal-italics?   true
                                             :bracket-contrast           "high"
                                             :theme                      theme}
-                                       [[[[[]]]]])
+                                           [[[[[]]]]])
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
@@ -390,7 +393,7 @@
                                             :enable-terminal-italics?   true
                                             :bracket-contrast           "low"
                                             :theme                      theme}
-                                       [[[[[]]]]])
+                                           [[[[[]]]]])
                   formatted-string (-> ret :formatted :string)]
               #_(pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
@@ -530,7 +533,7 @@
               "〠38;2;190;85;187;48;2;250;232;253〠"
               "^{"
               "〠0〠"
-              "〠38;2;190;85;187;48;2;250;232;253〠"
+              "〠38;2;190;85;187;1;48;2;250;232;253〠"
               ":foo"
               "〠0〠"
               "〠38;2;190;85;187;48;2;250;232;253〠"
