@@ -318,7 +318,7 @@
                                   "\n\n"
                                   (if multi-line?
                                     "\n"
-                                    (when-not (zero? truncated-coll-size)
+                                    (when-not (some-> truncated-coll-size zero?)
                                       " ")))
                                 (when multi-line? indent-chars)
                                 (if coll-is-map?
