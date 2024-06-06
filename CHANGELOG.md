@@ -17,11 +17,16 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 #### Added
 - `:enable-terminal-font-weights` as config option for enabling bold font weight in terminal environments which support it.
+- `?i` macro for printing the info, then the result.
+- `?il` macro for printing the info (ns info), then the label, then the result.
+- `?l` macro for printing the label, then the result.
 
 #### Changed
 - Use pprint if label for printing is a map.
 - Remove trailing bracket on form-to-be-evaled labels.
 - Shortened truncation syntax within colls which exceed :print-level
+- `?-` macro now prints just the result.
+- `?--` macro now prints just a label, for user commentary.
 
 #### Fixed
 - Bug with clojure.core/max arity, if maps are empty.
@@ -108,6 +113,8 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Use pprint if label for printing is a map.
 - Remove trailing bracket on form-to-be-evaled labels.
 - Shortened truncation syntax within colls which exceed :print-level
+- `?-` macro now prints just the result.
+- `?--` macro now prints just a label, for user commentary.
 
 <br>
 <br>
