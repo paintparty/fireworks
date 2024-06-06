@@ -62,7 +62,8 @@
         (when (contains?
                #{[:form-or-label :file-info :result]
                  [:file-info :form-or-label :result]
-                 [:form-or-label :result]}
+                 [:form-or-label :result]
+                 [:form-or-label :file-info]}
                template)
           (when label
             (let [label (if (map? label)
@@ -98,13 +99,14 @@
   (let [file-info* (when (contains?
                           #{[:form-or-label :file-info :result]
                             [:file-info :result]
-                            [:file-info :form-or-label :result]}
+                            [:file-info :form-or-label :result]
+                            [:form-or-label :file-info]}
                           template)
                      (when-let [{ln  :line
                                  col :column} form-meta]
                        (str ns-str ":" ln ":" col)))
-
-        file-info  (some-> file-info* (tag/tag-entity! :file-info))]
+        file-info  (some-> file-info*
+                           (tag/tag-entity! :file-info))]
    [file-info* file-info]))
 
 (defn- file-info-and-eval-label
@@ -142,13 +144,22 @@
                 file-info]}
         (file-info-and-eval-label opts file-info-first?)
 
+        file-info-first?
+        (boolean (or file-info-first?
+                     (and (= template [:form-or-label :file-info])
+                          multi-line-label?)))
+
         result-header
-        (when-not (or (= template [:result])
+        (when-not (or (contains? #{[:result] 
+                                   [:form-or-label :file-info]}
+                                 template)
                       log?)
           (tag/tag-entity! " \n" :result-header))
 
         fmt           
-        (when-not log? (serialize/formatted* source))
+        (when-not (or log?
+                      (= template [:form-or-label :file-info]))
+          (serialize/formatted* source))
 
         label-or-form
         (or label form)
@@ -163,10 +174,8 @@
            fmt)
           (str label-or-form
                (when label-or-form
-                 (when-not (re-find #"\n" label-or-form)
-                   "  "))
-               (when (and multi-line-label?
-                          file-info)
+                 (when-not (re-find #"\n" label-or-form) "  "))
+               (when (and multi-line-label? file-info)
                  "\n")
                file-info
                result-header
@@ -645,6 +654,23 @@
        `(fireworks.core/_p ~a
                            (assoc ~cfg-opts :qf (quote ~x))
                            ~x)))))
+
+(defmacro ?--
+  "Prints a user-supplied label, following by the namespace info.
+   Designed for providing commentary in your program.
+
+   If the label is multiline, the file-info is instead placed above
+   the label.
+   
+   The form (or optional label) is formatted with pprint."
+  ([])
+  ([x]
+   (let [{:keys [cfg-opts]}
+         (helper2 {:x         x
+                   :template  [:form-or-label :file-info]
+                   :form-meta (meta &form)})]
+     `(fireworks.core/_p (assoc ~cfg-opts :label ~x :qf nil)
+                         ~x))))
 
 
 (defmacro ?log
@@ -1125,6 +1151,7 @@
 
 (def !? !?*)
 (def !?- !?*)
+(def !?-- !?*)
 (def !?i !?*)
 (def !?il !?*)
 (def !?l !?*)
