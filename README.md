@@ -95,7 +95,7 @@ Print-and-return utilities for Clojure, ClojureScript, and Babashka. Features co
 <br>
 
 ## Why 
-Fireworks offers a range of print-and-return macros designed to make print debugging easier and faster. If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
+Fireworks is designed to make print debugging easier and faster. If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
 
 
 <br>

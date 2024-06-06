@@ -210,7 +210,10 @@
                                {:abc (symbol "bar")
                                 :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
 
-(? {:print-level 1} {:a {:b {:a 1 :b 2}
+;; Testing :non-coll-mapkey-length-limit
+;; (? {:non-coll-mapkey-length-limit 40} {"12345678_112345678_212345678_312345678_4" :gold})
+;; Testing print level truncation syntax
+#_(? {:print-level 1} {:a {:b {:a 1 :b 2}
                          :c #{1 2 3 4 5}}})
 
 ;; (? basic-samples-cljc)

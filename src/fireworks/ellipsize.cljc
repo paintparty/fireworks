@@ -244,8 +244,9 @@
             :level-0-sev non-coll-result-length-limit
             :level-1-sev (let [n    non-coll-depth-1-length-limit
                                half (/ (dec n) 2)]
+                           
                            (cond
-                             key?       half
+                             key?       (max non-coll-mapkey-length-limit half)
                              map-value? (max half non-coll-length-limit)
                              :else      n)))
           (max (if key?
