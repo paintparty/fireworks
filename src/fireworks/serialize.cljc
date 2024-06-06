@@ -72,27 +72,26 @@
    The tag! and tag-reset! fns mutate the styles atom for syntax coloring."
   [{:keys [x
            s
-           str-len-with-badge
-           fn-display-name
            t
-           num-chars-dropped
-           ellipsized-char-count
-           highlighting
-           fn-args
-           badge
-           number-type?
-           atom?
-           js-map-like-key?
            key?
-           all-tags
-           :fw/user-meta
-           indent
-           :fw/custom-badge-style
            sev?
-           multi-line?
+           atom?
+           badge
+           indent
+           fn-args
+           all-tags
            separator
            max-keylen
-           ]
+           multi-line?
+           number-type?
+           highlighting
+           :fw/user-meta
+           fn-display-name
+           js-map-like-key?
+           num-chars-dropped
+           str-len-with-badge
+           ellipsized-char-count
+           :fw/custom-badge-style]
     :as m}]
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
@@ -253,13 +252,13 @@
          user-meta-inline-tagged)
 
         ret                  
-        (keyed [x
-                s
+        (keyed [ellipsized-char-count
+                num-chars-dropped
                 fn-display-name
-                t
-                num-chars-dropped 
-                ellipsized-char-count
-                escaped])
+                escaped
+                x 
+                s
+                t])
         locals (merge ret
                       (keyed [main-entity-tag
                               chars-dropped-syntax
@@ -292,54 +291,63 @@
 
 ;;;; For dealing with collections
 
+(defn- leading-space
+  [m]
+  (if (:single-column-map-layout? m) 
+    "\n\n"
+    (if (:multi-line? m)
+      "\n"
+      (when-not (some-> m :truncated-coll-size zero?)
+        (when-not (:too-deep? m) " ")))))
+
+(defn- map-key-ghost 
+  [{:keys [too-deep? max-keylen]}]
+  (when-not too-deep?
+                             (string/join
+                              (repeat (if (some-> max-keylen pos?)
+                                        (min 3 max-keylen)
+                                        3)
+                                      "."))))
+
 (defn- num-dropped-annotation!
-  [{:keys [max-keylen
-           indent
-           num-dropped
-           single-column-map-layout?
+  [{:keys [indent
+           too-deep?
+           max-keylen
            multi-line?
-           truncated-coll-size]}]
-  (let [coll-is-map?       (boolean max-keylen)
-        num-dropped-syntax (str defs/num-dropped-prefix
+           num-dropped]
+    :as m}]
+  (let [num-dropped-syntax (str (when-not too-deep? defs/ellipsis)
+                                "+"
                                 num-dropped)
-        map-key-ghost      (string/join
-                            (repeat (if (some-> max-keylen pos?)
-                                      (min 3 max-keylen)
-                                      3)
-                                    "."))
-        spaces-between-k-v (when coll-is-map?
+        map-key-ghost      (map-key-ghost m)
+        coll-is-map?       (boolean max-keylen)
+        spaces-between-kv  (when coll-is-map?
                              (let [max-keylen+space (inc max-keylen)
-                                   num-spaces       (- max-keylen+space
-                                                       (count map-key-ghost))]
+                                   num-spaces       (if too-deep?
+                                                      0
+                                                      (- max-keylen+space
+                                                         (count map-key-ghost)))]
                                (spaces num-spaces)))
         num-indent-chars   indent      
         indent-chars       (spaces num-indent-chars)      
-        extra*             (str (if single-column-map-layout? 
-                                  "\n\n"
-                                  (if multi-line?
-                                    "\n"
-                                    (when-not (some-> truncated-coll-size zero?)
-                                      " ")))
-                                (when multi-line? indent-chars)
-                                (if coll-is-map?
-                                  map-key-ghost
-                                  num-dropped-syntax)
-                                spaces-between-k-v
-                                (when coll-is-map? num-dropped-syntax))
-
-        _ (when (state/debug-tagging?)
-            (println "\nnum-dropped-annotion! : tagging " extra* " with " :ellipsis))
-
+        extra*             (let [leading+indent (str (leading-space m)
+                                                     (when multi-line? indent-chars))]
+                             (if coll-is-map?
+                               (str leading+indent
+                                    map-key-ghost
+                                    spaces-between-kv
+                                    num-dropped-syntax)
+                               (str leading+indent
+                                    num-dropped-syntax
+                                    spaces-between-kv)))
+        _                  (when (state/debug-tagging?)
+                             (println "\nnum-dropped-annotion! : tagging "
+                                      extra*
+                                      " with "
+                                      :ellipsis))
         extra              (str (tag! :ellipsis)
                                 extra*
-                                (tag-reset!))
-        locals             (keyed [max-keylen
-                                   indent
-                                   num-dropped
-                                   num-dropped-syntax
-                                   coll-is-map?
-                                   spaces-between-k-v
-                                   extra])]
+                                (tag-reset!))]
     extra))
 
 
@@ -351,7 +359,8 @@
    This value is displayed, in the last position of the collection."
 
   [{:keys [ob ret num-dropped] :as m}]
-  (let [extra (when (some-> num-dropped pos?) (num-dropped-annotation! m))
+  (let [extra (when (some-> num-dropped pos?)
+                (num-dropped-annotation! m))
         cb    (closing-bracket! m)
         cb2   (closing-angle-bracket! m)
         ret   (str ob ret extra cb cb2)]
@@ -381,6 +390,7 @@
                 :fw/user-meta
                 js-map-like?
                 num-dropped         
+                too-deep?
                 map-like?
                 record?
                 badge
@@ -473,20 +483,21 @@
           (str maybe-comma " "))
 
         ret          
-        (keyed [num-dropped 
+        (keyed [custom-badge-style 
                 str-len-with-badge     
-                multi-line? 
-                user-meta-above?
+                annotation-newline 
                 metadata-position
-                atom?
-                separator   
+                user-meta-above?
+                num-dropped
+                multi-line?   
                 coll-count
+                separator
+                user-meta
+                too-deep?
+                record?
                 indent
                 badge
-                user-meta
-                annotation-newline
-                record?
-                custom-badge-style])]
+                atom?])]
       ret))
 
 
@@ -593,12 +604,12 @@
 
 (defn- reduce-coll
   [coll indent*]
-  (let [{:keys [some-colls-as-keys?
-                some-syms-carrying-metadata-as-keys?
-                single-column-map-layout?
+  (let [{:keys [t
+                js-typed-array?
                 truncated-coll-size
-                t
-                js-typed-array?]
+                some-colls-as-keys?
+                single-column-map-layout?
+                some-syms-carrying-metadata-as-keys?]
          :as   meta-map}
         (meta coll) 
 
@@ -607,12 +618,13 @@
           (with-meta (sequence cat coll) meta-map)
           coll)
 
-        {:keys [coll-count         
-                num-dropped 
+        {:keys [ob         
+                indent 
                 separator
-                indent
-                multi-line?
-                ob]}
+                too-deep?
+                coll-count
+                num-dropped
+                multi-line? ]}
         (profile+ob coll indent*)
 
         ret                 
@@ -648,16 +660,17 @@
         
         ret                 
         (stringified-bracketed-coll-with-num-dropped-syntax!
-         (keyed [coll
-                 ob
-                 ret
-                 indent
-                 num-dropped
+         (keyed [some-syms-carrying-metadata-as-keys?
                  single-column-map-layout?
+                 truncated-coll-size
                  some-colls-as-keys?
-                 some-syms-carrying-metadata-as-keys?
+                 num-dropped
                  multi-line?
-                 truncated-coll-size]))]
+                 too-deep?
+                 indent
+                 coll
+                 ret
+                 ob]))]
     ret))
 
 (defn- gap-spaces
@@ -742,13 +755,7 @@
 
 (defn- reduce-map
   [coll indent]
-  (let [{:keys [coll-count         
-                num-dropped 
-                separator
-                indent
-                multi-line?
-                ob
-                record?]}     
+  (let [m     
         (profile+ob coll indent)
 
         untokenized
@@ -769,24 +776,15 @@
         (string/join
          (map-indexed
           (partial reduce-map*
-                   (keyed [untokenized
-                           max-keylen
-                           indent
-                           coll-count
-                           separator
-                           multi-line?]))
+                   (merge m (keyed [untokenized max-keylen])))
           coll))
 
         ret        
         (stringified-bracketed-coll-with-num-dropped-syntax!
-         (keyed [coll
-                 ob
-                 ret
-                 indent
-                 num-dropped
-                 max-keylen
-                 multi-line?
-                 record?]))]
+         (merge m
+                (keyed [coll
+                        ret
+                        max-keylen])))]
      ret))
 
 
