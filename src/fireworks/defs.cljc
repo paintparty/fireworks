@@ -164,8 +164,6 @@
               encapsulation-opening-bracket
               encapsulation-closing-bracket)))
 
-(def num-dropped-prefix (str ellipsis "+"))
-
 (def lamda-symbol "λ")
 
 (def js-literal-badge "#js ")
