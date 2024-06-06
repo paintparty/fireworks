@@ -1,6 +1,3 @@
-;; Add ?blah fn that just does comment "  " ns-info
-
-
 (ns fireworks.core
   (:require
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
