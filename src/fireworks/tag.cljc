@@ -94,13 +94,12 @@
                    (vector? s))
                display?)
 
-      (when (state/debug-tagging?)
-        (println "\ntag/tagged    :   tagging \"" s "\" with " theme-token))
-
-      
-
       (let [opening-tag (tag! theme-token highlighting custom-badge-style)
             closing-tag (tag-reset!)
-            ret (str opening-tag s closing-tag)]
+            ret         (str opening-tag s closing-tag)]
+
+        (when (state/debug-tagging?)
+              (println "\ntag/tagged    :   tagging \"" s "\" with " theme-token) )
+
         ret))))
 

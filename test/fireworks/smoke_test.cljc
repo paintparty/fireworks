@@ -1,5 +1,5 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [?]]
+  (:require [fireworks.core :refer [? ?- ?i ?il ?l !?- !?i !?il !?l]]
             [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
@@ -218,10 +218,36 @@
 
 ;; (? basic-samples-cljc)
 
-#_(? (with-meta [1]
+;; (? {:label {:a 1
+;;             :b "threeasdfadsfasdfasdfasdfasdfasfws"
+;;             :c "threeasdfadsfasdfasdfasdfasdfasfws"}}
+;;    (with-meta [1]
+;;      {:file       "mvp/frontend.cljs"
+;;       :end-column 5}))
+
+;; (? "Default:\nLine1\nLine2"
+;;  (with-meta [1]
+;;      {:file       "mvp/frontend.cljs"
+;;       :end-column 5}))
+
+(?il "?il:\nLine1\nLine2"
+     (with-meta [1]
+       {:file       "mvp/frontend.cljs"
+        :end-column 5}))
+
+(?l "Just the label:\nLine1\nLine2"
+ (with-meta [1]
      {:file       "mvp/frontend.cljs"
       :end-column 5}))
 
+(?i "Just the info"
+ (with-meta [1]
+     {:file       "mvp/frontend.cljs"
+      :end-column 5}))
+
+;; (?- (with-meta [1]
+;;      {:file       "mvp/frontend.cljs"
+;;       :end-column 5}))
 
 #?(:clj
    (do 
