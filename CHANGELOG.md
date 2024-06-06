@@ -7,7 +7,26 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 
 ## Unreleased
-- 
+-
+
+<br>
+<br>
+
+## 0.5.0
+2024-06-?
+
+#### Added
+- `:enable-terminal-font-weights` as config option for enabling bold font weight in terminal environments which support it.
+
+#### Changed
+- Use pprint if label for printing is a map.
+- Remove trailing bracket on form-to-be-evaled labels.
+- Shortened truncation syntax within colls which exceed :print-level
+
+#### Fixed
+- Fixed bug with clojure.core/max arity, if maps are empty.
+- Fixed bug with `:non-coll-result-length-limit` config.
+- Colorization of metadata (kv gaps) in terminal context
 
 <br>
 <br>
@@ -83,6 +102,14 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 ## Breaking changes
+
+#### 0.5.0
+- Use pprint if label for printing is a map.
+- Remove trailing bracket on form-to-be-evaled labels.
+- Shortened truncation syntax within colls which exceed :print-level
+
+<br>
+<br>
 
 ### 0.4.0
 - Metadata maps now formatted with left-justified values.
