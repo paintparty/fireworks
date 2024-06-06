@@ -70,9 +70,9 @@
         js-map-like?        (contains? all-tags :js/map-like-object)
         ret*                (keyed [truncated-coll-size  
                                     coll-size-adjust        
-                                    num-dropped                  
-                                    js-typed-array?          
-                                    js-map-like?])
+                                    js-typed-array?                  
+                                    js-map-like?          
+                                    num-dropped])
         ret                 (merge ret*
                                    (when map-like?
                                      {:sorted-map-keys (mapv #(nth % 0 nil) coll)}))]
@@ -82,8 +82,8 @@
 (defn new-coll2
   ;; [x uid-entry? tag-map depth t too-deep?]
   [{:keys [x
-           depth
            t
+           depth
            map-like?
            too-deep?]
     :as opts+}]
@@ -139,15 +139,15 @@
         uid-entry? (volatile! false)
         too-deep?  (> depth (:print-level @state/config))
         sev?       (boolean (when-not kv? (not (:coll-type? tag-map))))
-        ret        (keyed [depth       
-                           atom?       
-                           x           
-                           user-meta   
-                           kv?         
-                           tag-map     
-                           uid-entry?
-                           too-deep? 
-                           sev?])]
+        ret        (keyed [uid-entry?       
+                           user-meta       
+                           too-deep?           
+                           tag-map   
+                           depth         
+                           atom?     
+                           sev?
+                           kv? 
+                           x])]
     (merge (:tag-map ret)
            (dissoc ret :tag-map)))) 
 
@@ -183,9 +183,9 @@
     :as opts}
    x]
   (let [{:keys [x             
-                user-meta     
+                t     
                 kv?           
-                t         
+                user-meta         
                 coll-type?]
          :as   opts+}
         (truncate-opts opts x)
