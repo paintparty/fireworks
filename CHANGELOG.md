@@ -24,9 +24,10 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Shortened truncation syntax within colls which exceed :print-level
 
 #### Fixed
-- Fixed bug with clojure.core/max arity, if maps are empty.
-- Fixed bug with `:non-coll-result-length-limit` config.
+- Bug with clojure.core/max arity, if maps are empty.
+- Bug with `:non-coll-result-length-limit` config.
 - Colorization of metadata (kv gaps) in terminal context
+- Bug with `:non-coll-mapkey-length-limit` config. 
 
 <br>
 <br>
