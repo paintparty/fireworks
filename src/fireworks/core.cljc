@@ -18,7 +18,7 @@
    [lasertag.core :as lasertag]
    [fireworks.util :as util])
   #?(:cljs (:require-macros 
-            [fireworks.core :refer [?> ? !? ?println]])))
+            [fireworks.core :refer [[? ?-- ?i ?l ?log ?log- ?pp ?pp-]]])))
 
 (declare pprint)
 
@@ -53,7 +53,7 @@
 ;;                               ooo OOO OOO ooo
 
 
-(defn user-label-or-form!
+(defn- user-label-or-form!
   [{:keys [qf template label mll?]}]
   (let [label
         (when (contains?
@@ -120,7 +120,65 @@
               file-info*
               file-info]))))
 
-(defn formatted
+(defn- fmt+
+  [{:keys [template 
+           file-info-first?
+           opts
+           mll?
+           log?
+           user-print-fn
+           source]}]
+  (let [{:keys [label
+                form
+                file-info*
+                file-info]}
+        (when-not (= template [:result])
+          (file-info-and-eval-label (merge opts
+                                           (keyed [file-info-first? mll?]))))
+
+        result-header
+        (when-not (or (contains? #{[:result] [:form-or-label :file-info]}
+                                 template)
+                      log?)
+          (tag/tag-entity! " \n" :result-header))
+
+        fmt           
+        (when-not (or log?
+                      (= template [:form-or-label :file-info]) )
+          (if (and user-print-fn
+                   (contains? #{pr pr-str prn prn-str print println} 
+                              user-print-fn))
+            (with-out-str (user-print-fn source))
+            (serialize/formatted* source)))
+
+        label-or-form
+        (or label form)
+
+        just-result?
+        (and log? (= template [:result]))
+
+        fmt+          
+        (when-not just-result?
+          (if file-info-first?
+            (str 
+             file-info
+             (when label-or-form "\n")
+             label-or-form
+             result-header
+             fmt)
+            (str label-or-form
+                 (when label-or-form
+                   (when-not (re-find #"\n" label-or-form) "  "))
+                 (when (and mll? file-info)
+                   "\n")
+                 file-info
+                 result-header
+                 fmt)))]
+                 {:fmt        fmt
+                  :fmt+       fmt+
+                  :file-info* file-info*}))
+
+(defn- formatted
   "Formatted log with file-info, form/comment, fat-arrow and syntax-colored
    pretty-printed result. Used by fireworks.core/? macro."
   [source
@@ -130,9 +188,13 @@
            log?
            p-data?
            ns-str
-           label]
+           label
+           user-opts]
     :as   opts}] 
-  (let [label
+  (let [user-print-fn
+        (:print-with user-opts)
+
+        label
         (if (map? label)
           (with-out-str (pprint label))
           label)
@@ -151,47 +213,17 @@
                             template)
                  mll?))
 
-        {:keys [label
-                form
-                mll?
-                file-info*
-                file-info]}
-        (when-not (= template [:result])
-          (file-info-and-eval-label (merge opts
-                                           (keyed [file-info-first? mll?]))))
-
-        result-header
-        (when-not (or (contains? #{[:result] [:form-or-label :file-info]}
-                                 template)
-                      log?)
-          (tag/tag-entity! " \n" :result-header))
-
-        fmt           
-        (when-not (or log?
-                      (= template [:form-or-label :file-info]))
-          (serialize/formatted* source))
-
-        label-or-form
-        (or label form)
-
-        fmt+          
-        (when-not (and log? (= template [:result]))
-         (if file-info-first?
-           (str 
-            file-info
-            (when label-or-form "\n")
-            label-or-form
-            result-header
-            fmt)
-           (str label-or-form
-                (when label-or-form
-                  (when-not (re-find #"\n" label-or-form) "  "))
-                (when (and mll? file-info)
-                  "\n")
-                file-info
-                result-header
-                fmt)))]
+        {:keys [fmt+ fmt file-info*]}
+        (fmt+ (keyed [template 
+                      file-info-first?
+                      opts
+                      mll?
+                      log?
+                      user-print-fn
+                      source]))]
+    
     (if p-data?
+      ;; If p-data, return a map of preformatted values
       (merge
        {:ns-str        ns-str
         :file-info-str file-info*
@@ -203,6 +235,8 @@
                            #?(:cljs {:css-styles (subvec
                                                   @state/styles 
                                                   (count @state/styles))}))})
+
+      ;; Else if print-and-return fns, return printing opts
       {:fmt  fmt+
        :log? log?})))
 
@@ -424,7 +458,7 @@
                                          :log?
                                          :fw/log?
                                          :p-data?
-                                         :form-meta] )
+                                         :form-meta])
                          {:ns-str    (some-> *ns* ns-name str)
                           :label     label
                           :user-opts cfg-opts})]
@@ -448,6 +482,7 @@
 
 
 (defn cast-var
+  "Needs to be public, used at runtime by macros"
   [defd {:keys [ns-str]}]
   (symbol (str "#'" ns-str "/" defd)))
 
@@ -476,6 +511,11 @@
 ;;                           oOO                 OOo
 ;;                               ooo OOO OOO ooo
 
+(defn ?> 
+  "Passes value to clojure.core/tap> and returns value."
+  ([x]
+   (do (tap> x)
+       x)))
 
 (defn ?-
   "Prints only the value.
@@ -635,7 +675,9 @@
      `(fireworks.core/_p (assoc ~cfg-opts :label ~x :qf nil)
                          ~x))))
 
-(defn _log [x]
+(defn _log 
+  "Public function"
+  [x]
   #?(:cljs
      (js/console.log x)
      :clj
@@ -694,6 +736,7 @@
           (fireworks.core/_log ~x))))))
 
 
+;; TODO - make this a defn?
 (defmacro ?log-
   "Prints just the value using console.log or pp/pprint.
    
@@ -776,6 +819,7 @@
           (fireworks.core/_pp ~x))))))
 
 
+;; TODO - make this a defn?
 (defmacro ?pp-
   "Prints just the value using console.log or pp/pprint.
    
@@ -870,6 +914,29 @@
          ~x)))))
 
 
+
+;; Silencers
+
+(defn !?*
+  "A no-op function which returns the value. Intended to temporarily silence the
+   printing of a form while still keeping it wrapped."
+  ([])
+  ([x] x)
+  ([_ x] x))
+
+(def !?> !?*)
+
+(def !? !?*)
+(def !?- !?*)
+(defn !?-- ([]) ([x]))
+(def !?i !?*)
+(def !?l !?*)
+
+(def !?log !?*)
+(def !?log- !?*)
+
+(def !?pp !?*)
+(def !?pp- !?*)
 
 
 ;;                               ooo OOO OOO ooo
@@ -975,159 +1042,3 @@
             (-> sb str string-print)
             (when *flush-on-newline* (-flush writer))))))))
 
-
-
-;; ?pp and supporting ns-str are add-on macros for basic print-and-return fn 
-;; Intended to be used for development of fireworks itself.
-(defn- ns-str
-  [form-meta]
-  (let [{:keys [line column]} form-meta
-        ns-str                (some-> *ns*
-                                      ns-name
-                                      str
-                                      (str ":" line ":" column))
-        ns-str                (str "\033[3;34;m" ns-str "\033[0m")]
-    ns-str))
-
-
-#_(defmacro ?pp
-  ([x]
-   (let [ns-str (ns-str (meta &form))]
-     `(do
-        (println
-         (str ~ns-str
-              "\n"
-              (with-out-str (fireworks.pp/pprint ~x))))
-        ~x)))
-  ([label x]
-   (let [label (or (:label label) label)
-         ns-str (ns-str (meta &form))]
-     `(do
-        (println
-         (str ~ns-str
-              "\n"
-              ~label
-              "\n"
-              (with-out-str (fireworks.pp/pprint ~x))))
-        ~x))))
-
-
-(defn- ?p* 
-  ([label ret]
-   (?p* label ret nil))
-  ([label ret f]
-   [(< (:non-coll-length-limit @state/config)
-       (+ (or (-> label str count) 0)
-          (or (-> ret str count) 0)))
-    #?(:cljs (or f js/console.log) :clj (or f fireworks.core/pprint))]))
-
-
-(defn ?> 
-  "Passes value to clojure.core/tap> and returns value."
-  ([x]
-   (do (tap> x)
-       x)))
-
-
-(defmacro ?println
-  "Prints the value using clojure.core/println`, and then
-   returns the value."
-  ([x]
-   `(do (clojure.core/println ~x)
-        ~x))
-  ([label x]
-   ;; TODO use label style from theme
-   `(let [label#    (or (:label ~label) ~label)
-          [nl?# f#] (fireworks.core/?p* ~label ~x clojure.core/println)]
-      (if label#
-        (if nl?#
-          (f# (str label# "\n") ~x)
-          (f# label# ~x))
-        (f# ~x))
-      ~x)))
-
-
-(defmacro ?print
-  "Prints the value using clojure.core/println`, and then
-   returns the value."
-  ([x]
-   `(do
-      (clojure.core/print ~x)
-      ~x))
-  ([label x]
-   ;; TODO use label style from theme
-   `(let [label#    (or (:label ~label) ~label)
-          [nl?# f#] (fireworks.core/?p* ~label ~x clojure.core/print)]
-      (if label#
-        (if nl?#
-          (f# (str label# "\n") ~x)
-          (f# label# ~x))
-        (f# ~x))
-      ~x)))
-
-
-(defmacro ?prn
-  "Prints the value using clojure.core/println`, and then
-   returns the value."
-  ([x]
-   `(do (clojure.core/prn ~x)
-        ~x))
-  ([label x]
-   ;; TODO use label style from theme
-   `(let [label#    (or (:label ~label) ~label)
-          [nl?# f#] (fireworks.core/?p* ~label ~x clojure.core/prn)]
-      (if label#
-        (if nl?#
-          (f# (str label# "\n") ~x)
-          (f# label# ~x))
-        (f# ~x))
-      ~x)))
-
-
-(defmacro ?pr
-  "Prints the value using clojure.core/println`, and then
-   returns the value."
-  ([x]
-   `(do (clojure.core/pr ~x)
-        ~x))
-  ([label x]
-   ;; TODO use label style from theme
-   `(let [label#    (or (:label ~label) ~label)
-          [nl?# f#] (fireworks.core/?p* ~label ~x clojure.core/pr)]
-      (if label#
-        (if nl?#
-          (f# (str label# "\n") ~x)
-          (f# label# ~x))
-        (f# ~x))
-      ~x)))
-
-
-
-
-;; Silencers
-
-(defn !?*
-  "A no-op function which returns the value. Intended to temporarily silence the
-   printing of a form while still keeping it wrapped."
-  ([])
-  ([x] x)
-  ([_ x] x))
-
-(def !?> !?*)
-
-(def !? !?*)
-(def !?- !?*)
-(defn !?-- ([]) ([x]))
-(def !?i !?*)
-(def !?l !?*)
-
-(def !?log !?*)
-(def !?log- !?*)
-
-(def !?pp !?*)
-(def !?pp- !?*)
-
-(def !?pr      !?*) 
-(def !?prn     !?*) 
-(def !?print   !?*) 
-(def !?println !?*) 

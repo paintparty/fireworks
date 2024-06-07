@@ -263,6 +263,7 @@
          )))
 
 
+;; Maybe this should go in core?
 (defn print-formatted
   ([x]
    (print-formatted x nil))
@@ -272,10 +273,11 @@
      #?(:cljs
         (f x)
         :clj
-        (do (print fmt)
-            ;; Trailing line for readability.
-            ;; Maybe make this a config option? (true by default).
-            ((if log? print println) "\n"))))))
+        (do 
+          (some-> fmt print)
+          ;; Trailing line for readability.
+          ;; Maybe make this a config option? (true by default).
+          ((if log? print println) "\n"))))))
 
 (def dispatch 
   {:messaging/bad-option-value-warning bad-option-value-warning

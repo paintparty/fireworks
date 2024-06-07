@@ -218,8 +218,13 @@
 
 ;; (? basic-samples-cljc)
 
-;; (? "? : Default" [1])
-;; (? "? : Default:\nLine1\nLine2" [1])
+;; (? "? : Default" {:a "foo"})
+;; (? "? : Default:\nLine1\nLine2" {:a "foo"})
+
+;; (? {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
+
+;; (prn "with prn" (atom {:a "foo" :b 12}))
+
 ;; (?i "?i : Just the namespace info" [1 2])
 ;; (?l "?l : Just the label" [1 2])
 ;; (?l "?l : Just the label:\nLine1\nLine2" [1 2])
@@ -623,6 +628,4 @@
 ;;          [:b]
 ;;          {:a                "foo"
 ;;           :xyz              "bar" 
-;;           "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"}))
-
-;;     #_(?println ts))
+;;           "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"})))
