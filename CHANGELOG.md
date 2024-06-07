@@ -27,12 +27,17 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Shortened truncation syntax within colls which exceed :print-level
 - `?-` macro now prints just the result.
 - `?--` macro now prints just a label, for user commentary.
+- `?log-` macro now just prints the result, and returns the result.
+- Removed following macros: `?println`, `?print`, `?prn`, `?pr`, functionality replaced by `:print-with` call-site option
 
-#### Fixed
+ #### Fixed
 - Bug with clojure.core/max arity, if maps are empty.
 - Bug with `:non-coll-result-length-limit` config.
 - Colorization of metadata (kv gaps) in terminal context
 - Bug with `:non-coll-mapkey-length-limit` config. 
+
+### Removed
+- `?log--` macro.
 
 <br>
 <br>
@@ -115,6 +120,8 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Shortened truncation syntax within colls which exceed :print-level
 - `?-` macro now prints just the result.
 - `?--` macro now prints just a label, for user commentary.
+- `?log-` macro now just prints the result, and returns the result.
+- Removed macros : `?println`, `?print`, `?prn`, `?pr`
 
 <br>
 <br>

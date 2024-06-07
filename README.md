@@ -95,7 +95,7 @@ Print-and-return utilities for Clojure, ClojureScript, and Babashka. Features co
 <br>
 
 ## Why 
-Fireworks is designed to make print debugging easier and faster. If you like the idea of printing values with formatting and syntax coloring that resembles the formatting and syntax coloring of the source code in your editor, this tool may be of interest. 
+Fireworks is designed to make basic print debugging easier, faster, and more enjoyable. If you like the idea of printing values with formatting and syntax coloring that the source code in your editor, this tool may be of interest. 
 
 
 <br>
@@ -111,7 +111,7 @@ If using with Babashka, requires Babashka `v1.3.187` or higher
 Add as a dependency to your project:
 
 ```clojure
-[io.github.paintparty/fireworks "0.4.0"]
+[io.github.paintparty/fireworks "0.5.0"]
 ```
 <br>
 
@@ -120,7 +120,7 @@ Import into your namespace:
 ```clojure
 (ns myns.core
   (:require
-    [fireworks.core :refer [? ?- ?--]]))
+    [fireworks.core :refer [?]]))
 ```
 <br>
 
@@ -133,34 +133,47 @@ Import into your namespace:
 ### Print & return
 Fireworks provides a bevy of print-and-return macros and functions so that you can print values from your source without altering the execution of your program.
 
-`?`, `?log`, and `?pp` all print the evaled form (or user-supplied label), file info (line + column), and the result. The variants with a single trailing dash, such as `?-` omit the form/label. The variants with a trailing double dash, such as `?--`,  print only the result. 
+`?`, `?log`, and `?pp` all print the evaled form (or user-supplied label), file info (line + column), and the result.
 
-
-Printing with Fireworks formatting (colorized & justified):<br>
-`?` <br>
-`?-` <br>
-`?--`
-
-Printing with `js/console.log` or `pp/pprint` (JVM):<br>
-`?log` <br>
-`?log-` <br>
-`?log--` <br>
-
-Printing with `pp/pprint`:<br>
-`?pp` <br>
-`?pp-` <br>
-`?pp--` <br>
+The variants with a single trailing dash, such as `?-` just print the result.
 
 <br>
-You can also print and return with core clojure printing functions. The following functions just print the result: <br>
 
-`?println` <br>
-`?print` <br>
-`?prn` <br>
-`?pr` <br>
+Print and return  with Fireworks formatting (colorized & justified):<br>
+`?` <br>
+`?-` <br>
+
+<br>
+
+Print and return with Fireworks formatting (colorized & justified), with file info and no label:<br>
+`?i` <br>
+
+<br>
+
+Print and return  with Fireworks formatting (colorized & justified), with label and no file info:<br>
+`?l` <br>
+
+<br>
+
+Print and return with `js/console.log` or `pp/pprint` (JVM):<br>
+`?log` <br>
+`?log-` <br>
+
+<br>
+
+Print and return with `pp/pprint`:<br>
+`?pp` <br>
+`?pp-` <br>
+
+<br>
 
 You can also just `tap>` & return the result, with no printing:<br>
 `?>` <br>
+
+<br>
+
+You can use `?--` to print a label and file info. This is designed to add commentary for your program.<br>
+`?--` <br>
 
 <br>
 
@@ -168,19 +181,22 @@ All of the above functions have a respective "silencing" function, which will ju
 
 `!?`<br>
 `!?-`<br>
-`!?--`<br>
+`!?i`<br>
+`!?l`<br>
 `!?log`<br>
 `!?log-`<br>
-`!?log--`<br>
 `!?pp`<br>
 `!?pp-`<br>
-`!?pp--`<br>
-`!?println`<br>
-`!?print`<br>
-`!?prn`<br>
-`!?pr`<br>    
 `!?>`<br>    
 
+<br>
+
+All the public macros and fns:
+```Clojure
+[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp-]]
+```
+
+<br>
 <br>
 
 ### Using `?` 
@@ -208,6 +224,16 @@ The first argument can also be a map, which supplies various [config options](#o
 (? {:label      "My label"
     :theme      "Monokai Light"
     :coll-limit 10}
+   x)
+```
+
+<br>
+
+You can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`.
+
+```Clojure
+(? {:label      "My label"
+    :print-with prn}
    x)
 ```
 
