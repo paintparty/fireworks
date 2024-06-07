@@ -1,8 +1,7 @@
 (ns fireworks.messaging
-  (:require
-   [expound.alpha :as expound]  
-   [fireworks.specs.config :as config]
-   [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [expound.alpha :as expound]
+            [fireworks.specs.config :as config]))
 
 (defrecord FireworksThrowable [err])
 
@@ -267,7 +266,7 @@
 (defn print-formatted
   ([x]
    (print-formatted x nil))
-  ([{:keys [fmt err] :as x} f]
+  ([{:keys [fmt log? err] :as x} f]
    (if (instance? FireworksThrowable x)
      (print-error err)
      #?(:cljs
@@ -276,7 +275,7 @@
         (do (print fmt)
             ;; Trailing line for readability.
             ;; Maybe make this a config option? (true by default).
-            (println "\n"))))))
+            ((if log? print println) "\n"))))))
 
 (def dispatch 
   {:messaging/bad-option-value-warning bad-option-value-warning

@@ -1,5 +1,5 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? ?- ?-- ?i ?il ?l !?- !?-- !?i !?il !?l]]
+  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp-]]
             [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
@@ -28,7 +28,6 @@
  :enable-terminal-italics?     true
  :custom-printers              nil
  :find                         nil}
-
 
 
 ;; Formatting
@@ -194,21 +193,22 @@
                                    3333333}}})
 
 (def basic-samples-cljc-theme
-  {:string             "string"
-   :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number             1234
-   :symbol             (with-meta 'mysym {:foo :bar})
-   :boolean            true
-   :lamda              #(inc %)
-   :fn                 juxt
-   :regex              #"^hi$"
-   :record             record-sample
-   :atom/number        (atom 1)
-   :brackets           [[[[[[]]]]]]
-   :map/nested-meta    (with-meta {:a :foo :b 2}
-                         {:a (with-meta (symbol "foo")
-                               {:abc (symbol "bar")
-                                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
+  {:string          "string"
+   :uuid            #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number          1234
+   :symbol          (with-meta 'mysym {:foo :bar})
+   :boolean         true
+   :lamda           #(inc %)
+   :fn              juxt
+   :regex           #"^hi$"
+   :record          record-sample
+   :atom/number     (atom 1)
+   :brackets        [[[[[[]]]]]]
+   :map/nested-meta (with-meta {:a :foo
+                                :b 2}
+                      {:a (with-meta (symbol "foo")
+                            {:abc (symbol "bar")
+                             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
 
 ;; Testing :non-coll-mapkey-length-limit
 ;; (? {:non-coll-mapkey-length-limit 40} {"12345678_112345678_212345678_312345678_4" :gold})
@@ -218,34 +218,37 @@
 
 ;; (? basic-samples-cljc)
 
-;; (? {:label {:a 1
-;;             :b "threeasdfadsfasdfasdfasdfasdfasfws"
-;;             :c "threeasdfadsfasdfasdfasdfasdfasfws"}}
-;;    (with-meta [1]
-;;      {:file       "mvp/frontend.cljs"
-;;       :end-column 5}))
+;; (? "? : Default" [1])
+;; (? "? : Default:\nLine1\nLine2" [1])
+;; (?i "?i : Just the namespace info" [1 2])
+;; (?l "?l : Just the label" [1 2])
+;; (?l "?l : Just the label:\nLine1\nLine2" [1 2])
 
-;; (? "Default:\nLine1\nLine2"
-;;  (with-meta [1]
-;;      {:file       "mvp/frontend.cljs"
-;;       :end-column 5}))
+;; (?pp {:f '?pp :b "asfdasdfasfas"})
+;; (?pp "pp with label" {:f '?pp :b "asfdasdfasfas"})
+;; (?pp "pp with label, def" (def xxx 1))
+;; (?pp- {:f '?pp :b "asfdasdfasfas"})
+;; (?pp- (def xxx 1))
 
-;; (?il "?il:\nLine1\nLine2"
-;;      (with-meta [1]
-;;        {:file       "mvp/frontend.cljs"
-;;         :end-column 5}))
+;; (?log {:f '?log :b "asfdasdfasfas"})
+;; (?log "?log with label" {:f '?log :b "asfdasdfasfas"})
 
-;; (?l "Just the label:\nLine1\nLine2"
-;;  (with-meta [1]
-;;      {:file       "mvp/frontend.cljs"
-;;       :end-column 5}))
+;; (?log- {:f '?log :b "asfdasdfasfas"})
+;; (?log- {:f '?log :b "asfdasdfasfas"})
 
-;; (?i "Just the info"
-;;  (with-meta [1]
-;;      {:file       "mvp/frontend.cljs"
-;;       :end-column 5}))
 
-(?-- "Husky schmusker\nLine2")
+;; (?log (def xxx 1))
+;; (?log {:f '?log :desc "default"})
+;; (?log "Label" {:f '?log :desc "with label"})
+;; (?log "Label\nLabel Line 2" {:f '?log :desc "with multiline label"})
+
+;; (?log- (def xxx 1))
+;; (?log- {:f '?log :b "asfdasdfasfas"})
+
+;; (?-- "Commentary")
+;; (?-- "Commentary, multiline:\nLine2\nLine3")
+
+
 
 #?(:clj
    (do 

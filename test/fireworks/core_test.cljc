@@ -234,8 +234,7 @@
 )
    
    :clj
-   nil
-   #_(do 
+   (do 
      ;; Use this to effectively silence all other clj tests
      (deftest ^:test-refresh/focus p-data-with-label-from-opts
         (is (= 1 1)))
@@ -561,7 +560,7 @@
     ret))
 
 ;; Basic print-and-return tests, cljc
-#_(do (deftest p-basic
+(do (deftest p-basic
       (is (= (? {:a   "foo"
                  :xyz "bar"})
              {:a   "foo"
