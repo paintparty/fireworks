@@ -358,7 +358,7 @@
    how many entries were dropped. This will be something like \"...+5\".
    This value is displayed, in the last position of the collection."
 
-  [{:keys [ob ret num-dropped] :as m}]
+  [{:keys [ob ret num-dropped let-bindings?] :as m}]
   (let [extra (when (some-> num-dropped pos?)
                 (num-dropped-annotation! m))
         cb    (closing-bracket! m)
@@ -394,6 +394,7 @@
                 map-like?
                 record?
                 badge
+                depth
                 atom?
                 t]
          :as   meta-map}
@@ -482,12 +483,17 @@
                (spaces indent))
           (str maybe-comma " "))
 
+        let-bindings?
+        (and (zero? depth)
+             @state/let-bindings?)
+
         ret          
         (keyed [custom-badge-style 
                 str-len-with-badge     
                 annotation-newline 
                 metadata-position
                 user-meta-above?
+                let-bindings?
                 num-dropped
                 multi-line?   
                 coll-count
@@ -547,16 +553,16 @@
 
 (defn- profile+ob
   [coll indent*]
-  (let [{:keys [badge
-                custom-badge-style
-                annotation-newline
-                user-meta
+  (let [{:keys [atom?
+                badge
                 record?
-                atom?
-                separator]
+                user-meta
+                separator
+                let-bindings?
+                annotation-newline
+                custom-badge-style]
          :as m} 
         (reduce-coll-profile coll indent*)
-        
         ;; Atom-wrapper opening made here
         atom-opening-encapsulation
         (when atom? 
@@ -569,7 +575,10 @@
         (when badge
           (let [theme-token (badge-type badge)
                 pred        true]
-            (tagged badge (keyed [theme-token pred custom-badge-style]))))
+            (tagged badge
+                    (keyed [theme-token
+                            pred
+                            custom-badge-style]))))
 
         metadata-position
         (:metadata-position @state/config)
@@ -583,17 +592,17 @@
              badge
              (some-> user-meta-block (str (when badge " ")))
              annotation-newline
-             (opening-bracket! (keyed [coll record?]))
+             (opening-bracket! (keyed [coll record? let-bindings?]))
              (when (-> coll meta :too-deep?)
                (tagged "#" {:theme-token :max-print-level-label})))
         
         user-meta-inline
-        (user-meta-inline (keyed [user-meta
+        (user-meta-inline (keyed [atom-opening-encapsulation
                                   metadata-position
-                                  atom-opening-encapsulation
+                                  user-meta
+                                  indent*
                                   badge
-                                  coll
-                                  indent*]))
+                                  coll]))
 
         ob
         (str ob* (some-> user-meta-inline
@@ -624,7 +633,8 @@
                 too-deep?
                 coll-count
                 num-dropped
-                multi-line? ]}
+                multi-line?
+                let-bindings?]}
         (profile+ob coll indent*)
 
         ret                 
@@ -664,6 +674,7 @@
                  single-column-map-layout?
                  truncated-coll-size
                  some-colls-as-keys?
+                 let-bindings?
                  num-dropped
                  multi-line?
                  too-deep?
@@ -688,11 +699,11 @@
              s)))
 
 (defn- reduce-map*
-  [{:keys [untokenized
-           max-keylen
-           indent
-           coll-count
+  [{:keys [indent
            separator
+           max-keylen
+           coll-count
+           untokenized
            multi-line?]}
   idx
   [_ v]]
@@ -754,6 +765,9 @@
 
 
 (defn- reduce-map
+  "This reduces and serializes maps. Multiline maps (maps with data
+   structures as keys), do not get reduced by reduce-map. Instead they
+   are reduced by reduce-coll."
   [coll indent]
   (let [m     
         (profile+ob coll indent)

@@ -54,6 +54,9 @@
 ;; This will disable truncation.
 (def top-level-value-is-sev? (atom false))
 
+;; This will make map brackets transparent, when printing
+;; result of `?let`, `?if-let`, or `?when-let`
+(def let-bindings? (atom false))
 
 ;; Helpers for creating printing options state ------------------------------
 

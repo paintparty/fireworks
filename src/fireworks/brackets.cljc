@@ -168,8 +168,14 @@
                   (= t :js/Object) :map
                   :else            t)
         [ob cb] (brackets-by-type mm)  
-        s       (if (= kw :opening) ob (if (:record? m) (str cb "") cb))
-        bracket   (bracket!* {:s s :t t :mm mm})]
+        s       (cond 
+                  (:let-bindings? m) " "
+                  (= kw :opening)    ob
+                  (:record? m)       (str cb "")
+                  :else              cb)
+        bracket (bracket!* {:s  s
+                            :t  t
+                            :mm mm})]
     bracket))
 
 (defn closing-bracket!

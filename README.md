@@ -1,3 +1,6 @@
+<!-- TODO add table of contents -->
+
+
 # Fireworks 
 Print-and-return utilities for Clojure, ClojureScript, and Babashka. Features color theming and rich typographic formatting.
 
@@ -501,7 +504,7 @@ Find and highlight values in the printed output. See [Highlighting values](#high
 <br>
 
 ### Displaying metadata
-By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value (or values) to which it is attached. In practice, I find this kind of formatting faster to read than the traditional approach of always printing metadata in the "block" position (above the carrying value), especially when working with metadata-heavy code.
+By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value to which it is attached. In practice, I find this kind of formatting faster to read than the traditional approach of always printing metadata in the "block" position (above the carrying value), especially when working with metadata-heavy code.
 
 For data structures, the metadata map is displayed inline, immediately following the opening bracket. This means that any collection carrying metadata will always be display multi-line, with each value on its own line. Below is an example vector of three quoted symbols:
 

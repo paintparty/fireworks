@@ -1,5 +1,5 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp-]]
+  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?->> ?some->> ?-> ?some->]]
             [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
@@ -253,6 +253,49 @@
 ;; (?-- "Commentary")
 ;; (?-- "Commentary, multiline:\nLine2\nLine3")
 
+;; (?let [[a c] ["4" 5]
+;;        b 2]
+;;       {:a a :b b :c c})
+
+;; (?let [[a & b] [1 2 3 4 5]]
+;;       {:a a :b b})
+
+;; (?let [a                                       (take 5 (range))
+;;        {:keys [b c d]
+;;         :or   {d 10
+;;                b 20
+;;                c 30}}                          {:c 50
+;;                                                 :d 100}
+;;        [e f g &  h]                             ["a" "b" "c" "d" "e"]]
+;;       [a b c d e f g h])
+
+(def person
+  {:name "Mark Volkmann"
+   :address {:street "644 Glen Summit"
+             :city "St. Charles"
+             :state "Missouri"
+             :zip 63304}
+   :employer {:name "Object Computing, Inc."
+              :address {:street "12140 Woodcrest Dr."
+                        :city "Creve Coeur"
+                        :state "Missouri"
+                        :zip 63141}}})
+
+#_(? (-> person 
+       ?
+       :employer
+       ?
+       :address
+       ?
+       :city
+       ?))
+
+;; (? (?some->> person :employer :address :city .toUpperCase))
+;; (? (?some-> person :employer :address :city .toUpperCase))
+
+;; (?let [a {:a 12 :b 44 :c "asfdasdfasdfasdfasf" :d 55}
+;;        b {:a 12 :b 44 :c "asfdasdfasdfasdfasf" :x 55}]
+;;   a)
 
 
 #?(:clj
