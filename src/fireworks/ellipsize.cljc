@@ -126,7 +126,7 @@
                            
         ecc             (+ (ellipsized-char-count badge
                                                   (str fn-display-name)
-                                                  trunc-name?) ;; <-- TODO - don't think this fn sig is correct
+                                                  trunc-name?) ;; <-- TODO - maybe fix fn sig
                            (or (count (str fn-args)) 0))]
 
 

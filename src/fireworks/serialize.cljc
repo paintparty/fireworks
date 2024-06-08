@@ -615,10 +615,11 @@
   [coll indent*]
   (let [{:keys [t
                 js-typed-array?
-                truncated-coll-size
-                some-colls-as-keys?
+                truncated-coll-size                  ;; <- remove?
+                some-colls-as-keys?                  ;; <- remove?
                 single-column-map-layout?
-                some-syms-carrying-metadata-as-keys?]
+                some-syms-carrying-metadata-as-keys? ;; <- remove?
+                ]
          :as   meta-map}
         (meta coll) 
 
@@ -630,54 +631,69 @@
         {:keys [ob         
                 indent 
                 separator
-                too-deep?
+                too-deep?      ; <-remove
                 coll-count
-                num-dropped
+                num-dropped    ; <-remove
                 multi-line?
-                let-bindings?]}
+                let-bindings?  ; <-remove
+                ]
+         :as profile+ob}
         (profile+ob coll indent*)
 
         ret                 
         (string/join
          (map-indexed
           (fn [idx v]
-            (let [val-props   (meta v)
-                  tagged-val  (tagged-val (keyed [v
-                                                  val-props
-                                                  indent
-                                                  multi-line?
-                                                  separator]))
-                  map-value?  (and single-column-map-layout?
-                                   (odd? idx))
-                  maybe-comma (when (or js-typed-array?
-                                        (contains? #{:js/Array :js/Set} t))
-                                ",")
-                  separator   (cond map-value?
-                                    (str separator separator)
-                                    :else
-                                    (str maybe-comma
-                                         separator))
-                  ret         (str
-                               tagged-val
-                               (when-not (= coll-count (inc idx)) 
-                                 (if multi-line?
-                                   (tagged separator {:theme-token :foreground})
-                                   (if (pos? (state/formatting-meta-level))
-                                     (tagged separator {:theme-token (state/metadata-token)})
-                                     separator))))]
+            (let [val-props
+                  (meta v)
+
+                  tagged-val
+                  (tagged-val (keyed [v
+                                      val-props
+                                      indent
+                                      multi-line?
+                                      separator]))
+
+                  map-value?
+                  (and single-column-map-layout?
+                       (odd? idx))
+
+                  maybe-comma
+                  (when (or js-typed-array?
+                            (contains? #{:js/Array :js/Set} t))
+                    ",")
+
+                  separator
+                  (cond map-value?
+                        (str separator separator)
+                        :else
+                        (str maybe-comma
+                             separator))
+
+                  ret         
+                  (str
+                   tagged-val
+                   (when-not (= coll-count (inc idx)) 
+                     (if multi-line?
+                       (tagged separator {:theme-token :foreground})
+                       (if (pos? (state/formatting-meta-level))
+                         (tagged separator
+                                 {:theme-token (state/metadata-token)})
+                         separator))))]
               ret))
           coll))
         
         ret                 
         (stringified-bracketed-coll-with-num-dropped-syntax!
-         (keyed [some-syms-carrying-metadata-as-keys?
+         ;; TODO - use (merge meta-map profile+ob (keyed [...]))
+         (keyed [some-syms-carrying-metadata-as-keys? ;; <-remove?
                  single-column-map-layout?
-                 truncated-coll-size
-                 some-colls-as-keys?
-                 let-bindings?
-                 num-dropped
+                 truncated-coll-size                  ;; <-remove?
+                 some-colls-as-keys?                  ;; <-remove?
+                 let-bindings?                        ;; <-remove?
+                 num-dropped                          ;; <-remove?
                  multi-line?
-                 too-deep?
+                 too-deep?                            ;; <-remove?
                  indent
                  coll
                  ret
