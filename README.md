@@ -6,13 +6,15 @@
 </a>
 </p> -->
 
-<h1 align="center"><img src="./resources/color-printer-logo.png" width="400"></img><br>Fireworks</h1> 
+<!-- <h1 align="center"><img src="./resources/color-printer-logo.png" width="400"></img><br>Fireworks</h1>  -->
+<div align="center"><img src="./resources/color-printer-logo.png" width="400"></img></div> 
 
-<br>
+<!-- <br> -->
 
-<p align="center"><b>Themeable print debugging for Clojure, ClojureScript, and Babashka.</b></p>
+<!-- <p align="center"><b>Themeable print debugging for Clojure, ClojureScript, and Babashka.</b></p> -->
+<!-- <p align="center"><b>Fireworks is a themeable print debugging library for Clojure, ClojureScript, and Babashka.</b></p> -->
 
-<br>
+<!-- <br> -->
 
 <p align="center">
 <a href="https://clojars.org/io.github.paintparty/fireworks">
@@ -21,6 +23,7 @@
 </p>
 
 <br>
+
 
 <div align="center">
 
@@ -40,8 +43,8 @@
 <br>
 
 
-## Why 
-Fireworks is designed to make basic print debugging easier, faster, and more enjoyable. If you like the idea of printing observed values with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
+## Introduction
+**Fireworks is a themeable print debugging library for Clojure, ClojureScript, and Babashka.** It is designed to make this part of your workflow easier, faster, and more enjoyable. If you like the idea of printing with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
 
 <br>
 <br>
@@ -325,13 +328,6 @@ Sets the mood to `"dark"` or `"light"`. Will use the default light (or dark) the
 Sets the theme. This will override `:mood` setting.
 This must be one of the following 3 types of values:
 
-- A valid Fireworks theme, which is a map that satisfies the `fireworks.specs.theme/theme` spec. Typically, its structure will at minimum resemble the first example found in the [theming section ](#theming) of this document.
-
-- A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/your-home-folder/.fireworks/my-theme.edn"`<br>
-This will not work:
-`"~/.fireworks/my-theme.edn"`
-<br>If the map in this `.edn` file fails to satisfy the `fireworks.specs.theme/theme` spec it will issue a warning and fall back to the default light or dark theme (depending on the value of `:mood`). 
-
 - A theme name which corresponds to the theme name of an stock fireworks theme in `themes/`. Currently, these include the following:<br><br>
 `"Alabaster Light"`<br>
 `"Alabaster Dark"`<br>
@@ -346,6 +342,12 @@ This will not work:
 `"Monokai Light"`<br>
 `"Monokai Dark"`<br>
 
+- A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/your-home-folder/.fireworks/my-theme.edn"`<br>
+This will not work:
+`"~/.fireworks/my-theme.edn"`
+<br>If the map in this `.edn` file fails to satisfy the `fireworks.specs.theme/theme` spec it will issue a warning and fall back to the default light or dark theme (depending on the value of `:mood`). 
+
+- A valid Fireworks theme, which is a map that satisfies the `fireworks.specs.theme/theme` spec. Typically, its structure will at minimum resemble the first example found in the [theming section ](#theming) of this document.
 
 
 <br>
@@ -445,6 +447,14 @@ If set to `false` (default value), any theme tokens specified to be italicized w
 <br>
 <br>
 
+**`:enable-terminal-font-weights?`** `false`
+  
+If set to `false` (default value), any theme tokens specified to be bold will not be bold. If you will be printing with Fireworks in a terminal, and your terminal emulator supports bold fonts (most of them do), it is highly recommended to set this option to `true`.
+
+
+<br>
+<br>
+
 **`:metadata-print-level`** `6`
 
 Sets the max depth of printing for metadata maps that contain nested collections.
@@ -482,7 +492,7 @@ Find and highlight values in the printed output. See [Highlighting values](#high
 
 **`:print-with`** `nil`
 
-Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`. If you want to print with `pprint` or `js/console.log`, use `?pp` or `?log`.
+Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`. If you want to print with `pprint` or `js/console.log`, use `?fireworks.core/pp` or `?fireworks.core/log`.
 
 ```Clojure
 (? {:label      "My label"
@@ -495,7 +505,7 @@ Although more of an edge-case, you can pass a `:print-with` option at the call s
 <br>
 
 ### Displaying metadata
-By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value to which it is attached. In practice, I find this formatting way faster to read compared to metadata in the "block" position (above the carrying value), especially when working with metadata-heavy code.
+By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value to which it is attached. In practice, I find this formatting much faster to comprehend as compared to conventional "block" positioning of the metadata (above the carrying value), especially when working with metadata-heavy code.
 
 For data structures, the metadata map is displayed inline, immediately following the opening bracket. This means that any collection carrying metadata will always be display multi-line, with each value on its own line. Below is an example vector of three quoted symbols:
 
