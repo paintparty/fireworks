@@ -107,6 +107,7 @@ Import into your namespace:
     [fireworks.core :refer [?]]))
 ```
 <br>
+<br>
 
 ## Usage 
 **`fireworks.core/?`** is a macro that prints the form, namespace info, and resulting value. It returns the resulting value.
@@ -210,7 +211,6 @@ You can trace `let` bindings and threading macros with the following:
 `?some->>`<br>
 
 
-
 <br>
 
 All the public macros and functions from `fireworks.core`:
@@ -223,8 +223,6 @@ Currently, `?as->`, `?cond->`, `?cond->>`, and `?comp` do not exist, but they ar
 
 <br>
 <br>
-
-
 
 
 ### Getting the formatted string & other data
@@ -260,9 +258,8 @@ Calling `fireworks.core/p-data` in a ClojureScript (browser) context also provid
                               "color:#585858;line-height:1.45;"]}}
 ```
 
-
 <br>
-
+<br>
 
 
 ## Options
@@ -560,7 +557,7 @@ Or pass multiple preds, with different styles:
 <img src="resources/highlight-with-multiple-custom-styles.png" width="236px" />
 
 <br>
-
+<br>
 
 ## Theming
 
