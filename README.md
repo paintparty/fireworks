@@ -10,7 +10,7 @@
 
 <br>
 
-<p align="center"><b>Print-and-return library for Clojure, ClojureScript, and Babashka.<br>Features color theming and rich typographic formatting.</b></p>
+<p align="center"><b>Themeable print debugging for Clojure, ClojureScript, and Babashka.</b></p>
 
 <br>
 
