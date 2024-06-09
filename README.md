@@ -48,13 +48,9 @@ Fireworks is designed to make basic print debugging easier, faster, and more enj
 
 ## Features
 
-- Ships with several popular themes in light and dark variants.
+- Achieve thematic parity between editor, terminal emulator, and browser dev console.
 
 - Customizable via system-wide `.edn` config file.
-
-- Easily themeable so you can visually match your source code as it appears in your favorite editor.
-
-- Achieve thematic parity between editor, terminal emulator, and browser dev console.
 
 - Makes cljs color printing possible in all dark-mode-themed browser consoles. 
 
@@ -73,6 +69,8 @@ Fireworks is designed to make basic print debugging easier, faster, and more enj
 - Find and highlight values in printed output.
 
 - Call site options let you easily try out different themes and formatting options.
+
+- Ships with several popular themes in light and dark variants.
 
 <br>
 <br>
