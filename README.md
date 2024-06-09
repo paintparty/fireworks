@@ -1,72 +1,49 @@
 <!-- TODO add table of contents -->
+<!-- <h1 align="center"><span>🔥</span><br>Fireworks</h1>  -->
+<!-- <p align="center">
+<a href="https://clojars.org/io.github.paintparty/fireworks">
+<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=257ee4&style=flat-square&cacheSeconds=3 alt="Fireworks on Clojars"></img>
+</a>
+</p> -->
 
-
-# Fireworks 
-Print-and-return utilities for Clojure, ClojureScript, and Babashka. Features color theming and rich typographic formatting.
-
-[![Clojars Project](https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg)](https://clojars.org/io.github.paintparty/fireworks)
-
-<br>
-
-<p align="left"><sub>Clockwise from top left:<b><i> Alabaster, Neutral, Monokai, Solarized, Zenburn, Degas.</i></b></sub></p>
-
-![](./resources/fireworks-light-themes.jpg)
-
-<br>
-<p align="left"><sub>Clockwise from top left:<b><i> Solarized, Monokai, Neutral, Zenburn, Degas, Alabaster.</i></b></sub></p>
-
-![](./resources/fireworks-dark-themes.jpg)
-
-
-<!-- <br>
-
-<p align="center"><sub><i>Neutral Light</i>&nbsp; & &nbsp;<i>Neutral Dark</i></sub></p>
-
-![](./resources/neutral-theme.png)
-
-
-
-<br> 
-
-<p align="center"><sub><i>Alabaster Light</i>&nbsp; & &nbsp;<i>Alabaster Dark</i></sub></p>
-
-![](./resources/alabaster-theme.png)
-
+<h1 align="center"><img src="./resources/color-printer-logo.png" width="400"></img><br>Fireworks</h1> 
 
 <br>
 
-<p align="center"><sub><i>Degas Light</i>&nbsp; & &nbsp;<i>Degas Dark</i></sub></p>
-
-![](./resources/degas-theme.png)
-
-
+<p align="center"><b>Print-and-return library for Clojure, ClojureScript, and Babashka.<br>Features color theming and rich typographic formatting.</b></p>
 
 <br>
 
-<p align="center"><sub><i>Zenburn Light</i>&nbsp; & &nbsp;<i>Zenburn Dark</i></sub></p>
+<div align="center">
 
-![](./resources/zenburn-theme.png)
+**[Features]**  &nbsp;•&nbsp; **[Setup]**  &nbsp;•&nbsp;  **[Usage]** &nbsp;•&nbsp;  **[Options]** &nbsp;•&nbsp; **[Theming]** &nbsp;•&nbsp; **[Interop]** &nbsp;•&nbsp;  **[Contributing]**
+</div>
 
-
-<br>
-
-<p align="center"><sub><i>Solarized Light</i>&nbsp; & &nbsp;<i>Solarized Dark</i></sub></p>
-
-![](./resources/solarized-theme.png)
-
-
-<br>
-
-<p align="center"><sub><i>Monokai Light</i>&nbsp; & &nbsp;<i>Monokai Dark</i></sub></p>
-
-![](./resources/monokai-theme.png) -->
-
-
+[Features]: #features
+[Setup]: #setup
+[Usage]: #usage
+[Options]: #options
+[Theming]: #theming
+[Interop]: #printing-conventions
+[Contributing]: #contributing
 
 
 <br>
+<br>
 
-<!-- ## Features
+<p align="center"><img width="666" src="./resources/themes-cycle.gif" alt="Fireworks on Clojars"></img></p>
+<p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p>
+
+<br>
+<br>
+
+## Why 
+Fireworks is designed to make basic print debugging easier, faster, and more enjoyable. If you like the idea of printing observed values with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
+
+<br>
+<br>
+
+## Features
 
 - Ships with several popular themes in light and dark variants.
 
@@ -80,7 +57,7 @@ Print-and-return utilities for Clojure, ClojureScript, and Babashka. Features co
 
 - Left-justification of values in maps.
 
-- Rainbow brackets.
+- High or low contrast rainbow brackets (optional).
 
 - Truncation of collections and long values such as strings.
 
@@ -88,19 +65,13 @@ Print-and-return utilities for Clojure, ClojureScript, and Babashka. Features co
 
 - Novel typographic approach for printing metadata inline, alongside values.
 
+- Trace values in `let` bindings and threading macros such as `->`.
+
 - Find and highlight values in printed output.
 
-- Call site options let you easily try out different themes and formatting options. -->
-
-
-
+- Call site options let you easily try out different themes and formatting options.
 
 <br>
-
-## Why 
-Fireworks is designed to make basic print debugging easier, faster, and more enjoyable. If you like the idea of printing values with formatting and syntax coloring that the source code in your editor, this tool may be of interest. 
-
-
 <br>
 
 ## Setup
@@ -112,6 +83,12 @@ If using with Babashka, requires Babashka `v1.3.187` or higher
 <br>
 
 Add as a dependency to your project:
+
+<p>
+<a href="https://clojars.org/io.github.paintparty/fireworks">
+<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=257ee4&style=flat-square&cacheSeconds=3 alt="Fireworks on Clojars"></img>
+</a>
+</p>
 
 ```clojure
 [io.github.paintparty/fireworks "0.5.0"]
@@ -127,18 +104,43 @@ Import into your namespace:
 ```
 <br>
 
+## Usage 
+**`fireworks.core/?`** is a macro that prints the form, namespace info, and resulting value. It returns the resulting value.
 
+```Clojure
+(def x {:a "foo" :xyz "bar"})
+
+(? x)
+```
+<img src="resources/fireworks-core-par.png" width="475px" />
+
+
+Calling **`fireworks.core/?`** with two arguments will print the namespace info, a label (instead of the form), and the result:
+
+```Clojure
+(? "My label" x)
+```
+<img src="resources/fireworks-core-par-label.png" width="475px" />
+
+
+The first argument can also be a map, which supplies various [config options](#options):
+
+```Clojure
+(? {:label      "My label"
+    :theme      "Monokai Light"
+    :coll-limit 10}
+   x)
+```
 
 <br>
-
-## Usage 
+<br>
 
 ### Print & return
 Fireworks provides a bevy of print-and-return macros and functions so that you can print values from your source without altering the execution of your program.
 
 `?`, `?log`, and `?pp` all print the evaled form (or user-supplied label), file info (line + column), and the result.
 
-The variants with a single trailing dash, such as `?-` just print the result.
+The variants with a single trailing dash, such as `?-`, just print the result.
 
 <br>
 
@@ -164,7 +166,7 @@ Print and return with `js/console.log` or `pp/pprint` (JVM):<br>
 
 <br>
 
-Print and return with `pp/pprint`:<br>
+Print and return with [`pp/pprint`](https://github.com/eerohele/pp).<br>
 `?pp` <br>
 `?pp-` <br>
 
@@ -194,62 +196,38 @@ All of the above functions have a respective "silencing" function, which will ju
 
 <br>
 
-All the public macros and fns:
+### Tracing
+You can trace `let` bindings and threading macros with the following:
+
+`?let`<br>
+`?->`<br>
+`?some->`<br>
+`?->>`<br>
+`?some->>`<br>
+
+
+
+<br>
+
+All the public macros and functions from `fireworks.core`:
 ```Clojure
-[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp-]]
+[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?if-let ?when-let ?->> ?some->> ?-> ?some->]]
 ```
+<br>
+
+Currently, `?as->`, `?cond->`, `?cond->>`, and `?comp` do not exist, but they are on the roadmap for a future release.
 
 <br>
 <br>
 
-### Using `?` 
-**`fireworks.core/?`** is a macro that prints the form, namespace info, and resulting value. It returns the resulting value.
 
-```Clojure
-(def x {:a "foo" :xyz "bar"})
-
-(? x)
-```
-<img src="resources/fireworks-core-par.png" width="475px" />
-
-
-Calling **`fireworks.core/?`** with two arguments will print the namespace info, a label (instead of the form), and the result:
-
-```Clojure
-(? "My label" x)
-```
-<img src="resources/fireworks-core-par-label.png" width="475px" />
-
-
-The first argument can also be a map, which supplies various [config options](#options):
-
-```Clojure
-(? {:label      "My label"
-    :theme      "Monokai Light"
-    :coll-limit 10}
-   x)
-```
-
-<br>
-
-You can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`.
-
-```Clojure
-(? {:label      "My label"
-    :print-with prn}
-   x)
-```
-
-<br>
 
 
 ### Getting the formatted string & other data
 
-#### `p-data`
+If you just want the formatted string, and/or other data that `fireworks.core/?` uses to construct the printed output, you can use the `fireworks.core/p-data` macro.
 
-If you just want the formatted string, and/or other data that **`fireworks.core/?`** uses to construct the printed output, you can use the **`fireworks.core/p-data`** macro.
-
-Calling **`fireworks.core/p-data`** in a ClojureScript (browser) context also provides vectors of css styles. This corresponds to the arguments that **`js/console.log`** requires for syntax-colored formatting. In a terminal context, **`p-data`** returns the same map as below, but with sgr escape codes for syntax coloring (instead of the `%c` tags), and no vectors of css styles:
+Calling `fireworks.core/p-data` in a ClojureScript (browser) context also provides vectors of css styles. This corresponds to the arguments that `js/console.log` requires for syntax-colored formatting. In a terminal context, `p-data` returns the same map as below, but with sgr escape codes for syntax coloring (instead of the `%c` tags), and no vectors of css styles:
 
 ```Clojure
 ;; ClojureScript
@@ -311,7 +289,7 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
  :find                          nil}
 ```
 
-You can configure all of the above options ala-carte. A leading options map arg works with **`fireworks.core/?`**, and **`fireworks.core/p-data`**.
+You can configure all of the above options ala-carte. A leading options map arg works with `fireworks.core/?`, and `fireworks.core/p-data`.
 
 <br>
 
@@ -326,7 +304,7 @@ export FIREWORKS_CONFIG="/Users/your-home-folder/.fireworks/config.edn"
 
 You will need to substitute `your-home-folder` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `FIREWORKS_CONFIG` env var will be accessible in your dev environment.
 
-For the actual `config.edn` file, you can use the example at the end of this section as a starting point. Prior to doing this you can experiment with the various configuration options via passing a leading options map to or **`fireworks.core/?`**.
+For the actual `config.edn` file, you can use the example at the end of this section as a starting point. Prior to doing this you can experiment with the various configuration options via passing a leading options map to or `fireworks.core/?`.
 
 <br>
 
@@ -353,7 +331,7 @@ This must be one of the following 3 types of values:
 - A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/your-home-folder/.fireworks/my-theme.edn"`<br>
 This will not work:
 `"~/.fireworks/my-theme.edn"`
-<br>If the map in this `.edn` file fails to satisfy the `fireworks.specs.theme/theme` spec it will issue a warning and fall back to the default light or dark theme (depending on the value of **`:mood`**). 
+<br>If the map in this `.edn` file fails to satisfy the `fireworks.specs.theme/theme` spec it will issue a warning and fall back to the default light or dark theme (depending on the value of `:mood`). 
 
 - A theme name which corresponds to the theme name of an stock fireworks theme in `themes/`. Currently, these include the following:<br><br>
 `"Alabaster Light"`<br>
@@ -446,7 +424,7 @@ Sets the level of rainbow bracket intensity to `"high"` or `"low"`.  Default val
 
 **`:display-namespaces?`** `true`
 
-Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the **`:non-coll-length-limit`** or the **`:non-coll-mapkey-length-limit`** (in the case of map keys).
+Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:non-coll-length-limit` or the `:non-coll-mapkey-length-limit` (in the case of map keys).
 
 
 <br>
@@ -503,8 +481,22 @@ Find and highlight values in the printed output. See [Highlighting values](#high
 <br>
 <br>
 
+**`:print-with`** `nil`
+
+Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`. If you want to print with `pprint` or `js/console.log`, use `?pp` or `?log`.
+
+```Clojure
+(? {:label      "My label"
+    :print-with prn}
+   x)
+```
+
+
+<br>
+<br>
+
 ### Displaying metadata
-By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value to which it is attached. In practice, I find this kind of formatting faster to read than the traditional approach of always printing metadata in the "block" position (above the carrying value), especially when working with metadata-heavy code.
+By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value to which it is attached. In practice, I find this formatting way faster to read compared to metadata in the "block" position (above the carrying value), especially when working with metadata-heavy code.
 
 For data structures, the metadata map is displayed inline, immediately following the opening bracket. This means that any collection carrying metadata will always be display multi-line, with each value on its own line. Below is an example vector of three quoted symbols:
 
@@ -568,7 +560,7 @@ Or pass multiple preds, with different styles:
 
 ## Theming
 
-Fireworks includes a handful of popular themes. Making your own to perfectly match your current editor theme is straightforward.
+Fireworks includes a [handful of popular themes](#all-the-options). Making your own to perfectly match your current editor theme is straightforward.
 
 If you would like to make your own theme for use with Fireworks, check out `docs/example-theme.edn`. Notice how any of the keys in the `:classes` entry will act as a variable if the same keyword is used as a value in any of the other entries within the `:classes`, `:syntax`, or `:printer` maps.
 
@@ -643,7 +635,7 @@ After making a change with this extension, you will need to close and reopen Dev
 In Firefox, this can be done by opening Firefox Developer Tools on any page, just right-click and select **Inspect**. Then click on the *`•••`* button in the top right of this panel and select **Settings** to get to the Settings panel. You should see a **Themes** section which will let you select `Light` or `Dark`.
 
 
-You can customize the font-family and background color of the dev console in **Firefox**, although this has to be done manually. Fireworks provides <a href="" target="_blank">a starter **`userContent.css`** file</a> to make this easy. You will need to place this file in the correct directory on your computer so that Firefox can read it when it launches. Follow the <a href="https://www.userchrome.org/how-create-userchrome-css.html" target="_blank">instructions outlined here</a> to locate this directory. Please note that file, which is necessary file for customizing the Developer Tools console in FireFox, is called **`userContent.css`**,  ***NOT*** `userChrome.css` (as mentioned in the linked tutorial).  You can put this in the proper directory as explained in the <a href="https://www.userchrome.org/how-create-userchrome-css.html" target="_blank">linked tutorial</a> and change it as needed to align with your chosen theme. Remember to quit and restart Firefox if you make any changes or updates to this **`userContent.css`** file.
+You can customize the font-family and background color of the dev console in **Firefox**, although this has to be done manually. Fireworks provides <a href="" target="_blank">a starter **`userContent.css`** file</a> to make this easy. You will need to place this file in the correct directory on your computer so that Firefox can read it when it launches. Follow the <a href="https://www.userchrome.org/how-create-userchrome-css.html" target="_blank">instructions outlined here</a> to locate this directory. Please note that file, which is necessary file for customizing the Developer Tools console in FireFox, is called `userContent.css`,  ***NOT*** `userChrome.css` (as mentioned in the linked tutorial).  You can put this in the proper directory as explained in the <a href="https://www.userchrome.org/how-create-userchrome-css.html" target="_blank">linked tutorial</a> and change it as needed to align with your chosen theme. Remember to quit and restart Firefox if you make any changes or updates to this `userContent.css` file.
 
 
 
@@ -694,7 +686,7 @@ For theming parity between your editor and terminal emulator, this is probably n
 
 ## Printing conventions
 
-The following sections are comparisons of various default printing conventions (`clojure.pprint/pprint` vs `js/console.log` vs `fireworks.core/p`).
+The following sections are comparisons of various default printing conventions (`clojure.pprint/pprint` vs `js/console.log` vs `fireworks.core/?`).
 
 <br>
 
@@ -863,7 +855,7 @@ JS built-in objects such as `js/Math` or `js/JSON` which cannot be called like f
 
 ## Performance
 
-Meaningless performance test: **`fireworks.core/p`** vs **`clojure.pprint/pprint`** in JVM Clojure, printing a map of a dozen entries of various data types (found at `fireworks.smoke-test/basic-samples`).
+Meaningless performance test: `fireworks.core/?` vs `clojure.pprint/pprint` in JVM Clojure, printing a map of a dozen entries of various data types (found at `fireworks.smoke-test/basic-samples`).
 
 ```
 Hardware:  Mac Mini
