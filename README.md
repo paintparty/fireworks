@@ -14,6 +14,14 @@
 
 <br>
 
+<p align="center">
+<a href="https://clojars.org/io.github.paintparty/fireworks">
+<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=257ee4&style=flat-square&cacheSeconds=3 alt="Fireworks on Clojars"></img>
+</a>
+</p>
+
+<br>
+
 <div align="center">
 
 **[Features]**  &nbsp;•&nbsp; **[Setup]**  &nbsp;•&nbsp;  **[Usage]** &nbsp;•&nbsp;  **[Options]** &nbsp;•&nbsp; **[Theming]** &nbsp;•&nbsp; **[Interop]** &nbsp;•&nbsp;  **[Contributing]**
@@ -31,11 +39,6 @@
 <br>
 <br>
 
-<p align="center"><img width="666" src="./resources/themes-cycle.gif" alt="Fireworks on Clojars"></img></p>
-<p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p>
-
-<br>
-<br>
 
 ## Why 
 Fireworks is designed to make basic print debugging easier, faster, and more enjoyable. If you like the idea of printing observed values with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
@@ -74,6 +77,12 @@ Fireworks is designed to make basic print debugging easier, faster, and more enj
 <br>
 <br>
 
+<p align="center"><img width="500" src="./resources/themes-cycle.gif" alt="Fireworks on Clojars"></img></p>
+<p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p>
+
+<br>
+<br>
+
 ## Setup
 
 Requires Clojure `1.10.3` or higher
@@ -84,11 +93,6 @@ If using with Babashka, requires Babashka `v1.3.187` or higher
 
 Add as a dependency to your project:
 
-<p>
-<a href="https://clojars.org/io.github.paintparty/fireworks">
-<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=257ee4&style=flat-square&cacheSeconds=3 alt="Fireworks on Clojars"></img>
-</a>
-</p>
 
 ```clojure
 [io.github.paintparty/fireworks "0.5.0"]
