@@ -31,29 +31,25 @@
   (set '(defrecord deftype)))
 
 
-
-;;                               ooo OOO OOO ooo
-;;                           oOO                 OOo
-;;                       oOO                         OOo
-;;                    oOO                               OOo
-;;                  oOO                                   OOo
-;;                oOO                                       OOo
-;;               oOO                                         OOo
-;;              oOO                                           OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;              oOO                                           OOo
-;;               oOO                                         OOo
-;;                oOO                                       OOo
-;;                  oOO                                   OOo
-;;                    oO                                OOo
-;;                       oOO                         OOo
-;;                           oOO                 OOo
-;;                               ooo OOO OOO ooo
-
+                                                                            
+;   FFFFFFFFFFFFFFFFFFFFFF
+;   F::::::::::::::::::::F
+;   F::::::::::::::::::::F
+;   FF::::::FFFFFFFFF::::F
+;     F:::::F       FFFFFF
+;     F:::::F             
+;     F::::::FFFFFFFFFF   
+;     F:::::::::::::::F   
+;     F:::::::::::::::F   
+;     F::::::FFFFFFFFFF   
+;     F:::::F             
+;     F:::::F             
+;   FF:::::::FF           
+;   F::::::::FF           
+;   F::::::::FF           
+;   FFFFFFFFFFF           
+                                                                            
+   
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]}]
@@ -257,6 +253,26 @@
                js-arr))))
 
 
+
+;        SSSSSSSSSSSSSSS TTTTTTTTTTTTTTTTTTTTTTT
+;      SS:::::::::::::::ST:::::::::::::::::::::T
+;     S:::::SSSSSS::::::ST:::::::::::::::::::::T
+;     S:::::S     SSSSSSST:::::TT:::::::TT:::::T
+;     S:::::S            TTTTTT  T:::::T  TTTTTT
+;     S:::::S                    T:::::T        
+;      S::::SSSS                 T:::::T        
+;       SS::::::SSSSS            T:::::T        
+;         SSS::::::::SS          T:::::T        
+;            SSSSSS::::S         T:::::T        
+;                 S:::::S        T:::::T  
+;                 S:::::S        T:::::T  
+;     SSSSSSS     S:::::S      TT:::::::TT
+;     S::::::SSSSSS:::::S      T:::::::::T
+;     S:::::::::::::::SS       T:::::::::T
+;      SSSSSSSSSSSSSSS         TTTTTTTTTTT
+
+                                                                                                            
+ 
 (defn- reset-user-opt!
   "Validates user option override from call site and updates config."
   [k opts]
@@ -371,31 +387,26 @@
            state/highlight-style
            (reset! state/highlight)))
           
-
-
-
-;;                               ooo OOO OOO ooo
-;;                           oOO                 OOo
-;;                       oOO                         OOo
-;;                    oOO                               OOo
-;;                  oOO                                   OOo
-;;                oOO                                       OOo
-;;               oOO                                         OOo
-;;              oOO                                           OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;              oOO                                           OOo
-;;               oOO                                         OOo
-;;                oOO                                       OOo
-;;                  oOO                                   OOo
-;;                    oO                                OOo
-;;                       oOO                         OOo
-;;                           oOO                 OOo
-;;                               ooo OOO OOO ooo
-
+                                            
+;                         PPPPPPPPPPPPPPPPP
+;                         P::::::::::::::::P
+;                         P::::::PPPPPP:::::P
+;                         PP:::::P     P:::::P
+;                           P::::P     P:::::P
+;                           P::::P     P:::::P
+;                           P::::PPPPPP:::::P
+;                           P:::::::::::::PP
+;                           P::::PPPPPPPPP
+;                           P::::P
+;                           P::::P
+;                           P::::P
+;                         PP::::::PP
+;                         P::::::::P
+;                         P::::::::P
+;                         PPPPPPPPPP
+; ________________________
+; _::::::::::::::::::::::_
+; ________________________                    
 
 
 (defn ^{:public true}
@@ -495,47 +506,30 @@
   [defd {:keys [ns-str]}]
   (symbol (str "#'" ns-str "/" defd)))
 
-
-
-
-;;                               ooo OOO OOO ooo
-;;                           oOO                 OOo
-;;                       oOO                         OOo
-;;                    oOO                               OOo
-;;                  oOO                                   OOo
-;;                oOO                                       OOo
-;;               oOO                                         OOo
-;;              oOO                                           OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;              oOO                                           OOo
-;;               oOO                                         OOo
-;;                oOO                                       OOo
-;;                  oOO                                   OOo
-;;                    oO                                OOo
-;;                       oOO                         OOo
-;;                           oOO                 OOo
-;;                               ooo OOO OOO ooo
-
-
-
-
-;; Print the form or label with line num
-
-;; Print all bindings
-;; Determine if 
-;;   1) Syms with length over max
-;;   2) Destructured syms in maps or vecs with str len over max
-;;   3) Sev vals with length over max
-;;   4) data structure vals with length over max
-;;   
-;; 
-
-
-
+                                                               
+                                                               
+;                  AAA               PPPPPPPPPPPPPPPPP   IIIIIIIIII
+;                 A:::A              P::::::::::::::::P  I::::::::I
+;                A:::::A             P::::::PPPPPP:::::P I::::::::I
+;               A:::::::A            PP:::::P     P:::::PII::::::II
+;              A:::::::::A             P::::P     P:::::P  I::::I  
+;             A:::::A:::::A            P::::P     P:::::P  I::::I  
+;            A:::::A A:::::A           P::::PPPPPP:::::P   I::::I  
+;           A:::::A   A:::::A          P:::::::::::::PP    I::::I  
+;          A:::::A     A:::::A         P::::PPPPPPPPP      I::::I  
+;         A:::::AAAAAAAAA:::::A        P::::P              I::::I  
+;        A:::::::::::::::::::::A       P::::P              I::::I  
+;       A:::::AAAAAAAAAAAAA:::::A      P::::P              I::::I  
+;      A:::::A             A:::::A   PP::::::PP          II::::::II
+;     A:::::A               A:::::A  P::::::::P          I::::::::I
+;    A:::::A                 A:::::A P::::::::P          I::::::::I
+;   AAAAAAA                   AAAAAAAPPPPPPPPPP          IIIIIIIIII
+                                                               
+                                                               
+                                                               
+                                                               
+                                                               
+          
 (defn ?> 
   "Passes value to clojure.core/tap> and returns value."
   ([x]
@@ -868,8 +862,38 @@
 ;; let 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO - add ?if-let and ?when-let
 ;; TODO - add comp
+
+(defmacro ?let
+  "Printing of bindings in let. Returns body. WIP"
+  [bindings & body]
+  (let [syms (->> bindings 
+                  (take-nth 2)
+                  (mapv (fn [sym]
+                          (let [opts {:x            sym
+                                      :pred         symbol?
+                                      :f            str}]
+                            [(sym<->str (assoc opts :binding-sym? true))
+                             (sym<->str opts)]))))
+        {:keys [cfg-opts]}
+        (helper2 {:x         nil
+                  :form-meta (meta &form)})]
+   (ff 'syms syms)
+   `(do 
+      (let ~bindings
+        (do
+          ;; Call fireworks.core/? to print the let bindings
+          (? (merge ~cfg-opts
+                    {:label         "let bindings"
+                     :let-bindings? true})
+             (apply array-map
+                    (map-indexed (fn [i# x#]
+                                   (sym<->str {:x            x#
+                                               :pred         string?
+                                               :f            symbol
+                                               :binding-sym? (even? i#)}))
+                                 (apply concat ~syms))))
+          ~@body)))))
 
 (defmacro ?let
   "Printing of bindings in let. Returns body. WIP"
@@ -1167,30 +1191,27 @@
 (def !?pp- !?*)
 
 
-;;                               ooo OOO OOO ooo
-;;                           oOO                 OOo
-;;                       oOO                         OOo
-;;                    oOO                               OOo
-;;                  oOO                                   OOo
-;;                oOO                                       OOo
-;;               oOO                                         OOo
-;;              oOO                                           OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;              oOO                                           OOo
-;;               oOO                                         OOo
-;;                oOO                                       OOo
-;;                  oOO                                   OOo
-;;                    oO                                OOo
-;;                       oOO                         OOo
-;;                           oOO                 OOo
-;;                               ooo OOO OOO ooo
 
-
-
+                                                                                                                     
+                                                                                                                     
+;; PPPPPPPPPPPPPPPPP   PPPPPPPPPPPPPPPPP   
+;; P::::::::::::::::P  P::::::::::::::::P  
+;; P::::::PPPPPP:::::P P::::::PPPPPP:::::P 
+;; PP:::::P     P:::::PPP:::::P     P:::::P
+  ;; P::::P     P:::::P  P::::P     P:::::P  
+  ;; P::::P     P:::::P  P::::P     P:::::P  
+  ;; P::::PPPPPP:::::P   P::::PPPPPP:::::P   
+  ;; P:::::::::::::PP    P:::::::::::::PP    
+  ;; P::::PPPPPPPPP      P::::PPPPPPPPP      
+  ;; P::::P              P::::P              
+  ;; P::::P              P::::P              
+  ;; P::::P              P::::P              
+;; PP::::::PP          PP::::::PP          
+;; P::::::::P          P::::::::P          
+;; P::::::::P          P::::::::P          
+;; PPPPPPPPPP          PPPPPPPPPP          
+                                                                                                                     
+                                                                                                                     
 
 
 
