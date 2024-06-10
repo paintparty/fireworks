@@ -55,7 +55,7 @@
   [{:keys [qf template label mll?] :as opts}]
   (let [indent-spaces
         (or (some-> @state/margin-inline-start util/spaces)
-            0)
+            nil)
 
         label
         (when (contains?
@@ -69,11 +69,11 @@
                           (string/join
                            "\n"
                            (map
-                            #(str (tag/tag-entity! (indent-spaces %) :eval-label)
+                            #(str (tag/tag-entity! (str indent-spaces %) :eval-label)
                                   (tag/tag-reset!))
                             (string/split label #"\n")))
-                          (tag/tag-entity! (str indent-spaces label) :eval-label))]
-              label)))
+                          (tag/tag-entity! label :eval-label))]
+              (str indent-spaces label))))
         form  (when-not label
                 (when qf
                   (reset! state/formatting-form-to-be-evaled?
@@ -828,9 +828,11 @@
                              'fireworks.core/?flop 
                              'fireworks.core/?)
         user-opts          (when (map? user-opts) user-opts)
-        opts               (for [frm forms] (list ?-call-sym
-                                                  (merge user-opts
-                                                         {:label (str frm)})))
+        opts               (for [frm forms]
+                             (list ?-call-sym
+                                   (merge user-opts
+                                          {:label               (str frm)
+                                           :margin-inline-start 4})))
         fms                (interleave forms opts)
         call               (cons thread-sym fms)
         {:keys [cfg-opts]} (helper2 {:x         nil
