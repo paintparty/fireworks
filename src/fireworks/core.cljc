@@ -52,7 +52,8 @@
    
 
 (defn- user-label-or-form!
-  [{:keys [qf template label mll?]}]
+  [{:keys [qf template label mll?] :as opts}]
+  (ff opts)
   (let [label
         (when (contains?
                #{[:form-or-label :file-info :result]
@@ -61,8 +62,7 @@
                  [:form-or-label :file-info]}
                template)
           (when label
-            (let [
-                  label (if mll?
+            (let [label (if mll?
                           (string/join
                            "\n"
                            (map
@@ -71,7 +71,7 @@
                             (string/split label #"\n")))
                           (tag/tag-entity! label :eval-label))]
               label)))
-        form  (when-not label
+        form  (when-not (ff 'label label)
                 (when qf
                   (reset! state/formatting-form-to-be-evaled?
                           true)
@@ -82,7 +82,7 @@
                     (reset! state/formatting-form-to-be-evaled?
                             false)
                     ret)))]
-    [label form]))
+    (ff [label form])))
 
 (defn- file-info
   [{:keys [form-meta
@@ -610,7 +610,7 @@
      (if defd
        `(do 
           ~x
-          (fireworks.core/_p ~cfg-opts
+          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                              (cast-var ~defd ~cfg-opts)))
        `(fireworks.core/_p ~cfg-opts
                            ~x))))
@@ -625,7 +625,7 @@
       defd 
        `(do 
           ~x
-          (fireworks.core/_p ~a
+          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                              ~cfg-opts
                              (cast-var ~defd ~cfg-opts)))
        `(fireworks.core/_p ~a
