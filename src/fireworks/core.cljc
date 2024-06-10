@@ -71,7 +71,8 @@
                             #(str (tag/tag-entity! (str indent-spaces %) :eval-label)
                                   (tag/tag-reset!))
                             (string/split label #"\n")))
-                          (tag/tag-entity! label :eval-label))]
+                          (tag/tag-entity! label
+                                           :eval-label))]
               (str indent-spaces label))))
         form  (when-not label
                 (when qf
@@ -123,6 +124,7 @@
   [{:keys [mll? 
            log?
            opts
+           label
            source
            template
            threading?
@@ -134,7 +136,7 @@
                 file-info*]}
         (when-not (= template [:result])
           (file-info-and-eval-label (merge opts
-                                           (keyed [file-info-first? mll?]))))
+                                           (keyed [file-info-first? mll? label]))))
 
         result-header
         (when-not (or (contains? #{[:result] [:form-or-label :file-info]}
@@ -199,7 +201,7 @@
         (:print-with user-opts)
 
         label
-        (if (map? label)
+        (if (coll? label)
           (with-out-str (pprint label))
           label)
 
@@ -223,6 +225,7 @@
                       threading?
                       template
                       source
+                      label
                       opts
                       mll?
                       log?]))]
