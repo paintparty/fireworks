@@ -860,7 +860,8 @@
 
 (defn serialized
   [v indent]
-  (let [ret (str (some-> indent util/spaces)
+  (let [ret (str (when-not (pos? (state/formatting-meta-level))
+                   (some-> indent util/spaces))
                  (tagged-val {:v         v
                               :indent    indent 
                               :val-props (meta v)}))]
