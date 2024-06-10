@@ -58,6 +58,9 @@
 ;; result of `?let`, `?if-let`, or `?when-let`
 (def let-bindings? (atom false))
 
+;; This will indent the whole output - label, file-info, and result
+(def margin-inline-start (atom nil))
+
 ;; Helpers for creating printing options state ------------------------------
 
 ;; The user's config from disc

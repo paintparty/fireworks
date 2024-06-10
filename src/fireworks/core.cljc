@@ -53,8 +53,11 @@
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?] :as opts}]
-  (ff opts)
-  (let [label
+  (let [indent-spaces
+        (or (some-> @state/margin-inline-start util/spaces)
+            0)
+
+        label
         (when (contains?
                #{[:form-or-label :file-info :result]
                  [:file-info :form-or-label :result]
@@ -66,10 +69,10 @@
                           (string/join
                            "\n"
                            (map
-                            #(str (tag/tag-entity! % :eval-label)
+                            #(str (tag/tag-entity! (indent-spaces %) :eval-label)
                                   (tag/tag-reset!))
                             (string/split label #"\n")))
-                          (tag/tag-entity! label :eval-label))]
+                          (tag/tag-entity! (str indent-spaces label) :eval-label))]
               label)))
         form  (when-not label
                 (when qf
@@ -81,7 +84,7 @@
                         ret       shortened]
                     (reset! state/formatting-form-to-be-evaled?
                             false)
-                    ret)))]
+                    (str indent-spaces ret))))]
     [label form]))
 
 (defn- file-info
@@ -371,6 +374,8 @@
 
     ;; TODO - add some observability here
     (reset! state/let-bindings? (:let-bindings? opts))
+    (reset! state/margin-inline-start (:margin-inline-start opts))
+
     (reset! state/styles [])
     (reset! state/*formatting-meta-level 0)
     (reset! state/rainbow-level 0)
@@ -422,7 +427,6 @@
 
   ([a opts x]
   
-  (ff '_p opts)
   (let [opts (if (map? a)
                (merge (dissoc opts x :label) a)
                opts)]

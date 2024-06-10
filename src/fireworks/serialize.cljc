@@ -16,7 +16,8 @@
    [fireworks.tag :as tag :refer [tag! tag-reset! tagged]]
    [fireworks.util :refer [spaces badge-type]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
-   #?(:clj [fireworks.macros :refer [keyed]])))
+   #?(:clj [fireworks.macros :refer [keyed]])
+   [fireworks.util :as util]))
 
 (declare tagged-val)
 
@@ -859,7 +860,8 @@
 
 (defn serialized
   [v indent]
-  (let [ret (str (tagged-val {:v         v
+  (let [ret (str (some-> indent util/spaces)
+                 (tagged-val {:v         v
                               :indent    indent 
                               :val-props (meta v)}))]
     ret))
@@ -868,7 +870,7 @@
   ([source]
    (formatted* source nil))
   ([source {:keys [indent user-meta?]
-            :or   {indent 0}
+            :or   {indent (or @state/margin-inline-start 0)}
             :as   opts}]
   ;;  #?(:cljs (js/console.clear))
    
