@@ -1,5 +1,5 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?->> ?some->> ?-> ?some->]]
+  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?trace]]
             [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
@@ -269,6 +269,10 @@
 ;;        [e f g &  h]                             ["a" "b" "c" "d" "e"]]
 ;;       [a b c d e f g h])
 
+;; #_(?let {:coll-limit 5}
+;;       [a (range 10)
+;;        b (range 33 200 4)])
+
 (def person
   {:name "Mark Volkmann"
    :address {:street "644 Glen Summit"
@@ -291,7 +295,7 @@
        ?))
 
 ;; (? (?some->> person :employer :address :city .toUpperCase))
-;; (? (?some-> person :employer :address :city .toUpperCase))
+;; (?trace {:coll-limit 2} (some-> person :employer :address :city .toUpperCase))
 
 ;; (?let [a {:a 12 :b 44 :c "asfdasdfasdfasdfasf" :d 55}
 ;;        b {:a 12 :b 44 :c "asfdasdfasdfasdfasf" :x 55}]

@@ -818,45 +818,58 @@
                             ")")})
    (symbol "x")))
 
-(defn- thread-helper [forms form-meta thread-sym]
-  (let [?-sym              (if (contains? #{'-> 'some->} thread-sym)
+
+(defn- thread-helper
+  [{:keys [forms form-meta thread-sym user-opts]}]
+  (let [?-call-sym         (if (contains? #{'-> 'some->} thread-sym)
                              'fireworks.core/?flop 
                              'fireworks.core/?)
-        opts               (for [frm forms] (list ?-sym {:label (str frm)}))
+        user-opts          (when (map? user-opts) user-opts)
+        opts               (for [frm forms] (list ?-call-sym
+                                                  (merge user-opts
+                                                         {:label (str frm)})))
         fms                (interleave forms opts)
         call               (cons thread-sym fms)
         {:keys [cfg-opts]} (helper2 {:x         nil
                                      :form-meta form-meta})]
     [cfg-opts call]))
 
-(defmacro ?->
-  "Printing of forms in `->`. Returns result. WIP"
-  [& forms]
-  (let [[cfg-opts call] (thread-helper forms (meta &form) '->)]
-    `(do (fireworks.core/print-thread ~cfg-opts (quote ~forms) "->")
-         ~call)))
 
-(defmacro ?some->
-  "Printing of forms in `->`. Returns result. WIP"
-  [& forms]
-  (let [[cfg-opts call] (thread-helper forms (meta &form) 'some->)]
-    `(do (fireworks.core/print-thread ~cfg-opts (quote ~forms) "some->")
-         ~call)))
-
-(defmacro ?->>
-  "Printing of forms in `->>`. Returns result. WIP"
-  [& forms]
-  (let [[cfg-opts call] (thread-helper forms (meta &form) '->>)]
-    `(do (fireworks.core/print-thread ~cfg-opts (quote ~forms) "->>")
-         ~call)))
+(defn- threading-sym [x]
+  (and (list? x)
+       (< 1 (count x))
+       (let [[sym & forms] x]
+         (when (contains? #{'-> '->> 'some-> 'some->>} sym)
+           [sym forms]))))
 
 
-(defmacro ?some->>
-  "Printing of forms in `some->>`. Returns result. WIP"
-  [& forms]
-  (let [[cfg-opts call] (thread-helper forms (meta &form) 'some->>)]
-    `(do (fireworks.core/print-thread ~cfg-opts (quote ~forms) "some->>")
-         ~call)))
+(defmacro ?trace 
+  ([x]
+   ;; Issue warning if not traceable
+   (if-let [[thread-sym forms] (threading-sym x)]
+     (let [form-meta
+           (meta &form)
+
+           [cfg-opts call]
+           (thread-helper (keyed [forms form-meta thread-sym]))]
+       `(do (fireworks.core/print-thread ~cfg-opts
+                                         (quote ~forms)
+                                         (str (quote ~thread-sym)))
+            ~call))
+     `x))
+  ([user-opts x]
+   ;; Issue warning if not traceable
+   (if-let [[thread-sym forms] (threading-sym x)]
+     (let [form-meta
+           (meta &form)
+
+           [cfg-opts call]
+           (thread-helper (keyed [forms form-meta thread-sym user-opts]))]
+       `(do (fireworks.core/print-thread ~cfg-opts
+                                         (quote ~forms)
+                                         (str (quote ~thread-sym)))
+            ~call))
+     `x)))
 
 
 ;; let 

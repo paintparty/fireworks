@@ -150,32 +150,29 @@ Fireworks provides a bevy of print-and-return macros and functions so that you c
 All the publicly available functions from `fireworks.core` and their behaviors are outlined in the table below.<br>
 Every macro/function, unless noted otherwise, returns the value passed to it.
 <br>
-| Name               | Prints with       | Prints label? | Prints file info? | Notes                   |
-| :---               | :---              | :---          | :---              | :--                     |
-| `?`                | Fireworks         | ✓             | ✓                 |                         |
-| `?-`               | Fireworks         | ×             | ×                 |                         |
-| `?i`               | Fireworks         | ×             | ✓                 | Omits label             |
-| `?l`               | Fireworks         | ✓             | ×                 | Omits file info         |                      
-| `?log`             | `js/console.log`* | ✓             | ✓                 |                         |
-| `?log-`            | `js/console.log`* | ×             | ×                 |                         |
-| `?pp`              | `pp/pprint`       | ✓             | ✓                 |                         |
-| `?pp-`             | `pp/pprint`       | ×             | ×                 |                         |
-| `?let`             | Fireworks         | ✓             | ✓                 | Traces `let` bindings   |
-| `?->`              | Fireworks         | ✓             | ✓                 | Traces `->`             |
-| `?some->`          | Fireworks         | ✓             | ✓                 | Traces `some->`         |
-| `?->>`             | Fireworks         | ✓             | ✓                 | Traces `->>`            |
-| `?some->>`         | Fireworks         | ✓             | ✓                 | Traces `some->>`        |
-| `?>`               | ×                 | ×             | ×                 | Sends value to `tap>`   | 
-| `?--`              | ×                 | ✓             | ✓                 | Does not return a value |
-| `!?`               | ×                 | ×             | ×                 | Silences printing       | 
-| `!?-`              | ×                 | ×             | ×                 | Silences printing       | 
-| `!?i`              | ×                 | ×             | ×                 | Silences printing       | 
-| `!?l`              | ×                 | ×             | ×                 | Silences printing       | 
-| `!?log`            | ×                 | ×             | ×                 | Silences printing       | 
-| `!?log-`           | ×                 | ×             | ×                 | Silences printing       | 
-| `!?pp`             | ×                 | ×             | ×                 | Silences printing       | 
-| `!?pp-`            | ×                 | ×             | ×                 | Silences printing       | 
-| `!?>`              | ×                 | ×             | ×                 | Does not send to `tap>` | 
+| Name     | Prints with       | Prints label? | Prints file info? | Notes                   |
+| :---     | :---              | :---          | :---              | :--                     |
+| `?`      | Fireworks         | ✓             | ✓                 |                         |
+| `?-`     | Fireworks         | ×             | ×                 |                         |
+| `?i`     | Fireworks         | ×             | ✓                 | Omits label             |
+| `?l`     | Fireworks         | ✓             | ×                 | Omits file info         |                      
+| `?log`   | `js/console.log`* | ✓             | ✓                 |                         |
+| `?log-`  | `js/console.log`* | ×             | ×                 |                         |
+| `?pp`    | `pp/pprint`       | ✓             | ✓                 |                         |
+| `?pp-`   | `pp/pprint`       | ×             | ×                 |                         |
+| `?let`   | Fireworks         | ✓             | ✓                 | Traces `let` bindings   |
+| `?trace` | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`|
+| `?>`     | ×                 | ×             | ×                 | Sends value to `tap>`   | 
+| `?--`    | ×                 | ✓             | ✓                 | Does not return a value |
+| `!?`     | ×                 | ×             | ×                 | Silences printing       | 
+| `!?-`    | ×                 | ×             | ×                 | Silences printing       | 
+| `!?i`    | ×                 | ×             | ×                 | Silences printing       | 
+| `!?l`    | ×                 | ×             | ×                 | Silences printing       | 
+| `!?log`  | ×                 | ×             | ×                 | Silences printing       | 
+| `!?log-` | ×                 | ×             | ×                 | Silences printing       | 
+| `!?pp`   | ×                 | ×             | ×                 | Silences printing       | 
+| `!?pp-`  | ×                 | ×             | ×                 | Silences printing       | 
+| `!?>`    | ×                 | ×             | ×                 | Does not send to `tap>` | 
 
 * `?log` and `?log` will dispatch to `pp/pprint` in a JVM context.
 
@@ -185,7 +182,7 @@ Every macro/function, unless noted otherwise, returns the value passed to it.
 
 All the public macros and functions from `fireworks.core`:
 ```Clojure
-[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?->> ?some->> ?-> ?some->]]
+[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?trace]]
 ```
 <br>
 
@@ -286,15 +283,13 @@ All of the available config options and their default values:
 
 <br>
 
-**`:mood`** `"light"`
-
+**`:mood`** `"light"`<br>
 Sets the mood to `"dark"` or `"light"`. Will use the default light (or dark) theme, which is `"Alabaster Light"` (or `"Alabaster Dark"`). Defaults to `"light"`.
 
 <br>
 <br>
 
-**`:theme`** `"Alabaster Light"`
-
+**`:theme`** `"Alabaster Light"`<br>
 Sets the theme. This will override `:mood` setting.
 This must be one of the following 3 types of values:
 
@@ -321,129 +316,97 @@ This will not work:
 
 
 <br>
-<br>
 
-**`:line-height`** `1.45`
 
+**`:line-height`** `1.45`<br>
 Sets the line-height. Only takes effect in browser consoles.
 
 <br>
-<br>
 
-**`:coll-limit`** `15`
-
+**`:coll-limit`** `15`<br>
 Sets the max length of collections.  Collections whose count are at least 2 greater than this number will be truncated. By default, Fireworks aggressively truncates collections to keep the display footprint of the printed output as short and narrow as possible.
 
 <br>
-<br>
 
-**`:print-level`** `7`
-
+**`:print-level`** `7`<br>
 Sets the max depth of printing for nested collections.
 
 <br>
-<br>
 
-**`:non-coll-length-limit`** `33`
-
+**`:non-coll-length-limit`** `33`<br>
 Sets the max length of things like strings, keywords, function names, etc., when they are nested more than one level deep inside a data structure. Values whose length exceeds this will be ellipsized.
 
 
 <br>
-<br>
 
-**`:non-coll-mapkey-length-limit`** `20`
-
+**`:non-coll-mapkey-length-limit`** `20`<br>
 Sets the max length of things like strings, keywords, function names, etc., when they are used as keys in maps. Longer values will be ellipsized.
 
 
 <br>
-<br>
 
-**`:non-coll-result-length-limit`** `444`
-
+**`:non-coll-result-length-limit`** `444`<br>
 Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value itself is the result of the evaluation (not nested within a data structure).
 
 
 <br>
-<br>
 
 
-**`:non-coll-depth-1-length-limit`** `69`
-
+**`:non-coll-depth-1-length-limit`** `69`<br>
 Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value is nested one level deep inside the result, which would be a non-associative collection such as a vector or seq.
 
 
 <br>
-<br>
 
-**`:enable-rainbow-brackets?`** `true`
-
+**`:enable-rainbow-brackets?`** `true`<br>
 Whether or not to use rainbow brackets. Rainbow brackets can be customized in your theme.
 
 
 <br>
-<br>
 
-**`:bracket-contrast`** `"high"`
-
+**`:bracket-contrast`** `"high"`<br>
 Sets the level of rainbow bracket intensity to `"high"` or `"low"`.  Default value can also be overridden by `:bracket-contrast` entry in a Fireworks theme map.
 
 
 <br>
-<br>
 
-**`:display-namespaces?`** `true`
-
+**`:display-namespaces?`** `true`<br>
 Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:non-coll-length-limit` or the `:non-coll-mapkey-length-limit` (in the case of map keys).
 
 
 <br>
-<br>
 
-**`:enable-terminal-truecolor?`** `false`
-
+**`:enable-terminal-truecolor?`** `false`<br>
 If set to `false` (default value), Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If you will be printing with Fireworks in a terminal, and your terminal emulator supports 24-bit color (most of them do), it is highly recommended to set this to `true`.
 
 
 <br>
-<br>
 
-**`:enable-terminal-italics?`** `false`
-  
+**`:enable-terminal-italics?`** `false`<br>
 If set to `false` (default value), any theme tokens specified to be italicized will not be italicized. If you will be printing with Fireworks in a terminal, and your terminal emulator supports italics (most of them do), it is highly recommended to set this option to `true`.
 
 
 <br>
-<br>
 
-**`:enable-terminal-font-weights?`** `false`
-  
+**`:enable-terminal-font-weights?`** `false`<br>
 If set to `false` (default value), any theme tokens specified to be bold will not be bold. If you will be printing with Fireworks in a terminal, and your terminal emulator supports bold fonts (most of them do), it is highly recommended to set this option to `true`.
 
 
 <br>
-<br>
 
-**`:metadata-print-level`** `6`
-
+**`:metadata-print-level`** `6`<br>
 Sets the max depth of printing for metadata maps that contain nested collections.
 
 <br>
-<br>
 
-**`:display-metadata?`** `true`
-
+**`:display-metadata?`** `true`<br>
 Print metadata values.
 
 <br>
-<br>
 
-**`:metadata-position`** `"inline"`
-
+**`:metadata-position`** `"inline"`<br>
 Determines position of metadata relative to value that is carrying it. Options are `"inline"` (default), or `"block"`. 
 
-<br>
 <br>
 
 <!-- **`:custom-printers`** `nil`
@@ -453,15 +416,12 @@ Custom print handlers for objects and collections. See [Custom Printers](#custom
 <br>
 <br> -->
 
-**`:find`** `nil`
-
+**`:find`** `nil`<br>
 Find and highlight values in the printed output. See [Highlighting values](#highlighting-values) section.
 
 <br>
-<br>
 
-**`:print-with`** `nil`
-
+**`:print-with`** `nil`<br>
 Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`. If you want to print with `pprint` or `js/console.log`, use `?fireworks.core/pp` or `?fireworks.core/log`.
 
 ```Clojure
@@ -469,7 +429,6 @@ Although more of an edge-case, you can pass a `:print-with` option at the call s
     :print-with prn}
    x)
 ```
-
 
 <br>
 <br>

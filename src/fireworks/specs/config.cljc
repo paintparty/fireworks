@@ -11,8 +11,9 @@
 (s/def ::edn-file-path 
   (s/and string? #(re-find #"\.edn$" %)))
 
+;; TODO - Should this be 1?
 (s/def ::fw-coll-limit
-  (s/and int? #(<= 3 % 200)))
+  (s/and int? #(<= 2 % 200)))
 
 ;; This is for the theme entry in a fireworks config .edn
 ;; It can be either
