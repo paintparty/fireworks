@@ -866,48 +866,27 @@
 
 (defmacro ?let
   "Printing of bindings in let. Returns body. WIP"
-  [bindings & body]
-  (let [syms (->> bindings 
-                  (take-nth 2)
-                  (mapv (fn [sym]
-                          (let [opts {:x            sym
-                                      :pred         symbol?
-                                      :f            str}]
-                            [(sym<->str (assoc opts :binding-sym? true))
-                             (sym<->str opts)]))))
-        {:keys [cfg-opts]}
-        (helper2 {:x         nil
-                  :form-meta (meta &form)})]
-   (ff 'syms syms)
-   `(do 
-      (let ~bindings
-        (do
-          ;; Call fireworks.core/? to print the let bindings
-          (? (merge ~cfg-opts
-                    {:label         "let bindings"
-                     :let-bindings? true})
-             (apply array-map
-                    (map-indexed (fn [i# x#]
-                                   (sym<->str {:x            x#
-                                               :pred         string?
-                                               :f            symbol
-                                               :binding-sym? (even? i#)}))
-                                 (apply concat ~syms))))
-          ~@body)))))
+  [& args]
+  (let [[user-opts]
+        args
 
-(defmacro ?let
-  "Printing of bindings in let. Returns body. WIP"
-  [bindings & body]
-  (let [syms (->> bindings 
+        opts
+        (when (map? user-opts) user-opts)
+
+        [bindings & body]
+        (if opts (rest args) args)
+        
+        syms (->> bindings 
                   (take-nth 2)
                   (mapv (fn [sym]
-                          (let [opts {:x            sym
-                                      :pred         symbol?
-                                      :f            str}]
+                          (let [opts {:x    sym
+                                      :pred symbol?
+                                      :f    str}]
                             [(sym<->str (assoc opts :binding-sym? true))
                              (sym<->str opts)]))))
         {:keys [cfg-opts]}
-        (helper2 {:x         nil
+        (helper2 {:a         user-opts
+                  :x         nil
                   :form-meta (meta &form)})]
    (ff 'syms syms)
    `(do 
