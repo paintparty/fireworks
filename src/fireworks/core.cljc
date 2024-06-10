@@ -53,7 +53,6 @@
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?] :as opts}]
-  (ff opts)
   (let [label
         (when (contains?
                #{[:form-or-label :file-info :result]
@@ -71,7 +70,7 @@
                             (string/split label #"\n")))
                           (tag/tag-entity! label :eval-label))]
               label)))
-        form  (when-not (ff 'label label)
+        form  (when-not label
                 (when qf
                   (reset! state/formatting-form-to-be-evaled?
                           true)
@@ -82,7 +81,7 @@
                     (reset! state/formatting-form-to-be-evaled?
                             false)
                     ret)))]
-    (ff [label form])))
+    [label form]))
 
 (defn- file-info
   [{:keys [form-meta
@@ -901,7 +900,6 @@
         (helper2 {:a         user-opts
                   :x         nil
                   :form-meta (meta &form)})]
-   (ff 'syms syms)
    `(do 
       (let ~bindings
         (do
