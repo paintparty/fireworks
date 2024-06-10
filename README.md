@@ -43,8 +43,8 @@
 <br>
 
 
-## Introduction
-**Fireworks is a themeable print debugging library for Clojure, ClojureScript, and Babashka.** It is designed to make this part of your workflow easier, faster, and more enjoyable. If you like the idea of printing with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
+## Intro
+**Fireworks is a themeable print debugging library for Clojure, ClojureScript, and Babashka.** It is designed to make your workflow easier, faster, and more enjoyable. If you like the idea of printing with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
 
 <br>
 <br>
@@ -55,19 +55,21 @@
 
 - Customizable via system-wide `.edn` config file.
 
-- Makes cljs color printing possible in all dark-mode-themed browser consoles. 
-
-- Left-justification of values in maps.
-
-- High or low contrast rainbow brackets (optional).
+- Novel typographic approach for printing metadata inline, alongside values.
 
 - Truncation of collections and long values such as strings.
 
-- Enhanced reflection for JS and Java values.
-
-- Novel typographic approach for printing metadata inline, alongside values.
+- Left-justification of values in maps.
 
 - Trace values in `let` bindings and threading macros such as `->`.
+
+- High or low contrast rainbow brackets (optional).
+
+- Makes cljs color printing possible in all dark-mode-themed browser consoles. 
+
+- Enhanced reflection for JS and Java values.
+
+- Say goodbye to mysterious things like `#[Object #[Object]]`
 
 - Find and highlight values in printed output.
 
@@ -121,7 +123,7 @@ Import into your namespace:
 <img src="resources/fireworks-core-par.png" width="475px" />
 
 
-Calling **`fireworks.core/?`** with two arguments will print the namespace info, a label (instead of the form), and the result:
+Calling **`fireworks.core/?`** with two arguments will print a label (instead of the form), the namespace info, and the result:
 
 ```Clojure
 (? "My label" x)
@@ -141,77 +143,44 @@ The first argument can also be a map, which supplies various [config options](#o
 <br>
 <br>
 
-### Print & return
-Fireworks provides a bevy of print-and-return macros and functions so that you can print values from your source without altering the execution of your program.
+### Tap-driven development
+Fireworks provides a bevy of print-and-return macros and functions so that you can print values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable comprehension at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value. When it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just switch the macro to `?log` or `?pp`. Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedciated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
 
-`?`, `?log`, and `?pp` all print the evaled form (or user-supplied label), file info (line + column), and the result.
 
-The variants with a single trailing dash, such as `?-`, just print the result.
+All the publicly available functions from `fireworks.core` and their behaviors are outlined in the table below.<br>
+Every macro/function, unless noted otherwise, returns the value passed to it.
+<br>
+| Name               | Prints with       | Prints label? | Prints file info? | Notes                   |
+| :---               | :---              | :---          | :---              | :--                     |
+| `?`                | Fireworks         | ✓             | ✓                 |                         |
+| `?-`               | Fireworks         | ×             | ×                 |                         |
+| `?i`               | Fireworks         | ×             | ✓                 | Omits label             |
+| `?l`               | Fireworks         | ✓             | ×                 | Omits file info         |                      
+| `?log`             | `js/console.log`* | ✓             | ✓                 |                         |
+| `?log-`            | `js/console.log`* | ×             | ×                 |                         |
+| `?pp`              | `pp/pprint`       | ✓             | ✓                 |                         |
+| `?pp-`             | `pp/pprint`       | ×             | ×                 |                         |
+| `?let`             | Fireworks         | ✓             | ✓                 | Traces `let` bindings   |
+| `?->`              | Fireworks         | ✓             | ✓                 | Traces `->`             |
+| `?some->`          | Fireworks         | ✓             | ✓                 | Traces `some->`         |
+| `?->>`             | Fireworks         | ✓             | ✓                 | Traces `->>`            |
+| `?some->>`         | Fireworks         | ✓             | ✓                 | Traces `some->>`        |
+| `?>`               | ×                 | ×             | ×                 | Sends value to `tap>`   | 
+| `?--`              | ×                 | ✓             | ✓                 | Does not return a value |
+| `!?`               | ×                 | ×             | ×                 | Silences printing       | 
+| `!?-`              | ×                 | ×             | ×                 | Silences printing       | 
+| `!?i`              | ×                 | ×             | ×                 | Silences printing       | 
+| `!?l`              | ×                 | ×             | ×                 | Silences printing       | 
+| `!?log`            | ×                 | ×             | ×                 | Silences printing       | 
+| `!?log-`           | ×                 | ×             | ×                 | Silences printing       | 
+| `!?pp`             | ×                 | ×             | ×                 | Silences printing       | 
+| `!?pp-`            | ×                 | ×             | ×                 | Silences printing       | 
+| `!?>`              | ×                 | ×             | ×                 | Does not send to `tap>` | 
+
+* `?log` and `?log` will dispatch to `pp/pprint` in a JVM context.
+
 
 <br>
-
-Print and return  with Fireworks formatting (colorized & justified):<br>
-`?` <br>
-`?-` <br>
-
-<br>
-
-Print and return with Fireworks formatting (colorized & justified), with file info and no label:<br>
-`?i` <br>
-
-<br>
-
-Print and return  with Fireworks formatting (colorized & justified), with label and no file info:<br>
-`?l` <br>
-
-<br>
-
-Print and return with `js/console.log` or `pp/pprint` (JVM):<br>
-`?log` <br>
-`?log-` <br>
-
-<br>
-
-Print and return with [`pp/pprint`](https://github.com/eerohele/pp).<br>
-`?pp` <br>
-`?pp-` <br>
-
-<br>
-
-You can also just `tap>` & return the result, with no printing:<br>
-`?>` <br>
-
-<br>
-
-You can use `?--` to print a label and file info. This is designed to add commentary for your program.<br>
-`?--` <br>
-
-<br>
-
-All of the above functions have a respective "silencing" function, which will just return the result. This is useful if you want to leave something marked, but temporarily silence the printing:
-
-`!?`<br>
-`!?-`<br>
-`!?i`<br>
-`!?l`<br>
-`!?log`<br>
-`!?log-`<br>
-`!?pp`<br>
-`!?pp-`<br>
-`!?>`<br>    
-
-<br>
-
-### Tracing
-You can trace `let` bindings and threading macros with the following:
-
-`?let`<br>
-`?->`<br>
-`?some->`<br>
-`?->>`<br>
-`?some->>`<br>
-
-
 <br>
 
 All the public macros and functions from `fireworks.core`:
@@ -220,7 +189,8 @@ All the public macros and functions from `fireworks.core`:
 ```
 <br>
 
-Currently, `?as->`, `?cond->`, `?cond->>`, and `?comp` do not exist, but they are on the roadmap for a future release.
+Non-existent, but on the roadmap for a future release:<br>
+`?as->`, `?cond->`, `?cond->>`, and `?comp`.
 
 <br>
 <br>
@@ -916,7 +886,8 @@ Debugging, tracing, observability:<br>
 
 
 
-Visualization:<br>
+Printing and visualization:<br>
+[puget](https://github.com/greglook/puget),
 [coll-pen](https://github.com/dscarpetti/coll-pen),
 [pp-grid](https://github.com/rorokimdim/pp-grid)
 
