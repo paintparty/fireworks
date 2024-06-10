@@ -60,7 +60,6 @@
         label
         (when (contains?
                #{[:form-or-label :file-info :result]
-                 [:file-info :form-or-label :result]
                  [:form-or-label :result]
                  [:form-or-label :file-info]}
                template)
@@ -94,7 +93,6 @@
   (let [file-info* (when (contains?
                           #{[:form-or-label :file-info :result]
                             [:file-info :result]
-                            [:file-info :form-or-label :result]
                             [:form-or-label :file-info]}
                           template)
                      (when-let [{ln  :line
@@ -210,14 +208,14 @@
 
         file-info-first?
         (or (contains?
-             #{[:file-info :form-or-label :result]
-               [:file-info :result]}
+             #{[:file-info :result]}
              template)
             (and label
                  (contains? #{[:form-or-label :file-info]
                               [:form-or-label :file-info :result]}
                             template)
-                 mll?))
+                 (or mll?
+                     (< 44 (count (str label))))))
 
         {:keys [fmt+ fmt file-info*]}
         (fmt+ (keyed [file-info-first? 
