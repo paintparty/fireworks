@@ -53,6 +53,7 @@
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?] :as opts}]
+  (ff opts)
   (let [label
         (when (contains?
                #{[:form-or-label :file-info :result]
@@ -421,6 +422,7 @@
 
   ([a opts x]
   
+  (ff '_p opts)
   (let [opts (if (map? a)
                (merge (dissoc opts x :label) a)
                opts)]
@@ -611,7 +613,7 @@
           ~x
           (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                              (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p ~cfg-opts
+       `(fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                            ~x))))
 
   ([a x]
@@ -625,10 +627,8 @@
        `(do 
           ~x
           (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             ~cfg-opts
                              (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p ~a
-                           ~cfg-opts
+       `(fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                            ~x)))))
 
 (defmacro ?
