@@ -568,13 +568,10 @@
          (helper2 {:x         x
                    :template  [:file-info :result]
                    :form-meta (meta &form)})]
-     (if defd
-       `(do 
-          ~x
-          (fireworks.core/_p ~cfg-opts
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p ~cfg-opts
-                           ~x))))
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                           (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
 
   ([a x]
    (let [{:keys [cfg-opts defd]}  
@@ -582,16 +579,11 @@
                    :template  [:file-info :result]
                    :x         x
                    :form-meta (meta &form)})]
-     (if
-      defd 
-       `(do 
-          ~x
-          (fireworks.core/_p ~a
-                             ~cfg-opts
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p ~a
-                           ~cfg-opts
-                           ~x)))))
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p ~a
+                           (assoc ~cfg-opts :qf (quote ~x))
+                           (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
 
 (defmacro ?l
@@ -614,9 +606,9 @@
                    :template  [:form-or-label :result]
                    :form-meta (meta &form)})]
      `(do 
-          (when ~defd ~x)
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             (if defd (cast-var ~defd ~cfg-opts) ~x)))))
+        (when ~defd ~x)
+        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                           (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
 
   ([a x]
    (let [{:keys [cfg-opts defd]}  
@@ -628,7 +620,7 @@
         (when ~defd ~x)
         (fireworks.core/_p ~a
                            (assoc ~cfg-opts :qf (quote ~x))
-                           (if defd (cast-var ~defd ~cfg-opts) ~x))))))
+                           (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
 (defmacro ?
   "Prints the form (or user-supplied label), the namespace info,

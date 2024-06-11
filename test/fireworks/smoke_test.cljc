@@ -220,10 +220,21 @@
 
 ;; (? "? : Default" {:a "foo"})
 ;; (? "? : Default:\nLine1\nLine2" {:a "foo"})
-
 ;; (? {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
+;; (? (def x1 "x1"))
+;; (? {:label "def with label from options"} (def x2 "x2"))
 
-;; (prn "with prn" (atom {:a "foo" :b 12}))
+;; (?l "? : Default" {:a "foo"})
+;; (?l "? : Default:\nLine1\nLine2" {:a "foo"})
+;; (?l {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
+;; (?l (def x3 "x3"))
+;; (?l {:label "def with label from options"} (def x4 "x4"))
+
+(?i "? : Default" {:a "foo"})
+(?i "? : Default:\nLine1\nLine2" {:a "foo"})
+(?i {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
+(?i (def x5 "x5"))
+(?i {:label "def with label from options"} (def x6 "x6"))
 
 ;; (?i "?i : Just the namespace info" [1 2])
 ;; (?l "?l : Just the label" [1 2])
@@ -242,7 +253,7 @@
 ;; (?log- {:f '?log :b "asfdasdfasfas"})
 
 
-;; (?log (def xxx 1))
+
 ;; (?log {:f '?log :desc "default"})
 ;; (?log "Label" {:f '?log :desc "with label"})
 ;; (?log "Label\nLabel Line 2" {:f '?log :desc "with multiline label"})
