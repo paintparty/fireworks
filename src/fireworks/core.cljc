@@ -427,6 +427,27 @@
 ; _::::::::::::::::::::::_
 ; ________________________                    
 
+(defn ^{:public true}
+  _pp
+  "Called internally."
+  [x]
+  #?(:cljs
+     (pprint x)
+     :clj
+     (do
+       (pprint x)
+       ;; Extra line after pprint result
+       (print "\n"))))
+
+(defn ^{:public true} _log 
+  [x]
+  #?(:cljs
+     (js/console.log x)
+     :clj
+     (do
+       (pprint x)
+       ;; Extra line after pprint result
+       (print "\n"))))
 
 (defn ^{:public true}
   _p 
@@ -673,50 +694,6 @@
                            (assoc ~cfg-opts :qf (quote ~x))
                            (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
-#_(defmacro ?
-  "Prints the form (or user-supplied label), the namespace info,
-   and then the value.
-   
-   The form (or optional label) is formatted with pprint.
-   The value is formatted with fireworks.core/_p.
-   
-   Returns the value.
-   
-   If value is a list whose first element is a member of
-   fireworks.core/core-defs, the value gets evaluated first,
-   then the quoted var is printed and returned."
-
-  ([])
-
-  ([x]
-   (let [{:keys [cfg-opts defd]}
-         (helper2 {:x         x
-                   :template  [:form-or-label :file-info :result]
-                   :form-meta (meta &form)})]
-     (if defd
-       `(do 
-          ~x
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                           ~x))))
-
-  ([a x]
-   (let [{:keys [cfg-opts defd]}   
-         (helper2 {:a         a
-                   :template  [:form-or-label :file-info :result]
-                   :x         x
-                   :form-meta (meta &form)})]
-     (if
-      defd 
-       `(do 
-          ~x
-          (fireworks.core/_p ~a
-                             (assoc ~cfg-opts :qf (quote ~x))
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p ~a
-                           (assoc ~cfg-opts :qf (quote ~x))
-                           ~x)))))
 
 (defmacro ^{:public true} ?flop
   "Prints the form (or user-supplied label), the namespace info,
@@ -738,13 +715,10 @@
          (helper2 {:x         x
                    :template  [:form-or-label :file-info :result]
                    :form-meta (meta &form)})]
-     (if defd
-       `(do 
-          ~x
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                           ~x))))
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                           (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
 
   ([x a]
    (let [{:keys [cfg-opts defd]}   
@@ -752,16 +726,11 @@
                    :template  [:form-or-label :file-info :result]
                    :x         x
                    :form-meta (meta &form)})]
-     (if
-      defd 
-       `(do 
-          ~x
-          (fireworks.core/_p ~a
-                             (assoc ~cfg-opts :qf (quote ~x))
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p ~a
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p ~a
                            (assoc ~cfg-opts :qf (quote ~x))
-                           ~x)))))
+                           (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
 (defmacro ?--
   "Prints a user-supplied label, following by the namespace info.
@@ -915,15 +884,6 @@
                                  (apply concat ~syms))))
           ~@body)))))
 
-(defn ^{:public true} _log 
-  [x]
-  #?(:cljs
-     (js/console.log x)
-     :clj
-     (do
-       (pprint x)
-       ;; Extra line after pprint result
-       (print "\n"))))
 
 (defmacro ?log
   "Prints the form (or user-supplied label), the namespace info,
@@ -947,14 +907,10 @@
                    :form-meta (meta &form)
                    :log?      true
                    :fw/log?   true})]
-     (if defd
-       `(do 
-          ~x
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-          (fireworks.core/_log (cast-var ~defd ~cfg-opts)))
-       `(do 
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-          (fireworks.core/_log ~x)))))
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
+        (fireworks.core/_log (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
   ([a x]
    (let [{:keys [cfg-opts defd]}
          (helper2 {:a         a
@@ -963,54 +919,18 @@
                    :form-meta (meta &form)
                    :log?      true
                    :fw/log?   true})]
-     (if defd
-       `(do 
-          ~x
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             nil)
-          (fireworks.core/_log (cast-var ~defd ~cfg-opts)))
-       `(do 
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             nil)
-          (fireworks.core/_log ~x))))))
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
+        (fireworks.core/_log (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
 
-;; TODO - make this a defn?
-(defmacro ?log-
-  "Prints just the value using console.log or pp/pprint.
-   
-   Returns the value.
-   
-   If value is a list whose first element is a member of
-   fireworks.core/core-defs, the value gets evaluated first,
-   then the quoted var is printed and returned."
-
+(defn ?log-
+  "Prints just the value using console.log or pp/pprint. Returns the value."
   ([])
-
   ([x]
-   (let [{:keys [cfg-opts defd]}
-         (helper2 {:x         x
-                   :template  [:result]
-                   :form-meta (meta &form)
-                   :log?      true
-                   :fw/log?   true})]
-     (if defd
-       `(do 
-          ~x
-          (fireworks.core/_log (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_log ~x)))))
-
-(defn ^{:public true}
-  _pp
-  "Called internally."
-  [x]
-  #?(:cljs
-     (pprint x)
-     :clj
-     (do
-       (pprint x)
-       ;; Extra line after pprint result
-       (print "\n"))))
+   (do #?(:cljs (js/console.log x) :clj (pprint x))
+       x)))
 
 
 (defmacro ?pp
@@ -1035,14 +955,10 @@
                    :form-meta (meta &form)
                    :log?      true
                    :fw/log?   true})]
-     (if defd
-       `(do 
-          ~x
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-          (fireworks.core/_pp (cast-var ~defd ~cfg-opts)))
-       `(do 
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-          (fireworks.core/_pp ~x)))))
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
+        (fireworks.core/_pp (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
   ([a x]
    (let [{:keys [cfg-opts defd]}
          (helper2 {:a         a
@@ -1051,37 +967,19 @@
                    :form-meta (meta &form)
                    :log?      true
                    :fw/log?   true})]
-     (if defd
-       `(do 
-          ~x
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-          (fireworks.core/_pp (cast-var ~defd ~cfg-opts)))
-       `(do 
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-          (fireworks.core/_pp ~x))))))
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
+        (fireworks.core/_pp (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
 
-(defmacro ?pp-
-  "Prints just the value using console.log or pp/pprint.
-   
-   Returns the value.
-   
-   If value is a list whose first element is a member of
-   fireworks.core/core-defs, the value gets evaluated first,
-   then the quoted var is printed and returned."
-
+(defn ?pp-
+  "Prints just the value using console.log or pp/pprint. Returns the value.
+   "
   ([])
-
   ([x]
-   (let [{:keys [cfg-opts defd]}
-         (helper2 {:x         x
-                   :template  [:result]
-                   :form-meta (meta &form)
-                   :log?      true
-                   :fw/log?   true})]
-     (if defd
-       `(do ~x (fireworks.core/_pp (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_pp ~x)))))
+   (do #?(:cljs (pprint x) :clj (pprint x))
+       x)))
 
 
 
@@ -1120,16 +1018,9 @@
                                     :x         x
                                     :template  [:form-or-label :file-info :result]
                                     :form-meta (meta &form)})]
-     (if defd
-       `(do 
-          ~x
-          (fireworks.core/_p
-           (assoc ~cfg-opts :qf (quote ~x))
-           (var ~defd)))
-
-       `(fireworks.core/_p 
-         (assoc ~cfg-opts :qf (quote ~x))
-         ~x))))
+     `(do (when ~defd ~x)
+         (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                            (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
 
   ([a x]
    (let [{:keys [cfg-opts
@@ -1138,21 +1029,10 @@
                                     :x         x
                                     :template  [:form-or-label :file-info :result]
                                     :form-meta (meta &form)})]
-     (if defd 
-       ;; If value is a list whose first element is a member of
-       ;; fireworks.core/core-defs, it needs special treatment.
-       `(do 
-          ~x
-          (fireworks.core/_p
-           ~a
-           (assoc ~cfg-opts :qf (quote ~x))
-           (var ~defd)))
-
-       ;; Otherwise, just print the value and return
-       `(fireworks.core/_p
-         ~a
-         (assoc ~cfg-opts :qf (quote ~x))
-         ~x)))))
+     `(do (when ~defd ~x)
+          (fireworks.core/_p ~a
+                             (assoc ~cfg-opts :qf (quote ~x))
+                             (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
 
 

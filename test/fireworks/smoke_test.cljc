@@ -1,5 +1,5 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?trace]]
+  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?trace p-data]]
             [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
@@ -220,31 +220,40 @@
 
 ;; (? "? : Default" {:a "foo"})
 ;; (? "? : Default:\nLine1\nLine2" {:a "foo"})
-;; (? {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
+;; (? {:label "with options"} (atom {:a "foo" :b 12}))
 ;; (? (def x1 "x1"))
 ;; (? {:label "def with label from options"} (def x2 "x2"))
 
-;; (?l "? : Default" {:a "foo"})
-;; (?l "? : Default:\nLine1\nLine2" {:a "foo"})
-;; (?l {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
+
+;; (?l "?l : Default" {:a "foo"})
+;; (?l "?l : Default:\nLine1\nLine2" {:a "foo"})
+;; (?l {:label "with options" } (atom {:a "foo" :b 12}))
 ;; (?l (def x3 "x3"))
 ;; (?l {:label "def with label from options"} (def x4 "x4"))
 
-(?i "? : Default" {:a "foo"})
-(?i "? : Default:\nLine1\nLine2" {:a "foo"})
-(?i {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
-(?i (def x5 "x5"))
-(?i {:label "def with label from options"} (def x6 "x6"))
 
-;; (?i "?i : Just the namespace info" [1 2])
-;; (?l "?l : Just the label" [1 2])
-;; (?l "?l : Just the label:\nLine1\nLine2" [1 2])
+;; (?i "?i : Just the namespace info" {:a "foo"})
+;; (?i "?i : Default:\nLine1\nLine2" {:a "foo"})
+;; (?i {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
+;; (?i (def x5 "x5"))
+;; (?i {:label "def with label from options"} (def x6 "x6"))
+
+;; (?log "?log " {:a "foo"})
+;; (?log "?log : Default:\nLine1\nLine2" {:a "foo"})
+;; (?log {:label "with options" } (atom {:a "foo" :b 12}))
+;; (?log (def x7 "x7"))
+;; (?log {:label "def with label from options"} (def x8 "x8"))
+
+;; (?log- {:a "foo"})
+;; (?log- {:a "foo"})
+;; (?log-  (atom {:a "foo" :b 12}))
+;; (?log- (def x9 "x9"))
 
 ;; (?pp {:f '?pp :b "asfdasdfasfas"})
 ;; (?pp "pp with label" {:f '?pp :b "asfdasdfasfas"})
-;; (?pp "pp with label, def" (def xxx 1))
+;; (?pp "pp with label, def" (def x10 "x10"))
 ;; (?pp- {:f '?pp :b "asfdasdfasfas"})
-;; (?pp- (def xxx 1))
+;; (?pp- (def x11 "x11"))
 
 ;; (?log {:f '?log :b "asfdasdfasfas"})
 ;; (?log "?log with label" {:f '?log :b "asfdasdfasfas"})
@@ -260,6 +269,14 @@
 
 ;; (?log- (def xxx 1))
 ;; (?log- {:f '?log :b "asfdasdfasfas"})
+
+;; (?pp (p-data {:a "foo"}))
+;; (?pp (p-data (def x12 "x12")))
+;; (?pp (p-data {:label "def with opts"} (def x12 "x12")))
+
+;; (?pp (p-data "?p-data : Default:\nLine1\nLine2" (atom {:a "foo" :b 12})))
+;; (?pp (p-data {:label "?p-data : Default:\nLine1\nLine2" } (atom {:a "foo" :b 12})))
+
 
 ;; (?-- "Commentary")
 ;; (?-- "Commentary, multiline:\nLine2\nLine3")
