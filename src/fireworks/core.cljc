@@ -20,7 +20,7 @@
    [clojure.walk :as walk])
   ;; Need to actually do this?
   #?(:cljs (:require-macros 
-            [fireworks.core :refer [? ?-- ?i ?l ?log ?log- ?pp ?pp- ?let ?->> ?some->>]])))
+            [fireworks.core :refer [? ?-- ?i ?l ?log ?log- ?pp ?pp- ?let]])))
 
 (declare pprint)
 
@@ -613,13 +613,10 @@
          (helper2 {:x         x
                    :template  [:form-or-label :result]
                    :form-meta (meta &form)})]
-     (if defd
-       `(do 
-          ~x
+     `(do 
+          (when ~defd ~x)
           (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                           ~x))))
+                             (if defd (cast-var ~defd ~cfg-opts) ~x)))))
 
   ([a x]
    (let [{:keys [cfg-opts defd]}  
@@ -627,14 +624,11 @@
                    :template  [:form-or-label :result]
                    :x         x
                    :form-meta (meta &form)})]
-     (if
-      defd 
-       `(do 
-          ~x
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                           ~x)))))
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p ~a
+                           (assoc ~cfg-opts :qf (quote ~x))
+                           (if defd (cast-var ~defd ~cfg-opts) ~x))))))
 
 (defmacro ?
   "Prints the form (or user-supplied label), the namespace info,
@@ -656,13 +650,11 @@
          (helper2 {:x         x
                    :template  [:form-or-label :file-info :result]
                    :form-meta (meta &form)})]
-     (if defd
+      
        `(do 
-          ~x
+          (when ~defd ~x)
           (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                           ~x))))
+                             (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
 
   ([a x]
    (let [{:keys [cfg-opts defd]}   
@@ -670,18 +662,13 @@
                    :template  [:form-or-label :file-info :result]
                    :x         x
                    :form-meta (meta &form)})]
-     (if
-      defd 
-       `(do 
-          ~x
-          (fireworks.core/_p ~a
-                             (assoc ~cfg-opts :qf (quote ~x))
-                             (cast-var ~defd ~cfg-opts)))
-       `(fireworks.core/_p ~a
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p ~a
                            (assoc ~cfg-opts :qf (quote ~x))
-                           ~x)))))
+                           (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
-(defmacro ?
+#_(defmacro ?
   "Prints the form (or user-supplied label), the namespace info,
    and then the value.
    
