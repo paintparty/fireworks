@@ -52,9 +52,11 @@
    
 
 (defn- user-label-or-form!
-  [{:keys [qf template label mll?] :as opts}]
+  [{:keys [qf template label mll?]
+    :as opts}]
   (let [indent-spaces
-        (or (some-> @state/margin-inline-start util/spaces)
+        (or (some-> @state/margin-inline-start
+                    util/spaces)
             nil)
 
         label
@@ -68,7 +70,9 @@
                           (string/join
                            "\n"
                            (map
-                            #(str (tag/tag-entity! (str indent-spaces %) :eval-label)
+                            #(str (tag/tag-entity!
+                                   (str indent-spaces %)
+                                   :eval-label)
                                   (tag/tag-reset!))
                             (string/split label #"\n")))
                           (tag/tag-entity! label
@@ -87,6 +91,7 @@
                     (str indent-spaces ret))))]
     [label form]))
 
+
 (defn- file-info
   [{:keys [form-meta
            template
@@ -103,17 +108,18 @@
                            (tag/tag-entity! :file-info))]
    [file-info* file-info]))
 
+
 (defn- file-info-and-eval-label
   "file-info and eval lable get tagged, so order matters."
-  [{:keys [file-info-first?] :as opts}]
+  [{:keys [file-info-first? label?] :as opts}]
   (if file-info-first?
     (let [[file-info* file-info] (file-info opts)
-          [label form]           (user-label-or-form! opts)]
+          [label form]           (when label? (user-label-or-form! opts))]
       (keyed [label
               form
               file-info*
               file-info]))
-    (let [[label form]           (user-label-or-form! opts)
+    (let [[label form]           (when label? (user-label-or-form! opts))
           [file-info* file-info] (file-info opts)]
       (keyed [label
               form
@@ -130,13 +136,22 @@
            threading?
            user-print-fn
            file-info-first?]}]
-  (let [{:keys [form
+  (let [just-result?
+        (and log? (= template [:result]))
+
+        label?
+        (not (or just-result? (= template [:file-info :result])))
+
+        {:keys [form
                 label
                 file-info
                 file-info*]}
-        (when-not (= template [:result])
+        (when-not just-result?
           (file-info-and-eval-label (merge opts
-                                           (keyed [file-info-first? mll? label]))))
+                                           (keyed [file-info-first?
+                                                   mll? 
+                                                   label
+                                                   label?]))))
 
         result-header
         (when-not (or (contains? #{[:result] [:form-or-label :file-info]}
@@ -148,7 +163,7 @@
         fmt           
         (when-not (or log?
                       threading?
-                      (= template [:form-or-label :file-info]) )
+                      (= template [:form-or-label :file-info]))
           (if (and user-print-fn
                    (contains? #{pr pr-str prn prn-str print println} 
                               user-print-fn))
@@ -158,8 +173,6 @@
         label-or-form
         (or label form)
 
-        just-result?
-        (and log? (= template [:result]))
 
         fmt+          
         (when-not just-result?
