@@ -12,6 +12,36 @@
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])))
 
+#?(:cljs
+   (do 
+     (defn inline-style->map [v]
+       (as-> v $
+         (string/split $ #";")
+         (map #(let [kv    (-> % string/trim (string/split #":") )
+                     [k v] (map string/trim kv)]
+                 [k v]) 
+              $)
+         (into {} $)))
+
+     (defn dom-el-attrs-map
+       [x]
+       (when-let [el x #_(some-> x meta :fw/truncated :html-element)]
+         ;; You could pull :fw/user-meta out of html element,
+         ;; but when would it have it?
+         
+         ;; Check for when no attrs
+         (when (.hasAttributes el)
+           (let [attrs (.-attributes el)]
+             (into {}  
+                   (for [i    (range (.-length attrs))
+                         :let [item (.item attrs i)
+                               k (.-name item)
+                               v (.-value item)]]
+                     [k
+                      (cond (= k "style") (inline-style->map v)
+                            (= k "class") (into [] (string/split v " "))
+                            :else         v)]))))))))
+
 (defn cljc-atom?
   [x]
   #?(:cljs (= cljs.core/Atom (type x))
@@ -85,7 +115,8 @@
            t
            depth
            map-like?
-           too-deep?]
+           too-deep?
+           dom-node-type]
     :as opts+}]
   (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))
         ;; TODO - maybe do this?
@@ -96,24 +127,26 @@
     (if #?(:cljs (not (satisfies? ISeqable x)) :clj nil)
       ;; This if for js objects
       #?(:cljs
-         (let [_   (when (= t :SyntheticBaseEvent)
-                     (doto x
-                       (js-delete "view")
-                       (js-delete "nativeEvent")
-                       (js-delete "target")))
-               ret (js-obj->array-map (assoc opts+
-                                             :coll-limit
-                                             coll-limit))]
-           ;; Maybe incorporate this into js-obj->array-map?
-           (into {}
-                 (map (partial truncate
-                               {:depth (inc depth)})
-                      ret)))
+         (if dom-node-type
+           (truncate {:depth (inc depth)} (dom-el-attrs-map x))
+           (let [_   (when (= t :SyntheticBaseEvent)
+                         (doto x
+                           (js-delete "view")
+                           (js-delete "nativeEvent")
+                           (js-delete "target")))
+                   ret (js-obj->array-map (assoc opts+
+                                                 :coll-limit
+                                                 coll-limit))]
+               ;; Maybe incorporate this into js-obj->array-map?
+               (into {}
+                     (map (partial truncate
+                                   {:depth (inc depth)})
+                          ret))))
          :clj nil)
 
       ;; This if for everything else
       (truncate-iterable x coll-limit map-like? depth)
-      ;; Mabye do this?
+      ;; Can we do this?
       ;; (truncate-iterable opts*)
       )))
 
@@ -159,14 +192,17 @@
     :as opts+}]
   (let [x (cond
             kv?        (let [[k v] x]
-                         [(truncate {:depth depth :key?  true} k)
-                          (truncate {:depth depth :map-value? true} v)])
+                         [(truncate {:depth depth
+                                     :key?  true} k)
+                          (truncate {:depth      depth
+                                     :map-value? true} v)])
             coll-type? (new-coll2 opts+)
             :else      x)]
+
     (if (or (:carries-meta? opts+)
             (util/carries-meta? x))
       x
-      (symbol (str x)))))
+      (symbol (str  x)))))
 
 
 (defn with-badge-and-ellipsized
@@ -192,7 +228,6 @@
 
         new-x 
         (new-x depth x opts+)
-        
 
         new-coll-info
         (when (and (not kv?) coll-type?)
