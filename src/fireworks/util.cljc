@@ -24,3 +24,8 @@
 (defn readable-sgr [x]
   #?(:cljs x
      :clj (str "\\033" (subs x 1))))
+
+(defn form-meta->file-info
+  [{:keys [file line column]}]
+  (str (some-> file (str ":")) line ":" column))
+

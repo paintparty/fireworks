@@ -1,7 +1,8 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
             [expound.alpha :as expound]
-            [fireworks.specs.config :as config]))
+            [fireworks.specs.config :as config]
+            [fireworks.util :as util]))
 
 (defrecord FireworksThrowable [err])
 
@@ -74,7 +75,8 @@
   (str "font-weight:bold;"
        "text-decoration-line: underline;"
        "text-decoration-style: wavy;"
-       "text-decoration-color: #ff5252;"
+       ;; "text-decoration-color: #ff5252;"
+       "text-decoration-color: #ff00ff;"
        "text-underline-offset: 0.4em;"
        "text-decoration-thickness: 1.5px;"
        "line-height: 2.5em;"))
@@ -89,6 +91,27 @@
   [bad-value-with-red-underline
    "font-weight:normal"])
 
+(defn ^:public css-style-string [m]
+  (string/join ";"
+               (map (fn [[k v]]
+                      (str (name k)
+                           ":"
+                           (if (number? v) (str v) (name v))))
+                    m)))
+
+(defn  alert-type->css [k]
+  (let [color (case k
+                :error   :#ff4979
+                :warning :#fe9959
+                :magenta)]
+    (css-style-string
+     {:font-weight               :bold
+      :text-decoration-line      :underline
+      :text-decoration-style     :wavy
+      :text-decoration-color     color
+      :text-underline-offset     :0.4em
+      :text-decoration-thickness :1.5px
+      :line-height               :2.5em})))
 
 ;; Warning and error blocks  --------------------------------------------------------
 
@@ -184,7 +207,7 @@
 
 
 (defn color-warning [{:keys [theme-token] :as opts}]
-  (let [header  (str "[fireworks.core/p] Invalid color value for theme token " 
+  (let [header  (str "[fireworks.core/_p] Invalid color value for theme token " 
                      theme-token
                      ".")
         warning (str (invalid-color-warning (merge {:header header} opts)))]
@@ -202,6 +225,122 @@
                 (println unbroken-border)
                 (println)))
     nil))
+
+(defn nameable? [x]
+  (or (string? x) (keyword? x) (symbol? x)))
+
+(defn as-str [x]
+  (str (if (or (keyword? x) (symbol? x)) (name x) x)))
+
+(defn char-repeat [n s]
+  (when (pos-int? n)
+    (string/join (repeat n (or s "")))))
+
+
+;; New June 16 -------------------------------------------------------------------
+
+(defn message-body [x]
+  (cond
+    (nameable? x)
+    (as-str x)
+    (vector? x)
+    (let [joined (string/join "\n\n" x)]
+      #?(:cljs
+         (str "\n" joined "\n")
+         :clj
+         (str "\n" joined)))))
+
+;; TODO - Abstract sgr stuff out into utility fn
+(defn bad-form [line gttr form]
+  #?(:cljs
+     (str line " │  %c" form "%c \n")
+     :clj
+     (str line " │ " (str "\033[1;m" form "\033[0;m") "\n"
+          gttr " │ " (str "\033[38;5;201;1;m"
+                          (string/join (repeat (count form) "^"))
+                          "\033[0;m")
+          "\n")))
+
+(defn problem-with-line-info
+  [{:keys [line] :as form-meta}
+   {:keys [header
+           form
+           body]}]
+  (let [file-info (util/form-meta->file-info form-meta) 
+        gttr      (some-> line str count util/spaces) 
+        form      (shortened form 33)]
+    (str header "\n"
+         "\n"
+         gttr " ┌─ " file-info "\n"
+         gttr " │  \n"
+         (bad-form line gttr form)
+         gttr " │  \n"
+         (message-body body))))
+
+(def alert-type->label
+  {:warning "WARNING"
+   :error   "ERROR"})
+
+(defn print-lines [n]
+  (when (pos-int? n)
+              (dotimes [_ n]
+                (println))))
+
+(defn default-padding [n default]
+  (if (pos-int? n) n default))
+
+(defn console-alert
+  [{:keys [message
+           alert-type
+           margin-top
+           margin-bottom
+           padding-top
+           padding-bottom]}]
+  (let [padding-top    (default-padding padding-top #?(:cljs 0 :clj 1))    
+        padding-bottom (default-padding padding-bottom 1)]
+    #?(:cljs (let [js-arr (into-array
+                           (concat [(str 
+                                     (char-repeat padding-top "\n")
+                                     message
+                                     (char-repeat padding-bottom "\n"))]
+                                   [(alert-type->css alert-type)
+                                    "font-weight:normal"]))]
+               (.apply (case alert-type 
+                         :warning (.-warn  js/console)
+                         :error (.-error  js/console)
+                         (.-log  js/console))
+                       js/console
+                       js-arr))
+       :clj (do
+              (print-lines margin-top)
+              (println (simple-alert-header-border-top 
+                        (get alert-type->label
+                             alert-type
+                             nil)))
+              (print-lines padding-top)
+              (println message)
+              (print-lines padding-bottom)
+              (println unbroken-border)
+              (print-lines margin-bottom))))
+  nil)
+
+(defn unable-to-trace-warning
+  [{:keys [form-meta quoted-form]}]
+  (console-alert
+   {:alert-type    :warning
+    ;; :margin-top    3
+    ;; :margin-bottom 3
+    ;; :padding-top 6
+    ;; :padding-bottom 5
+    :message       (problem-with-line-info 
+                    form-meta
+                    {:header "Unable to trace form."
+                     :form   (str "(?trace " quoted-form ")")
+                     :body   [(str "fireworks.core/?trace will trace forms beginning with:\n"
+                                   "-> , some->, ->>, some->>, let")]})}))
+
+;; End new June 16 -------------------------------------------------------------------
+
 
 
  (defn print-user-friendly-clj-stack-trace [err]
@@ -240,7 +379,7 @@
 (defn print-error [err]
   #?(:cljs
      (js/console.warn
-      (str "[fireworks.core/p]"
+      (str "[fireworks.core/_p]"
            "\n\n"
            "Exception caught. Nothing will be printed."
            "\n\n")
@@ -250,7 +389,7 @@
          (println (simple-alert-header-border-top "CAUGHT EXCEPTION "))
          (println)
          (println
-          "[fireworks.core/p] Caught Exception, nothing will be printed.")
+          "[fireworks.core/_p] Caught Exception, nothing will be printed.")
          (println)
          (print-user-friendly-clj-stack-trace err)
          (println unbroken-border) 

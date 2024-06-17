@@ -82,7 +82,7 @@
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
               :header
-              "[fireworks.core/p] Invalid option value."))
+              "[fireworks.core/_p] Invalid option value."))
       (if (or undefined? (not valid?))
         nil
         v))))
@@ -473,7 +473,7 @@
                                  (merge m
                                         {:k      :theme
                                          :v      theme*
-                                         :header (str "[fireworks.core/p]."
+                                         :header (str "[fireworks.core/_p]."
                                                       "Problem with the supplied Fireworks theme \""
                                                       (:name theme*)
                                                       "\":")})))))

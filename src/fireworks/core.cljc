@@ -813,17 +813,17 @@
 (defmacro ?trace 
   ([x]
    ;; Issue warning if not traceable
-   (if-let [[thread-sym forms] (threading-sym x)]
-     (let [form-meta
-           (meta &form)
-
-           [cfg-opts call]
-           (thread-helper (keyed [forms form-meta thread-sym]))]
-       `(do (fireworks.core/print-thread ~cfg-opts
-                                         (quote ~forms)
-                                         (str (quote ~thread-sym)))
-            ~call))
-     `x))
+   (let [form-meta (meta &form)]
+     (if-let [[thread-sym forms] (threading-sym x)]
+       (let [[cfg-opts call] (thread-helper (keyed [forms form-meta thread-sym]))]
+         `(do (fireworks.core/print-thread ~cfg-opts
+                                           (quote ~forms)
+                                           (str (quote ~thread-sym)))
+              ~call))
+       `(do
+          (messaging/unable-to-trace-warning {:form-meta ~form-meta
+                                              :quoted-form (quote ~x)})
+          ~x))))
   ([user-opts x]
    ;; Issue warning if not traceable
    (if-let [[thread-sym forms] (threading-sym x)]
