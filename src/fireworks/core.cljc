@@ -83,7 +83,7 @@
                   (reset! state/formatting-form-to-be-evaled?
                           true)
                   (let [shortened (tag/tag-entity! 
-                                   (messaging/shortened qf 25)
+                                   (util/shortened qf 25)
                                    :eval-form) 
                         ret       shortened]
                     (reset! state/formatting-form-to-be-evaled?
