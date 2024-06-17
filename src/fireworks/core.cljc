@@ -305,7 +305,7 @@
          (merge m
                 {:k       k
                  :v       new-val
-                 :header  "[fireworks.core/p] Invalid option value."}))))))
+                 :header  "[fireworks.core/_p] Invalid option value."}))))))
 
 
 (defn- opt-to-reset [opts k]
@@ -755,17 +755,6 @@
 
 ;; TODO - add cond
 
-(defn ^{:public true}
-  sym<->str
-  [{:keys [x pred f binding-sym?]}]
-  (if (or (map? x) (vector? x))
-    (walk/postwalk #(cond (= % '&)           "____&____" 
-                          (= % "____&____")  (symbol "&")
-                          (when binding-sym?
-                            (pred %))        (f %)
-                          :else              %) 
-                   x)
-    (if binding-sym? (f x) x)))
 
 (defn ^{:public true}
   print-thread
@@ -843,6 +832,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO - add comp
+;; TODO - should this just use trace? - wrap trace around let form?
+
+(defn ^{:public true}
+  sym<->str
+  [{:keys [x pred f binding-sym?]}]
+  (if (or (map? x) (vector? x))
+    (walk/postwalk (fn [%]
+                     (cond (= % '&)           "____&____" 
+                           (= % "____&____") (symbol "&")
+                           (when binding-sym?
+                             (pred %))        (f %)
+                           :else              %)) 
+                   x)
+    (if binding-sym? (f x) x)))
 
 (defmacro ?let
   "Printing of bindings in let. Returns body. WIP"
@@ -856,18 +859,23 @@
         [bindings & body]
         (if opts (rest args) args)
         
-        syms (->> bindings 
-                  (take-nth 2)
-                  (mapv (fn [sym]
-                          (let [opts {:x    sym
-                                      :pred symbol?
-                                      :f    str}]
-                            [(sym<->str (assoc opts :binding-sym? true))
-                             (sym<->str opts)]))))
+        syms
+        (->> bindings 
+             (take-nth 2)
+             (mapv (fn [sym]
+                     (let [opts {:x    sym
+                                 :pred symbol?
+                                 :f    str}]
+                       [(sym<->str (assoc opts :binding-sym? true))
+                        (sym<->str opts)]))))
+
         {:keys [cfg-opts]}
         (helper2 {:a         user-opts
                   :x         nil
-                  :form-meta (meta &form)})]
+                  :form-meta (meta &form)})
+
+        cfg-opts
+        (dissoc cfg-opts :label)]
    `(do 
       (let ~bindings
         (do
@@ -1052,6 +1060,9 @@
 (defn !?-- ([]) ([x]))
 (def !?i !?*)
 (def !?l !?*)
+(def !?flop !?*)
+
+(def !?trace !?*)
 
 (def !?log !?*)
 (def !?log- !?*)
