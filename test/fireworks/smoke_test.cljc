@@ -297,6 +297,29 @@
 ;;        [e f g &  h]                             ["a" "b" "c" "d" "e"]]
 ;;       [a b c d e f g h])
 
+
+
+
+
+
+
+
+
+(?trace 
+ (let [[a & rest] ["a" "b" "c" "d" "e"]]
+   [a rest]))
+
+;; (?trace 
+;;  (-> 1 (+ 3)))
+
+
+
+
+
+
+;; (?let [[a b c] ["a" "b" "c" "d" "e"]]
+;;       [a b c])
+
 ;; #_(?let {:coll-limit 5}
 ;;       [a (range 10)
 ;;        b (range 33 200 4)])
@@ -323,6 +346,7 @@
        ?))
 
 ;; (? (?some->> person :employer :address :city .toUpperCase))
+
 ;; (?trace {:coll-limit 2} (some-> person :employer :address :city .toUpperCase))
 
 ;; (?let [a {:a 12 :b 44 :c "asfdasdfasdfasdfasf" :d 55}
