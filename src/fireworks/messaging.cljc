@@ -1,5 +1,6 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
+            [fireworks.pp :refer [?pp]]
             [expound.alpha :as expound]
             [fireworks.specs.config :as config]
             [fireworks.util :as util]))
@@ -91,27 +92,6 @@
   [bad-value-with-red-underline
    "font-weight:normal"])
 
-(defn ^:public css-style-string [m]
-  (string/join ";"
-               (map (fn [[k v]]
-                      (str (name k)
-                           ":"
-                           (if (number? v) (str v) (name v))))
-                    m)))
-
-(defn  alert-type->css [k]
-  (let [color (case k
-                :error   :#ff4979
-                :warning :#fe9959
-                :magenta)]
-    (css-style-string
-     {:font-weight               :bold
-      :text-decoration-line      :underline
-      :text-decoration-style     :wavy
-      :text-decoration-color     color
-      :text-underline-offset     :0.4em
-      :text-decoration-thickness :1.5px
-      :line-height               :2.5em})))
 
 ;; Warning and error blocks  --------------------------------------------------------
 
@@ -226,6 +206,72 @@
                 (println)))
     nil))
 
+
+;; New June 16 -------------------------------------------------------------------
+
+(declare rich-console)
+
+(defn alert-border
+  [{:keys [label
+           label-color
+           border-color
+           label-font-weight
+           border-font-weight]
+    :as opts}]
+  (let [border-opts {:color       border-color
+                     :font-weight border-font-weight}]
+    (rich-console (if label 
+                 (str
+                  (rich-console (str border-char
+                                  border-char)
+                             border-opts)
+                  (rich-console (str " " label " ")
+                             {:color       label-color
+                              :font-weight label-font-weight})
+                  (rich-console 
+                   (string/join
+                    (repeat 
+                     (/ (- border-len
+                           (dec alert-indent)
+                           (+ 2 (count label))
+                           2)
+                        2)
+                     border-char))
+                   border-opts))
+                 (rich-console unbroken-border border-opts))
+               (assoc opts :font-weight :bold))))
+
+(defn ^:public css-style-string [m]
+  (string/join ";"
+               (map (fn [[k v]]
+                      (str (name k)
+                           ":"
+                           (if (number? v) (str v) (name v))))
+                    m)))
+
+(defn alert-type-color [k]
+  (case k
+    :error    {:sgr 196
+               :css "#ff4979"}
+
+    :warning  {:sgr 208
+              ;;  :sgr 214
+               :css "#fe9959"}
+    :info     {:sgr 75
+               :css "#5fafff"}
+    {:sgr 201
+     :css :#ff00ff}))
+
+(defn  alert-type->css [k]
+  (css-style-string
+   {:font-weight               :bold
+    :text-decoration-line      :underline
+    :text-decoration-style     :wavy
+    :text-decoration-color     (-> k alert-type-color :css)
+    :text-underline-offset     :0.3em
+    :text-decoration-thickness :1.0px
+    :line-height               :1.9em}))
+
 (defn nameable? [x]
   (or (string? x) (keyword? x) (symbol? x)))
 
@@ -236,8 +282,54 @@
   (when (pos-int? n)
     (string/join (repeat n (or s "")))))
 
+(defn x->sgr [x k]
+  (when x
+    (let [n (if (= k :fg) 38 48)]
+      (if (int? x)
+        (str n ";5;" x)
+        (let [[r g b _] x
+              ret       (str n ";2;" r ";" g ";" b)]
+          ret)))))
 
-;; New June 16 -------------------------------------------------------------------
+(defn m->sgr
+  [{fgc*        :color
+    bgc*        :background-color
+    font-style  :font-style
+    font-weight :font-weight
+    k           :k
+    :as         m}]
+  (let [fgc    (x->sgr fgc* :fg)
+        bgc    (do #_(when bgc* (println "m->sgr:bgc* " bgc*))
+                   (x->sgr bgc* :bg))
+        italic (when (and :enable-terminal-italics?
+                          (contains? #{"italic" :italic} font-style))
+                 "3;")
+        weight (when (and :enable-terminal-font-weights?
+                          (contains? #{"bold" :bold} font-weight))
+                 ";1")
+        ret    (str "\033[" 
+                    italic
+                    fgc
+                    weight
+                    (when (or (and fgc bgc)
+                              (and weight bgc))
+                      ";")
+                    bgc
+                    "m")]
+    #_(when true
+      (?pp "\nsgr..." m)
+      (println "=>\n"
+               (util/readable-sgr ret)
+               "\n"))
+    ret))
+
+(defn rich-console [s opts]
+  #?(:cljs
+     (str "%c" s "%c" )
+     :clj
+     (str (m->sgr opts)
+          s
+          "\033[0;m")))
 
 (defn message-body [x]
   (cond
@@ -251,21 +343,21 @@
          (str "\n" joined)))))
 
 ;; TODO - Abstract sgr stuff out into utility fn
-(defn bad-form [line gttr form]
-  #?(:cljs
-     (str line " │  %c" form "%c \n")
-     :clj
-     (str line " │ " (str "\033[1;m" form "\033[0;m") "\n"
-          gttr " │ " (str "\033[38;5;201;1;m"
-                          (string/join (repeat (count form) "^"))
-                          "\033[0;m")
-          "\n")))
+(defn bad-form [line gttr form alert-type]
+  (let [opts {:color       (-> alert-type
+                               alert-type-color 
+                               :sgr)
+              :font-weight :bold}
+        squig (string/join (repeat (count form) "^"))]
+    (str line " │ " (rich-console form {:font-weight :bold}) "\n"
+         gttr " │ " (rich-console squig opts) "\n")))
 
 (defn problem-with-line-info
   [{:keys [line] :as form-meta}
    {:keys [header
            form
-           body]}]
+           body
+           alert-type]}]
   (let [file-info (util/form-meta->file-info form-meta) 
         gttr      (some-> line str count util/spaces) 
         form      (shortened form 33)]
@@ -273,13 +365,13 @@
          "\n"
          gttr " ┌─ " file-info "\n"
          gttr " │  \n"
-         (bad-form line gttr form)
-         gttr " │  \n"
+         (bad-form line gttr form alert-type)
          (message-body body))))
 
 (def alert-type->label
   {:warning "WARNING"
-   :error   "ERROR"})
+   :error   "ERROR"
+   :info    "INFO"})
 
 (defn print-lines [n]
   (when (pos-int? n)
@@ -290,7 +382,8 @@
   (if (pos-int? n) n default))
 
 (defn console-alert
-  [{:keys [message
+  [{:keys [label
+           message
            alert-type
            margin-top
            margin-bottom
@@ -303,41 +396,68 @@
                                      (char-repeat padding-top "\n")
                                      message
                                      (char-repeat padding-bottom "\n"))]
-                                   [(alert-type->css alert-type)
-                                    "font-weight:normal"]))]
+                                   ["font-weight:bold;"
+                                    "font-weight:normal;"
+                                    (str "font-weight:bold;color:" (-> alert-type alert-type-color :css) ";")
+                                    "font-weight:normal;color:default;"
+                                    ]))]
                (.apply (case alert-type 
                          :warning (.-warn  js/console)
                          :error (.-error  js/console)
                          (.-log  js/console))
                        js/console
                        js-arr))
-       :clj (do
-              (print-lines margin-top)
-              (println (simple-alert-header-border-top 
-                        (get alert-type->label
-                             alert-type
-                             nil)))
-              (print-lines padding-top)
-              (println message)
-              (print-lines padding-bottom)
-              (println unbroken-border)
-              (print-lines margin-bottom))))
+       :clj (let [label       (or label (get alert-type->label alert-type nil))
+                  border-opts {:label             label
+                              ;;  :border-color      (-> alert-type
+                              ;;                         alert-type-color
+                              ;;                         :sgr)
+                               :label-font-weight :bold}
+                  side-border-opts {:font-weight :bold
+                                    :color       (-> alert-type alert-type-color :sgr)}]
+               (print
+                (str #_(char-repeat "\n" margin-top)
+                     (rich-console (str "\n┏━ " label) side-border-opts)
+                     (string/replace 
+                      (str 
+                           #_(alert-border border-opts) "\n"
+
+                           (char-repeat "\n" padding-top) "\n"
+                           message "\n"
+                           (char-repeat "\n" padding-bottom) "\n"
+
+                           #_(alert-border (dissoc border-opts :label)))
+                      #"\n"
+                      (str "\n" (rich-console "┃  " side-border-opts)))
+                    ;;  "\n"
+                     #_(char-repeat "\n" margin-bottom) "\n"))
+
+              ;; (print-lines margin-top)
+              ;; (println (alert-border border-opts))
+              ;; (print-lines padding-top)
+              ;; (println message)
+              ;; (print-lines padding-bottom)
+              ;; (println (alert-border (dissoc border-opts :label)))
+              ;; (print-lines margin-bottom)
+              
+              )))
   nil)
 
-(defn unable-to-trace-warning
-  [{:keys [form-meta quoted-form]}]
+(defn unable-to-trace
+  [{:keys [form-meta quoted-form alert-type]}]
   (console-alert
-   {:alert-type    :warning
-    ;; :margin-top    3
-    ;; :margin-bottom 3
+   {:alert-type    alert-type
+    :margin-top    0
+    :margin-bottom 0
     ;; :padding-top 6
-    ;; :padding-bottom 5
+    :padding-bottom 0
     :message       (problem-with-line-info 
                     form-meta
-                    {:header "Unable to trace form."
-                     :form   (str "(?trace " quoted-form ")")
-                     :body   [(str "fireworks.core/?trace will trace forms beginning with:\n"
-                                   "-> , some->, ->>, some->>, let")]})}))
+                    {:alert-type alert-type
+                     :header     "Unable to trace form."
+                     :form       (str "(?trace " quoted-form ")")
+                     :body       [(str "fireworks.core/?trace will trace forms beginning with:\n"
+                                       "-> , some->, ->>, some->>, let")]})}))
 
 ;; End new June 16 -------------------------------------------------------------------
 

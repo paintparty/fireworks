@@ -810,8 +810,12 @@
                                            (str (quote ~thread-sym)))
               ~call))
        `(do
-          (messaging/unable-to-trace-warning {:form-meta ~form-meta
-                                              :quoted-form (quote ~x)})
+          (messaging/unable-to-trace {
+                                      ;; :alert-type  :info
+                                      ;; :alert-type  :error
+                                      :alert-type  :warning
+                                      :form-meta   ~form-meta
+                                      :quoted-form (quote ~x)})
           ~x))))
   ([user-opts x]
    ;; Issue warning if not traceable
