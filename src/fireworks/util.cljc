@@ -1,7 +1,5 @@
 (ns fireworks.util
   (:require [clojure.string :as string]
-            [fireworks.pp :refer [?pp]]
-            [fireworks.config :as config]
             [fireworks.defs :as defs]))
 
 (defn spaces [n] (string/join (repeat n " ")))
@@ -60,7 +58,7 @@
                               shortened*)]
         shortened))))
 
-(defn css-style-string [m]
+(defn css-stylemap->str [m]
   (string/join ";"
                (map (fn [[k v]]
                       (str (name k)
@@ -89,24 +87,30 @@
               ret       (str n ";2;" r ";" g ";" b)]
           ret)))))
 
+;; TODO - migrate other calls in codebase to use this
+;; Difference being 'disable-*` opts
+;; add readable-sgr? opt for debugging
 (defn m->sgr
   [{fgc*        :color
     bgc*        :background-color
     :keys       [k
                  font-style 
                  font-weight
-                 italics?
-                 font-weights?
+                 disable-italics?
+                 disable-font-weights?
                  debug-on-token?]
+    :or {debug-on-token? false}
     :as         m}]
+;; (println "mMM" m)
   (when debug-on-token?
     (println "\n(fireworks.state/m->sgr " m ")"))
+
   (let [fgc    (x->sgr fgc* :fg)
         bgc    (x->sgr bgc* :bg)
-        italic (when (and italics?
+        italic (when (and (not disable-italics?)
                           (contains? #{"italic" :italic} font-style))
                  "3;")
-        weight (when (and font-weights?
+        weight (when (and (not disable-font-weights?)
                           (contains? #{"bold" :bold} font-weight))
                  ";1")
         ret    (str "\033[" 
@@ -118,9 +122,16 @@
                       ";")
                     bgc
                     "m")]
-    (when  debug-on-token?
-      (?pp "\nCombining the fg and bg into a single sgr..." m)
+    (when debug-on-token?
+      (println "\nCombining the fg and bg into a single sgr...")
+      (println m)
       (println "=>\n"
                (readable-sgr ret)
                "\n"))
     ret))
+
+(defn maybe [x pred]
+  (when (if (set? pred)
+          (contains? pred x)
+          (pred x))
+    x))
