@@ -8,6 +8,7 @@
   {:author "Eero Helenius"
    :license "MIT"
    :git/url "https://github.com/eerohele/pp.git"}
+  (:require [fireworks.util :as util])
   #?(:cljs (:require-macros 
             [fireworks.pp :refer [?pp]])))
 
@@ -638,6 +639,8 @@
      `(do
         (println
          (str ~ns-str
+              "\n"
+              (util/shortened (quote ~x) 25)
               "\n"
               (with-out-str (fireworks.pp/pprint ~x))))
         ~x)))
