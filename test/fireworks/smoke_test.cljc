@@ -3,6 +3,8 @@
             [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
+            [clojure.walk :as walk]
+            [fireworks.util :as util]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
@@ -299,15 +301,31 @@
 
 
 
+#_(? (walk/postwalk 
+    (fn [x]
+      (if-let [[tag v] (and (vector? x)
+                            (let [[tag v] x]
+                              (when (and (not (coll? v))
+                                         (keyword? tag))
+                                [tag v])))]
+        (with-meta (symbol (util/as-str v))
+          {:color       :red
+           :font-weight :bold
+           :font-style  :italic})
+        x))
+    ["neutral"
+     [:bold.red.italic "then red "]
+     "then neutral"
+     [:bold.red.italic "then blue "]
+     "then neutral again"
+     [:bold.red.italic "then red "]]))
 
 
 
 
-
-
-(?trace 
- (let [[a & rest] ["a" "b" "c" "d" "e"]]
-   [a rest]))
+;; (?trace 
+;;  (let [[a & rest] ["a" "b" "c" "d" "e"]]
+;;    [a rest]))
 
 ;; (?trace 
 ;;  (-> 1 (+ 3)))

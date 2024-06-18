@@ -814,6 +814,7 @@
                                       ;; :alert-type  :info
                                       ;; :alert-type  :error
                                       :alert-type  :warning
+                                      ;; :label "WARNING #1"
                                       :form-meta   ~form-meta
                                       :quoted-form (quote ~x)})
           ~x))))

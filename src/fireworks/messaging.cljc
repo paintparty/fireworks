@@ -185,20 +185,30 @@
 
 
 (defn unable-to-trace
-  [{:keys [form-meta quoted-form alert-type]}]
+  [{:keys [form-meta quoted-form alert-type label]}]
   (alert/console-alert
-   {:alert-type     alert-type
+   {:alert-type alert-type
+
+    ;; :theme          :tape
     ;; :margin-top     1
     ;; :margin-bottom  1
     ;; :padding-top    0
     ;; :padding-bottom 0
-    :message        (alert/problem-with-line-info 
-                     form-meta
-                     {:alert-type alert-type
-                      :header     "Unable to trace form."
-                      :form       (str "(?trace " quoted-form ")")
-                      :body       [(str "fireworks.core/?trace will trace forms beginning with:\n"
-                                        "-> , some->, ->>, some->>, let")]})}))
+
+    :label      label
+    :message    (alert/problem-with-line-info 
+                 form-meta
+                 {
+                  :alert-type alert-type
+                  :header     "Unable to trace form."
+                  :form       (str "(?trace " quoted-form ")")
+                  :body       [(str "fireworks.core/?trace will trace forms beginning with:\n"
+                                    (string/join "\n"
+                                                 ['->
+                                                  'some->
+                                                  '->>
+                                                  'some->>
+                                                  'let]))]})}))
 
 ;; End new June 16 -------------------------------------------------------------------
 
