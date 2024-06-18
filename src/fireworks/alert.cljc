@@ -137,10 +137,6 @@
              {}
              colors-source))
 
-;; NIx?
-(defn- sgr-css-color [v]
-  {:sgr (:sgr (get colors-source v nil))
-   :css (:css (get colors-source v nil))})
 
 (defn assoc-hex-colors [m]
   (reduce-kv (fn [m color {:keys [sgr]}] 

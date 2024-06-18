@@ -61,7 +61,8 @@
 
 - Left-justification of values in maps.
 
-- Trace values in `let` bindings and threading macros such as `->`.
+<!-- - Trace values in `let` bindings and threading macros such as `->`. -->
+- Trace values in threading macros such as `->`.
 
 - High or low contrast rainbow brackets (optional).
 
@@ -160,7 +161,7 @@ Every macro/function, unless noted otherwise, returns the value passed to it.
 | `?log-`  | `js/console.log`* | ×             | ×                 |                         |
 | `?pp`    | `pp/pprint`       | ✓             | ✓                 |                         |
 | `?pp-`   | `pp/pprint`       | ×             | ×                 |                         |
-| `?let`   | Fireworks         | ✓             | ✓                 | Traces `let` bindings   |
+<!-- | `?let`   | Fireworks         | ✓             | ✓                 | Traces `let` bindings   | -->
 | `?trace` | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`|
 | `?>`     | ×                 | ×             | ×                 | Sends value to `tap>`   | 
 | `?--`    | ×                 | ✓             | ✓                 | Does not return a value |
@@ -182,7 +183,7 @@ Every macro/function, unless noted otherwise, returns the value passed to it.
 
 All the public macros and functions from `fireworks.core`:
 ```Clojure
-[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?trace]]
+[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?trace]]
 ```
 <br>
 

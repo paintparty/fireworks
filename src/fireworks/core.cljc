@@ -801,7 +801,6 @@
 
 (defmacro ?trace 
   ([x]
-   ;; Issue warning if not traceable
    (let [form-meta (meta &form)]
      (if-let [[thread-sym forms] (threading-sym x)]
        (let [[cfg-opts call] (thread-helper (keyed [forms form-meta thread-sym]))]
@@ -809,28 +808,32 @@
                                            (quote ~forms)
                                            (str (quote ~thread-sym)))
               ~call))
+
+       ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
        `(do
-          (messaging/unable-to-trace {
-                                      ;; :alert-type  :info
-                                      ;; :alert-type  :error
-                                      :alert-type  :warning
-                                      ;; :label "WARNING #1"
+          (messaging/unable-to-trace {:alert-type  :warning
                                       :form-meta   ~form-meta
                                       :quoted-form (quote ~x)})
           ~x))))
   ([user-opts x]
    ;; Issue warning if not traceable
-   (if-let [[thread-sym forms] (threading-sym x)]
-     (let [form-meta
-           (meta &form)
+   (let [form-meta (meta &form)]
+     (if-let [[thread-sym forms] (threading-sym x)]
+       (let [form-meta       (meta &form)
 
-           [cfg-opts call]
-           (thread-helper (keyed [forms form-meta thread-sym user-opts]))]
-       `(do (fireworks.core/print-thread ~cfg-opts
-                                         (quote ~forms)
-                                         (str (quote ~thread-sym)))
-            ~call))
-     `x)))
+             [cfg-opts call] (thread-helper (keyed [forms form-meta thread-sym user-opts]))]
+         `(do (fireworks.core/print-thread ~cfg-opts
+                                           (quote ~forms)
+                                           (str (quote ~thread-sym)))
+              ~call)
+
+          ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
+         `(do
+           (messaging/unable-to-trace {:alert-type  :warning
+                                       :form-meta   ~form-meta
+                                       :quoted-form (quote ~x)})
+           ~x))
+       `x))))
 
 
 ;; let 
@@ -853,7 +856,8 @@
     (if binding-sym? (f x) x)))
 
 (defmacro ?let
-  "Printing of bindings in let. Returns body. WIP"
+  "Printing of bindings in let. Returns body. WIP.
+   Currently undocumented, will probably fold into trace? functionality and remove this macro."
   [& args]
   (let [[user-opts]
         args
