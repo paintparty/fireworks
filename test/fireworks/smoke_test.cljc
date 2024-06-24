@@ -212,6 +212,9 @@
                             {:abc (symbol "bar")
                              :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
 
+
+;; (? record-sample)
+
 ;; Testing :non-coll-mapkey-length-limit
 ;; (? {:non-coll-mapkey-length-limit 40} {"12345678_112345678_212345678_312345678_4" :gold})
 ;; Testing print level truncation syntax
@@ -321,6 +324,9 @@
      [:bold.red.italic "then red "]]))
 
 
+;; #?(:clj
+;;    (? (java.util.ArrayList. (range 6)))
+;;    #_(? (some seq? [(int-array [4 5 6]) (java.util.ArrayList.) (java.util.HashMap.)])))
 
 
 ;; (?trace 

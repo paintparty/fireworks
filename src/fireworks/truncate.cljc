@@ -1,6 +1,5 @@
 (ns ^:dev/always fireworks.truncate
   (:require
-   [fireworks.pp :refer [?pp]]
    [clojure.string :as string]
    [clojure.set :as set]
    [fireworks.state :as state]
@@ -25,10 +24,7 @@
 
      (defn dom-el-attrs-map
        [x]
-       (when-let [el x #_(some-> x meta :fw/truncated :html-element)]
-         ;; You could pull :fw/user-meta out of html element,
-         ;; but when would it have it?
-         
+       (when-let [el x]
          ;; Check for when no attrs
          (when (.hasAttributes el)
            (let [attrs (.-attributes el)]
@@ -40,7 +36,13 @@
                      [k
                       (cond (= k "style") (inline-style->map v)
                             (= k "class") (into [] (string/split v " "))
-                            :else         v)]))))))))
+                            :else         v)]))))))
+
+     (defn prune-synthetic-base-event [x]
+       (doto x
+         (js-delete "view")
+         (js-delete "nativeEvent")
+         (js-delete "target")))))
 
 (defn cljc-atom?
   [x]
@@ -109,8 +111,8 @@
     ret))
 
 
+
 (defn new-coll2
-  ;; [x uid-entry? tag-map depth t too-deep?]
   [{:keys [x
            t
            depth
@@ -118,37 +120,20 @@
            too-deep?
            dom-node-type]
     :as opts+}]
-  (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))
-        ;; TODO - maybe do this?
-        ;; opts* (assoc opts :coll-limit coll-limit)
-        ]
-
-    ;; can we use cljc-friendly sequable?
-    (if #?(:cljs (not (satisfies? ISeqable x)) :clj nil)
-      ;; This if for js objects
-      #?(:cljs
+  (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))]
+    #?(:cljs
+       (if (satisfies? ISeqable x)
+         (truncate-iterable x coll-limit map-like? depth)
          (if dom-node-type
            (truncate {:depth (inc depth)} (dom-el-attrs-map x))
-           (let [_   (when (= t :SyntheticBaseEvent)
-                         (doto x
-                           (js-delete "view")
-                           (js-delete "nativeEvent")
-                           (js-delete "target")))
-                   ret (js-obj->array-map (assoc opts+
-                                                 :coll-limit
-                                                 coll-limit))]
-               ;; Maybe incorporate this into js-obj->array-map?
-               (into {}
-                     (map (partial truncate
-                                   {:depth (inc depth)})
-                          ret))))
-         :clj nil)
-
-      ;; This if for everything else
-      (truncate-iterable x coll-limit map-like? depth)
-      ;; Can we do this?
-      ;; (truncate-iterable opts*)
-      )))
+           (do 
+             (when (= t :SyntheticBaseEvent) (prune-synthetic-base-event x))
+             (->> (assoc opts+ :coll-limit coll-limit)
+                  js-obj->array-map
+                  (map (partial truncate {:depth (inc depth)}))
+                  (into {})))))
+       :clj
+       (truncate-iterable x coll-limit map-like? depth))))
 
 (defn- user-meta* [x]
   (let [m (meta x)
@@ -171,7 +156,8 @@
                                       {:tag :t}))
         uid-entry? (volatile! false)
         too-deep?  (> depth (:print-level @state/config))
-        sev?       (boolean (when-not kv? (not (:coll-type? tag-map))))
+        sev?       (boolean (when-not kv? 
+                              (not (:coll-type? tag-map))))
         ret        (keyed [uid-entry?       
                            user-meta       
                            too-deep?           
@@ -183,7 +169,6 @@
                            x])]
     (merge (:tag-map ret)
            (dissoc ret :tag-map)))) 
-
 
 (defn new-x
   [depth
