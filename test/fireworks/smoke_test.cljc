@@ -8,6 +8,7 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
+
 ;; This is example config. If you want to run fireworks.core-test tests locally,
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
 ;; If you don't do this, the tests will break.
@@ -211,6 +212,19 @@
                       {:a (with-meta (symbol "foo")
                             {:abc (symbol "bar")
                              :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
+
+(def basic-samples 
+  {:string   "string"
+   :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number   1234
+   :boolean  true
+   :lamda    #(inc %)
+   :fn       juxt
+   :regex    #"^hi$"
+   :record   record-sample
+   :atom2    (atom record-sample)
+   :atom1    (atom 1)
+   :brackets [[[[[[]]]]]]})
 
 
 ;; (? record-sample)
