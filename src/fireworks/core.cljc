@@ -31,7 +31,7 @@
   (set '(defrecord deftype)))
 
 
-                                                                            
+
 ;   FFFFFFFFFFFFFFFFFFFFFF
 ;   F::::::::::::::::::::F
 ;   F::::::::::::::::::::F
@@ -48,8 +48,8 @@
 ;   F::::::::FF           
 ;   F::::::::FF           
 ;   FFFFFFFFFFF           
-                                                                            
-   
+
+
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
@@ -695,9 +695,14 @@
                            (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
 
+;; TODO - Add to docs/readme
 (defmacro ^{:public true} ?flop
   "Prints the form (or user-supplied label), the namespace info,
-   and then the value.
+   and then the value. Same as fireworks.core/?, but order of arguments
+   is reversed in the case of 2 arities. Inteded for use both 
+   internal to fireworks (tracing macros), and also for users wanting
+   to drop a `?` call into a thread-first form and also pass an options
+   map.
    
    The form (or optional label) is formatted with pprint.
    The value is formatted with fireworks.core/_p.
