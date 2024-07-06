@@ -13,13 +13,14 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 ## 0.5.0
-2024-06-?
+2024-07-6
 
 #### Added
 - `:enable-terminal-font-weights` as config option for enabling bold font weight in terminal environments which support it.
 - `?i` macro for printing the info, then the result.
-- `?il` macro for printing the info (ns info), then the label, then the result.
 - `?l` macro for printing the label, then the result.
+- `?trace` macro for tracing `->`, `->>`, 'some->', 'some->>'.
+- `?>` macro for sending values to `tap>`, then returning value.
 
 #### Changed
 - Use pprint if label for printing is a map.
