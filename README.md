@@ -145,26 +145,29 @@ The first argument can also be a map, which supplies various [config options](#o
 <br>
 
 ### Tap-driven development
-Fireworks provides a bevy of print-and-return macros and functions so that you can print values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable comprehension at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value. When it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just switch the macro to `?log` or `?pp`. Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedciated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
+Fireworks provides a bevy of print-and-return macros and functions so that you can print values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
+
+When it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just switch the macro to `?log` or `?pp`.
+
+Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedciated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
 
 
-All the publicly available functions from `fireworks.core` and their behaviors are outlined in the table below.<br>
+All the publicly available functions from `fireworks.core` and their behaviors are outlined in the table below.
 Every macro/function, unless noted otherwise, returns the value passed to it.
 <br>
 | Name     | Prints with       | Prints label? | Prints file info? | Notes                   |
 | :---     | :---              | :---          | :---              | :--                     |
 | `?`      | Fireworks         | ✓             | ✓                 |                         |
 | `?-`     | Fireworks         | ×             | ×                 |                         |
+| `?--`    | Fireworks         | ✓             | ✓                 | Does not return a value. Intended for user commentary |
 | `?i`     | Fireworks         | ×             | ✓                 | Omits label             |
 | `?l`     | Fireworks         | ✓             | ×                 | Omits file info         |                      
 | `?log`   | `js/console.log`* | ✓             | ✓                 |                         |
 | `?log-`  | `js/console.log`* | ×             | ×                 |                         |
 | `?pp`    | `pp/pprint`       | ✓             | ✓                 |                         |
 | `?pp-`   | `pp/pprint`       | ×             | ×                 |                         |
-<!-- | `?let`   | Fireworks         | ✓             | ✓                 | Traces `let` bindings   | -->
 | `?trace` | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`|
 | `?>`     | ×                 | ×             | ×                 | Sends value to `tap>`   | 
-| `?--`    | ×                 | ✓             | ✓                 | Does not return a value |
 | `!?`     | ×                 | ×             | ×                 | Silences printing       | 
 | `!?-`    | ×                 | ×             | ×                 | Silences printing       | 
 | `!?i`    | ×                 | ×             | ×                 | Silences printing       | 
@@ -183,7 +186,7 @@ Every macro/function, unless noted otherwise, returns the value passed to it.
 
 All the public macros and functions from `fireworks.core`:
 ```Clojure
-[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?trace]]
+[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?trace !?trace]]
 ```
 <br>
 
@@ -259,8 +262,6 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
  :find                          nil}
 ```
 
-You can configure all of the above options ala-carte. A leading options map arg works with `fireworks.core/?`, and `fireworks.core/p-data`.
-
 <br>
 
 ### System-wide config
@@ -274,7 +275,13 @@ export FIREWORKS_CONFIG="/Users/your-home-folder/.fireworks/config.edn"
 
 You will need to substitute `your-home-folder` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `FIREWORKS_CONFIG` env var will be accessible in your dev environment.
 
-For the actual `config.edn` file, you can use the example at the end of this section as a starting point. Prior to doing this you can experiment with the various configuration options via passing a leading options map to or `fireworks.core/?`.
+For the actual `config.edn` file, you can use the above example map (at the beginning of this section) as a starting point. Prior to doing this you can experiment with the various configuration options ala-carte via passing a leading options map to any of following macros:
+
+`?`<br>
+`?-`<br>
+`?i`<br>
+`?l`<br>
+`?trace`<br>
 
 <br>
 
@@ -531,7 +538,7 @@ The simplest way to make a theme is to just start experimenting within any names
           :printer {:function-args {:color "#bb8f44"}}}})
 
 ;; And then just try it out with some kind of sample value like this:
-(p {:theme my-theme}
+(? {:theme my-theme}
    {:string-sample  "string"
     :number-sample  1234
     :boolean-sample true
@@ -554,7 +561,7 @@ Fireworks can only color the foreground and background of "spans" of text. If yo
 
 <br>
 
-### Setting the background color and font in Chrome DevTools 
+### Setting the background color and font in Chrome DevTools (ClojureScript) 
 If you are using Firefox, ignore this section and follow [the instructions in the following section](#setting-the-background-color-and-font-in-firefox-developer-tools).
 
 First, you will need to set the general appearance of your Chrome browser's DevTools UI to "Light" or "Dark", depending on whether you are using a light or dark Fireworks theme. This can be done by opening DevTools on any page, clicking the **Settings** gear icon button, and then **Preferences** > **Appearance** > **Theme**. Official instructions <a href="https://developer.chrome.com/docs/devtools/settings" target="_blank">here</a>.
@@ -570,7 +577,7 @@ After making a change with this extension, you will need to close and reopen Dev
 
 <br>
 
-### Setting the background color and font in Firefox Developer Tools
+### Setting the background color and font in Firefox Developer Tools (ClojureScript)
 In Firefox, this can be done by opening Firefox Developer Tools on any page, just right-click and select **Inspect**. Then click on the *`•••`* button in the top right of this panel and select **Settings** to get to the Settings panel. You should see a **Themes** section which will let you select `Light` or `Dark`.
 
 
@@ -688,7 +695,7 @@ Fireworks will always print these maps consistently - every key on its own line 
 
 #### Printing functions in ClojureScript
 
-Some sample functions:
+A sample vector of 3 functions:
 ```
 (ns sandbox.browser)
 
@@ -705,7 +712,7 @@ Some sample functions:
 (def to-be-printed [ab abc my-function-with-a-really-long-name])
 ```
 
-`clojure.pprint/pprint` will print the above sample `to-be-printed` vector of fns like this:
+`clojure.pprint/pprint` will print the above `to-be-printed` vector of functions like this:
 ```
 [#object[sandbox$browser$ab]
  #object[sandbox$browser$abc]
@@ -807,10 +814,10 @@ The test was run using the excellent <a href="https://github.com/taoensso/tufte"
 ```
 pId         nCalls   Min   Max    Mean  MAD    Clock   Total
 
-:fireworks  1,000    5ms   19ms   6ms   ±10%   6.33s   49%
-:pprint     1,000    6ms   11ms   7ms   ±9%    6.58s   51%
+:fireworks  1,000    4ms   19ms   5ms   ±10%   5.20s   46%
+:pprint     1,000    5ms   11ms   6ms   ±9%    6.12s   54%
 ```
-Even with all the specific formatting and syntax colorization, the performance of printing values with Fireworks in JVM Clojure is basically on par with `clojure.pprint/pprint`.
+Even with all the specific formatting and syntax colorization, the performance of printing the values (in this test) with Fireworks (in JVM Clojure) is on average 1.2x faster than `clojure.pprint/pprint`.
 
 <br>
 
@@ -825,7 +832,7 @@ Issues for bugs, improvements, or features are very welcome. Please file an issu
 
 <br>
 
-## Alternatives 
+## Alternatives / Prior Art
 
 Discovery:<br>
 [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), [Portal](https://github.com/djblue/portal).
