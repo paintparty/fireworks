@@ -159,7 +159,7 @@ Every macro/function, unless noted otherwise, returns the value passed to it.
 | :---     | :---              | :---          | :---              | :--                     |
 | `?`      | Fireworks         | ✓             | ✓                 |                         |
 | `?-`     | Fireworks         | ×             | ×                 |                         |
-| `?--`    | Fireworks         | ✓             | ✓                 | Does not return a value. Intended for user commentary |
+| `?--`    | Fireworks         | ✓             | ✓                 | Does not return a value. Intended for user commentary. |
 | `?i`     | Fireworks         | ×             | ✓                 | Omits label             |
 | `?l`     | Fireworks         | ✓             | ×                 | Omits file info         |                      
 | `?log`   | `js/console.log`* | ✓             | ✓                 |                         |
@@ -167,6 +167,7 @@ Every macro/function, unless noted otherwise, returns the value passed to it.
 | `?pp`    | `pp/pprint`       | ✓             | ✓                 |                         |
 | `?pp-`   | `pp/pprint`       | ×             | ×                 |                         |
 | `?trace` | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`|
+| `p-data` | ×                 | ×             | ×                 | Returns a map describing the Fireworks formatting & printing used by `?`.| 
 | `?>`     | ×                 | ×             | ×                 | Sends value to `tap>`   | 
 | `!?`     | ×                 | ×             | ×                 | Silences printing       | 
 | `!?-`    | ×                 | ×             | ×                 | Silences printing       | 
@@ -186,7 +187,7 @@ Every macro/function, unless noted otherwise, returns the value passed to it.
 
 All the public macros and functions from `fireworks.core`:
 ```Clojure
-[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?trace !?trace]]
+[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?trace !?trace p-data]]
 ```
 <br>
 
