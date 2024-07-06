@@ -1,10 +1,13 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [?]]
+  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?trace p-data]]
             [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
+            [clojure.walk :as walk]
+            [fireworks.util :as util]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
+
 
 ;; This is example config. If you want to run fireworks.core-test tests locally,
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
@@ -28,7 +31,6 @@
  :enable-terminal-italics?     true
  :custom-printers              nil
  :find                         nil}
-
 
 
 ;; Formatting
@@ -194,27 +196,205 @@
                                    3333333}}})
 
 (def basic-samples-cljc-theme
-  {:string             "string"
-   :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number             1234
-   :symbol             (with-meta 'mysym {:foo :bar})
-   :boolean            true
-   :lamda              #(inc %)
-   :fn                 juxt
-   :regex              #"^hi$"
-   :record             record-sample
-   :atom/number        (atom 1)
-   :brackets           [[[[[[]]]]]]
-   :map/nested-meta    (with-meta {:a :foo :b 2}
-                         {:a (with-meta (symbol "foo")
-                               {:abc (symbol "bar")
-                                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
+  {:string          "string"
+   :uuid            #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number          1234
+   :symbol          (with-meta 'mysym {:foo :bar})
+   :boolean         true
+   :lamda           #(inc %)
+   :fn              juxt
+   :regex           #"^hi$"
+   :record          record-sample
+   :atom/number     (atom 1)
+   :brackets        [[[[[[]]]]]]
+   :map/nested-meta (with-meta {:a :foo
+                                :b 2}
+                      {:a (with-meta (symbol "foo")
+                            {:abc (symbol "bar")
+                             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
+
+(def basic-samples 
+  {:string   "string"
+   :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number   1234
+   :boolean  true
+   :lamda    #(inc %)
+   :fn       juxt
+   :regex    #"^hi$"
+   :record   record-sample
+   :atom2    (atom record-sample)
+   :atom1    (atom 1)
+   :brackets [[[[[[]]]]]]})
+
+
+;; (? record-sample)
+
+;; Testing :non-coll-mapkey-length-limit
+;; (? {:non-coll-mapkey-length-limit 40} {"12345678_112345678_212345678_312345678_4" :gold})
+;; Testing print level truncation syntax
+#_(? {:print-level 1} {:a {:b {:a 1 :b 2}
+                         :c #{1 2 3 4 5}}})
 
 ;; (? basic-samples-cljc)
 
+;; (? "? : Default" {:a "foo"})
+;; (? "? : Default:\nLine1\nLine2" {:a "foo"})
+;; (? {:label "with options"} (atom {:a "foo" :b 12}))
+;; (? (def x1 "x1"))
+;; (? {:label "def with label from options"} (def x2 "x2"))
+
+
+;; (?l "?l : Default" {:a "foo"})
+;; (?l "?l : Default:\nLine1\nLine2" {:a "foo"})
+;; (?l {:label "with options" } (atom {:a "foo" :b 12}))
+;; (?l (def x3 "x3"))
+;; (?l {:label "def with label from options"} (def x4 "x4"))
+
+
+;; (?i "?i : Just the namespace info" {:a "foo"})
+;; (?i "?i : Default:\nLine1\nLine2" {:a "foo"})
+;; (?i {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
+;; (?i (def x5 "x5"))
+;; (?i {:label "def with label from options"} (def x6 "x6"))
+
+;; (?log "?log " {:a "foo"})
+;; (?log "?log : Default:\nLine1\nLine2" {:a "foo"})
+;; (?log {:label "with options" } (atom {:a "foo" :b 12}))
+;; (?log (def x7 "x7"))
+;; (?log {:label "def with label from options"} (def x8 "x8"))
+
+;; (?log- {:a "foo"})
+;; (?log- {:a "foo"})
+;; (?log-  (atom {:a "foo" :b 12}))
+;; (?log- (def x9 "x9"))
+
+;; (?pp {:f '?pp :b "asfdasdfasfas"})
+;; (?pp "pp with label" {:f '?pp :b "asfdasdfasfas"})
+;; (?pp "pp with label, def" (def x10 "x10"))
+;; (?pp- {:f '?pp :b "asfdasdfasfas"})
+;; (?pp- (def x11 "x11"))
+
+;; (?log {:f '?log :b "asfdasdfasfas"})
+;; (?log "?log with label" {:f '?log :b "asfdasdfasfas"})
+
+;; (?log- {:f '?log :b "asfdasdfasfas"})
+;; (?log- {:f '?log :b "asfdasdfasfas"})
+
+
+
+;; (?log {:f '?log :desc "default"})
+;; (?log "Label" {:f '?log :desc "with label"})
+;; (?log "Label\nLabel Line 2" {:f '?log :desc "with multiline label"})
+
+;; (?log- (def xxx 1))
+;; (?log- {:f '?log :b "asfdasdfasfas"})
+
+;; (?pp (p-data {:a "foo"}))
+;; (?pp (p-data (def x12 "x12")))
+;; (?pp (p-data {:label "def with opts"} (def x12 "x12")))
+
+;; (?pp (p-data "?p-data : Default:\nLine1\nLine2" (atom {:a "foo" :b 12})))
+;; (?pp (p-data {:label "?p-data : Default:\nLine1\nLine2" } (atom {:a "foo" :b 12})))
+
+
+;; (?-- "Commentary")
+;; (?-- "Commentary, multiline:\nLine2\nLine3")
+
+;; (?let [[a c] ["4" 5]
+;;        b 2]
+;;       {:a a :b b :c c})
+
+;; (?let [[a & b] [1 2 3 4 5]]
+;;       {:a a :b b})
+
+;; (?let [a                                       (take 5 (range))
+;;        {:keys [b c d]
+;;         :or   {d 10
+;;                b 20
+;;                c 30}}                          {:c 50
+;;                                                 :d 100}
+;;        [e f g &  h]                             ["a" "b" "c" "d" "e"]]
+;;       [a b c d e f g h])
+
+
+
+#_(? (walk/postwalk 
+    (fn [x]
+      (if-let [[tag v] (and (vector? x)
+                            (let [[tag v] x]
+                              (when (and (not (coll? v))
+                                         (keyword? tag))
+                                [tag v])))]
+        (with-meta (symbol (util/as-str v))
+          {:color       :red
+           :font-weight :bold
+           :font-style  :italic})
+        x))
+    ["neutral"
+     [:bold.red.italic "then red "]
+     "then neutral"
+     [:bold.red.italic "then blue "]
+     "then neutral again"
+     [:bold.red.italic "then red "]]))
+
+
+;; #?(:clj
+;;    (? (java.util.ArrayList. (range 6)))
+;;    #_(? (some seq? [(int-array [4 5 6]) (java.util.ArrayList.) (java.util.HashMap.)])))
+
+
+;; (?trace 
+;;  (let [[a & rest] ["a" "b" "c" "d" "e"]]
+;;    [a rest]))
+
+;; (?trace 
+;;  (-> 1 (+ 3)))
+
+
+
+
+
+
+;; (?let [[a b c] ["a" "b" "c" "d" "e"]]
+;;       [a b c])
+
+;; #_(?let {:coll-limit 5}
+;;       [a (range 10)
+;;        b (range 33 200 4)])
+
+(def person
+  {:name "Mark Volkmann"
+   :address {:street "644 Glen Summit"
+             :city "St. Charles"
+             :state "Missouri"
+             :zip 63304}
+   :employer {:name "Object Computing, Inc."
+              :address {:street "12140 Woodcrest Dr."
+                        :city "Creve Coeur"
+                        :state "Missouri"
+                        :zip 63141}}})
+
+#_(? (-> person 
+       ?
+       :employer
+       ?
+       :address
+       ?
+       :city
+       ?))
+
+;; (? (?some->> person :employer :address :city .toUpperCase))
+
+;; (?trace {:coll-limit 2} (some-> person :employer :address :city .toUpperCase))
+
+;; (?let [a {:a 12 :b 44 :c "asfdasdfasdfasdfasf" :d 55}
+;;        b {:a 12 :b 44 :c "asfdasdfasdfasdfasf" :x 55}]
+;;   a)
+
+
 #?(:clj
    (do 
-     (do
+     #_(do
          ;; DataTypes ------------------------------------------------------
          (? "A def of deftype" (deftype MyType [a b]))
          
@@ -355,7 +535,7 @@
   
 
  ;; Testing all the stock themes cljc
- (do
+ #_(do
    (doseq [mood ["Light" #_"Dark"]]
      (doseq [theme ["Neutral"
                     "Alabaster"
@@ -366,6 +546,7 @@
       (let [x (str theme " " mood)]
         (? {:label x :theme x}
            basic-samples-cljc-theme)))))
+
 
  ;; Testing all the options cljc
  #_(do 
@@ -584,6 +765,4 @@
 ;;          [:b]
 ;;          {:a                "foo"
 ;;           :xyz              "bar" 
-;;           "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"}))
-
-;;     #_(?println ts))
+;;           "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"})))

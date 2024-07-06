@@ -103,7 +103,8 @@
 (def valid-stylemap-keys
   #?(:clj [:color
            :background-color
-           :font-style]
+           :font-style
+           :font-weight]
      :cljs [:color
             :background-color
             :width
@@ -162,8 +163,6 @@
   (count (str atom-label
               encapsulation-opening-bracket
               encapsulation-closing-bracket)))
-
-(def num-dropped-prefix (str ellipsis "+"))
 
 (def lamda-symbol "λ")
 

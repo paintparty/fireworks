@@ -45,6 +45,9 @@
    :enable-terminal-italics?      {:spec           ::config/enable-terminal-italics?
                                    :default        false
                                    :updates-theme? true}
+   :enable-terminal-font-weights? {:spec           ::config/enable-terminal-font-weights?
+                                   :default        false
+                                   :updates-theme? true}
    :line-height                   {:spec           ::config/line-height
                                    :default        1.45
                                    :updates-theme? true}
@@ -58,6 +61,7 @@
 (def option-keys
   #{:line-height
     :enable-terminal-italics?
+    :enable-terminal-font-weights?
     :non-coll-result-length-limit
     :non-coll-depth-1-length-limit
     :non-coll-mapkey-length-limit
@@ -81,6 +85,7 @@
 (def option-keys-that-update-theme
   #{:line-height
     :enable-terminal-italics?
+    :enable-terminal-font-weights?
     :enable-rainbow-brackets?
     :enable-terminal-truecolor?
     :mood

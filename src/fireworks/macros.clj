@@ -117,7 +117,7 @@
         (let [opts {:v      path-to-config
                     :k      "FIREWORKS_CONFIG="
                     :spec   ::config/edn-file-path
-                    :header (str "[fireworks.core/p] Invalid value"
+                    :header (str "[fireworks.core/_p] Invalid value"
                                  " for environmental variable.")}]
 
           (messaging/bad-option-value-warning opts)

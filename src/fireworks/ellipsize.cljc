@@ -126,7 +126,7 @@
                            
         ecc             (+ (ellipsized-char-count badge
                                                   (str fn-display-name)
-                                                  trunc-name?) ;; <-- TODO - don't think this fn sig is correct
+                                                  trunc-name?) ;; <-- TODO - maybe fix fn sig
                            (or (count (str fn-args)) 0))]
 
 
@@ -225,7 +225,8 @@
            inline-badge?
            atom?
            sev?
-           depth]
+           depth
+           top-level-sev?]
     :as   m}]
 
   (let [{:keys [non-coll-depth-1-length-limit
@@ -234,12 +235,8 @@
                 non-coll-length-limit]}
         @state/config
 
-        ;; kv-member? (or key? map-value?)
-        ;; _ (js/console.log 'x  x)
-        ;; _ (?pp 'm m)
-
         limit
-        (if-let [level-k (cond @state/top-level-value-is-sev?
+        (if-let [level-k (cond top-level-sev?
                                :level-0-sev
                                (and sev? (< depth 2))
                                :level-1-sev)]
@@ -247,8 +244,9 @@
             :level-0-sev non-coll-result-length-limit
             :level-1-sev (let [n    non-coll-depth-1-length-limit
                                half (/ (dec n) 2)]
+                           
                            (cond
-                             key?       half
+                             key?       (max non-coll-mapkey-length-limit half)
                              map-value? (max half non-coll-length-limit)
                              :else      n)))
           (max (if key?
@@ -256,10 +254,6 @@
                  non-coll-length-limit)
                (or limit 0)))]
     
-    ;; (?pp 'limit limit)
-    ;; (println limit)
-    ;; (println "\n\n")
-
     (if (:ellipsized-char-count m)
       x
       (if (contains? #{:function :defmulti :java.lang.Class} t)

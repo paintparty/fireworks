@@ -20,3 +20,118 @@
 (defn carries-meta? [x]
   #?(:clj  (instance? clojure.lang.IObj x)
      :cljs (satisfies? IWithMeta x)))
+
+(defn readable-sgr [x]
+  #?(:cljs x
+     :clj (str "\\033" (subs x 1))))
+
+(defn form-meta->file-info
+  [{:keys [file line column]}]
+  (str (some-> file (str ":")) line ":" column))
+
+
+(defn string-like? [v]
+  (or (string? v)
+      #?(:clj (-> v type str (= "java.util.regex.Pattern"))
+         :cljs (-> v type str (= "#object[RegExp]")))
+      (symbol? v)
+      (keyword? v)
+      (number? v)))
+
+(defn shortened
+  "Stringifies a collection and truncates the result with ellipsis 
+   so that it fits on one line."
+  [v limit]
+  (let [limit  limit
+        as-str (str v)]
+    (if (> limit (count as-str))
+      as-str
+      (let [shortened*      (-> as-str
+                                (string/split #"\n")
+                                first)
+            shortened       (if (< limit (count shortened*))
+                              (let [ret          (take limit shortened*)
+                                    string-like? (string-like? v)]
+                                (str (string/join ret)
+                                     (when-not string-like? " ")
+                                     "..."))
+                              shortened*)]
+        shortened))))
+
+(defn css-stylemap->str [m]
+  (string/join ";"
+               (map (fn [[k v]]
+                      (str (name k)
+                           ":"
+                           (if (number? v) (str v) (name v))))
+                    m)))
+
+(defn nameable? [x]
+  (or (string? x) (keyword? x) (symbol? x)))
+
+(defn as-str [x]
+  (str (if (or (keyword? x) (symbol? x)) (name x) x)))
+
+(defn char-repeat [n s]
+  (when (pos-int? n)
+    (string/join (repeat n (or s "")))))
+
+
+;; SGR for colorizing terminal output
+(defn x->sgr [x k]
+  (when x
+    (let [n (if (= k :fg) 38 48)]
+      (if (int? x)
+        (str n ";5;" x)
+        (let [[r g b _] x
+              ret       (str n ";2;" r ";" g ";" b)]
+          ret)))))
+
+;; TODO - migrate other calls in codebase to use this
+;; Difference being 'disable-*` opts
+;; add readable-sgr? opt for debugging
+(defn m->sgr
+  [{fgc*        :color
+    bgc*        :background-color
+    :keys       [k
+                 font-style 
+                 font-weight
+                 disable-italics?
+                 disable-font-weights?
+                 debug-on-token?]
+    :or {debug-on-token? false}
+    :as         m}]
+;; (println "mMM" m)
+  (when debug-on-token?
+    (println "\n(fireworks.state/m->sgr " m ")"))
+
+  (let [fgc    (x->sgr fgc* :fg)
+        bgc    (x->sgr bgc* :bg)
+        italic (when (and (not disable-italics?)
+                          (contains? #{"italic" :italic} font-style))
+                 "3;")
+        weight (when (and (not disable-font-weights?)
+                          (contains? #{"bold" :bold} font-weight))
+                 ";1")
+        ret    (str "\033[" 
+                    italic
+                    fgc
+                    weight
+                    (when (or (and fgc bgc)
+                              (and weight bgc))
+                      ";")
+                    bgc
+                    "m")]
+    (when debug-on-token?
+      (println "\nCombining the fg and bg into a single sgr...")
+      (println m)
+      (println "=>\n"
+               (readable-sgr ret)
+               "\n"))
+    ret))
+
+(defn maybe [x pred]
+  (when (if (set? pred)
+          (contains? pred x)
+          (pred x))
+    x))

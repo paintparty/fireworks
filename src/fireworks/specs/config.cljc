@@ -11,8 +11,9 @@
 (s/def ::edn-file-path 
   (s/and string? #(re-find #"\.edn$" %)))
 
+;; TODO - Should this be 1?
 (s/def ::fw-coll-limit
-  (s/and int? #(<= 3 % 200)))
+  (s/and int? #(<= 2 % 200)))
 
 ;; This is for the theme entry in a fireworks config .edn
 ;; It can be either
@@ -59,10 +60,10 @@
   (s/and int? #(<= 5 % 80)))
 
 (s/def ::print-level
-  (s/and int? #(<= 3 % 20)))
+  (s/and int? #(<= 1 % 20)))
 
 (s/def ::metadata-print-level
-  (s/and int? #(<= 3 % 10)))
+  (s/and int? #(<= 1 % 10)))
 
 (s/def ::display-namespaces? 
   boolean?)
@@ -83,6 +84,9 @@
   boolean?)
 
 (s/def ::enable-terminal-italics?
+  boolean?)
+
+(s/def ::enable-terminal-font-weights?
   boolean?)
 
 ;; flesh out this spec

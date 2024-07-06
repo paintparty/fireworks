@@ -1,6 +1,5 @@
 (ns ^:dev/always fireworks.truncate
   (:require
-   [fireworks.pp :refer [?pp]]
    [clojure.string :as string]
    [clojure.set :as set]
    [fireworks.state :as state]
@@ -11,6 +10,39 @@
    [lasertag.core :as lasertag]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])))
+
+#?(:cljs
+   (do 
+     (defn inline-style->map [v]
+       (as-> v $
+         (string/split $ #";")
+         (map #(let [kv    (-> % string/trim (string/split #":") )
+                     [k v] (map string/trim kv)]
+                 [k v]) 
+              $)
+         (into {} $)))
+
+     (defn dom-el-attrs-map
+       [x]
+       (when-let [el x]
+         ;; Check for when no attrs
+         (when (.hasAttributes el)
+           (let [attrs (.-attributes el)]
+             (into {}  
+                   (for [i    (range (.-length attrs))
+                         :let [item (.item attrs i)
+                               k (.-name item)
+                               v (.-value item)]]
+                     [k
+                      (cond (= k "style") (inline-style->map v)
+                            (= k "class") (into [] (string/split v " "))
+                            :else         v)]))))))
+
+     (defn prune-synthetic-base-event [x]
+       (doto x
+         (js-delete "view")
+         (js-delete "nativeEvent")
+         (js-delete "target")))))
 
 (defn cljc-atom?
   [x]
@@ -70,52 +102,38 @@
         js-map-like?        (contains? all-tags :js/map-like-object)
         ret*                (keyed [truncated-coll-size  
                                     coll-size-adjust        
-                                    num-dropped                  
-                                    js-typed-array?          
-                                    js-map-like?])
+                                    js-typed-array?                  
+                                    js-map-like?          
+                                    num-dropped])
         ret                 (merge ret*
                                    (when map-like?
                                      {:sorted-map-keys (mapv #(nth % 0 nil) coll)}))]
     ret))
 
 
+
 (defn new-coll2
-  ;; [x uid-entry? tag-map depth t too-deep?]
   [{:keys [x
-           depth
            t
+           depth
            map-like?
-           too-deep?]
+           too-deep?
+           dom-node-type]
     :as opts+}]
-  (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))
-        ;; TODO - maybe do this?
-        ;; opts* (assoc opts :coll-limit coll-limit)
-        ]
-
-    ;; can we use cljc-friendly sequable?
-    (if #?(:cljs (not (satisfies? ISeqable x)) :clj nil)
-      ;; This if for js objects
-      #?(:cljs
-         (let [_   (when (= t :SyntheticBaseEvent)
-                     (doto x
-                       (js-delete "view")
-                       (js-delete "nativeEvent")
-                       (js-delete "target")))
-               ret (js-obj->array-map (assoc opts+
-                                             :coll-limit
-                                             coll-limit))]
-           ;; Maybe incorporate this into js-obj->array-map?
-           (into {}
-                 (map (partial truncate
-                               {:depth (inc depth)})
-                      ret)))
-         :clj nil)
-
-      ;; This if for everything else
-      (truncate-iterable x coll-limit map-like? depth)
-      ;; Mabye do this?
-      ;; (truncate-iterable opts*)
-      )))
+  (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))]
+    #?(:cljs
+       (if (satisfies? ISeqable x)
+         (truncate-iterable x coll-limit map-like? depth)
+         (if dom-node-type
+           (truncate {:depth (inc depth)} (dom-el-attrs-map x))
+           (do 
+             (when (= t :SyntheticBaseEvent) (prune-synthetic-base-event x))
+             (->> (assoc opts+ :coll-limit coll-limit)
+                  js-obj->array-map
+                  (map (partial truncate {:depth (inc depth)}))
+                  (into {})))))
+       :clj
+       (truncate-iterable x coll-limit map-like? depth))))
 
 (defn- user-meta* [x]
   (let [m (meta x)
@@ -138,19 +156,19 @@
                                       {:tag :t}))
         uid-entry? (volatile! false)
         too-deep?  (> depth (:print-level @state/config))
-        sev?       (boolean (when-not kv? (not (:coll-type? tag-map))))
-        ret        (keyed [depth       
-                           atom?       
-                           x           
-                           user-meta   
-                           kv?         
-                           tag-map     
-                           uid-entry?
-                           too-deep? 
-                           sev?])]
+        sev?       (boolean (when-not kv? 
+                              (not (:coll-type? tag-map))))
+        ret        (keyed [uid-entry?       
+                           user-meta       
+                           too-deep?           
+                           tag-map   
+                           depth         
+                           atom?     
+                           sev?
+                           kv? 
+                           x])]
     (merge (:tag-map ret)
            (dissoc ret :tag-map)))) 
-
 
 (defn new-x
   [depth
@@ -159,14 +177,17 @@
     :as opts+}]
   (let [x (cond
             kv?        (let [[k v] x]
-                         [(truncate {:depth depth :key?  true} k)
-                          (truncate {:depth depth :map-value? true} v)])
+                         [(truncate {:depth depth
+                                     :key?  true} k)
+                          (truncate {:depth      depth
+                                     :map-value? true} v)])
             coll-type? (new-coll2 opts+)
             :else      x)]
+
     (if (or (:carries-meta? opts+)
             (util/carries-meta? x))
       x
-      (symbol (str x)))))
+      (symbol (str  x)))))
 
 
 (defn with-badge-and-ellipsized
@@ -183,27 +204,30 @@
     :as opts}
    x]
   (let [{:keys [x             
-                user-meta     
+                t     
                 kv?           
-                t         
+                user-meta         
                 coll-type?]
          :as   opts+}
         (truncate-opts opts x)
 
         new-x 
         (new-x depth x opts+)
-        
 
         new-coll-info
         (when (and (not kv?) coll-type?)
           (new-coll-info new-x opts+))
 
         mm*           
-        (merge (dissoc opts+ :uid-entry?)
-               new-coll-info
-               {:og-x  x
-                :t     t
-                :depth depth})
+        (let [opts+ (dissoc opts+ :uid-entry?)]
+          (merge opts+
+                 new-coll-info
+                 {:og-x  x
+                  :t     t
+                  :depth depth}
+                 (when (and (zero? depth)
+                            (:sev? opts+))
+                   {:top-level-sev? true})))
 
         ;; TODO - Use this instead of what you are doing in profile
         ;; mm*

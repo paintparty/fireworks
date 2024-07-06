@@ -7,7 +7,38 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 
 ## Unreleased
-- 
+-
+
+<br>
+<br>
+
+## 0.5.0
+2024-07-6
+
+#### Added
+- `:enable-terminal-font-weights` as config option for enabling bold font weight in terminal environments which support it.
+- `?i` macro for printing the info, then the result.
+- `?l` macro for printing the label, then the result.
+- `?trace` macro for tracing `->`, `->>`, 'some->', 'some->>'.
+- `?>` macro for sending values to `tap>`, then returning value.
+
+#### Changed
+- Use pprint if label for printing is a map.
+- Remove trailing bracket on form-to-be-evaled labels.
+- Shortened truncation syntax within colls which exceed :print-level
+- `?-` macro now prints just the result.
+- `?--` macro now prints just a label, for user commentary.
+- `?log-` macro now just prints the result, and returns the result.
+- Removed following macros: `?println`, `?print`, `?prn`, `?pr`, functionality replaced by `:print-with` call-site option
+
+ #### Fixed
+- Bug with clojure.core/max arity, if maps are empty.
+- Bug with `:non-coll-result-length-limit` config.
+- Colorization of metadata (kv gaps) in terminal context
+- Bug with `:non-coll-mapkey-length-limit` config. 
+
+### Removed
+- `?log--` macro.
 
 <br>
 <br>
@@ -83,6 +114,18 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 ## Breaking changes
+
+#### 0.5.0
+- Use pprint if label for printing is a map.
+- Remove trailing bracket on form-to-be-evaled labels.
+- Shortened truncation syntax within colls which exceed :print-level
+- `?-` macro now prints just the result.
+- `?--` macro now prints just a label, for user commentary.
+- `?log-` macro now just prints the result, and returns the result.
+- Removed macros : `?println`, `?print`, `?prn`, `?pr`
+
+<br>
+<br>
 
 ### 0.4.0
 - Metadata maps now formatted with left-justified values.

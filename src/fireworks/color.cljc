@@ -120,6 +120,7 @@
 ;;         l       (->fixed-float l 1)]
 ;;     (str "hsl(" h "," s "%," l "%)")))
 
+;; Maybe rename hex-by-xterm-id
 (def xterm-colors-by-id
    {32  "#0087d7",
     64  "#5f8700",

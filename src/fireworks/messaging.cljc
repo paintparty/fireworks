@@ -1,8 +1,10 @@
 (ns fireworks.messaging
-  (:require
-   [expound.alpha :as expound]  
-   [fireworks.specs.config :as config]
-   [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [fireworks.pp :refer [?pp]]
+            [expound.alpha :as expound]
+            [fireworks.alert :as alert]
+            [fireworks.specs.config :as config]
+            [fireworks.util :as util]))
 
 (defrecord FireworksThrowable [err])
 
@@ -12,37 +14,6 @@
 
 
 ;; Helpers ----------------------------------------------------------------
-(defn string-like? [v]
-  (or (string? v)
-      #?(:clj (-> v type str (= "java.util.regex.Pattern"))
-         :cljs (-> v type str (= "#object[RegExp]")))
-      (symbol? v)
-      (keyword? v)
-      (number? v)))
-
-(defn shortened
-  "Stringifies a collection and truncates the result with ellipsis 
-   so that it fits on one line."
-  [v limit]
-  (let [limit  limit
-        as-str (str v)]
-    (if (> limit (count as-str))
-      as-str
-      (let [[_ end-bracket] (re-find #"(\)|\}|\])$" as-str)
-            shortened*      (-> as-str
-                                (string/split #"\n")
-                                first)
-            shortened       (if (< limit (count shortened*))
-                              (let [ret          (take limit shortened*)
-                                    string-like? (string-like? v)]
-                                (str (string/join ret)
-                                     (when-not string-like? " ")
-                                     "..."
-                                     (when (and end-bracket
-                                                (not string-like?))
-                                       end-bracket)))
-                              shortened*)]
-        shortened))))
 
 (defn sgr-bold [s]
   (str "\033[1;m" s "\033[0;m"))
@@ -79,7 +50,8 @@
   (str "font-weight:bold;"
        "text-decoration-line: underline;"
        "text-decoration-style: wavy;"
-       "text-decoration-color: #ff5252;"
+       ;; "text-decoration-color: #ff5252;"
+       "text-decoration-color: #ff00ff;"
        "text-underline-offset: 0.4em;"
        "text-decoration-thickness: 1.5px;"
        "line-height: 2.5em;"))
@@ -189,7 +161,7 @@
 
 
 (defn color-warning [{:keys [theme-token] :as opts}]
-  (let [header  (str "[fireworks.core/p] Invalid color value for theme token " 
+  (let [header  (str "[fireworks.core/_p] Invalid color value for theme token " 
                      theme-token
                      ".")
         warning (str (invalid-color-warning (merge {:header header} opts)))]
@@ -207,6 +179,41 @@
                 (println unbroken-border)
                 (println)))
     nil))
+
+
+;; New June 16 -------------------------------------------------------------------
+
+
+(defn unable-to-trace
+  [{:keys [form-meta quoted-form alert-type label]}]
+  (alert/console-alert
+   {:alert-type alert-type
+
+    ;; :theme          :tape
+    ;; :margin-top     1
+    ;; :margin-bottom  1
+    ;; :padding-top    0
+    ;; :padding-bottom 0
+
+    :label      label
+    :message    (alert/problem-with-line-info 
+                 form-meta
+                 {
+                  :alert-type alert-type
+                  :header     "Unable to trace form."
+                  :form       (str "(?trace " quoted-form ")")
+                  :body       [(str "fireworks.core/?trace will trace forms beginning with:\n"
+                                    (string/join "\n"
+                                                 ['->
+                                                  'some->
+                                                  '->>
+                                                  'some->>
+                                                  ;; Add let when you actually support it
+                                                  ;; 'let
+                                                  ]))]})}))
+
+;; End new June 16 -------------------------------------------------------------------
+
 
 
  (defn print-user-friendly-clj-stack-trace [err]
@@ -245,7 +252,7 @@
 (defn print-error [err]
   #?(:cljs
      (js/console.warn
-      (str "[fireworks.core/p]"
+      (str "[fireworks.core/_p]"
            "\n\n"
            "Exception caught. Nothing will be printed."
            "\n\n")
@@ -255,7 +262,7 @@
          (println (simple-alert-header-border-top "CAUGHT EXCEPTION "))
          (println)
          (println
-          "[fireworks.core/p] Caught Exception, nothing will be printed.")
+          "[fireworks.core/_p] Caught Exception, nothing will be printed.")
          (println)
          (print-user-friendly-clj-stack-trace err)
          (println unbroken-border) 
@@ -268,19 +275,21 @@
          )))
 
 
+;; Maybe this should go in core?
 (defn print-formatted
   ([x]
    (print-formatted x nil))
-  ([{:keys [fmt err] :as x} f]
+  ([{:keys [fmt log? err] :as x} f]
    (if (instance? FireworksThrowable x)
      (print-error err)
      #?(:cljs
         (f x)
         :clj
-        (do (print fmt)
-            ;; Trailing line for readability.
-            ;; Maybe make this a config option? (true by default).
-            (println "\n"))))))
+        (do 
+          (some-> fmt print)
+          ;; Trailing line for readability.
+          ;; Maybe make this a config option? (true by default).
+          ((if log? print println) "\n"))))))
 
 (def dispatch 
   {:messaging/bad-option-value-warning bad-option-value-warning
