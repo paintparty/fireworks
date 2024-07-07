@@ -37,7 +37,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Colorization of metadata (kv gaps) in terminal context
 - Bug with `:non-coll-mapkey-length-limit` config. 
 
-### Removed
+#### Removed
 - `?log--` macro.
 
 <br>
