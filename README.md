@@ -18,7 +18,7 @@
 
 <p align="center">
 <a href="https://clojars.org/io.github.paintparty/fireworks">
-<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=257ee4&style=flat-square&cacheSeconds=3 alt="Fireworks on Clojars"></img>
+<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=0969da&style=flat-square&cacheSeconds=3" alt="Fireworks on Clojars"></img>
 </a>
 </p>
 
@@ -81,7 +81,7 @@
 <br>
 <br>
 
-<p align="center"><img width="500" src="./resources/themes-cycle.gif" alt="Fireworks on Clojars"></img></p>
+<p align="center"><img width="500" src="./resources/themes-cycle.gif" alt="Fireworks light and dark themes animated slideshow"></img></p>
 <p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p>
 
 <br>
