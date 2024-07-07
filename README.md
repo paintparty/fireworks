@@ -18,7 +18,7 @@
 
 <p align="center">
 <a href="https://clojars.org/io.github.paintparty/fireworks">
-<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=4493f8&style=flat-square&cacheSeconds=3" alt="Fireworks on Clojars"></img>
+<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=0969da&style=flat-square&cacheSeconds=3" alt="Fireworks on Clojars"></img>
 </a>
 </p>
 
