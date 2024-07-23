@@ -816,27 +816,30 @@
 
        ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
        `(do
-          (messaging/unable-to-trace {:alert-type  :warning
-                                      :form-meta   ~form-meta
-                                      :quoted-form (quote ~x)})
+          (messaging/unable-to-trace
+           (merge
+            ~form-meta
+            {:type :warning
+             :form (quote ~x)}))
           ~x))))
   ([user-opts x]
    ;; Issue warning if not traceable
    (let [form-meta (meta &form)]
      (if-let [[thread-sym forms] (threading-sym x)]
        (let [form-meta       (meta &form)
-
              [cfg-opts call] (thread-helper (keyed [forms form-meta thread-sym user-opts]))]
          `(do (fireworks.core/print-thread ~cfg-opts
                                            (quote ~forms)
                                            (str (quote ~thread-sym)))
               ~call)
 
-          ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
+         ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
          `(do
-           (messaging/unable-to-trace {:alert-type  :warning
-                                       :form-meta   ~form-meta
-                                       :quoted-form (quote ~x)})
+           (messaging/unable-to-trace
+            (merge 
+             ~form-meta
+             {:type      :warning
+              :form      (quote ~x)}))
            ~x))
        `x))))
 
