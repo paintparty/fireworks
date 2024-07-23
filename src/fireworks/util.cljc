@@ -58,19 +58,19 @@
                               shortened*)]
         shortened))))
 
-(defn css-stylemap->str [m]
-  (string/join ";"
-               (map (fn [[k v]]
-                      (str (name k)
-                           ":"
-                           (if (number? v) (str v) (name v))))
-                    m)))
-
 (defn nameable? [x]
   (or (string? x) (keyword? x) (symbol? x)))
 
 (defn as-str [x]
   (str (if (or (keyword? x) (symbol? x)) (name x) x)))
+
+(defn css-stylemap->str [m]
+ (reduce-kv (fn [acc k v]
+               (if (and k v)
+                 (str acc (as-str k) ":" (as-str v) ";")
+                 acc))
+             ""
+             m))
 
 (defn char-repeat [n s]
   (when (pos-int? n)
