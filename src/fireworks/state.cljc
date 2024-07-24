@@ -101,7 +101,7 @@
     (catch #?(:cljs js/Object
               :clj Exception)
            e
-      (do (println "WTF") (messaging/print-error e))
+      (messaging/print-error e)
       (swap! messaging/warnings-and-errors
              conj
              [:messaging/print-error e])
@@ -468,6 +468,7 @@
          valid-user-theme (when (map? theme*) 
                             (if (s/valid? ::theme/theme theme*)
                               theme*
+                              ;; TODO FIX THIS
                               (messaging/bad-option-value-warning
                                (let [m (:theme config/options)]
                                  (merge m

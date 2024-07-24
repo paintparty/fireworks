@@ -4,7 +4,6 @@
   [fireworks.specs.config :as config]
   [fireworks.specs.theme :as theme]
   [fireworks.basethemes :as basethemes]
-  [fireworks.pp :refer [?pp]]
   [clojure.edn :as edn]
   [clojure.spec.alpha :as s]))
 
