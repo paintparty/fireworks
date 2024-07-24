@@ -4,6 +4,7 @@
   [fireworks.specs.config :as config]
   [fireworks.specs.theme :as theme]
   [fireworks.basethemes :as basethemes]
+  [fireworks.pp :refer [?pp]]
   [clojure.edn :as edn]
   [clojure.spec.alpha :as s]))
 
@@ -31,7 +32,7 @@
                            (transforms key-type))]
        (into {} (map (juxt transform identity) vars))))))
 
-(def load-failure-body
+(def ^:private load-failure-body
   (str "Please check:"
        "\n"
        "\n"
@@ -44,35 +45,39 @@
        "\n"
        "The default Fireworks configuration options will be applied."))
 
-(defn form-meta->file-info
-  [{:keys [file line column]}]
-  (str file ":" line ":" column))
+(defn- load-edn-exception-opts
+  [{:keys [file key source]}]
+  {:k      key
+   :v      (str "\"" source "\"")
+   :header (str file "\n\nCould not open file:")
+   :body   load-failure-body})
 
-(defn load-edn
+(defn- load-edn
   "Load edn from an io/reader source (filename or io/resource)."
-  [source form-meta]
+  [{:keys [key file source] :as opts}]
   (use 'clojure.java.io)
   (try
     (with-open [r (clojure.java.io/reader source)]
       (edn/read (java.io.PushbackReader. r)))
     (catch java.io.IOException e
-      (let [opts {:header  (str (form-meta->file-info form-meta)
-                                ", could not open file:")
-                  :path    source
-                  :default load-failure-body}]
+      (let [opts (merge 
+                  (load-edn-exception-opts opts)
+                  {:label  "java.io.IOException (CAUGHT)"
+                   :header (str file "\n\nCould not open file:")})]
         (swap! messaging/warnings-and-errors
                conj
                [:messaging/read-file-warning opts])
-        (messaging/read-file-warning opts)))
+        (messaging/caught-exception opts)))
 
     (catch RuntimeException e
-      (let [opts {:header  "fireworks.state/user-config, could not parse file:"
-                  :path    source
-                  :default load-failure-body}]
+      (let [opts (merge 
+                  (load-edn-exception-opts opts)
+                  {:label  "RuntimeException (CAUGHT)"
+                   :header (str file "\n\nCould not parse file:")})]
         (swap! messaging/warnings-and-errors
                conj
                [:messaging/read-file-warning opts])
-        (messaging/read-file-warning opts)))))
+        (messaging/caught-exception opts)))))
 
 
 (defmacro compile-time-warnings-and-errors []
@@ -97,7 +102,7 @@
    process in their terminal.
    
    If the config map is successfully loaded from edn file, and the :theme entry
-   is a valid `.edn` path, but this path  points to a non-existant `.edn` file,
+   is a valid `.edn` path, but this path points to a non-existant `.edn` file,
    or a file that is not parseable by `clojure.edn/read`, a warning is issued
    via fireworks.macros/load-edn.
 
@@ -120,19 +125,21 @@
                     :header (str "[fireworks.core/_p] Invalid value"
                                  " for environmental variable.")}]
 
-          (messaging/bad-option-value-warning opts)
+          (messaging/bad-option-value-warning2 opts)
 
           (swap! messaging/warnings-and-errors
                  conj
                  [:messaging/bad-option-value-warning opts]))
 
-        (when-let [config (load-edn path-to-config form-meta)]
+        (when-let [config (load-edn {:source path-to-config})]
           (if-let [theme* (:theme config)]
             (if-let [user-theme*
                      (when-let [x 
                                 (cond
                                   (s/valid? ::config/edn-file-path theme*)
-                                  (load-edn theme* form-meta)
+                                  (load-edn {:source theme*
+                                             :file   path-to-config
+                                             :key    :theme})
 
                                   (map? theme*)
                                   theme*

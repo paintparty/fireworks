@@ -72,6 +72,7 @@
 
 
 ;; Validation function for config option
+;; TODO - figure out how to get filename, line, and column.
 (defn validated
   [k v {:keys [spec default]}]
   (let [undefined? (or (when (string? v) (string/blank? v))
@@ -79,10 +80,8 @@
         valid?     (when-not undefined? (if spec (s/valid? spec v) v))
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
-      (messaging/bad-option-value-warning
-       (assoc (keyed [k v default spec])
-              :header
-              "[fireworks.core/_p] Invalid option value."))
+      (messaging/bad-option-value-warning2
+       (keyed [k v default spec]))
       (if (or undefined? (not valid?))
         nil
         v))))
@@ -97,10 +96,12 @@
                        validated (validated k v m)]
                    [k validated]))
                user-config))
+
+    ;; TODO - check if this actually catches anything?
     (catch #?(:cljs js/Object
               :clj Exception)
            e
-      (messaging/print-error e)
+      (do (println "WTF") (messaging/print-error e))
       (swap! messaging/warnings-and-errors
              conj
              [:messaging/print-error e])
@@ -202,7 +203,6 @@
     bgc*        :background-color
     font-style  :font-style
     font-weight :font-weight
-    k           :k
     :as         m}]
   (when @debug-on-token?
     (println "\n(fireworks.state/m->sgr " m ")"))
@@ -511,9 +511,8 @@
       (try (merged-theme*)
            (catch #?(:cljs js/Object :clj Exception)
                   e
-             (messaging/->FireworksThrowable e)))]
-
-      #_(?pp (:metadata-key with-style-maps))
+             (messaging/->FireworksThrowable e nil nil)))]
+  ;; TODO - Does this ever reach the err branch?
   (if err 
     (messaging/print-error err)
     (do 

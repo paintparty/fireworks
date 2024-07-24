@@ -2,11 +2,12 @@
   (:require [clojure.string :as string]
             [fireworks.pp :refer [?pp]]
             [expound.alpha :as expound]
+            [get-rich.core :refer [point-of-interest callout]]
             [fireworks.alert :as alert]
             [fireworks.specs.config :as config]
             [fireworks.util :as util]))
 
-(defrecord FireworksThrowable [err])
+(defrecord FireworksThrowable [err err-x err-opts])
 
 ;; Compile time errors for surfacing to cljs browser console
 (def warnings-and-errors (atom []))
@@ -106,6 +107,55 @@
         "\n\n"
         "Nothing will be highlighted")))
 
+#_(defn bad-option-value-warning-general
+  [{:keys [k v spec default line column file header]}]
+  (callout {:type :warning}
+           (point-of-interest
+            (merge {:squiggly-color :warning
+                    :form           (str k " " v)          
+                    :line           line
+                    :column         column
+                    :file           file
+                    :header         header
+                    :body           (str (expound/expound-str spec v {:print-specs? false})
+                                         (when default
+                                           (str "\n\n"
+                                                "The default value of `" default "` will be applied.")))}))))
+(defn caught-exception
+  [{:keys [k v header body line column file label]}]
+  (callout {:type  :error
+            :label label}
+           (point-of-interest
+            (merge {:squiggly-color :error
+                    :form           (str k " " v)          
+                    :line           line
+                    :column         column
+                    :file           file
+                    :header         (or header
+                                        "[fireworks.core/_p] "
+                                        "Invalid option value:")
+                    :body           body}))))
+(defn bad-option-value-warning2
+  [{:keys [k v spec default header line column file]}]
+  (callout {:type :warning}
+           (point-of-interest
+            (merge {:squiggly-color :warning
+                    :form           (str k " " v)          
+                    :line           line
+                    :column         column
+                    :file           file
+                    :header         (or header
+                                        "[fireworks.core/_p] "
+                                        "Invalid option value:")
+                    :body           (str (expound/expound-str spec
+                                                              v
+                                                              {:print-specs? false})
+                                         (when default
+                                           (str "\n\n"
+                                                "The default value of `"
+                                                default
+                                                "` will be applied.")))}))))
+
 
 (defn bad-option-value-warning
   [{:keys [k v spec header default]}]
@@ -181,42 +231,26 @@
     nil))
 
 
-;; New June 16 -------------------------------------------------------------------
+
+(defn unable-to-trace [opts]
+  (callout opts
+           (point-of-interest
+            (merge opts
+                   {:squiggly-color :warning
+                    :form           (str "(?trace " (:form opts) ")")          
+                    :header         "Unable to trace form."
+                    :body           (str "fireworks.core/?trace will trace forms beginning with:\n"
+                                         (string/join "\n"
+                                                      ['->
+                                                       'some->
+                                                       '->>
+                                                       'some->>
+                                                       ;; Add let when you actually support it
+                                                       ;; 'let
+                                                       ]))}))))
 
 
-(defn unable-to-trace
-  [{:keys [form-meta quoted-form alert-type label]}]
-  (alert/console-alert
-   {:alert-type alert-type
-
-    ;; :theme          :tape
-    ;; :margin-top     1
-    ;; :margin-bottom  1
-    ;; :padding-top    0
-    ;; :padding-bottom 0
-
-    :label      label
-    :message    (alert/problem-with-line-info 
-                 form-meta
-                 {
-                  :alert-type alert-type
-                  :header     "Unable to trace form."
-                  :form       (str "(?trace " quoted-form ")")
-                  :body       [(str "fireworks.core/?trace will trace forms beginning with:\n"
-                                    (string/join "\n"
-                                                 ['->
-                                                  'some->
-                                                  '->>
-                                                  'some->>
-                                                  ;; Add let when you actually support it
-                                                  ;; 'let
-                                                  ]))]})}))
-
-;; End new June 16 -------------------------------------------------------------------
-
-
-
- (defn print-user-friendly-clj-stack-trace [err]
+(defn user-friendly-clj-stack-trace [err]
    #?(:clj
       (let [st          (->> err .getStackTrace)
             msg         (->> err .getMessage)
@@ -229,7 +263,7 @@
                              i))
                          mini-st)
             last-index  (when (seq indexes)
-                          (->> indexes (take 3) last))
+                          (->> indexes (take 5) last))
             trace*      (when last-index
                           (->> mini-st (take (inc last-index))))
             len         (when trace* (count trace*)) 
@@ -241,12 +275,7 @@
                                 (symbol (str "..."
                                              (some->> num-dropped
                                                       (str "+"))))))]
-
-        (println "Message:")
-        (println msg)
-        (println)
-        (println "Stacktrace:")
-        (println trace))))
+        (apply str trace))))
 
 
 (defn print-error [err]
@@ -264,7 +293,7 @@
          (println
           "[fireworks.core/_p] Caught Exception, nothing will be printed.")
          (println)
-         (print-user-friendly-clj-stack-trace err)
+         (println (user-friendly-clj-stack-trace err))
          (println unbroken-border) 
          (println)
 
@@ -274,14 +303,35 @@
 
          )))
 
+(defn print-caught-exception [err opts]
+  (callout opts
+           (point-of-interest
+            (merge opts
+                   {:squiggly-color :error
+                    :form           (str "(?trace " (:form opts) ")")          
+                    :label          "CAUGHT EXCEPTION"
+                    :header         "[fireworks.core/_p]"
+                    :body           [[:italic.subtle.bold "Message from Clojure:"]
+                                     "\n"
+                                     (string/replace (.getMessage err) #"\(" "\n(")
+                                     "\n\n"
+                                     [:italic.subtle.bold "Stacktrace preview:"]
+                                     "\n"
+                                     (user-friendly-clj-stack-trace err)]}))))
 
 ;; Maybe this should go in core?
 (defn print-formatted
   ([x]
    (print-formatted x nil))
-  ([{:keys [fmt log? err] :as x} f]
+  ([{:keys [fmt log? err err-x err-opts] :as x} f]
    (if (instance? FireworksThrowable x)
-     (print-error err)
+     (let [{:keys [line column file]} (:form-meta err-opts)
+           ns-str                     (:ns-str err-opts)] 
+       (print-caught-exception err {:type   :error
+                                    :form   err-x
+                                    :line   line
+                                    :column column
+                                    :file   (or file ns-str)}))
      #?(:cljs
         (f x)
         :clj

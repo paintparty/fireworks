@@ -1,3 +1,6 @@
+;; TODO
+;; Add internal ?sgr to print sgr-tagged strings but with sgr escaped and readable in console.
+
 (ns fireworks.core
   (:require
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
@@ -210,6 +213,8 @@
            user-opts
            threading?]
     :as   opts}] 
+  (when (= "man" qf)
+    (+ 1 true))
   (let [user-print-fn
         (:print-with user-opts)
 
@@ -300,12 +305,12 @@
                         (s/valid? new-val))]
     (if valid?
       (swap! state/config assoc k new-val)
-      (messaging/bad-option-value-warning
-       (let [m (k config/options)]
-         (merge m
-                {:k       k
-                 :v       new-val
-                 :header  "[fireworks.core/_p] Invalid option value."}))))))
+      (messaging/bad-option-value-warning2
+       (let [m                     (k config/options)
+             {:keys [line column]} (:form-meta opts)
+             ns-str                (:ns-str opts)]
+         (ff opts)
+         (merge m {:k k :v new-val :file ns-str :line line :column column}))))))
 
 
 (defn- opt-to-reset [opts k]
@@ -487,7 +492,7 @@
           printing-opts (try (formatted x opts)
                              (catch #?(:cljs js/Object :clj Exception)
                                     e
-                               (messaging/->FireworksThrowable e)))]
+                               (messaging/->FireworksThrowable e x opts)))]
       (if (:p-data? opts) 
         printing-opts
         (do 
@@ -498,8 +503,7 @@
           ;; - fireworks.core/?log or fireworks.core/?log- is used
           ;; - fireworks.core/?pp or fireworks.core/?pp- is used
           
-          (when (and (not (:fw/log? opts))
-                     (:log? opts))
+          (when (and (not (:fw/log? opts)) (:log? opts))
             #?(:cljs (js/console.log x)
                :clj (fireworks.core/pprint x)))
 
