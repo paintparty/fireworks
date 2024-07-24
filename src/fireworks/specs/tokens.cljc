@@ -26,32 +26,17 @@
 
 
 (s/def ::xterm-color-id
- (s/and int?
-        #(< 15 % 256)))
+ (s/and int? #(< 15 % 256)))
 
 
 (expound/defmsg ::xterm-color-id
   (str "A integer representing the numerical id of an xterm color."
        "\nThis value must be between 16 and 256 (inclusive)."))
 
-
-(s/def ::color-tuple
-  (s/and vector?
-         (s/tuple ::css-hex
-                  ::xterm-color-id)))
-
-
-(expound/defmsg ::color-tuple
-  (str "A color tuple must contain 2 values:"
-       "\n- A string or keyword representation of a valid css hex code"
-       "\n- An integer representation of a valid xterm color (16 ~ 155)"))
-
-
 (s/def ::color-value 
   (s/or 
    :css-hex ::css-hex
-   :xterm-color-id ::xterm-color-id
-   :color-tuple ::color-tuple))
+   :xterm-color-id ::xterm-color-id))
 
 
 (s/def ::font-style #{"italic" "normal" :italic :normal})
