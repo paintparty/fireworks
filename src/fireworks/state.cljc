@@ -101,7 +101,7 @@
     (catch #?(:cljs js/Object
               :clj Exception)
            e
-      (messaging/print-error e)
+      (messaging/print-caught-exception e {})
       (swap! messaging/warnings-and-errors
              conj
              [:messaging/print-error e])
@@ -498,8 +498,7 @@
          valid-user-theme (when (map? theme*) 
                             (if (s/valid? ::theme/theme theme*)
                               theme*
-                              ;; TODO FIX THIS
-                              (messaging/bad-option-value-warning
+                              (messaging/bad-option-value-warning2
                                (let [m (:theme config/options)]
                                  (merge m
                                         {:k      :theme
@@ -531,26 +530,38 @@
 
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
 
-         ret              (merge-theme+ base-theme theme)
-         ]
+         ret              (merge-theme+ base-theme theme)]
      ;; TODO - Add observability for theme
      ret)))
 
 
 ;; The merged theme to use for printing --------------------------------
-(let [{:keys [with-style-maps with-serialized-style-maps err]}
+(let [{:keys [with-style-maps
+              with-serialized-style-maps
+              err
+              err-x
+              err-opts]}
       (try (merged-theme*)
            (catch #?(:cljs js/Object :clj Exception)
                   e
              (messaging/->FireworksThrowable e nil nil)))]
   ;; TODO - Does this ever reach the err branch?
   (if err 
-    (messaging/print-error err)
-    (do 
-      (def merged-theme 
-        (atom with-serialized-style-maps))
-      (def merged-theme-with-unserialized-style-maps
-        (atom with-style-maps)))))
+    (let [{:keys [line
+                  column
+                  file]} (:form-meta err-opts)
+          ns-str         (:ns-str err-opts)] 
+      (messaging/print-caught-exception err
+                                        {:header "[fireworks.state/merged-theme*]"
+                                         :type   :error
+                                         :form   err-x
+                                         :line   line
+                                         :column column
+                                         :file   (or file ns-str)}))
+    (do (def merged-theme 
+          (atom with-serialized-style-maps))
+        (def merged-theme-with-unserialized-style-maps
+          (atom with-style-maps)))))
 
 
 ;; Helpers for css -----------------------------------------------------
