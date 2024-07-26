@@ -71,17 +71,20 @@
 (def user-config (get-user-configs))
 
 
-;; Validation function for config option
 ;; TODO - figure out how to get filename, line, and column.
-(defn validated
+(defn validate-option-from-user-config-edn
   [k v {:keys [spec default]}]
   (let [undefined? (or (when (string? v) (string/blank? v))
                        (nil? v))
         valid?     (when-not undefined? (if spec (s/valid? spec v) v))
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
-      (messaging/bad-option-value-warning2
-       (keyed [k v default spec]))
+      (messaging/bad-option-value-warning
+       (assoc (keyed [k v default spec])
+              :header (str (some-> user-config
+                                   :path-to-user-config
+                                   (str "\n\n"))
+                           (str "Invalid value for " k " in user config."))))
       (if (or undefined? (not valid?))
         nil
         v))))
@@ -93,7 +96,7 @@
     (into {}
           (map (fn [[k v]]
                  (let [m         (k config/options)
-                       validated (validated k v m)]
+                       validated (validate-option-from-user-config-edn k v m)]
                    [k validated]))
                user-config))
 
@@ -101,7 +104,7 @@
     (catch #?(:cljs js/Object
               :clj Exception)
            e
-      (messaging/print-caught-exception e {})
+      (messaging/caught-exception e {})
       (swap! messaging/warnings-and-errors
              conj
              [:messaging/print-error e])
@@ -163,7 +166,7 @@
 
       (and c (nil? resolved))
       (do 
-        (messaging/bad-option-value-warning2
+        (messaging/bad-option-value-warning
          (merge {:k      k
                  :v      c
                  :spec   ::tokens/color-value
@@ -498,7 +501,7 @@
          valid-user-theme (when (map? theme*) 
                             (if (s/valid? ::theme/theme theme*)
                               theme*
-                              (messaging/bad-option-value-warning2
+                              (messaging/bad-option-value-warning
                                (let [m (:theme config/options)]
                                  (merge m
                                         {:k      :theme
@@ -551,13 +554,14 @@
                   column
                   file]} (:form-meta err-opts)
           ns-str         (:ns-str err-opts)] 
-      (messaging/print-caught-exception err
-                                        {:header "[fireworks.state/merged-theme*]"
-                                         :type   :error
-                                         :form   err-x
-                                         :line   line
-                                         :column column
-                                         :file   (or file ns-str)}))
+      (messaging/caught-exception
+       err
+       {:header "[fireworks.state/merged-theme*]"
+        :type   :error
+        :form   err-x
+        :line   line
+        :column column
+        :file   (or file ns-str)}))
     (do (def merged-theme 
           (atom with-serialized-style-maps))
         (def merged-theme-with-unserialized-style-maps
@@ -592,7 +596,12 @@
       (highlight-style* x)
       (vector? x)
       (mapv highlight-style* x))
-    (messaging/invalid-find-value-option x)))   
+    (messaging/bad-option-value-warning
+     {:k      :find
+      :v      x
+      :spec   ::config.specs/find
+      :header "Problem with the supplied value for the :find (highlighting) option:" })
+    #_(messaging/invalid-find-value-option x)))   
 
 
 (def *formatting-meta-level (atom 0))

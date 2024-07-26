@@ -213,8 +213,7 @@
            user-opts
            threading?]
     :as   opts}] 
-  (when (= "man" qf)
-    (+ 1 true))
+  ;; (when (= "force error" qf) (+ 1 true))
   (let [user-print-fn
         (:print-with user-opts)
 
@@ -305,7 +304,7 @@
                         (s/valid? new-val))]
     (if valid?
       (swap! state/config assoc k new-val)
-      (messaging/bad-option-value-warning2
+      (messaging/bad-option-value-warning
        (let [m                     (k config/options)
              {:keys [line column]} (:form-meta opts)
              ns-str                (:ns-str opts)]
@@ -469,6 +468,7 @@
    (_p nil opts x))
 
   ([a opts x]
+  
   
   (let [opts (if (map? a)
                (merge (dissoc opts x :label) a)

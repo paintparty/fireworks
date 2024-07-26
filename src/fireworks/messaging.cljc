@@ -1,11 +1,7 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
-            [fireworks.pp :refer [?pp]]
             [expound.alpha :as expound]
-            [get-rich.core :refer [point-of-interest callout]]
-            ;; [fireworks.alert :as alert]
-            [fireworks.specs.config :as config]
-            [fireworks.util :as util]))
+            [get-rich.core :refer [point-of-interest callout]]))
 
 (defrecord FireworksThrowable [err err-x err-opts])
 
@@ -13,114 +9,20 @@
 (def warnings-and-errors (atom []))
 
 
-
-;; Helpers ---------------------------------------------------------------------
-
-;; TODO - Nix all these
-;; (defn sgr-bold [s]
-;;   (str "\033[1;m" s "\033[0;m"))
-
-;; (def border-char "◢◤")
-
-;; (defn border-str [n] (string/join (repeat n border-char)))
-
-;; (def border-len 50)
-
-;; (def alert-indent 4)
-
-;; (def unbroken-border (border-str (/ border-len 2)))
-
-;; (defn dq [v]
-;;   (if (string? v) (str "\"" v "\"") v))
-
-;; (defn simple-alert-header-border-top [header]
-;;   (str border-char
-;;        border-char
-;;        " "
-;;        (sgr-bold header)
-;;        " "
-;;        (string/join
-;;         (repeat 
-;;          (/ (- border-len
-;;                (dec alert-indent)
-;;                (+ 2 (count header))
-;;                2)
-;;             2)
-;;          border-char))))
-
-;; (def bad-value-with-red-underline
-;;   (str "font-weight:bold;"
-;;        "text-decoration-line: underline;"
-;;        "text-decoration-style: wavy;"
-;;        ;; "text-decoration-color: #ff5252;"
-;;        "text-decoration-color: #ff00ff;"
-;;        "text-underline-offset: 0.4em;"
-;;        "text-decoration-thickness: 1.5px;"
-;;        "line-height: 2.5em;"))
-
-;; (def kv-with-bad-value
-;;   ["font-weight:bold; line-height: 2em;"
-;;    "font-weight:normal; line-height: 2em;"
-;;    bad-value-with-red-underline
-;;    "font-weight:normal"])
-
-;; (def bad-value
-;;   [bad-value-with-red-underline
-;;    "font-weight:normal"])
-
-
-;; Warning and error blocks  ---------------------------------------------------
-
-;; (defn read-file-warning
-;;   [{:keys [path header default]}]
-;;   (let [path    (dq path)
-;;         warning (str header
-;;                      "\n\n"
-;;                      #?(:cljs
-;;                         (str "%c" path "%c")
-;;                         :clj
-;;                         (sgr-bold (str path))))
-;;         body   (str warning 
-;;                     (some->> (str "\n\n" default))
-;;                     #?(:cljs "\n"))]
-;;     #?(:cljs (let [js-arr (into-array 
-;;                            (concat [body] bad-value))]
-;;                (.apply (.-warn  js/console)
-;;                        js/console
-;;                        js-arr))
-;;        :clj (println 
-;;              (str "\n"
-;;                   (simple-alert-header-border-top "WARNING")
-;;                   "\n\n"
-;;                   body
-;;                   "\n\n"
-;;                   unbroken-border
-;;                   "\n")))
-;;     nil))
-
-(defn invalid-find-value-option [x]
-  (println 
-   (str "Problem with the supplied value for the :find (highlighting) option:" 
-        "\n\n"
-        (expound/expound-str ::config/find
-                             x
-                             {:print-specs? false})
-        "\n\n"
-        "Nothing will be highlighted")))
-
-
-(defn bad-option-value-warning2
+(defn bad-option-value-warning
   [{:keys [k v spec default header body line column file]}]
-  (callout {:type :warning}
+  (callout {:type           :warning
+            ;; :heavy?         true
+            ;; :wrap?          true
+            :padding-bottom 0
+            :label          nil}
            (point-of-interest
             (merge {:squiggly-color :warning
                     :form           (str k " " v)          
                     :line           line
                     :column         column
                     :file           file
-                    :header         (or (?pp header)
-                                        "[fireworks.core/_p] "
-                                        "Invalid option value:")
+                    :header         (or header "Invalid option value:")
                     :body           (str (expound/expound-str spec
                                                               v
                                                               {:print-specs? false})
@@ -130,81 +32,6 @@
                                                 default
                                                 "` will be applied."))
                                          (when body (str "\n\n" body)))}))))
-
-
-;; (defn bad-option-value-warning
-;;   [{:keys [k v spec header default]}]
-;;   (let [v       (dq v)
-;;         warning (str header
-;;                      "\n\n"
-;;                      #?(:cljs
-;;                         (str "%c" k "%c %c" v "%c")
-;;                         :clj
-;;                         (sgr-bold (str k " " v)))
-;;                      "\n\n"
-;;                      (expound/expound-str spec v {:print-specs? false})
-;;                      (when default
-;;                        (str "\n\n"
-;;                             "The default value of `" default "` will be applied."))
-;;                      #?(:cljs "\n"))]
-;;     #?(:cljs (let [js-arr (into-array 
-;;                            (concat [warning] kv-with-bad-value))]
-;;                (.apply (.-warn  js/console)
-;;                        js/console
-;;                        js-arr))
-;;        :clj (println 
-;;              (str "\n"
-;;                   (simple-alert-header-border-top "WARNING")
-;;                   "\n\n"
-;;                   warning
-;;                   "\n\n"
-;;                   unbroken-border
-;;                   "\n")))
-;;     nil))
-
-
-;; (defn invalid-color-warning 
-;;   [{:keys [header v k footer theme-token from-custom-badge-style?]}]
-;;   (str header
-;;        "\n\n"
-;;        #?(:cljs
-;;           (str "%c" k " " "\"" v "\"%c")
-;;           :clj
-;;           (str "\033[1;m" k " " "\"" v "\"\033[0;m"))
-       
-;;        (when from-custom-badge-style?
-;;          (str "\n\n"
-;;               (str "This is from a :badge-style map within"
-;;                    " a user-supplied custom printer.")))
-;;        "\n\n"
-;;        "This color value should be a hex or named html color."
-;;        "\n\n"
-;;        (str "The fallback color value for the "
-;;             theme-token 
-;;             " theme token will be applied.")
-;;        footer))
-
-
-;; (defn color-warning
-;;   [{:keys [theme-token] :as opts}]
-;;   (let [header  (str "[fireworks.core/_p] Invalid color value for theme token " 
-;;                      theme-token
-;;                      ".")
-;;         warning (str (invalid-color-warning (merge {:header header} opts)))]
-;;     #?(:cljs (let [js-arr (into-array (concat [warning]
-;;                                               ["font-weight:bold"
-;;                                                "font-weight:normal"]))]
-;;                (.apply (.-warn  js/console)
-;;                        js/console
-;;                        js-arr))
-;;        :clj (do (println "\n")
-;;                 (println (simple-alert-header-border-top "WARNING"))
-;;                 (println)
-;;                 (println warning)
-;;                 (println)
-;;                 (println unbroken-border)
-;;                 (println)))
-;;     nil))
 
 
 (defn unable-to-trace [opts]
@@ -254,35 +81,35 @@
         (apply str trace))))
 
 
-;; version with no stack trace - maybe merge with next?
-(defn caught-exception
-  [{:keys [k v header body line column file label]}]
-  (callout {:type  :error
-            :label label}
-           (point-of-interest
-            (merge {:squiggly-color :error
-                    :form           (str k " " v)          
-                    :line           line
-                    :column         column
-                    :file           file
-                    :header         header
-                    :body           body}))))
-
 ;; version with stack trace
-(defn print-caught-exception
-  [err opts]
-  (callout opts
-           (point-of-interest
-            (merge opts
-                   {:squiggly-color :error
-                    :label          "CAUGHT EXCEPTION"
-                    :body           [[:italic.subtle.bold "Message from Clojure:"]
-                                     "\n"
-                                     (string/replace (.getMessage err) #"\(" "\n(")
-                                     "\n\n"
-                                     [:italic.subtle.bold "Stacktrace preview:"]
-                                     "\n"
-                                     (user-friendly-clj-stack-trace err)]}))))
+(defn caught-exception
+  ([opts]
+   (caught-exception nil opts))
+  ([err {:keys [k v form body] :as opts}]
+   (callout (assoc opts :type :error)
+            (point-of-interest
+             (merge opts
+                    {:squiggly-color
+                     :error
+
+                     :form
+                     (or form (str k " " v))
+
+                     :label          
+                     "CAUGHT EXCEPTION"
+
+                     :body           
+                     (if err
+                       (conj [[:italic.subtle.bold "Message from Clojure:"]
+                              "\n"
+                              (string/replace (.getMessage err) #"\(" "\n(")
+                              "\n\n"
+                              [:italic.subtle.bold "Stacktrace preview:"]
+                              "\n"
+                              (user-friendly-clj-stack-trace err)]
+                             body)
+                       body)})))))
+
 
 ;; Maybe this should go in core?
 (defn print-formatted
@@ -292,12 +119,13 @@
    (if (instance? FireworksThrowable x)
      (let [{:keys [line column file]} (:form-meta err-opts)
            ns-str                     (:ns-str err-opts)] 
-       (print-caught-exception err {:type   :error
-                                    :form   (:quoted-fw-form err-opts)
-                                    :header (some-> err-opts :fw-fnsym)
-                                    :line   line
-                                    :column column
-                                    :file   (or file ns-str)}))
+       (caught-exception err
+                               {:type   :error
+                                :form   (:quoted-fw-form err-opts)
+                                :header (some-> err-opts :fw-fnsym)
+                                :line   line
+                                :column column
+                                :file   (or file ns-str)}))
      #?(:cljs
         (f x)
         :clj
@@ -314,9 +142,9 @@
 ;;    :messaging/print-error              print-error})
 
 (def dispatch 
-  {:messaging/bad-option-value-warning bad-option-value-warning2
+  {:messaging/bad-option-value-warning bad-option-value-warning
    :messaging/read-file-warning        caught-exception
-   :messaging/print-error              print-caught-exception})
+   :messaging/print-error              caught-exception})
 
 ;; Race-condition-free version of clojure.core/println,
 ;; maybe useful if any weird behavior arises
