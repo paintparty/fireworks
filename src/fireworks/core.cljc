@@ -413,7 +413,8 @@
            state/highlight-style
            (reset! state/highlight)))
           
-                                            
+
+
 ;                         PPPPPPPPPPPPPPPPP
 ;                         P::::::::::::::::P
 ;                         P::::::PPPPPP:::::P
@@ -430,9 +431,31 @@
 ;                         P::::::::P
 ;                         P::::::::P
 ;                         PPPPPPPPPP
-; ________________________
-; _::::::::::::::::::::::_
-; ________________________                    
+
+
+(defn- print-formatted
+  ([x]
+   (print-formatted x nil))
+  ([{:keys [fmt log? err err-opts] :as x} f]
+   (if (instance? fireworks.messaging.FireworksThrowable x)
+     (let [{:keys [line column file]} (:form-meta err-opts)
+           ns-str                     (:ns-str err-opts)] 
+       (messaging/caught-exception err
+                                   {:type   :error
+                                    :form   (:quoted-fw-form err-opts)
+                                    :header (or (some-> err-opts :header)
+                                                (some-> err-opts :fw-fnsym))
+                                    :line   line
+                                    :column column
+                                    :file   (or file ns-str)}))
+     #?(:cljs
+        (f x)
+        :clj
+        (do 
+          (some-> fmt print)
+          ;; Trailing line for read-ability.
+          ;; Maybe make this a config option? (true by default).
+          ((if log? print println) "\n"))))))
 
 (defn ^{:public true}
   _pp
@@ -495,11 +518,16 @@
           printing-opts (try (formatted x opts)
                              (catch #?(:cljs js/Object :clj Exception)
                                     e
-                               (messaging/->FireworksThrowable e x opts)))]
+                               (messaging/->FireworksThrowable
+                                e
+                                x
+                                (assoc opts
+                                       :header
+                                       "fireworks.core/formatted"))))]
       (if (:p-data? opts) 
         printing-opts
         (do 
-          (messaging/print-formatted printing-opts #?(:cljs js-print))
+          (print-formatted printing-opts #?(:cljs js-print))
 
           ;; Fireworks formatting and printing of formatted does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
