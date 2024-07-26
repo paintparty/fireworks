@@ -42,7 +42,9 @@
        "- Does the file exist?"
        "\n"
        "\n"
-       "The default Fireworks configuration options will be applied."))
+       "The default Fireworks configuration options will be applied."
+       "\n"
+       "The default Theme of \"Alabaster Light\" will be used."))
 
 (defn- load-edn-exception-opts
   [{:keys [file key source]}]

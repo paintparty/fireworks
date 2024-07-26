@@ -1,5 +1,6 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
+            [fireworks.pp :refer [?pp]]
             [expound.alpha :as expound]
             [get-rich.core :refer [point-of-interest callout]]))
 
@@ -38,18 +39,25 @@
   (callout opts
            (point-of-interest
             (merge opts
-                   {:squiggly-color :warning
-                    :form           (str "(?trace " (:form opts) ")")          
-                    :header         "Unable to trace form."
-                    :body           (str "fireworks.core/?trace will trace forms beginning with:\n"
-                                         (string/join "\n"
-                                                      ['->
-                                                       'some->
-                                                       '->>
-                                                       'some->>
-                                                       ;; Add let when you actually support it
-                                                       ;; 'let
-                                                       ]))}))))
+                   {:squiggly-color
+                    :warning
+
+                    :form           
+                    (str "(?trace " (:form opts) ")")          
+
+                    :header         
+                    "Unable to trace form."
+
+                    :body           
+                    (str "fireworks.core/?trace will trace forms beginning with:\n"
+                         (string/join "\n"
+                                      ['->
+                                       'some->
+                                       '->>
+                                       'some->>
+                                       ;; Add let when you actually support it
+                                       ;; 'let
+                                       ]))}))))
 
 
 ;; TODO - maybe move this to get-rich?
@@ -85,7 +93,8 @@
 (defn caught-exception
   ([opts]
    (caught-exception nil opts))
-  ([err {:keys [k v form body] :as opts}]
+  ([err {:keys [k v form body]
+         :as   opts}]
    (callout (assoc opts :type :error)
             (point-of-interest
              (merge opts
@@ -100,40 +109,20 @@
 
                      :body           
                      (if err
-                       (conj [[:italic.subtle.bold "Message from Clojure:"]
-                              "\n"
-                              (string/replace (.getMessage err) #"\(" "\n(")
-                              "\n\n"
-                              [:italic.subtle.bold "Stacktrace preview:"]
-                              "\n"
-                              (user-friendly-clj-stack-trace err)]
-                             body)
+                       #?(:cljs
+                          nil
+                          :clj
+                          (conj [[:italic.subtle.bold "Message from Clojure:"]
+                                 "\n"
+                                 (string/replace (.getMessage err) #"\(" "\n(")
+                                 "\n\n"
+                                 [:italic.subtle.bold "Stacktrace preview:"]
+                                 "\n"
+                                 (user-friendly-clj-stack-trace err)]
+                                body))
                        body)})))))
 
 
-;; Maybe this should go in core?
-(defn print-formatted
-  ([x]
-   (print-formatted x nil))
-  ([{:keys [fmt log? err err-x err-opts] :as x} f]
-   (if (instance? FireworksThrowable x)
-     (let [{:keys [line column file]} (:form-meta err-opts)
-           ns-str                     (:ns-str err-opts)] 
-       (caught-exception err
-                               {:type   :error
-                                :form   (:quoted-fw-form err-opts)
-                                :header (some-> err-opts :fw-fnsym)
-                                :line   line
-                                :column column
-                                :file   (or file ns-str)}))
-     #?(:cljs
-        (f x)
-        :clj
-        (do 
-          (some-> fmt print)
-          ;; Trailing line for read-ability.
-          ;; Maybe make this a config option? (true by default).
-          ((if log? print println) "\n"))))))
 
 ;; TODO fix this for new callouts
 ;; (def dispatch 
