@@ -1,4 +1,4 @@
-(defproject io.github.paintparty/fireworks "0.6.0-SNAPSHOT"
+(defproject io.github.paintparty/fireworks "0.6.0"
   :description "Color Pretty Printer for Clojure(Script)"
   :url "https://github.com/paintparty/fireworks"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
@@ -16,5 +16,4 @@
                  [io.github.paintparty/lasertag "0.5.1"]]
   :repl-options {:init-ns fireworks.core}
   :deploy-repositories [["clojars" {:url           "https://clojars.org/repo"
-                                    :sign-releases false}]]
-  )
+                                    :sign-releases false}]])
