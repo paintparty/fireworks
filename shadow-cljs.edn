@@ -1,8 +1,12 @@
 ;; shadow-cljs configuration
 {:source-paths ["src/" 
                 "test/"
-                "../lasertag/src/"]
- :dependencies [[io.github.paintparty/lasertag "0.3.0"]]
+                ;; for local dev
+                "../lasertag/src/"
+                "../get-rich/src/"
+                ]
+ :dependencies [[io.github.paintparty/lasertag "0.5.1"]
+                [io.github.paintparty/get-rich "0.2.0"]]
  :builds       {:test {:target    :karma
                        :output-to "out/test.js"
                        :ns-regexp "-test$"

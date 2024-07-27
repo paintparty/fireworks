@@ -1,3 +1,6 @@
+;; TODO
+;; Add internal ?sgr to print sgr-tagged strings but with sgr escaped and readable in console.
+
 (ns fireworks.core
   (:require
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
@@ -210,6 +213,7 @@
            user-opts
            threading?]
     :as   opts}] 
+  ;; (when (= "force error" qf) (+ 1 true))
   (let [user-print-fn
         (:print-with user-opts)
 
@@ -301,11 +305,14 @@
     (if valid?
       (swap! state/config assoc k new-val)
       (messaging/bad-option-value-warning
-       (let [m (k config/options)]
-         (merge m
-                {:k       k
-                 :v       new-val
-                 :header  "[fireworks.core/_p] Invalid option value."}))))))
+       (let [m                     (k config/options)
+             {:keys [line column]} (:form-meta opts)
+             ns-str                (:ns-str opts)]
+         (merge m 
+                (keyed [k line column])
+                {:header (:fw-fnsym opts)
+                 :v      new-val
+                 :file   ns-str}))))))
 
 
 (defn- opt-to-reset [opts k]
@@ -406,7 +413,8 @@
            state/highlight-style
            (reset! state/highlight)))
           
-                                            
+
+
 ;                         PPPPPPPPPPPPPPPPP
 ;                         P::::::::::::::::P
 ;                         P::::::PPPPPP:::::P
@@ -423,9 +431,31 @@
 ;                         P::::::::P
 ;                         P::::::::P
 ;                         PPPPPPPPPP
-; ________________________
-; _::::::::::::::::::::::_
-; ________________________                    
+
+
+(defn- print-formatted
+  ([x]
+   (print-formatted x nil))
+  ([{:keys [fmt log? err err-opts] :as x} f]
+   (if (instance? fireworks.messaging.FireworksThrowable x)
+     (let [{:keys [line column file]} (:form-meta err-opts)
+           ns-str                     (:ns-str err-opts)] 
+       (messaging/caught-exception err
+                                   {:type   :error
+                                    :form   (:quoted-fw-form err-opts)
+                                    :header (or (some-> err-opts :header)
+                                                (some-> err-opts :fw-fnsym))
+                                    :line   line
+                                    :column column
+                                    :file   (or file ns-str)}))
+     #?(:cljs
+        (f x)
+        :clj
+        (do 
+          (some-> fmt print)
+          ;; Trailing line for read-ability.
+          ;; Maybe make this a config option? (true by default).
+          ((if log? print println) "\n"))))))
 
 (defn ^{:public true}
   _pp
@@ -462,6 +492,7 @@
 
   ([a opts x]
   
+  
   (let [opts (if (map? a)
                (merge (dissoc opts x :label) a)
                opts)]
@@ -487,19 +518,23 @@
           printing-opts (try (formatted x opts)
                              (catch #?(:cljs js/Object :clj Exception)
                                     e
-                               (messaging/->FireworksThrowable e)))]
+                               (messaging/->FireworksThrowable
+                                e
+                                x
+                                (assoc opts
+                                       :header
+                                       "fireworks.core/formatted"))))]
       (if (:p-data? opts) 
         printing-opts
         (do 
-          (messaging/print-formatted printing-opts #?(:cljs js-print))
+          (print-formatted printing-opts #?(:cljs js-print))
 
           ;; Fireworks formatting and printing of formatted does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
           ;; - fireworks.core/?log or fireworks.core/?log- is used
           ;; - fireworks.core/?pp or fireworks.core/?pp- is used
           
-          (when (and (not (:fw/log? opts))
-                     (:log? opts))
+          (when (and (not (:fw/log? opts)) (:log? opts))
             #?(:cljs (js/console.log x)
                :clj (fireworks.core/pprint x)))
 
@@ -519,9 +554,14 @@
                                          :fw/log?
                                          :p-data?
                                          :form-meta])
-                         {:ns-str    (some-> *ns* ns-name str)
-                          :label     label
-                          :user-opts cfg-opts})]
+                         {:ns-str         (some-> *ns* ns-name str)
+                          :label          label
+                          :user-opts      cfg-opts
+                          :quoted-fw-form (list 'quote (:&form m))
+                          :fw-fnsym       (some-> m
+                                                  :&form
+                                                  (nth 0 nil)
+                                                  (->> (str "fireworks.core/")))})]
     cfg-opts))
 
 
@@ -601,6 +641,7 @@
    (let [{:keys [cfg-opts defd]}   
          (helper2 {:x         x
                    :template  [:file-info :result]
+                   :&form     &form
                    :form-meta (meta &form)})]
      `(do 
         (when ~defd ~x)
@@ -612,6 +653,7 @@
          (helper2 {:a         a
                    :template  [:file-info :result]
                    :x         x
+                   :&form     &form
                    :form-meta (meta &form)})]
      `(do 
         (when ~defd ~x)
@@ -638,6 +680,7 @@
    (let [{:keys [cfg-opts defd]}   
          (helper2 {:x         x
                    :template  [:form-or-label :result]
+                   :&form     &form
                    :form-meta (meta &form)})]
      `(do 
         (when ~defd ~x)
@@ -649,6 +692,7 @@
          (helper2 {:a         a
                    :template  [:form-or-label :result]
                    :x         x
+                   :&form     &form
                    :form-meta (meta &form)})]
      `(do 
         (when ~defd ~x)
@@ -675,8 +719,8 @@
    (let [{:keys [cfg-opts defd]}
          (helper2 {:x         x
                    :template  [:form-or-label :file-info :result]
+                   :&form     &form
                    :form-meta (meta &form)})]
-      
        `(do 
           (when ~defd ~x)
           (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
@@ -687,7 +731,9 @@
          (helper2 {:a         a
                    :template  [:form-or-label :file-info :result]
                    :x         x
+                   :&form     &form
                    :form-meta (meta &form)})]
+
      `(do 
         (when ~defd ~x)
         (fireworks.core/_p ~a
@@ -719,6 +765,7 @@
    (let [{:keys [cfg-opts defd]}
          (helper2 {:x         x
                    :template  [:form-or-label :file-info :result]
+                   :&form     &form
                    :form-meta (meta &form)})]
      `(do 
         (when ~defd ~x)
@@ -730,6 +777,7 @@
          (helper2 {:a         a
                    :template  [:form-or-label :file-info :result]
                    :x         x
+                   :&form     &form
                    :form-meta (meta &form)})]
      `(do 
         (when ~defd ~x)
@@ -750,6 +798,7 @@
    (let [{:keys [cfg-opts]}
          (helper2 {:x         x
                    :template  [:form-or-label :file-info]
+                   :&form     &form
                    :form-meta (meta &form)})]
      `(fireworks.core/_p (assoc ~cfg-opts :label ~x :qf nil)
                          ~x))))
@@ -779,7 +828,7 @@
 
 
 (defn- thread-helper
-  [{:keys [forms form-meta thread-sym user-opts]}]
+  [{:keys [forms form-meta thread-sym user-opts] :as m}]
   (let [?-call-sym         (if (contains? #{'-> 'some->} thread-sym)
                              'fireworks.core/?flop 
                              'fireworks.core/?)
@@ -792,6 +841,7 @@
         fms                (interleave forms opts)
         call               (cons thread-sym fms)
         {:keys [cfg-opts]} (helper2 {:x         nil
+                                     :&form     (:&form m)
                                      :form-meta form-meta})]
     [cfg-opts call]))
 
@@ -808,7 +858,11 @@
   ([x]
    (let [form-meta (meta &form)]
      (if-let [[thread-sym forms] (threading-sym x)]
-       (let [[cfg-opts call] (thread-helper (keyed [forms form-meta thread-sym]))]
+       (let [[cfg-opts call] (thread-helper (assoc (keyed [forms
+                                                           form-meta
+                                                           thread-sym])
+                                                   :&form
+                                                   &form))]
          `(do (fireworks.core/print-thread ~cfg-opts
                                            (quote ~forms)
                                            (str (quote ~thread-sym)))
@@ -816,27 +870,33 @@
 
        ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
        `(do
-          (messaging/unable-to-trace {:alert-type  :warning
-                                      :form-meta   ~form-meta
-                                      :quoted-form (quote ~x)})
+          (messaging/unable-to-trace
+           (merge
+            ~form-meta
+            {:type :warning
+             :form (quote ~x)}))
           ~x))))
   ([user-opts x]
    ;; Issue warning if not traceable
    (let [form-meta (meta &form)]
      (if-let [[thread-sym forms] (threading-sym x)]
        (let [form-meta       (meta &form)
-
-             [cfg-opts call] (thread-helper (keyed [forms form-meta thread-sym user-opts]))]
+             [cfg-opts call] (thread-helper (keyed [forms
+                                                    form-meta
+                                                    thread-sym
+                                                    user-opts]))]
          `(do (fireworks.core/print-thread ~cfg-opts
                                            (quote ~forms)
                                            (str (quote ~thread-sym)))
               ~call)
 
-          ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
+         ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
          `(do
-           (messaging/unable-to-trace {:alert-type  :warning
-                                       :form-meta   ~form-meta
-                                       :quoted-form (quote ~x)})
+           (messaging/unable-to-trace
+            (merge 
+             ~form-meta
+             {:type :warning
+              :form (quote ~x)}))
            ~x))
        `x))))
 
@@ -886,6 +946,7 @@
         {:keys [cfg-opts]}
         (helper2 {:a         user-opts
                   :x         nil
+                  :&form     &form
                   :form-meta (meta &form)})
 
         cfg-opts
@@ -927,6 +988,7 @@
          (helper2 {:x         x
                    :template  [:form-or-label :file-info :result]
                    :form-meta (meta &form)
+                   :&form     &form
                    :log?      true
                    :fw/log?   true})]
      `(do 
@@ -939,6 +1001,7 @@
                    :x         x
                    :template  [:form-or-label :file-info :result]
                    :form-meta (meta &form)
+                   :&form     &form
                    :log?      true
                    :fw/log?   true})]
      `(do 
@@ -975,6 +1038,7 @@
          (helper2 {:x         x
                    :template  [:form-or-label :file-info :result]
                    :form-meta (meta &form)
+                   :&form     &form
                    :log?      true
                    :fw/log?   true})]
      `(do 
@@ -987,6 +1051,7 @@
                    :x         x
                    :template  [:form-or-label :file-info :result]
                    :form-meta (meta &form)
+                   :&form     &form
                    :log?      true
                    :fw/log?   true})]
      `(do 
@@ -1039,6 +1104,7 @@
                  defd]}   (helper2 {:p-data?   true
                                     :x         x
                                     :template  [:form-or-label :file-info :result]
+                                    :&form     &form
                                     :form-meta (meta &form)})]
      `(do (when ~defd ~x)
          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
@@ -1050,6 +1116,7 @@
                                     :a         a
                                     :x         x
                                     :template  [:form-or-label :file-info :result]
+                                    :&form     &form
                                     :form-meta (meta &form)})]
      `(do (when ~defd ~x)
           (fireworks.core/_p ~a

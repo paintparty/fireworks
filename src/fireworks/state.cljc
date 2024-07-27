@@ -71,8 +71,8 @@
 (def user-config (get-user-configs))
 
 
-;; Validation function for config option
-(defn validated
+;; TODO - figure out how to get filename, line, and column.
+(defn validate-option-from-user-config-edn
   [k v {:keys [spec default]}]
   (let [undefined? (or (when (string? v) (string/blank? v))
                        (nil? v))
@@ -81,8 +81,10 @@
     (if invalid?
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
-              :header
-              "[fireworks.core/_p] Invalid option value."))
+              :header (str (some-> user-config
+                                   :path-to-user-config
+                                   (str "\n\n"))
+                           (str "Invalid value for " k " in user config."))))
       (if (or undefined? (not valid?))
         nil
         v))))
@@ -94,13 +96,15 @@
     (into {}
           (map (fn [[k v]]
                  (let [m         (k config/options)
-                       validated (validated k v m)]
+                       validated (validate-option-from-user-config-edn k v m)]
                    [k validated]))
                user-config))
+
+    ;; TODO - check if this actually catches anything?
     (catch #?(:cljs js/Object
               :clj Exception)
            e
-      (messaging/print-error e)
+      (messaging/caught-exception e {})
       (swap! messaging/warnings-and-errors
              conj
              [:messaging/print-error e])
@@ -150,7 +154,7 @@
 
 
 (defn- with-removed-or-resolved-color
-  [m k opts]
+  [m k {:keys [theme-token from-custom-badge-style?] :as opts}]
   (let [c               (k m)
         bg-transparent? (and (= k :background-color)
                              (contains? #{:transparent "transparent"} c))
@@ -162,15 +166,45 @@
 
       (and c (nil? resolved))
       (do 
-        (messaging/color-warning
-         (merge {:k k
-                 :v c}
-                opts))
+        (messaging/bad-option-value-warning
+         (merge {:k      k
+                 :v      c
+                 :spec   ::tokens/color-value
+                 :header (str "fireworks.state/with-removed-or-resolved-color\n\n"
+                              "Invalid color value for theme token " theme-token "."
+                              (when from-custom-badge-style?
+                                (str "\n\n"
+                                     "This is from a :badge-style map within"
+                                     " a user-supplied custom printer.")))
+                 :body   (str "The fallback color value for the "
+                              theme-token 
+                              " theme token will be applied.")}
+                opts))        
         (dissoc m k))
 
       :else
       m)))
 
+(defn invalid-color-warning 
+  [{:keys [header v k footer theme-token from-custom-badge-style?]}]
+  (str header
+       "\n\n"
+       #?(:cljs
+          (str "%c" k " " "\"" v "\"%c")
+          :clj
+          (str "\033[1;m" k " " "\"" v "\"\033[0;m"))
+       
+       (when from-custom-badge-style?
+         (str "\n\n"
+              (str "This is from a :badge-style map within"
+                   " a user-supplied custom printer.")))
+       "\n\n"
+       "This color value should be a hex or named html color."
+       "\n\n"
+       (str "The fallback color value for the "
+            theme-token 
+            " theme token will be applied.")
+       footer))
 
 (defn with-conformed-colors
   "If :background-color is :transparent or \"transparent\", dissoc the entry.
@@ -202,7 +236,6 @@
     bgc*        :background-color
     font-style  :font-style
     font-weight :font-weight
-    k           :k
     :as         m}]
   (when @debug-on-token?
     (println "\n(fireworks.state/m->sgr " m ")"))
@@ -500,27 +533,39 @@
 
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
 
-         ret              (merge-theme+ base-theme theme)
-         ]
+         ret              (merge-theme+ base-theme theme)]
      ;; TODO - Add observability for theme
      ret)))
 
 
 ;; The merged theme to use for printing --------------------------------
-(let [{:keys [with-style-maps with-serialized-style-maps err]}
+(let [{:keys [with-style-maps
+              with-serialized-style-maps
+              err
+              err-x
+              err-opts]}
       (try (merged-theme*)
            (catch #?(:cljs js/Object :clj Exception)
                   e
-             (messaging/->FireworksThrowable e)))]
-
-      #_(?pp (:metadata-key with-style-maps))
+             (messaging/->FireworksThrowable e nil nil)))]
+  ;; TODO - Does this ever reach the err branch?
   (if err 
-    (messaging/print-error err)
-    (do 
-      (def merged-theme 
-        (atom with-serialized-style-maps))
-      (def merged-theme-with-unserialized-style-maps
-        (atom with-style-maps)))))
+    (let [{:keys [line
+                  column
+                  file]} (:form-meta err-opts)
+          ns-str         (:ns-str err-opts)] 
+      (messaging/caught-exception
+       err
+       {:header "[fireworks.state/merged-theme*]"
+        :type   :error
+        :form   err-x
+        :line   line
+        :column column
+        :file   (or file ns-str)}))
+    (do (def merged-theme 
+          (atom with-serialized-style-maps))
+        (def merged-theme-with-unserialized-style-maps
+          (atom with-style-maps)))))
 
 
 ;; Helpers for css -----------------------------------------------------
@@ -551,7 +596,12 @@
       (highlight-style* x)
       (vector? x)
       (mapv highlight-style* x))
-    (messaging/invalid-find-value-option x)))   
+    (messaging/bad-option-value-warning
+     {:k      :find
+      :v      x
+      :spec   ::config.specs/find
+      :header "Problem with the supplied value for the :find (highlighting) option:" })
+    #_(messaging/invalid-find-value-option x)))   
 
 
 (def *formatting-meta-level (atom 0))

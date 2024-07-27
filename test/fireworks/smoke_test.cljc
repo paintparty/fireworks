@@ -1,5 +1,7 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?let ?trace p-data]]
+  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i
+                                    ?l !?l ?log !?log ?log- !?log- ?pp
+                                    !?pp ?pp- !?pp- ?trace !?trace]]
             [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
@@ -101,14 +103,13 @@
                   :bbb                            "asdfasdfasdfjasdfasdfasdfasdfa"
                   "really-long-string-abcdefghi"  "really-long-string-abcdefghi"  
                   1                               2
-                  "string"                          "hello"
+                  "string"                        "hello"
                   :keyword                        :keyword
                   true                            false
-                  nil                                nil
-                  'symbol                  'symbol
-                  #"^hi$"                          #"^hi$"
-                  #"really-long-string-abcdefghi" #"really-long-string-abcdefghi"
-                  }
+                  nil                             nil
+                  'symbol                         'symbol
+                  #"^hi$"                         #"^hi$"
+                  #"really-long-string-abcdefghi" #"really-long-string-abcdefghi"}
    :functions    {(symbol "(fn [])")   #()
                   (symbol "#(+ % %2)") #(+ % %2) 
                   +                    -
@@ -116,7 +117,6 @@
                   my-data-type         my-data-type
                   MyRecordType         MyRecordType
                   :really-long         xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz}
-
    :collections  {:vector        [1 2 3]
                   :set           #{1 2 3}
                   :list          '(1 2 3)
@@ -125,22 +125,30 @@
                   ;; :truncation-candidate [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]
                   :colls-as-keys {[1 2]    "afjasljfalsjdalsfk"
                                   #{1 2 3} "afsdfasdfsdfasfas"}}
-
    :abstractions {:atom (atom 1)
                   :date my-date}
-
-   :with-meta    {:symbol  (with-meta (symbol (str "foo")) (into {} (map (fn [x y] [x y]) (range 20) (repeat :foo))))
+   :with-meta    {:symbol  (with-meta (symbol (str "foo"))
+                             (into {}
+                                   (map (fn [x y] [x y])
+                                        (range 20)
+                                        (repeat :foo))))
                   :vector  ^{:foo :bar} [:foo :bar :baz]
-                  :vector* ^{:foo :bar} [(with-meta (symbol (str "foo")) {:bar :baz})
-                                         (with-meta (symbol (str "bar")) {:bar :baz})
-                                         (with-meta (symbol (str "baz")) {:bar :baz})]
+                  :vector* ^{:foo :bar} [(with-meta (symbol (str "foo"))
+                                           {:bar :baz})
+                                         (with-meta (symbol (str "bar")) 
+                                           {:bar :baz})
+                                         (with-meta (symbol (str "baz"))
+                                           {:bar :baz})]
                   :map     ^{:foo :bar} {:one :two}
-                  :map*    ^{:foo :bar} {(with-meta (symbol (str "foo")) {:bar :baz})
-                                         (with-meta (symbol (str "bar")) {:bar :baz})
+                  :map*    ^{:foo :bar} {(with-meta (symbol (str "foo"))
+                                           {:bar :baz})
+                                         (with-meta (symbol (str "bar"))
+                                           {:bar :baz})
 
-                                         (with-meta (symbol (str "bang")) {:bar :baz})
-                                         (with-meta (symbol (str "bop")) {:bar :baz})}}
-
+                                         (with-meta (symbol (str "bang"))
+                                           {:bar :baz})
+                                         (with-meta (symbol (str "bop"))
+                                           {:bar :baz})}}
    :number-types #?(:cljs js-number-types
                     :clj nil)})
 
@@ -351,10 +359,6 @@
 ;;  (-> 1 (+ 3)))
 
 
-
-
-
-
 ;; (?let [[a b c] ["a" "b" "c" "d" "e"]]
 ;;       [a b c])
 
@@ -362,17 +366,19 @@
 ;;       [a (range 10)
 ;;        b (range 33 200 4)])
 
+;; (? {:print-level ["foo"]} :HI)
+
 (def person
-  {:name "Mark Volkmann"
-   :address {:street "644 Glen Summit"
-             :city "St. Charles"
-             :state "Missouri"
-             :zip 63304}
-   :employer {:name "Object Computing, Inc."
+  {:name     "Mark Volkmann"
+   :address  {:street "644 Glen Summit"
+              :city   "St. Charles"
+              :state  "Missouri"
+              :zip    63304}
+   :employer {:name    "Object Computing, Inc."
               :address {:street "12140 Woodcrest Dr."
-                        :city "Creve Coeur"
-                        :state "Missouri"
-                        :zip 63141}}})
+                        :city   "Creve Coeur"
+                        :state  "Missouri"
+                        :zip    63141}}})
 
 #_(? (-> person 
        ?

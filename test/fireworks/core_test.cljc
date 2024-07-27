@@ -172,10 +172,10 @@
        (deftest p-data-rainbow-brackets
          (is (= 
               (let [ret              (p-data {:label                      "my-label"
-                                          :enable-terminal-truecolor? true
-                                          :enable-terminal-italics?   true
-                                          :bracket-contrast           "high"
-                                          :theme                      theme}
+                                              :enable-terminal-truecolor? true
+                                              :enable-terminal-italics?   true
+                                              :bracket-contrast           "high"
+                                              :theme                      theme}
                                          [[[[[]]]]])
                     formatted-string (-> ret :formatted :string)]
                 #_(pp/pprint formatted-string)
