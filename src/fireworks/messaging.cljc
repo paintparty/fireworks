@@ -18,28 +18,28 @@
             :padding-bottom 0
             :label          nil}
            (point-of-interest
-            (merge {:squiggly-color :warning
-                    :form           (str k " " v)          
-                    :line           line
-                    :column         column
-                    :file           file
-                    :header         (or header "Invalid option value:")
-                    :body           (str (expound/expound-str spec
-                                                              v
-                                                              {:print-specs? false})
-                                         (when default
-                                           (str "\n\n"
-                                                "The default value of `"
-                                                default
-                                                "` will be applied."))
-                                         (when body (str "\n\n" body)))}))))
+            (merge {:type   :warning
+                    :form   (str k " " v)          
+                    :line   line
+                    :column column
+                    :file   file
+                    :header (or header "Invalid option value:")
+                    :body   (str (expound/expound-str spec
+                                                      v
+                                                      {:print-specs? false})
+                                 (when default
+                                   (str "\n\n"
+                                        "The default value of `"
+                                        default
+                                        "` will be applied."))
+                                 (when body (str "\n\n" body)))}))))
 
 
 (defn unable-to-trace [opts]
   (callout opts
            (point-of-interest
             (merge opts
-                   {:squiggly-color
+                   {:type
                     :warning
 
                     :form           
@@ -98,7 +98,7 @@
    (callout (assoc opts :type :error)
             (point-of-interest
              (merge opts
-                    {:squiggly-color
+                    {:type
                      :error
 
                      :form
