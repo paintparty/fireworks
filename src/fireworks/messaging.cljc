@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]
             [fireworks.pp :refer [?pp]]
             [expound.alpha :as expound]
-            [get-rich.core :refer [point-of-interest callout]]))
+            [get-rich.core :as get-rich :refer [point-of-interest callout]]))
 
 (defrecord FireworksThrowable [err err-x err-opts])
 
@@ -62,33 +62,6 @@
 
 ;; TODO - maybe move this to get-rich?
 ;; Would have to pass in the regex part
-(defn user-friendly-clj-stack-trace [err]
-   #?(:clj
-      (let [st          (->> err .getStackTrace)
-            st-len      (count st)
-            mini-st     (->> st (take 10) (map StackTraceElement->vec))
-            indexes     (keep-indexed
-                         (fn [i [f]]
-                           (when (re-find #"^fireworks\.|^lasertag\."
-                                          (str f)) 
-                             i))
-                         mini-st)
-            last-index  (when (seq indexes)
-                          (->> indexes (take 5) last))
-            trace*      (when last-index
-                          (->> mini-st (take (inc last-index))))
-            len         (when trace* (count trace*)) 
-            trace       (some->> trace* (interpose "\n") (into []))
-            num-dropped (- (or st-len 0) (or len 0))
-            trace       (when trace
-                          (conj trace
-                                "\n"
-                                (symbol (str "..."
-                                             (some->> num-dropped
-                                                      (str "+"))))))]
-        (apply str trace))))
-
-
 ;; version with stack trace
 (defn caught-exception
   ([opts]
@@ -118,7 +91,10 @@
                                  "\n\n"
                                  [:italic.subtle.bold "Stacktrace preview:"]
                                  "\n"
-                                 (user-friendly-clj-stack-trace err)]
+                                 (get-rich/stack-trace-preview
+                                  {:error err
+                                   :regex #"^fireworks\.|^lasertag\."
+                                   })]
                                 body))
                        body)})))))
 
