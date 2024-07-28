@@ -1,20 +1,4 @@
-<!-- TODO add table of contents -->
-<!-- <h1 align="center"><span>🔥</span><br>Fireworks</h1>  -->
-<!-- <p align="center">
-<a href="https://clojars.org/io.github.paintparty/fireworks">
-<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=257ee4&style=flat-square&cacheSeconds=3 alt="Fireworks on Clojars"></img>
-</a>
-</p> -->
-
-<!-- <h1 align="center"><img src="./resources/color-printer-logo.png" width="400"></img><br>Fireworks</h1>  -->
 <div align="center"><img src="./resources/color-printer-logo.png" width="400"></img></div> 
-
-<!-- <br> -->
-
-<!-- <p align="center"><b>Themeable print debugging for Clojure, ClojureScript, and Babashka.</b></p> -->
-<!-- <p align="center"><b>Fireworks is a themeable print debugging library for Clojure, ClojureScript, and Babashka.</b></p> -->
-
-<!-- <br> -->
 
 <p align="center">
 <a href="https://clojars.org/io.github.paintparty/fireworks">
