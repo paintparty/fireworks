@@ -1,6 +1,5 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
-            [fireworks.pp :refer [?pp]]
             [expound.alpha :as expound]
             [get-rich.core :as get-rich :refer [point-of-interest callout]]))
 
@@ -97,8 +96,6 @@
                                    })]
                                 body))
                        body)})))))
-
-
 
 ;; TODO fix this for new callouts
 ;; (def dispatch 

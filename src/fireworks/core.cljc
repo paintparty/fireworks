@@ -213,7 +213,7 @@
            user-opts
            threading?]
     :as   opts}] 
-  (when (= "force error" qf) (+ 1 true))
+  ;; (when (= "force error" qf) (+ 1 true))
   (let [user-print-fn
         (:print-with user-opts)
 

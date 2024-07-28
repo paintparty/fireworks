@@ -2,11 +2,11 @@
 {:source-paths ["src/" 
                 "test/"
                 ;; for local dev
-                "../lasertag/src/"
-                "../get-rich/src/"
+                ;; "../lasertag/src/"
+                ;; "../get-rich/src/"
                 ]
  :dependencies [[io.github.paintparty/lasertag "0.5.1"]
-                [io.github.paintparty/get-rich "0.2.0"]]
+                [io.github.paintparty/get-rich "0.3.0-SNAPSHOT"]]
  :builds       {:test {:target    :karma
                        :output-to "out/test.js"
                        :ns-regexp "-test$"

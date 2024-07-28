@@ -12,7 +12,7 @@
                  [expound "0.9.0"]
                 ;;  for testing
                 ;;  [com.taoensso/tufte "2.6.3"]
-                 [io.github.paintparty/get-rich "0.2.0"]
+                 [io.github.paintparty/get-rich "0.3.0-SNAPSHOT"]
                  [io.github.paintparty/lasertag "0.5.1"]]
   :repl-options {:init-ns fireworks.core}
   :deploy-repositories [["clojars" {:url           "https://clojars.org/repo"
