@@ -1,6 +1,3 @@
-;; TODO
-;; Add internal ?sgr to print sgr-tagged strings but with sgr escaped and readable in console.
-
 (ns fireworks.core
   (:require
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
@@ -213,7 +210,14 @@
            user-opts
            threading?]
     :as   opts}] 
-  ;; (when (= "force error" qf) (+ 1 true))
+
+  ;; Test error messaging
+  ;; (when (= "force error" qf)
+  ;;   #?(:cljs
+  ;;      (throw (js/Error. "Forced error from fireworks.core/formatted"))
+  ;;      :clj
+  ;;      (+ 1 true)))
+
   (let [user-print-fn
         (:print-with user-opts)
 
@@ -292,7 +296,6 @@
 ;     S:::::::::::::::SS       T:::::::::T
 ;      SSSSSSSSSSSSSSS         TTTTTTTTTTT
 
-                                                                                                            
  
 (defn- reset-user-opt!
   "Validates user option override from call site and updates config."
@@ -305,14 +308,15 @@
     (if valid?
       (swap! state/config assoc k new-val)
       (messaging/bad-option-value-warning
-       (let [m                     (k config/options)
-             {:keys [line column]} (:form-meta opts)
-             ns-str                (:ns-str opts)]
+       (let [m                (k config/options)
+             {:keys [line 
+                     column]} (:form-meta opts)]
          (merge m 
                 (keyed [k line column])
                 {:header (:fw-fnsym opts)
                  :v      new-val
-                 :file   ns-str}))))))
+                 :form   (:quoted-fw-form opts) 
+                 :file   (:ns-str opts)}))))))
 
 
 (defn- opt-to-reset [opts k]

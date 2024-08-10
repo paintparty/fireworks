@@ -10,15 +10,16 @@
 
 
 (defn bad-option-value-warning
-  [{:keys [k v spec default header body line column file]}]
+  [{:keys [k v spec default header body line column file form]}]
   (callout {:type           :warning
             ;; :heavy?         true
             ;; :wrap?          true
+            :padding-top    1
             :padding-bottom 0
             :label          nil}
            (point-of-interest
             (merge {:type   :warning
-                    :form   (str k " " v)          
+                    :form   (or form (symbol (str k " " v)))          
                     :line   line
                     :column column
                     :file   file
@@ -67,14 +68,16 @@
    (caught-exception nil opts))
   ([err {:keys [k v form body]
          :as   opts}]
-   (callout (assoc opts :type :error)
+   (callout (merge opts
+                   {:type        :error
+                    :padding-top 1})
             (point-of-interest
              (merge opts
                     {:type
                      :error
 
                      :form
-                     (or form (str k " " v))
+                     (or form (symbol (str k " " v)))
 
                      :label          
                      "CAUGHT EXCEPTION"
