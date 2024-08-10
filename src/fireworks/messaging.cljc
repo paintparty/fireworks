@@ -12,8 +12,6 @@
 (defn bad-option-value-warning
   [{:keys [k v spec default header body line column file form]}]
   (callout {:type           :warning
-            ;; :heavy?         true
-            ;; :wrap?          true
             :padding-top    1
             :padding-bottom 0
             :label          nil}
