@@ -1,7 +1,7 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
             [expound.alpha :as expound]
-            [get-rich.core :as get-rich :refer [point-of-interest callout]]))
+            [get-rich.core :as get-rich :refer [enriched point-of-interest callout]]))
 
 (defrecord FireworksThrowable [err err-x err-opts])
 
@@ -68,6 +68,7 @@
          :as   opts}]
    (callout (merge opts
                    {:type        :error
+                    :label       "ERROR (Caught)"
                     :padding-top 1})
             (point-of-interest
              (merge opts
@@ -77,25 +78,23 @@
                      :form
                      (or form (symbol (str k " " v)))
 
-                     :label          
-                     "CAUGHT EXCEPTION"
-
                      :body           
                      (if err
                        #?(:cljs
-                          nil
+                          ;; TODO - Add stacktrace preview in get-rich for cljs?
+                          body
                           :clj
-                          (conj [[:italic.subtle.bold "Message from Clojure:"]
-                                 "\n"
-                                 (string/replace (.getMessage err) #"\(" "\n(")
-                                 "\n\n"
-                                 [:italic.subtle.bold "Stacktrace preview:"]
-                                 "\n"
-                                 (get-rich/stack-trace-preview
-                                  {:error err
-                                   :regex #"^fireworks\.|^lasertag\."
-                                   })]
-                                body))
+                          (enriched
+                           [:italic.subtle.bold "Message from Clojure:"]
+                           "\n"
+                           (string/replace (.getMessage err) #"\(" "\n(")
+                           "\n\n"
+                           [:italic.subtle.bold "Stacktrace preview:"]
+                           "\n"
+                           (get-rich/stack-trace-preview
+                            {:error err
+                             :regex #"^fireworks\.|^lasertag\."})
+                           (some->> body (str "\n\n"))))
                        body)})))))
 
 ;; TODO fix this for new callouts
