@@ -198,7 +198,8 @@
                                       :background-color "#3e4379"}
                       :label         {:color            "#8ba7d5"
                                       :text-shadow      "0 0 2px #000738"
-                                      :background-color "#3d4b61"}
+                                      :background-color "#3d4b61"
+                                      :font-style       :italic}
                       :eval-label    {:color             "#eaa580"
                                       :text-shadow       "0 0 2px #202288"
                                       :background-color  "#5f331b"
