@@ -65,7 +65,7 @@
 <br>
 <br>
 
-<p align="center"><img width="500" src="./resources/themes-cycle.gif" alt="Fireworks light and dark themes animated slideshow"></img></p>
+<p align="center"><img width="500" src="./resources/themes-cycle-w-chrome.gif" alt="Fireworks light and dark themes animated slideshow"></img></p>
 <p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p>
 
 <br>
@@ -105,7 +105,7 @@ Import into your namespace:
 
 (? x)
 ```
-<img src="resources/fireworks-core-par.png" width="475px" />
+<p align="center"><img src="resources/fireworks-core-par.png" width="534px" /></p>
 
 
 Calling **`fireworks.core/?`** with two arguments will print a label (instead of the form), the namespace info, and the result:
@@ -113,7 +113,7 @@ Calling **`fireworks.core/?`** with two arguments will print a label (instead of
 ```Clojure
 (? "My label" x)
 ```
-<img src="resources/fireworks-core-par-label.png" width="475px" />
+<p align="center"><img src="resources/fireworks-core-par-label.png" width="534px" /></p>
 
 
 The first argument can also be a map, which supplies various [config options](#options):
@@ -436,19 +436,22 @@ For data structures, the metadata map is displayed inline, immediately following
 (? ^{:a "a"} ['foo 'bar 'baz]
 ```
 
-<img src="resources/metadata-coll-inline.png" width="256px" />
+<p align="center"><img src="resources/metadata-coll-inline.png" width="534px" /></p>
+
 
 Here is the same vector, with the second symbol in the vector carrying metadata:  
 
 ```Clojure
 (? ^{:a "a"} ['foo (with-meta (symbol "bar") {:b "b"}) 'baz]
 ```
-<img src="resources/metadata-coll-and-symbol-inline.png" width="256px" />
+
+<p align="center"><img src="resources/metadata-coll-and-symbol-inline.png" width="534px" /></p>
+
 
 If you would rather print metadata in the traditional "block" position, you can set the config value of `:metadata-positioning` to `:block`:
 
-<img src="resources/metadata-coll-and-symbol-block.png" width="256px" />
 
+<p align="center"><img src="resources/metadata-coll-and-symbol-block.png" width="534px" /></p>
 
 
 <br>
@@ -462,7 +465,7 @@ Fireworks offers a `:find` option which takes a map containing a `:pred` entry. 
 
 (? {:find {:pred #(= % 777)}} x)
 ```
-<img src="resources/highlight.png" width="236px" />
+<p align="center"><img src="resources/highlight.png" width="534px" /></p>
 
 
 
@@ -473,7 +476,7 @@ You can also pass a custom highlighting style:
            :style {:background-color "#a0f7fd"}}}
    [1 33 99 777 -16])
 ```
-<img src="resources/highlight-with-custom-style.png" width="236px" />
+<p align="center"><img src="resources/highlight-with-custom-style.png" width="534px" /></p>
 
 
 
@@ -484,7 +487,7 @@ Or pass multiple preds, with different styles:
            {:pred #(= % -16)
             :style {:background-color "#a0f7fd"}}]})
 ```
-<img src="resources/highlight-with-multiple-custom-styles.png" width="236px" />
+<p align="center"><img src="resources/highlight-with-multiple-custom-styles.png" width="534px" /></p>
 
 <br>
 <br>
@@ -658,7 +661,7 @@ When printing maps that contain keys which are data-structures, `clojure.pprint/
 
 Fireworks will always print these maps consistently - every key on its own line & empty line between all entries:
 
-<img src="resources/printing-maps-with-colls-as-keys.png" width="482px" />
+<p align="center"><img src="resources/printing-maps-with-colls-as-keys.png" width="534px" /></p>
 
 <!-- ```
 ;; fireworks output
@@ -725,7 +728,7 @@ A sample vector of 3 functions:
 <br>
 Fireworks:
 
-<img src="resources/printing-functions-in-cljs.png" width="404px" />
+<p align="center"><img src="resources/printing-functions-in-cljs.png" width="534px" /></p>
 
 <!-- ```
 sandbox.browser/ab[x y]
@@ -774,13 +777,15 @@ Example vector of built-in JS Functions and Constructors:
 ```
 Fireworks:
 
-<img src="resources/printing-built-in-functions-in-cljs.png" width="261px" />
+<p align="center"><img src="resources/printing-built-in-functions-in-cljs.png" width="534px" /></p>
+
 
 <br>
 
 JS built-in objects such as `js/Math` or `js/JSON` which cannot be called like functions or constructors are printed like this:
 
-<img src="resources/printing-built-in-objects-in-cljs.png" width="261px" />
+<p align="center"><img src="resources/printing-built-in-objects-in-cljs.png" width="534px" /></p>
+
 
 <br>
 
