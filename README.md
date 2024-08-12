@@ -663,22 +663,6 @@ Fireworks will always print these maps consistently - every key on its own line 
 
 <p align="center"><img src="resources/printing-maps-with-colls-as-keys.png" width="534px" /></p>
 
-<!-- ```
-;; fireworks output
-
-{["abcdefghijklmnopqrstuvxyz"  "ABCDEFGHIJKLMNOPQRSTUVXYZ"]
- "vector"
-
- :b
- "keyword"
-
- {:a "abcdefghijklmnopqrstuvxyz"  :b "ABCDEFGHIJKLMNOPQRSTUVXYZ"}
- "map"
- 
- "d"
- "string"}
-``` -->
-
 <br>
 
 #### Printing functions in ClojureScript
@@ -729,14 +713,6 @@ A sample vector of 3 functions:
 Fireworks:
 
 <p align="center"><img src="resources/printing-functions-in-cljs.png" width="534px" /></p>
-
-<!-- ```
-sandbox.browser/ab[x y]
-
-sandbox.browser/abc[var_args]
-
-my-function-with-a-rea...[...]
-``` -->
 
 By default, Fireworks will print the function name with the fully-qualified namespace. This can be disabled by changing the config option `:display-namespaces?` to `false`.
 
