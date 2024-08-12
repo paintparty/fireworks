@@ -65,7 +65,7 @@
 <br>
 <br>
 
-<p align="center"><img width="500" src="./resources/themes-cycle-w-chrome.gif" alt="Fireworks light and dark themes animated slideshow"></img></p>
+<p align="center"><img width="830px" src="resources/fireworks-samples-w-chrome-cropped-xl-2.gif" alt="Fireworks light and dark themes animated slideshow"></img></p>
 <p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p>
 
 <br>
