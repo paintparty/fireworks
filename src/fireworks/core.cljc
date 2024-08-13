@@ -870,7 +870,8 @@
                                            (str (quote ~thread-sym)))
               ~call))
 
-       ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
+       ;; TODO - can you use this from anywhere
+       ;; or does it need to be in fireworks.core?
        `(do
           (messaging/unable-to-trace
            (merge
@@ -879,7 +880,6 @@
              :form (quote ~x)}))
           ~x))))
   ([user-opts x]
-   ;; Issue warning if not traceable
    (let [form-meta (meta &form)]
      (if-let [[thread-sym forms] (threading-sym x)]
        (let [form-meta       (meta &form)
@@ -890,17 +890,18 @@
          `(do (fireworks.core/print-thread ~cfg-opts
                                            (quote ~forms)
                                            (str (quote ~thread-sym)))
-              ~call)
+              ~call))
 
-         ;; TODO - can you use this from anywhere or does it need to be in fireworks.core?
-         `(do
-           (messaging/unable-to-trace
-            (merge 
-             ~form-meta
-             {:type :warning
-              :form (quote ~x)}))
-           ~x))
-       `x))))
+         ;; TODO - can you use this from anywhere
+         ;; or does it need to be in fireworks.core?
+       `(do
+          (messaging/unable-to-trace
+           (merge 
+            ~form-meta
+            {:type :warning
+             :form (quote ~x)}))
+          ~x))
+       )))
 
 
 ;; let 
@@ -1143,7 +1144,10 @@
 (defn !?-- ([]) ([x]))
 (def !?i !?*)
 (def !?l !?*)
-(def !?flop !?*)
+(defn !?flop
+  ([])
+  ([x] x)
+  ([x _] x))
 
 (def !?trace !?*)
 
