@@ -41,7 +41,7 @@
                     :warning
 
                     :form           
-                    (str "(?trace " (:form opts) ")")          
+                    (list '?trace  (:form opts))
 
                     :header         
                     "Unable to trace form."
