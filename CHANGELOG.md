@@ -7,7 +7,17 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 
 ## Unreleased
--
+#### Added
+- [get-rich](https://github.com/paintparty/get-rich) lib added as dep for formatting of warnings and errors
+
+#### Changed
+- Tweaked error and warning templates.
+
+#### Fixed
+- 2-arity version of `?trace` macro false warnings.
+
+#### Removed
+- `::fireworks.specs.tokens/color-tuple` (no longer needed).
 
 <br>
 <br>
