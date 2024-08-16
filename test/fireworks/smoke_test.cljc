@@ -1,7 +1,8 @@
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i
+  (:require [fireworks.core :refer [?2 ? !? ?- !?- ?-- !?-- ?> !?> ?i !?i
                                     ?l !?l ?log !?log ?log- !?log- ?pp
                                     !?pp ?pp- !?pp- ?trace !?trace]]
+            ;; [fireworks.core :refer [? !? ?> !?> ?trace !?trace]]
             [fireworks.themes :as themes]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
@@ -251,13 +252,21 @@
 ;; (? (def x1 "x1"))
 ;; (? {:label "def with label from options"} (def x2 "x2"))
 
+;; (println " ")
+;; (println " ")
+ 
+(?2 "? : Default" {:a "foo"})
+;; (?2 "? : Default:\nLine1\nLine2" {:a "foo"})
+;; (?2 {:label "with options"} (atom {:a "foo" :b 12}))
+;; (?2 (def x1 "x1"))
+;; (?2 {:label "def with label from options"} (def x2 "x2"))
+
 
 ;; (?l "?l : Default" {:a "foo"})
 ;; (?l "?l : Default:\nLine1\nLine2" {:a "foo"})
 ;; (?l {:label "with options" } (atom {:a "foo" :b 12}))
 ;; (?l (def x3 "x3"))
 ;; (?l {:label "def with label from options"} (def x4 "x4"))
-
 
 ;; (?i "?i : Just the namespace info" {:a "foo"})
 ;; (?i "?i : Default:\nLine1\nLine2" {:a "foo"})
@@ -287,8 +296,6 @@
 
 ;; (?log- {:f '?log :b "asfdasdfasfas"})
 ;; (?log- {:f '?log :b "asfdasdfasfas"})
-
-
 
 ;; (?log {:f '?log :desc "default"})
 ;; (?log "Label" {:f '?log :desc "with label"})

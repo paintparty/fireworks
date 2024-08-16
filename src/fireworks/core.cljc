@@ -202,6 +202,7 @@
   [source
    {:keys [qf
            log?
+           mode
            label
            ns-str
            p-data?
@@ -251,6 +252,7 @@
                       mll?
                       log?]))]
     
+    ;; TODO Change this to (= mode :data)
     (if p-data?
       ;; If p-data, return a map of preformatted values
       (merge
@@ -528,6 +530,8 @@
                                 (assoc opts
                                        :header
                                        "fireworks.core/formatted"))))]
+
+      ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
         printing-opts
         (do 
@@ -544,6 +548,68 @@
 
           (reset! state/formatting-form-to-be-evaled? false)
           x))))))
+
+
+(defn ^{:public true}
+  _p2 
+  "Internal runtime dispatch target for fireworks macros.
+
+   Pretty-prints the value with syntax coloring.
+   Takes an optional leading argument (custom label or options map).
+   Returns the value."
+
+  [opts x]
+  (ff '_p2)
+  (reset-state! opts)
+  (ff 'reset-state!)
+  (let [
+        ;; In cljs, if val is data structure but not cljs data structure
+        ;; TODO - Mabye add tag-map to the opts to save a call in truncate
+        native-logging #?(:cljs (let [{:keys [coll-type? carries-meta? tag]
+                                       :as   tag-map} 
+                                      ;; Maybe add {:exclude-all-extra-info? true}
+                                      ;; as an override opt to lasertag?
+                                      (lasertag/tag-map 
+                                       x
+                                       {:include-function-info?           false
+                                        :include-js-built-in-object-info? false})]
+                                  (when (and coll-type?
+                                             (not carries-meta?)
+                                             (not= tag :cljs.core/Atom))
+                                    {:log? true}))
+                          :clj nil)
+        _ (ff "native-logging")
+        opts           (merge opts native-logging)
+
+        _ (ff "opts")
+        printing-opts  (try (formatted x opts)
+                            (catch #?(:cljs js/Object :clj Exception)
+                                   e
+                              (messaging/->FireworksThrowable
+                               e
+                               x
+                               (assoc opts
+                                      :header
+                                      "fireworks.core/formatted"))))
+        _ (ff "printing-opts")]
+
+    ;; TODO Change this to (= (:mode opts) :data)
+    (if (:p-data? opts) 
+      printing-opts
+      (do 
+        (print-formatted printing-opts #?(:cljs js-print))
+
+          ;; Fireworks formatting and printing of formatted does not happen when:
+          ;; - Value being printed is non-cljs or non-clj data-structure
+          ;; - fireworks.core/?log or fireworks.core/?log- is used
+          ;; - fireworks.core/?pp or fireworks.core/?pp- is used
+        
+        (when (and (not (:fw/log? opts)) (:log? opts))
+          #?(:cljs (js/console.log x)
+             :clj (fireworks.core/pprint x)))
+
+        (reset! state/formatting-form-to-be-evaled? false)
+        x))))
 
 
 (defn- cfg-opts
@@ -583,6 +649,7 @@
   (let [cfg-opts (cfg-opts m)
         defd     (defd (:x m))]
     (keyed [cfg-opts defd])))
+
 
 
 (defn cast-var
@@ -742,6 +809,78 @@
                            (assoc ~cfg-opts :qf (quote ~x))
                            (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
+(defmacro ?2
+  ([])
+  ([x]
+   (let [{:keys [cfg-opts defd]}
+         (helper2 {:x         x
+                   :template  [:form-or-label :file-info :result]
+                   :&form     &form
+                   :form-meta (meta &form)})]
+       `(do 
+          (when ~defd ~x)
+          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                             (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
+  ([a x]
+   (let [mode
+         (if (contains? #{:l :i :- :-- :data :log :log- :pp :pp- #_:trace} a)
+           a
+           :?)
+
+         template
+         (get 
+          {:?    [:form-or-label :file-info :result]
+           :l    [:form-or-label :result]
+           :i    [:file-info :result]
+           :-    [:result]
+           :--   [:form-or-label :file-info]
+           :data [:form-or-label :file-info :result]
+           :log  [:form-or-label :file-info :result]
+           :log- nil
+           :pp   [:form-or-label :file-info :result]
+           :pp-  nil}
+          mode 
+          nil)
+         
+         cfg-opts*
+         (when (map? a) a)
+
+         label
+         (cond cfg-opts* (:label cfg-opts*)
+               mode      nil
+               :else     a)
+
+         defd
+         (defd x)
+
+         log?*
+         (contains? #{:log :pp} mode)
+
+         cfg-opts
+         (merge (dissoc (or cfg-opts* {}) :label)
+                {:label          label
+                 :mode           mode
+                 :template       template
+                 :x              x
+                 :&form          &form
+                 :form-meta      (meta &form)
+                 :ns-str         (some-> *ns* ns-name str)
+                 :user-opts      cfg-opts*
+                 :quoted-fw-form (list 'quote &form)
+                 :fw-fnsym       "fireworks.core/?"
+                 :log?           log?*
+                 :fw/log?        log?*
+                 :p-data?        (= mode :data)
+
+                 })]
+
+     (ff defd)
+     `(do 
+        ;; #_(when ~defd ~x)
+        #_(fireworks.core/_p2 (assoc ~cfg-opts :qf (quote ~x))
+                            (if ~defd
+                              (cast-var ~defd ~cfg-opts)
+                              ~x))))))
 
 ;; TODO - Add to docs/readme
 (defmacro ^{:public true} ?flop
