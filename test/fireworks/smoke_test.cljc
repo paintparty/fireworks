@@ -1,16 +1,15 @@
+;; Unstructured sandbox for smoke testing
+
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [?2 ? !? ?- !?- ?-- !?-- ?> !?> ?i !?i
-                                    ?l !?l ?log !?log ?log- !?log- ?pp
-                                    !?pp ?pp- !?pp- ?trace !?trace]]
-            ;; [fireworks.core :refer [? !? ?> !?> ?trace !?trace]]
+  (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
+            [get-rich.core :refer [callout enriched]]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
-
 
 ;; This is example config. If you want to run fireworks.core-test tests locally,
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
@@ -236,6 +235,49 @@
    :brackets [[[[[[]]]]]]})
 
 
+;; (?
+;;  "Nested metadata, on val"
+;;  ^{:a (with-meta (symbol "foo")
+;;         {:for  'foo
+;;          :desc "meta for foo"})
+;;    :b 'bar}
+;;  [1 2 3])
+
+;; (?
+;;  "Nested metadata, on key"
+;;  ^{(with-meta (symbol "a")
+;;      {:for  'a
+;;       :desc "meta for a"})
+;;    'foo
+
+;;    :b
+;;    'bar}
+;;  [1 2 3])
+
+;; (?
+;;  "Nested metadata, on key and val"
+;;  ^{(with-meta (symbol "a")
+;;      {:for  'a
+;;       :desc "meta for a"})
+;;    (with-meta (symbol "foo")
+;;         {:for  'foo
+;;          :desc "meta for foo"})
+
+;;    :b
+;;    'bar}
+;;  [1 2 3])
+
+#_(with-meta 
+  {(with-meta (symbol :a)
+     {:abc "bar"
+      :xyz "abc"}) (with-meta (symbol "foo")
+                     {:abc "bar"
+                      :xyz "abc"})
+   :b                                               2}
+  {:a (with-meta (symbol "foo")
+        {:abc (symbol "bar")
+         :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
+
 ;; (? record-sample)
 
 ;; Testing :non-coll-mapkey-length-limit
@@ -246,74 +288,190 @@
 
 ;; (? basic-samples-cljc)
 
-;; (? "? : Default" {:a "foo"})
-;; (? "? : Default:\nLine1\nLine2" {:a "foo"})
-;; (? {:label "with options"} (atom {:a "foo" :b 12}))
-;; (? (def x1 "x1"))
-;; (? {:label "def with label from options"} (def x2 "x2"))
+(defn co [k commentary]
+  (callout {:border-weight :medium
+            :type          :magenta
+            :label         k
+            :margin-bottom 1}
+           commentary))
 
-;; (println " ")
-;; (println " ")
- 
-(?2 "? : Default" {:a "foo"})
-;; (?2 "? : Default:\nLine1\nLine2" {:a "foo"})
-;; (?2 {:label "with options"} (atom {:a "foo" :b 12}))
-;; (?2 (def x1 "x1"))
-;; (?2 {:label "def with label from options"} (def x2 "x2"))
+(defn co2 [label form]
+  (callout {:type          :subtle
+            :border-weight :thin
+            :label         (enriched [:italic label])
+            :margin-bottom 0}
+           (enriched [:italic.subtle form])))
 
 
-;; (?l "?l : Default" {:a "foo"})
-;; (?l "?l : Default:\nLine1\nLine2" {:a "foo"})
-;; (?l {:label "with options" } (atom {:a "foo" :b 12}))
-;; (?l (def x3 "x3"))
-;; (?l {:label "def with label from options"} (def x4 "x4"))
 
-;; (?i "?i : Just the namespace info" {:a "foo"})
-;; (?i "?i : Default:\nLine1\nLine2" {:a "foo"})
-;; (?i {:label "with options" :print-with prn} (atom {:a "foo" :b 12}))
-;; (?i (def x5 "x5"))
-;; (?i {:label "def with label from options"} (def x6 "x6"))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; SMOKE TESTS WITH COMMENTARY START
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (?log "?log " {:a "foo"})
-;; (?log "?log : Default:\nLine1\nLine2" {:a "foo"})
-;; (?log {:label "with options" } (atom {:a "foo" :b 12}))
-;; (?log (def x7 "x7"))
-;; (?log {:label "def with label from options"} (def x8 "x8"))
+;; TODO - Add more commentary and thorough examples
 
-;; (?log- {:a "foo"})
-;; (?log- {:a "foo"})
-;; (?log-  (atom {:a "foo" :b 12}))
-;; (?log- (def x9 "x9"))
+#_(do 
+  (co '? "Basic functionality for `?`")
+  (? "? : Default" {:a "foo"})
+  (? "? : Default:\nLine1\nLine2" {:a "foo"})
+  (? {:label "with options"} (atom {:a "foo"
+                                    :b 12}))
+  (? (def x1 "x1"))
+  (? {:label "def with label from options"} (def x2 "x2"))
 
-;; (?pp {:f '?pp :b "asfdasdfasfas"})
-;; (?pp "pp with label" {:f '?pp :b "asfdasdfasfas"})
-;; (?pp "pp with label, def" (def x10 "x10"))
-;; (?pp- {:f '?pp :b "asfdasdfasfas"})
-;; (?pp- (def x11 "x11"))
 
-;; (?log {:f '?log :b "asfdasdfasfas"})
-;; (?log "?log with label" {:f '?log :b "asfdasdfasfas"})
+  (co :label "Only display label (or form), no file info.")
+  (? :label "my label" {:a "foo"})
+  (when (= {:a "foo"}
+           (? :label
+              {:margin-bottom 0}
+              {:a "foo"}))
+    (println "✓"))
+;; (? :l "?l : Default:\nLine1\nLine2" {:a "foo"})
+;; (? :l {:label "with options" } (atom {:a "foo" :b 12}))
+;; (? :l (def x3 "x3"))
+;; (? :l {:label "def with label from options"} (def x4 "x4"))
+  
+  (co :file "Only display file-info, no label (or form).\nReturns result.")
+  (? :file
+     {:a "foo"})
+  (when (= {:a "foo"}
+           (? :file
+              {:label         "?i : Just the namespace info"
+               :margin-bottom 0}
+              {:a "foo"}))
+    (println "✓"))
+;; (? :i {:a "foo"})
+;; (? :i {:theme "Neutral Light"} (atom {:a "foo" :b 12}))
+;; (? :i (def x5 "x5"))
+;; (? :i {:theme "Neutral Light"} (def x6 "x6"))
+  
+  (co :result "Only display result.\nReturns result.")
+  (? :result {:a "foo"})
+  (? :result "? : Default" {:a "foo"})
+  (when (= (? :result {:margin-bottom 0} {:a "foo"})
+           {:a "foo"})
+    (println "✓"))
+;; ;; (? :- "? : Default:\nLine1\nLine2" {:a "foo"})
+;; ;; (? :- {:label "with options"} (atom {:a "foo" :b 12}))
+;; ;; (? :- (def x1 "x1"))
+;; ;; (? :- {:label "def with label from options"} (def x2 "x2"))
+  
+  (co :comment "Only display comment and file.\nDoes NOT return result.")
+  (? :comment "my comment") 
+  (? :comment {:margin-bottom 0} "my comment") 
+  
 
-;; (?log- {:f '?log :b "asfdasdfasfas"})
-;; (?log- {:f '?log :b "asfdasdfasfas"})
+  (co :log "Uses js/console.log or pprint.\nReturns result.")
+  (? :log "my label" {:a "foo"})
+  (when (= (? :log {:margin-bottom 0} {:a "foo"})
+           {:a "foo"})
+    (println "✓"))
 
-;; (?log {:f '?log :desc "default"})
-;; (?log "Label" {:f '?log :desc "with label"})
-;; (?log "Label\nLabel Line 2" {:f '?log :desc "with multiline label"})
+  ;; ;; (? :log "?log : Default:\nLine1\nLine2" {:a "foo"})
+  ;; ;; (? :log {:label "with label from options" } (atom {:a "foo" :b 12}))
+  ;; ;; (? :log (def x7 "x7"))
+  ;; ;; (? :log {:label "def with label from options"} (def x8 "x8"))
+  
 
-;; (?log- (def xxx 1))
-;; (?log- {:f '?log :b "asfdasdfasfas"})
+  (co :pp "Uses pprint.\nReturns result.")
+  (? :pp "my label" {:a "foo"})
+  (when (= (? :pp {:margin-bottom 0} {:a "foo"})
+           {:a "foo"})
+    (println "✓"))
 
-;; (?pp (p-data {:a "foo"}))
-;; (?pp (p-data (def x12 "x12")))
-;; (?pp (p-data {:label "def with opts"} (def x12 "x12")))
+  (co :log- "Just prints result, with js/console.log or pprint.\nReturns result.")
+  (? :log- "my label" {:a "foo"})
+  (when (= (? :log- {:margin-bottom 0} {:a "foo"})
+           {:a "foo"})
+    (println "✓"))
+  ;; (? :log- {:a "foo"})
+  ;; ;; (? :log- {:a "foo"})
+  ;; ;; (? :log- (atom {:a "foo" :b 12}))
+  ;; ;; (? :log- (def x10 "x9"))
+  
+  (co :pp- "Just prints result, with js/console.log or pprint.\nReturns result.")
+  (? :pp- "my label" {:a "foo"})
+  (when (= (? :pp- {:margin-bottom 0} {:a "foo"})
+           {:a "foo"})
+    (println "✓"))
+  
+  (co :data "Prints a data representation of the format.\nDoes NOT returns result.")
+  (pprint (? :data {:a "foo"}))
+  (when (= (? :data {:margin-bottom 0} {:a "foo"})
+           {:a "foo"})
+    (println "✓"))
+  
+  (co :trace "Trace form.\nReturns result.")
+  (co2 "Default" '(? :trace (-> 1 (+ 3))))
 
-;; (?pp (p-data "?p-data : Default:\nLine1\nLine2" (atom {:a "foo" :b 12})))
-;; (?pp (p-data {:label "?p-data : Default:\nLine1\nLine2" } (atom {:a "foo" :b 12})))
+  (? :trace
+     (-> 1 (+ 3)))
+
+
+  (co2 "With user label"
+       '(? :trace "My label" (-> 1 (+ 3))))
+  (? :trace
+     "My label"
+     (-> 1 (+ 3)))
+
+  (co2 "With longer threading form"
+       '(? :trace
+           (-> 1 (+ 3) (repeat 5 5555555))))
+  (? :trace
+     (-> 1 (+ 3) (cons (repeat 5 5555555))))
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; SMOKE TESTS WITH COMMENTARY END
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+
+;; (pprint (? :data {:label "my label from opts"} "foo"))
+;; (pprint (? :data "my-label" "foo"))
+;; (? :label "my-label" "foo")
+
+;; (? "my-label" "foo")
+
+  ;; (println (? :comment "dude")) 
+  ;; (println (? :comment {:margin-bottom 0} "dude")) 
+
+
+
+;; (? "hiasdfasdfafsadfasdfasdfasdf asdfasdfasdf asdfasdfasdfa fasdfasdfasf" (+ 1 1))
+
+
+
+;; (println)
+
+;; (? :trace
+;;  (-> 1 (+ 3)))
+
+;; (println (enriched [:italic.magenta "with xtra arg"]))
+
+;; (? :trace
+;;  "my label"
+;;  (-> 1 (+ 3)))
+
+;; (callout {:border-weight :medium :type :magenta}
+;;          (enriched [:bold.magenta :trace-error]))
+;; (?trace 
+;;  (let [[a & rest] ["a" "b" "c" "d" "e"]]
+;;    [a rest]))
 
 
 ;; (?-- "Commentary")
 ;; (?-- "Commentary, multiline:\nLine2\nLine3")
+
 
 ;; (?let [[a c] ["4" 5]
 ;;        b 2]
@@ -330,27 +488,6 @@
 ;;                                                 :d 100}
 ;;        [e f g &  h]                             ["a" "b" "c" "d" "e"]]
 ;;       [a b c d e f g h])
-
-
-
-#_(? (walk/postwalk 
-    (fn [x]
-      (if-let [[tag v] (and (vector? x)
-                            (let [[tag v] x]
-                              (when (and (not (coll? v))
-                                         (keyword? tag))
-                                [tag v])))]
-        (with-meta (symbol (util/as-str v))
-          {:color       :red
-           :font-weight :bold
-           :font-style  :italic})
-        x))
-    ["neutral"
-     [:bold.red.italic "then red "]
-     "then neutral"
-     [:bold.red.italic "then blue "]
-     "then neutral again"
-     [:bold.red.italic "then red "]]))
 
 
 ;; #?(:clj

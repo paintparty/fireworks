@@ -873,13 +873,15 @@
   ([source {:keys [indent user-meta?]
             :or   {indent (or @state/margin-inline-start 0)}
             :as   opts}]
-  ;;  #?(:cljs (js/console.clear))
+
+   ;; Just for debugging
+   ;;  #?(:cljs (js/console.clear))
    
    (let [truncated      (truncate/truncate {:depth      0
                                             :user-meta? user-meta?}
                                            source)
          custom-printed truncated
-         ;; Come back to this custom printing jazz later
+         ;; TODO - revisit this custom printing stuff
          ;; custom-printed (if (:evaled-form? opts)
          ;;                  truncated
          ;;                  (walk/postwalk printers/custom truncated))
@@ -888,6 +890,7 @@
          len            (-> profiled meta :str-len-with-badge)
          ]
 
+    ;; Just for debugging
     ;;  (?pp (map 
     ;;        (fn [a b]
     ;;          [a b])
