@@ -16,11 +16,9 @@
    [fireworks.config :as config]
    [clojure.spec.alpha :as s]
    [lasertag.core :as lasertag]
-   [fireworks.util :as util]
-   [clojure.walk :as walk])
-  ;; Need to actually do this?
+   [fireworks.util :as util])
   #?(:cljs (:require-macros 
-            [fireworks.core :refer [? ?-- ?i ?l ?log ?log- ?pp ?pp- ?let]])))
+            [fireworks.core :refer [? !? ?> !?>]])))
 
 (declare pprint)
 
@@ -29,7 +27,6 @@
 
 (def core-defs-clj-classes 
   (set '(defrecord deftype)))
-
 
 
 ;   FFFFFFFFFFFFFFFFFFFFFF
@@ -49,6 +46,13 @@
 ;   F::::::::FF           
 ;   FFFFFFFFFFF           
 
+
+(defn- margin-bottom-str [user-opts]
+  (if-let [mb (:margin-bottom user-opts)]
+    (if (or (zero? mb) (pos-int? mb))
+      (string/join (repeat mb "\n"))
+      "\n")
+    "\n"))
 
 
 (defn- user-label-or-form!
@@ -75,7 +79,7 @@
                                    :eval-label)
                                   (tag/tag-reset!))
                             (string/split label #"\n")))
-                          (tag/tag-entity! label
+                          (tag/tag-entity! (util/shortened label 25)
                                            :eval-label))]
               (str indent-spaces label))))
         form  (when-not label
@@ -202,6 +206,7 @@
   [source
    {:keys [qf
            log?
+           mode
            label
            ns-str
            p-data?
@@ -251,6 +256,7 @@
                       mll?
                       log?]))]
     
+    ;; TODO Change this to (= mode :data)
     (if p-data?
       ;; If p-data, return a map of preformatted values
       (merge
@@ -266,8 +272,15 @@
                                                   (count @state/styles))}))})
 
       ;; Else if print-and-return fns, return printing opts
-      {:fmt  fmt+
-       :log? log?})))
+      {:fmt           fmt+
+       :log?          log?
+       ;; Trailing line for read-ability.
+       ;; Single line is default, can be overridden at call-site.
+       ;; If using :log or :pp, this should be zero, and margin-bottom
+       ;; needs to be set in fireworks.core/_log or fireworks.core/_pp
+       :margin-bottom (if (contains? #{:log :pp} mode)
+                        "\n"
+                        (margin-bottom-str user-opts))})))
 
 
 #?(:cljs 
@@ -457,31 +470,33 @@
         :clj
         (do 
           (some-> fmt print)
-          ;; Trailing line for read-ability.
-          ;; Maybe make this a config option? (true by default).
-          ((if log? print println) "\n"))))))
+          ((if log? print println) (:margin-bottom x)))))))
 
 (defn ^{:public true}
   _pp
   "Called internally."
-  [x]
+  [{:keys [user-opts]} x]
   #?(:cljs
-     (pprint x)
+     (do (pprint x)
+         x)
      :clj
      (do
        (pprint x)
        ;; Extra line after pprint result
-       (print "\n"))))
+       (print (margin-bottom-str user-opts))
+       x)))
 
 (defn ^{:public true} _log 
-  [x]
+  [{:keys [user-opts]} x]
   #?(:cljs
-     (js/console.log x)
+     (do (js/console.log x)
+         x)
      :clj
      (do
        (pprint x)
        ;; Extra line after pprint result
-       (print "\n"))))
+       (print (margin-bottom-str user-opts))
+       x)))
 
 (defn ^{:public true}
   _p 
@@ -513,10 +528,10 @@
                           x
                           {:include-function-info?           false
                            :include-js-built-in-object-info? false})]
-                           (when (and coll-type?
-                                      (not carries-meta?)
-                                      (not= tag :cljs.core/Atom))
-                             {:log? true}))
+                     (when (and coll-type?
+                                (not carries-meta?)
+                                (not= tag :cljs.core/Atom))
+                       {:log? true}))
              :clj nil)
           opts          (merge opts native-logging)
           printing-opts (try (formatted x opts)
@@ -527,13 +542,19 @@
                                 x
                                 (assoc opts
                                        :header
-                                       "fireworks.core/formatted"))))]
+                                       "fireworks.core/formatted"))))
+          return-result?
+          (when-not (= (:template opts)
+                       [:form-or-label :file-info])
+            x)]
+
+      ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
         printing-opts
         (do 
           (print-formatted printing-opts #?(:cljs js-print))
 
-          ;; Fireworks formatting and printing of formatted does not happen when:
+          ;; Fireworks formatting and printing  does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
           ;; - fireworks.core/?log or fireworks.core/?log- is used
           ;; - fireworks.core/?pp or fireworks.core/?pp- is used
@@ -543,7 +564,79 @@
                :clj (fireworks.core/pprint x)))
 
           (reset! state/formatting-form-to-be-evaled? false)
-          x))))))
+          (when return-result? x)))))))
+
+
+(defn ^{:public true}
+  _p2 
+  "Internal runtime dispatch target for fireworks macros.
+
+   Pretty-prints the value with syntax coloring.
+   Takes an optional leading argument (custom label or options map).
+   Returns the value."
+
+  [opts x]
+  (reset-state! opts)
+  (let [
+        ;; In cljs, if val is data structure but not cljs data structure
+        ;; TODO - Mabye add tag-map to the opts to save a call in truncate
+        native-logging
+        #?(:cljs (let [{:keys [coll-type? carries-meta? tag]
+                        :as   tag-map} 
+                       ;; Maybe add {:exclude-all-extra-info? true}
+                       ;; as an override opt to lasertag?
+                       (lasertag/tag-map 
+                        x
+                        {:include-function-info?           false
+                         :include-js-built-in-object-info? false})]
+                   (when (and coll-type?
+                              (not carries-meta?)
+                              (not= tag :cljs.core/Atom))
+                     {:log? true}))
+           :clj nil)
+
+        opts           
+        (merge opts
+               native-logging
+               ;; Hack for threading
+               ;; TODO - Think about a better way to do it
+               (when (some-> opts :label :threading?)
+                 {:label (or (some-> opts :label :label)
+                             "threading:")}))
+
+        printing-opts  
+        (try (formatted x opts)
+             (catch #?(:cljs js/Object :clj Exception)
+                    e
+               (messaging/->FireworksThrowable
+                e
+                x
+                (assoc opts
+                       :header
+                       "fireworks.core/formatted"))))
+
+        return-result?
+        (when-not (= (:template opts)
+                     [:form-or-label :file-info])
+          x)]
+
+    ;; TODO Change this to (= (:mode opts) :data)
+    (if (:p-data? opts) 
+      printing-opts
+      (do 
+        (print-formatted printing-opts #?(:cljs js-print))
+
+          ;; Fireworks formatting and printing of formatted does not happen when:
+          ;; - Value being printed is non-cljs or non-clj data-structure
+          ;; - fireworks.core/?log or fireworks.core/?log- is used
+          ;; - fireworks.core/?pp or fireworks.core/?pp- is used
+        
+        (when (and (not (:fw/log? opts)) (:log? opts))
+          #?(:cljs (js/console.log x)
+             :clj (fireworks.core/pprint x)))
+
+        (reset! state/formatting-form-to-be-evaled? false)
+        (when return-result? x)))))
 
 
 (defn- cfg-opts
@@ -551,21 +644,22 @@
   [{:keys [a] :as m}]
   (let [cfg-opts  (when (map? a) a)
         label     (if cfg-opts (:label cfg-opts) a)
-        cfg-opts  (merge (dissoc (or cfg-opts {}) :label)
-                         ;; maybe don't need the select-keys, just use m
-                         (select-keys m [:template
-                                         :log?
-                                         :fw/log?
-                                         :p-data?
-                                         :form-meta])
-                         {:ns-str         (some-> *ns* ns-name str)
-                          :label          label
-                          :user-opts      cfg-opts
-                          :quoted-fw-form (list 'quote (:&form m))
-                          :fw-fnsym       (some-> m
-                                                  :&form
-                                                  (nth 0 nil)
-                                                  (->> (str "fireworks.core/")))})]
+        cfg-opts  (merge
+                   (dissoc (or cfg-opts {}) :label)
+                   ;; maybe don't need the select-keys, just use m
+                   (select-keys m [:template
+                                   :log?
+                                   :fw/log?
+                                   :p-data?
+                                   :form-meta])
+                   {:ns-str         (some-> *ns* ns-name str)
+                    :label          label
+                    :user-opts      cfg-opts
+                    :quoted-fw-form (list 'quote (:&form m))
+                    :fw-fnsym       (some-> m
+                                            :&form
+                                            (nth 0 nil)
+                                            (->> (str "fireworks.core/")))})]
     cfg-opts))
 
 
@@ -585,11 +679,86 @@
     (keyed [cfg-opts defd])))
 
 
+
 (defn cast-var
   "Needs to be public, used at runtime by macros"
   [defd {:keys [ns-str]}]
   (symbol (str "#'" ns-str "/" defd)))
 
+(defn- mode+template [a]
+  (let [mode
+        (if (contains? #{:label
+                         :file
+                         :result
+                         :comment
+                         :data
+                         :log
+                         :log-
+                         :pp
+                         :pp-
+                         :trace}
+                       a)
+          a
+          nil)
+
+        template
+        (get 
+         {:label   [:form-or-label :result]
+          :file    [:file-info :result]
+          :result  [:result]
+          :comment [:form-or-label :file-info]
+          :data    [:form-or-label :file-info :result]
+          :log     [:form-or-label :file-info :result]
+          :log-    nil
+          :pp      [:form-or-label :file-info :result]
+          :pp-     nil
+          :trace   [:form-or-label :file-info :result]}
+         mode
+         [:form-or-label :file-info :result])]
+    {:mode     mode
+     :template template}))
+
+(defn- ?2-helper
+  [{:keys [cfg-opts* mode template label &form x]}]
+  (let [defd
+        (defd x)
+
+        log?*
+        (contains? #{:log :pp} mode)
+
+        quoted-fw-form
+        (if (contains? #{:result :log- :pp-} mode)
+         (list 'quote nil)
+         (list 'quote &form))
+
+        fw-fnsym
+        (when-not (contains? #{:result :log- :pp-} mode)
+         "fireworks.core/?")
+
+        form-meta
+        (when-not (contains? #{:result :log- :pp-} mode)
+          (meta &form))
+
+        qf-nil?
+        (contains? #{:comment :result} mode)
+
+        cfg-opts
+        (merge (dissoc (or cfg-opts* {}) :label)
+               {:mode           mode
+                :label          label
+                :template       template
+                :ns-str         (some-> *ns* ns-name str)
+                :user-opts      cfg-opts*
+                :quoted-fw-form quoted-fw-form
+                :fw-fnsym       fw-fnsym}
+                (when form-meta
+                  {:form-meta form-meta})
+                (when log?*
+                  {:log?    log?*
+                   :fw/log? log?*})
+                (when (= mode :data)
+                  {:p-data? true}))]
+   (keyed [defd x qf-nil? cfg-opts log?*])))
                                                                
                                                                
 ;                  AAA               PPPPPPPPPPPPPPPPP   IIIIIIIIII
@@ -608,115 +777,19 @@
 ;     A:::::A               A:::::A  P::::::::P          I::::::::I
 ;    A:::::A                 A:::::A P::::::::P          I::::::::I
 ;   AAAAAAA                   AAAAAAAPPPPPPPPPP          IIIIIIIIII
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
+                                                              
           
-(defn ?> 
+(defmacro ?> 
   "Passes value to clojure.core/tap> and returns value."
-  ([x] (tap> x) x))
-
-(defn ?-
-  "Prints only the value.
-   The value is formatted with fireworks.core/_p.
-   Returns the value."
-  ([])
-  ([x]
-   (?- nil x))
-  ([a x]
-   (_p a (cfg-opts {:a a :template [:result]}) x)))
-
-(defmacro ?i
-  "Prints the namespace/file info, and then the value.
-
-   Returns the value.
-   
-   If value is a list whose first element is a member of
-   fireworks.core/core-defs, the value gets evaluated first,
-   then the quoted var is printed and returned."
-
-  ([])
-
-  ([x]
-   (let [{:keys [cfg-opts defd]}   
-         (helper2 {:x         x
-                   :template  [:file-info :result]
-                   :&form     &form
-                   :form-meta (meta &form)})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                           (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
-
-  ([a x]
-   (let [{:keys [cfg-opts defd]}  
-         (helper2 {:a         a
-                   :template  [:file-info :result]
-                   :x         x
-                   :&form     &form
-                   :form-meta (meta &form)})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p ~a
-                           (assoc ~cfg-opts :qf (quote ~x))
-                           (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
+  ([x] `(do (tap> ~x) ~x)))
 
 
-(defmacro ?l
-  "Prints the form (or user-supplied label), and then the value.
-
-   The form (or optional label) is formatted with pprint.
-   The value is formatted with fireworks.pp/_p.
-   
-   Returns the value.
-   
-   If value is a list whose first element is a member of
-   fireworks.core/core-defs, the value gets evaluated first,
-   then the quoted var is printed and returned."
-
-  ([])
-
-  ([x]
-   (let [{:keys [cfg-opts defd]}   
-         (helper2 {:x         x
-                   :template  [:form-or-label :result]
-                   :&form     &form
-                   :form-meta (meta &form)})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                           (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
-
-  ([a x]
-   (let [{:keys [cfg-opts defd]}  
-         (helper2 {:a         a
-                   :template  [:form-or-label :result]
-                   :x         x
-                   :&form     &form
-                   :form-meta (meta &form)})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p ~a
-                           (assoc ~cfg-opts :qf (quote ~x))
-                           (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
+(declare print-thread)
+(declare thread-helper)
+(declare threading-sym)
 
 (defmacro ?
-  "Prints the form (or user-supplied label), the namespace info,
-   and then the value.
-   
-   The form (or optional label) is formatted with pprint.
-   The value is formatted with fireworks.core/_p.
-   
-   Returns the value.
-   
-   If value is a list whose first element is a member of
-   fireworks.core/core-defs, the value gets evaluated first,
-   then the quoted var is printed and returned."
-
   ([])
-
   ([x]
    (let [{:keys [cfg-opts defd]}
          (helper2 {:x         x
@@ -727,20 +800,123 @@
           (when ~defd ~x)
           (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                              (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
-
   ([a x]
-   (let [{:keys [cfg-opts defd]}   
-         (helper2 {:a         a
-                   :template  [:form-or-label :file-info :result]
-                   :x         x
-                   :&form     &form
-                   :form-meta (meta &form)})]
+   (let [{:keys [mode template]}
+         (mode+template a)]
+     (case mode
+       :trace
+       (let [form-meta (meta &form)]
+         (if-let [[thread-sym forms] (threading-sym x)]
+           (let [[cfg-opts call]
+                 (thread-helper (assoc (keyed [forms
+                                               form-meta
+                                               thread-sym])
+                                       :&form
+                                       &form))]
+             `(do (fireworks.core/print-thread ~cfg-opts
+                                               (quote ~forms)
+                                               (str (quote ~thread-sym)))
+                  ~call))
+           `(do
+              (messaging/unable-to-trace
+               (merge
+                ~form-meta
+                {:type :warning
+                 :form (quote ~x)}))
+              ~x)))
 
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p ~a
-                           (assoc ~cfg-opts :qf (quote ~x))
-                           (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
+       :log-
+       `(do #?(:cljs (js/console.log ~x)
+               :clj (fireworks.core/pprint ~x))
+            ~x)
+
+       :pp-
+       `(do (fireworks.core/pprint ~x)
+            ~x)
+
+       (let [cfg-opts*
+             (when (map? a) a)
+
+             label
+             (or (:label cfg-opts*)
+                 (cond (= mode :comment) x
+                       mode              nil
+                       :else             a))
+
+             {:keys [log?* defd qf-nil? cfg-opts]}
+             (?2-helper (keyed [mode template cfg-opts* label &form x]))]
+
+        ;;  (ff "?, 2-arity, cfg-opts" cfg-opts)
+         `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
+                ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)]
+            (when ~defd ~x)
+            (if ~log?*
+              (do 
+                (fireworks.core/_p2 cfg-opts# ret#)
+                ((if (= ~mode :log)
+                   fireworks.core/_log
+                   fireworks.core/_pp)
+                 ~cfg-opts
+                 (if ~defd (cast-var ~defd ~cfg-opts) ~x)))
+              (fireworks.core/_p2 cfg-opts# ret#)))))))
+   
+  ([mode a x]
+   (let [{:keys [mode template]}
+         (mode+template mode)]
+     (case mode
+       :trace
+       (let [form-meta (meta &form)]
+         (if-let [[thread-sym forms] (threading-sym x)]
+           (let [[cfg-opts call]
+                 (thread-helper (assoc (keyed [forms
+                                               form-meta
+                                               thread-sym
+                                               a])
+                                       :&form
+                                       &form))]
+             `(do (fireworks.core/print-thread ~cfg-opts
+                                               (quote ~forms)
+                                               (str (quote ~thread-sym)))
+                  ~call))
+           `(do
+              (messaging/unable-to-trace
+               (merge
+                ~form-meta
+                {:type :warning
+                 :form (quote ~x)}))
+              ~x)))      
+
+       :log-
+       `(do #?(:cljs (js/console.log ~x) :clj (fireworks.core/pprint ~x))
+            ~x)
+
+       :pp-
+       `(do (fireworks.core/pprint ~x)
+            ~x)
+       (let [cfg-opts*                             
+             (when (map? a) a)
+
+             label                                 
+             (or (:label cfg-opts*)
+                 (cond (= mode :comment) x
+                       :else             (when-not cfg-opts* a)))
+
+             {:keys [log?* defd qf-nil? cfg-opts]}
+             (?2-helper (keyed [mode template cfg-opts* label &form x]))]
+
+         ;; (ff "?, 3-arity" cfg-opts)
+         `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
+                ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)] 
+            (when ~defd ~x)
+            (if ~log?*
+              (do 
+                (fireworks.core/_p2 cfg-opts# ret#)
+                ((if (= ~mode :log)
+                   fireworks.core/_log
+                   fireworks.core/_pp)
+                 ~cfg-opts
+                 (if ~defd (cast-var ~defd ~cfg-opts) ~x)))
+              (fireworks.core/_p2 cfg-opts# ret#))))))))
 
 
 ;; TODO - Add to docs/readme
@@ -787,24 +963,6 @@
                            (assoc ~cfg-opts :qf (quote ~x))
                            (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
-(defmacro ?--
-  "Prints a user-supplied label, following by the namespace info.
-   Designed for providing commentary in your program.
-
-   If the label is multiline, the file-info is instead placed above
-   the label.
-   
-   The form (or optional label) is formatted with pprint."
-  ([])
-  ([x]
-   (let [{:keys [cfg-opts]}
-         (helper2 {:x         x
-                   :template  [:form-or-label :file-info]
-                   :&form     &form
-                   :form-meta (meta &form)})]
-     `(fireworks.core/_p (assoc ~cfg-opts :label ~x :qf nil)
-                         ~x))))
-
 
 ;; Threading 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -814,23 +972,24 @@
 
 (defn ^{:public true}
   print-thread
-  [cfg-opts quoted-forms op]
+  [{:keys [label] :as cfg-opts} quoted-forms op]
   (?
+   :comment
    (merge cfg-opts
           {:threading? true
-           :label      (str "("
-                            (string/join
-                             (str "\n" (util/spaces (-> op count (+ 2))))
-                             (cons (symbol (str op
-                                                " "
-                                                (first quoted-forms)))
-                                   (rest quoted-forms)))
-                            ")")})
-   (symbol "x")))
+           :label      (or label
+                           (str "("
+                                (string/join
+                                 (str "\n" (util/spaces (-> op count (+ 2))))
+                                 (cons (symbol (str op
+                                                    " "
+                                                    (first quoted-forms)))
+                                       (rest quoted-forms)))
+                                ")"))})))
 
 
 (defn- thread-helper
-  [{:keys [forms form-meta thread-sym user-opts] :as m}]
+  [{:keys [forms form-meta thread-sym user-opts a] :as m}]
   (let [?-call-sym         (if (contains? #{'-> 'some->} thread-sym)
                              'fireworks.core/?flop 
                              'fireworks.core/?)
@@ -843,6 +1002,7 @@
         fms                (interleave forms opts)
         call               (cons thread-sym fms)
         {:keys [cfg-opts]} (helper2 {:x         nil
+                                     :a         a
                                      :&form     (:&form m)
                                      :form-meta form-meta})]
     [cfg-opts call]))
@@ -856,310 +1016,22 @@
            [sym forms]))))
 
 
-(defmacro ?trace 
-  ([x]
-   (let [form-meta (meta &form)]
-     (if-let [[thread-sym forms] (threading-sym x)]
-       (let [[cfg-opts call] (thread-helper (assoc (keyed [forms
-                                                           form-meta
-                                                           thread-sym])
-                                                   :&form
-                                                   &form))]
-         `(do (fireworks.core/print-thread ~cfg-opts
-                                           (quote ~forms)
-                                           (str (quote ~thread-sym)))
-              ~call))
-
-       ;; TODO - can you use this from anywhere
-       ;; or does it need to be in fireworks.core?
-       `(do
-          (messaging/unable-to-trace
-           (merge
-            ~form-meta
-            {:type :warning
-             :form (quote ~x)}))
-          ~x))))
-  ([user-opts x]
-   (let [form-meta (meta &form)]
-     (if-let [[thread-sym forms] (threading-sym x)]
-       (let [form-meta       (meta &form)
-             [cfg-opts call] (thread-helper (keyed [forms
-                                                    form-meta
-                                                    thread-sym
-                                                    user-opts]))]
-         `(do (fireworks.core/print-thread ~cfg-opts
-                                           (quote ~forms)
-                                           (str (quote ~thread-sym)))
-              ~call))
-
-         ;; TODO - can you use this from anywhere
-         ;; or does it need to be in fireworks.core?
-       `(do
-          (messaging/unable-to-trace
-           (merge 
-            ~form-meta
-            {:type :warning
-             :form (quote ~x)}))
-          ~x))
-       )))
-
-
-;; let 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO - add comp
-;; TODO - should this just use trace? - wrap trace around let form?
-
-(defn ^{:public true}
-  sym<->str
-  [{:keys [x pred f binding-sym?]}]
-  (if (or (map? x) (vector? x))
-    (walk/postwalk (fn [%]
-                     (cond (= % '&)           "____&____" 
-                           (= % "____&____") (symbol "&")
-                           (when binding-sym?
-                             (pred %))        (f %)
-                           :else              %)) 
-                   x)
-    (if binding-sym? (f x) x)))
-
-(defmacro ?let
-  "Printing of bindings in let. Returns body. WIP.
-   Currently undocumented, will probably fold into trace? functionality and remove this macro."
-  [& args]
-  (let [[user-opts]
-        args
-
-        opts
-        (when (map? user-opts) user-opts)
-
-        [bindings & body]
-        (if opts (rest args) args)
-        
-        syms
-        (->> bindings 
-             (take-nth 2)
-             (mapv (fn [sym]
-                     (let [opts {:x    sym
-                                 :pred symbol?
-                                 :f    str}]
-                       [(sym<->str (assoc opts :binding-sym? true))
-                        (sym<->str opts)]))))
-
-        {:keys [cfg-opts]}
-        (helper2 {:a         user-opts
-                  :x         nil
-                  :&form     &form
-                  :form-meta (meta &form)})
-
-        cfg-opts
-        (dissoc cfg-opts :label)]
-   `(do 
-      (let ~bindings
-        (do
-          ;; Call fireworks.core/? to print the let bindings
-          (? (merge ~cfg-opts
-                    {:label         "let bindings"
-                     :let-bindings? true})
-             (apply array-map
-                    (map-indexed (fn [i# x#]
-                                   (sym<->str {:x            x#
-                                               :pred         string?
-                                               :f            symbol
-                                               :binding-sym? (even? i#)}))
-                                 (apply concat ~syms))))
-          ~@body)))))
-
-
-(defmacro ?log
-  "Prints the form (or user-supplied label), the namespace info,
-   and then logs the value using console.log or pp/pprint
-   
-   The form (or optional label) and value are
-   formatted with fireworks.core/_p.
-   
-   Returns the value.
-   
-   If value is a list whose first element is a member of
-   fireworks.core/core-defs, the value gets evaluated first,
-   then the quoted var is printed and returned."
-
-  ([])
-
-  ([x]
-   (let [{:keys [cfg-opts defd]}
-         (helper2 {:x         x
-                   :template  [:form-or-label :file-info :result]
-                   :form-meta (meta &form)
-                   :&form     &form
-                   :log?      true
-                   :fw/log?   true})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-        (fireworks.core/_log (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
-  ([a x]
-   (let [{:keys [cfg-opts defd]}
-         (helper2 {:a         a
-                   :x         x
-                   :template  [:form-or-label :file-info :result]
-                   :form-meta (meta &form)
-                   :&form     &form
-                   :log?      true
-                   :fw/log?   true})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-        (fireworks.core/_log (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
-
-
-(defn ?log-
-  "Prints just the value using console.log or pp/pprint. Returns the value."
-  ([])
-  ([x]
-   (do #?(:cljs (js/console.log x) :clj (pprint x))
-       x)))
-
-
-(defmacro ?pp
-  "Prints the form (or user-supplied label), the namespace info,
-   and then logs the value using pp/pprint.
-   
-   The form (or optional label) and value are
-   formatted with fireworks.core/_p.
-   
-   Returns the value.
-   
-   If value is a list whose first element is a member of
-   fireworks.core/core-defs, the value gets evaluated first,
-   then the quoted var is printed and returned."
-
-  ([])
-
-  ([x]
-   (let [{:keys [cfg-opts defd]}
-         (helper2 {:x         x
-                   :template  [:form-or-label :file-info :result]
-                   :form-meta (meta &form)
-                   :&form     &form
-                   :log?      true
-                   :fw/log?   true})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-        (fireworks.core/_pp (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
-  ([a x]
-   (let [{:keys [cfg-opts defd]}
-         (helper2 {:a         a
-                   :x         x
-                   :template  [:form-or-label :file-info :result]
-                   :form-meta (meta &form)
-                   :&form     &form
-                   :log?      true
-                   :fw/log?   true})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x)) nil)
-        (fireworks.core/_pp (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
-
-
-(defn ?pp-
-  "Prints just the value using console.log or pp/pprint. Returns the value.
-   "
-  ([])
-  ([x]
-   (do #?(:cljs (pprint x) :clj (pprint x))
-       x)))
-
-
-
-(defmacro p-data
-  "Formats the namespace info, then the form (or user-supplied label),
-   and then the value. The form (or optional label) and value are
-   formatted with fireworks.core/p.
-
-   If value is a list whose first element is a member of
-   fireworks.core/core-defs, the value gets evaluated first,
-   then the quoted var is printed and returned.
-
-   Returns a map of data with the following shape:
-
-   {:formatted     {:string \"...\" :css-styles [...]}
-    :formatted+    {:string \"...\" :css-styles [...]}
-    :file          \"sandbox/browser.cljs\"
-    :end-column    32
-    :ns-str        \"sandbox.browser\"
-    :file-info-str \"sandbox.browser:119:22\"
-    :column        22
-    :line          119
-    :end-line      119
-    :quoted-value  \"...\"}
-   
-   The entries [:formatted :string], [:formatted+ :string], and [:quoted-value]
-   represent the syntax-colored values. The tokens within these strings are
-   wrapped with `%c` escaped codes for browser dev consoles, or sgr codes,
-   for terminal emulators."
-
-  ([])
-
-  ([x]
-   (let [{:keys [cfg-opts
-                 defd]}   (helper2 {:p-data?   true
-                                    :x         x
-                                    :template  [:form-or-label :file-info :result]
-                                    :&form     &form
-                                    :form-meta (meta &form)})]
-     `(do (when ~defd ~x)
-         (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                            (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
-
-  ([a x]
-   (let [{:keys [cfg-opts
-                 defd]}   (helper2 {:p-data?   true
-                                    :a         a
-                                    :x         x
-                                    :template  [:form-or-label :file-info :result]
-                                    :&form     &form
-                                    :form-meta (meta &form)})]
-     `(do (when ~defd ~x)
-          (fireworks.core/_p ~a
-                             (assoc ~cfg-opts :qf (quote ~x))
-                             (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
-
-
-
 ;; Silencers
 
-(defn !?*
-  "A no-op function which returns the value. Intended to temporarily silence the
-   printing of a form while still keeping it wrapped."
+(defmacro !?> [x]
+  `~x)
+
+(defmacro !?
   ([])
-  ([x] x)
-  ([_ x] x))
+  ([x] `~x)
+  ([_ x] `~x)
+  ([_ _ x] `~x))
 
-(def !?> !?*)
-
-(def !? !?*)
-(def !?- !?*)
-(defn !?-- ([]) ([x]))
-(def !?i !?*)
-(def !?l !?*)
-(defn !?flop
+(defmacro !?flop
   ([])
-  ([x] x)
-  ([x _] x))
+  ([x] `~x)
+  ([x _] `~x))
 
-(def !?trace !?*)
-
-(def !?log !?*)
-(def !?log- !?*)
-
-(def !?pp !?*)
-(def !?pp- !?*)
-
-
-
-                                                                                                                     
                                                                                                                      
 ;; PPPPPPPPPPPPPPPPP   PPPPPPPPPPPPPPPPP   
 ;; P::::::::::::::::P  P::::::::::::::::P  
@@ -1222,7 +1094,8 @@
 
    (letfn
      [(pp [writer]
-        (let [writer (fireworks.pp/count-keeping-writer writer {:max-width max-width})]
+        (let [writer (fireworks.pp/count-keeping-writer writer
+                                                        {:max-width max-width})]
           (fireworks.pp/-pprint x writer
             (assoc opts
               :map-entry-separator map-entry-separator
@@ -1257,4 +1130,3 @@
             (pp writer)
             (-> sb str string-print)
             (when *flush-on-newline* (-flush writer))))))))
-
