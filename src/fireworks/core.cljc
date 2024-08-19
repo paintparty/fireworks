@@ -29,7 +29,6 @@
   (set '(defrecord deftype)))
 
 
-
 ;   FFFFFFFFFFFFFFFFFFFFFF
 ;   F::::::::::::::::::::F
 ;   F::::::::::::::::::::F
@@ -555,7 +554,7 @@
         (do 
           (print-formatted printing-opts #?(:cljs js-print))
 
-          ;; Fireworks formatting and printing of formatted does not happen when:
+          ;; Fireworks formatting and printing  does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
           ;; - fireworks.core/?log or fireworks.core/?log- is used
           ;; - fireworks.core/?pp or fireworks.core/?pp- is used
@@ -1095,7 +1094,8 @@
 
    (letfn
      [(pp [writer]
-        (let [writer (fireworks.pp/count-keeping-writer writer {:max-width max-width})]
+        (let [writer (fireworks.pp/count-keeping-writer writer
+                                                        {:max-width max-width})]
           (fireworks.pp/-pprint x writer
             (assoc opts
               :map-entry-separator map-entry-separator
@@ -1130,4 +1130,3 @@
             (pp writer)
             (-> sb str string-print)
             (when *flush-on-newline* (-flush writer))))))))
-
