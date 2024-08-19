@@ -66,7 +66,7 @@
                                       :text-shadow      "0 0 2px #ffffff"
                                       :background-color "#e9e5ff"}
                       :label         {:color            "#256546"
-                                      :background-color "#e5fbe5"
+                                      :background-color "#faebff"
                                       :text-shadow      "0 0 2px #ffffff"
                                       :font-style       :italic}
                       :eval-label    {:color            "#2e6666"
@@ -84,10 +84,7 @@
                                       :outline          "2px solid #e5f1fa"
                                       :font-style       :italic}
                       :function-args {:color "#999999"}
-                      :atom-wrapper  {:color            "#256546"
-                                      :background-color "#e5fbe5"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :font-style       :italic}}}})
+                      :atom-wrapper  :label}}})
 
 
 (def alabaster-dark 
@@ -241,7 +238,7 @@
                                                 :background-color "#e4e0ff"}
                                 :label         {:color            "#c4793b"
                                                 :text-shadow      "0 0 2px #ffffff"
-                                                :background-color "#f7ece3"
+                                                :background-color "#fff4eb"
                                                 :font-style       :italic}
                                 :eval-label    {:color             "#7b6c3d"
                                                 :text-shadow       "0 0 2px #ffffff"
