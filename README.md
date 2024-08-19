@@ -46,7 +46,7 @@
 - Left-justification of values in maps.
 
 <!-- - Trace values in `let` bindings and threading macros such as `->`. -->
-- Trace values in threading macros such as `->`.
+- Trace values in threading macros such as `->`, `->>`, `some->`, `some->>`.
 
 - High or low contrast rainbow brackets (optional).
 
@@ -125,45 +125,89 @@ The first argument can also be a map, which supplies various [config options](#o
    x)
 ```
 
+
+<br>
+
+The first argument can also be a specific "flag", in the form of a keyword,
+which dictates a "mode" of functionality (See the table in the following section for more details):
+
+```Clojure
+(? :result 
+   x)
+```
+
+<br>
+
+If you want to use a specific mode and also supply a custom label and/or override config options, you can call  **`fireworks.core/?`** with 3 arguments:
+
+```Clojure
+;; Prints with custom label, file info.
+;; Instead of fireworks formatting, it prints result with js/console.log or pprint.
+(? :log "My label" x)
+
+;; Prints only the result with fireworks formatting.
+;; Omits form (or custom label) and the file info.
+;; Options map override default config options.
+(? :result {:coll-limit 10} x)
+```
+
+
+
+
+
 <br>
 <br>
 
 ### Tap-driven development
-Fireworks provides a bevy of print-and-return macros and functions so that you can print values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
+Fireworks provides a bevy of options print-and-return functionality so that you can print values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
 
-When it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just switch the macro to `?log` or `?pp`.
+When it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:log` or `:pp` as the leading argument to **`fireworks.core/?`**.
 
 Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedciated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
 
+All the available "modes" for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing a specific flag (keyword) as the leading argument. Unless noted otherwise, **`fireworks.core/?`** will always returns the value passed to it.
 
-All the publicly available functions from `fireworks.core` and their behaviors are outlined in the table below.
-Every macro/function, unless noted otherwise, returns the value passed to it.
+Some annotated examples:
+
+```Clojure
+
+;; Prints just the result. Omits the label and file info.
+(? :result (+ 1 1))
+
+;; Prints the file info and the result. Omits the label.
+(? :file (+ 1 1))
+
+;; Prints the label, file info, and the result. Uses pprint instead of fireworks. 
+(? :pp (+ 1 1))
+
+;; Prints a custom label, file info, and the result. Uses pprint instead of fireworks. 
+(? :pp "My label" (+ 1 1))
+```
+
+
+
+<!--;; Prints a label and the result. Omits the file info.-->
+<!--(? :label (+ 1 1))-->
+
+<!--;; Prints a custom label and the result. Omits the file info.-->
+<!--(? :label "My label" (+ 1 1))-->
+
 <br>
-| Name     | Prints with       | Prints label? | Prints file info? | Notes                   |
-| :---     | :---              | :---          | :---              | :--                     |
-| `?`      | Fireworks         | ✓             | ✓                 |                         |
-| `?-`     | Fireworks         | ×             | ×                 |                         |
-| `?--`    | Fireworks         | ✓             | ✓                 | Does not return a value. Intended for user commentary. |
-| `?i`     | Fireworks         | ×             | ✓                 | Omits label             |
-| `?l`     | Fireworks         | ✓             | ×                 | Omits file info         |                      
-| `?log`   | `js/console.log`* | ✓             | ✓                 |                         |
-| `?log-`  | `js/console.log`* | ×             | ×                 |                         |
-| `?pp`    | `pp/pprint`       | ✓             | ✓                 |                         |
-| `?pp-`   | `pp/pprint`       | ×             | ×                 |                         |
-| `?trace` | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`|
-| `p-data` | ×                 | ×             | ×                 | Returns a map describing the Fireworks formatting & printing used by `?`.| 
-| `?>`     | ×                 | ×             | ×                 | Sends value to `tap>`   | 
-| `!?`     | ×                 | ×             | ×                 | Silences printing       | 
-| `!?-`    | ×                 | ×             | ×                 | Silences printing       | 
-| `!?i`    | ×                 | ×             | ×                 | Silences printing       | 
-| `!?l`    | ×                 | ×             | ×                 | Silences printing       | 
-| `!?log`  | ×                 | ×             | ×                 | Silences printing       | 
-| `!?log-` | ×                 | ×             | ×                 | Silences printing       | 
-| `!?pp`   | ×                 | ×             | ×                 | Silences printing       | 
-| `!?pp-`  | ×                 | ×             | ×                 | Silences printing       | 
-| `!?>`    | ×                 | ×             | ×                 | Does not send to `tap>` | 
 
-* `?log` and `?log` will dispatch to `pp/pprint` in a JVM context.
+| Name       | Prints with       | Prints label? | Prints file info? | Notes                   |
+| :---       | :---              | :---          | :---              | :--                     |
+|  none      | Fireworks         | ✓             | ✓                 |                         |
+| `:result`  | Fireworks         | ×             | ×                 | Omits both label and file info.                        |
+| `:comment` | Fireworks         | ✓             | ✓                 | Does not return a value.<br>Intended for user commentary. |
+| `:file`    | Fireworks         | ×             | ✓                 | Omits label.             |
+| `:log`     | `js/console.log`* | ✓             | ✓                 |                         |
+| `:log-`    | `js/console.log`* | ×             | ×                 |  Omits both label and file info.                       |
+| `:pp`      | `pp/pprint`       | ✓             | ✓                 |                         |
+| `:pp-`     | `pp/pprint`       | ×             | ×                 |  Omits both label and file info.                       |
+| `:trace`   | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`.|
+| `:data`    | ×                 | ×             | ×                 | Returns a map describing the Fireworks formatting & printing used by `?`.|
+
+<span>*</span> `?log` and `?log` will dispatch to `pp/pprint` in a JVM context.
 
 
 <br>
@@ -171,12 +215,8 @@ Every macro/function, unless noted otherwise, returns the value passed to it.
 
 All the public macros and functions from `fireworks.core`:
 ```Clojure
-[fireworks.core :refer [? !? ?- !?- ?-- !?-- ?> !?> ?i !?i ?l !?l ?log !?log ?log- !?log- ?pp !?pp ?pp- !?pp- ?trace !?trace p-data]]
+[fireworks.core :refer [? !? ?> !?>]]
 ```
-<br>
-
-Non-existent, but on the roadmap for a future release:<br>
-`?as->`, `?cond->`, `?cond->>`, and `?comp`.
 
 <br>
 <br>
@@ -184,14 +224,14 @@ Non-existent, but on the roadmap for a future release:<br>
 
 ### Getting the formatted string & other data
 
-If you just want the formatted string, and/or other data that `fireworks.core/?` uses to construct the printed output, you can use the `fireworks.core/p-data` macro.
+If you just want the formatted string, and/or other data that **`fireworks.core/?`** uses to construct the printed output, you can use the `:data` option.
 
-Calling `fireworks.core/p-data` in a ClojureScript (browser) context also provides vectors of css styles. This corresponds to the arguments that `js/console.log` requires for syntax-colored formatting. In a terminal context, `p-data` returns the same map as below, but with sgr escape codes for syntax coloring (instead of the `%c` tags), and no vectors of css styles:
+Calling `(? :data ...)` in a ClojureScript (browser) context also provides vectors of css styles. This corresponds to the arguments that `js/console.log` requires for syntax-colored formatting. In a terminal context, `p-data` returns the same map as below, but with sgr escape codes for syntax coloring (instead of the `%c` tags), and no vectors of css styles:
 
 ```Clojure
 ;; ClojureScript
 
-(p-data "foo")
+(? :data "foo")
 =>
 {:quoted-form   "foo",
  :formatted     {:string     "%c\"foo\"%c",
@@ -535,7 +575,7 @@ The simplest way to make a theme is to just start experimenting within any names
     :regex-sample   #"^hi$"
     :symbol-sample  'mysym})
 ```
-   
+
 Tweak the colors to your liking, save the theme as an `.edn` file somewhere on your computer, then set that path as the value of the `:theme` entry in your `.edn` config.
 
 For a token's `:color` or `:background-color`, the value must be a string which is a valid css hex(a) color. This hex will be used for both browser dev consoles and terminal consoles. Your terminal must support 24bit (TrueColor) , and you must explicitly set `:enable-terminal-truecolor?` to `true` in order for the colors to render as expected. If you are using a terminal that does not support 24bit color, such as the Terminal app on macOS, and Fireworks config option `:enable-terminal-truecolor?` is set to `false` (which is default), the specified hex color will automatically get converted to its closest `x256` equivalent.
@@ -735,7 +775,7 @@ Example vector of built-in JS Functions and Constructors:
    js/isFinite
    js/EvalError
    js/Date]
-```
+ ```
 `clojure.pprint/pprint` result:
 ```
 [#object[decodeURI]
