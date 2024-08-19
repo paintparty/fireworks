@@ -65,7 +65,7 @@
                       :metadata2     {:color            "#be55bb"
                                       :text-shadow      "0 0 2px #ffffff"
                                       :background-color "#e9e5ff"}
-                      :label         {:color            "#256546"
+                      :label         {:color            "#b25cc7"
                                       :background-color "#faebff"
                                       :text-shadow      "0 0 2px #ffffff"
                                       :font-style       :italic}
