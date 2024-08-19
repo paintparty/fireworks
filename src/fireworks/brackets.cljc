@@ -111,6 +111,9 @@
    Function args vector not included in rainbow parens."
   [{:keys [t mm]} s]
   (let [theme-token (cond
+                      (-> mm :user-meta :fw/hide-brackets?)
+                      nil
+
                       (pos? (state/formatting-meta-level))
                       (state/metadata-token)
 
@@ -125,12 +128,12 @@
                   (style-from-theme :bracket nil))
                 (get @state/merged-theme theme-token nil))]
 
-    (when (state/debug-tagging?)
-      (println "tag-bracket! "
-               #?(:clj (str style s "\033[0m"))
-               "   theme-token is   "
-               theme-token
-               (str ",  style is:   " (readable-sgr style))))
+    #_(when (state/debug-tagging?)
+        (println "tag-bracket! "
+                 #?(:clj (str style s "\033[0m"))
+                 "   theme-token is   "
+                 theme-token
+                 (str ",  style is:   " (readable-sgr style))))
 
     #?(:cljs
        (swap! state/styles conj style)
@@ -142,7 +145,13 @@
   (let [reset-theme-token (if (pos? (state/formatting-meta-level))
                             ;; :metadata
                             :foreground
-                            :foreground)]
+                            :foreground)
+        s (if (-> m
+                  :mm
+                  :user-meta
+                  :fw/hide-brackets?)
+            " "
+            s)]
 
     (when (state/debug-tagging?)
       (println "\nbracket!*  " s ",  t: " t))
@@ -169,10 +178,18 @@
                   :else            t)
         [ob cb] (brackets-by-type mm)  
         s       (cond 
-                  (:let-bindings? m) " "
-                  (= kw :opening)    ob
-                  (:record? m)       (str cb "")
-                  :else              cb)
+                  ;; TODO - maybe move this bracket up to bracket!*
+                  (:let-bindings? m)
+                  " "
+
+                  (= kw :opening)    
+                  ob
+
+                  (:record? m)       
+                  (str cb "")
+
+                  :else              
+                  cb)
         bracket (bracket!* {:s  s
                             :t  t
                             :mm mm})]
