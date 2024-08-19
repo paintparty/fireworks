@@ -136,7 +136,7 @@
                                               :theme                      theme}
                                              [1 2 3 4 5 6 7 8])
                     formatted-string (-> ret :formatted :string)]
-                #_(pp/pprint formatted-string)
+                ;; (pp/pprint formatted-string)
                 formatted-string)
               "%c[%c%c1%c %c2%c %c3%c %c4%c %c5%c%c ...+3%c%c]%c")))
 
@@ -150,7 +150,7 @@
                                           :non-coll-depth-1-length-limit 60}
                                          ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
                     formatted-string (-> ret :formatted :string)]
-                #_(pp/pprint formatted-string)
+                ;; (pp/pprint formatted-string)
                 formatted-string)
               "%c[%c%c\"asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44\"%c...%c%c%c]%c")))
 
@@ -178,7 +178,7 @@
                                               :theme                      theme}
                                          [[[[[]]]]])
                     formatted-string (-> ret :formatted :string)]
-                #_(pp/pprint formatted-string)
+                ;; (pp/pprint formatted-string)
                 formatted-string)
               "%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c")))
        
@@ -254,7 +254,7 @@
                                             :theme                      theme}
                                            "foo")
                   formatted-string (-> ret :formatted :string)]
-              #_(pp/pprint (escape-sgr formatted-string))
+              ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;5;64〠" "\"foo\"" "〠0〠"))))
 
@@ -309,7 +309,7 @@
                                             :custom-printers            {}}
                                            [1 2 3 4 5 6 7 8])
                   formatted-string (-> ret :formatted :string)]
-              #_(pp/pprint (escape-sgr formatted-string))
+              ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;5;241〠"
               "["
@@ -349,7 +349,7 @@
                                             :theme                      theme}
                                            [[[[[]]]]])
                   formatted-string (-> ret :formatted :string)]
-              #_(pp/pprint (escape-sgr formatted-string))
+              ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;5;241〠"
               "["
@@ -391,7 +391,7 @@
                                             :theme                      theme}
                                            [[[[[]]]]])
                   formatted-string (-> ret :formatted :string)]
-              #_(pp/pprint (escape-sgr formatted-string))
+              ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠38;5;245〠"
               "["
