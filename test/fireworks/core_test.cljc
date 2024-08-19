@@ -428,23 +428,23 @@
      (deftest p-data-record-sample-in-atom
        (is (= 
             (let [ret              (? :data {:label                      "my-label"
-                                            :enable-terminal-truecolor? true
-                                            :enable-terminal-italics?   true
-                                            :bracket-contrast           "high"
-                                            :theme                      theme}
-                                           (atom smoke-test/record-sample))
+                                             :enable-terminal-truecolor? true
+                                             :enable-terminal-italics?   true
+                                             :bracket-contrast           "high"
+                                             :theme                      theme}
+                                      (atom smoke-test/record-sample))
                   formatted-string (-> ret :formatted :string)]
-              ;; (pp/pprint p-data-record-sample-in-atom)
+              ;; (pp/pprint 'p-data-record-sample-in-atom)
               ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
-            '("〠3;38;2;37;101;70;48;2;229;251;229〠"
+            '("〠3;38;2;178;92;199;48;2;250;235;255〠"
               "Atom<"
               "〠0〠"
-              "〠3;38;2;37;101;70;48;2;229;251;229〠"
+              "〠3;38;2;178;92;199;48;2;250;235;255〠"
               "Foos"
               "〠0〠"
               "\n"
-              "〠38;5;241;48;2;229;251;229〠"
+              "〠38;5;241;48;2;250;235;255〠"
               "{"
               "〠0〠"
               "〠38;2;122;62;157〠"
@@ -462,30 +462,30 @@
               "〠38;2;122;62;157〠"
               "2"
               "〠0〠"
-              "〠38;5;241;48;2;229;251;229〠"
+              "〠38;5;241;48;2;250;235;255〠"
               "}"
               "〠0〠"
-              "〠3;38;2;37;101;70;48;2;229;251;229〠"
+              "〠3;38;2;178;92;199;48;2;250;235;255〠"
               ">"
               "〠0〠"))))
 
      (deftest p-data-record-sample
        (is (= 
             (let [ret              (? :data {:label                      "my-label"
-                                            :enable-terminal-truecolor? true
-                                            :enable-terminal-italics?   true
-                                            :bracket-contrast           "high"
-                                            :theme                      theme}
-                                           smoke-test/record-sample)
+                                             :enable-terminal-truecolor? true
+                                             :enable-terminal-italics?   true
+                                             :bracket-contrast           "high"
+                                             :theme                      theme}
+                                      smoke-test/record-sample)
                   formatted-string (-> ret :formatted :string)]
               ;; (pp/pprint 'p-data-record-sample)
               ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
-            '("〠3;38;2;37;101;70;48;2;229;251;229〠"
+            '("〠3;38;2;178;92;199;48;2;250;235;255〠"
               "Foos"
               "〠0〠"
               "\n"
-              "〠38;5;241;48;2;229;251;229〠"
+              "〠38;5;241;48;2;250;235;255〠"
               "{"
               "〠0〠"
               "〠38;2;122;62;157〠"
@@ -503,7 +503,7 @@
               "〠38;2;122;62;157〠"
               "2"
               "〠0〠"
-              "〠38;5;241;48;2;229;251;229〠"
+              "〠38;5;241;48;2;250;235;255〠"
               "}"
               "〠0〠"))))
 
