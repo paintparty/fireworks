@@ -1,5 +1,6 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
+            [fireworks.pp :refer [?pp]]
             [expound.alpha :as expound]
             [get-rich.core :as get-rich :refer [enriched point-of-interest callout]]))
 
@@ -66,9 +67,15 @@
    (caught-exception nil opts))
   ([err {:keys [k v form body]
          :as   opts}]
+   (?pp err)
    (callout (merge opts
                    {:type        :error
-                    :label       "ERROR (Caught)"
+                    :label       #?(:cljs
+                                    "ERROR: (Caught)"
+                                    :clj
+                                    (str "ERROR: "
+                                         (string/replace (type err) #"^class " "" )
+                                         " (Caught)"))
                     :padding-top 1})
             (point-of-interest
              (merge opts
