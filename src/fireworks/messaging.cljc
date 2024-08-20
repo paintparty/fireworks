@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]
             [fireworks.pp :refer [?pp]]
             [expound.alpha :as expound]
-            [bling.core :as bling :refer [bling point-of-interest callout]]))
+            [bling.core :refer [stack-trace-preview bling point-of-interest callout]]))
 
 (defrecord FireworksThrowable [err err-x err-opts])
 
@@ -98,7 +98,7 @@
                            "\n\n"
                            [:italic.subtle.bold "Stacktrace preview:"]
                            "\n"
-                           (bling/stack-trace-preview
+                           (stack-trace-preview
                             {:error err
                              :regex #"^fireworks\.|^lasertag\."})
                            (some->> body (str "\n\n"))))

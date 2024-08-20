@@ -6,7 +6,7 @@
                 ;; "../get-rich/src/"
                 ]
  :dependencies [[io.github.paintparty/lasertag "0.5.1"]
-                [io.github.paintparty/get-rich "0.3.0-SNAPSHOT"]]
+                [io.github.paintparty/bling "0.1.0-SNAPSHOT"]]
  :builds       {:test {:target    :karma
                        :output-to "out/test.js"
                        :ns-regexp "-test$"
