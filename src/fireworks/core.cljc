@@ -841,7 +841,7 @@
              (or (:label cfg-opts*)
                  (cond (= mode :comment) x
                        mode              nil
-                       :else             a))
+                       :else             (when-not cfg-opts* a)))
 
              {:keys [log?* defd qf-nil? cfg-opts]}
              (?2-helper (keyed [mode template cfg-opts* label &form x]))]
