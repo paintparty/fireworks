@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]
             [fireworks.pp :refer [?pp]]
             [expound.alpha :as expound]
-            [get-rich.core :as get-rich :refer [enriched point-of-interest callout]]))
+            [bling.core :as bling :refer [bling point-of-interest callout]]))
 
 (defrecord FireworksThrowable [err err-x err-opts])
 
@@ -59,7 +59,7 @@
                                        ]))}))))
 
 
-;; TODO - maybe move this to get-rich?
+;; TODO - maybe move this to bling?
 ;; Would have to pass in the regex part
 ;; version with stack trace
 (defn caught-exception
@@ -88,17 +88,17 @@
                      :body           
                      (if err
                        #?(:cljs
-                          ;; TODO - Add stacktrace preview in get-rich for cljs?
+                          ;; TODO - Add stacktrace preview in bling for cljs?
                           body
                           :clj
-                          (enriched
+                          (bling
                            [:italic.subtle.bold "Message from Clojure:"]
                            "\n"
                            (string/replace (.getMessage err) #"\(" "\n(")
                            "\n\n"
                            [:italic.subtle.bold "Stacktrace preview:"]
                            "\n"
-                           (get-rich/stack-trace-preview
+                           (bling/stack-trace-preview
                             {:error err
                              :regex #"^fireworks\.|^lasertag\."})
                            (some->> body (str "\n\n"))))

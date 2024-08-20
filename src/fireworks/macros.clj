@@ -4,7 +4,7 @@
   [fireworks.specs.config :as config]
   [fireworks.specs.theme :as theme]
   [fireworks.basethemes :as basethemes]
-  [get-rich.core :refer [enriched]]
+  [bling.core :refer [bling]]
   [clojure.edn :as edn]
   [clojure.spec.alpha :as s]))
 
@@ -65,7 +65,7 @@
       (let [opts (merge 
                   (load-edn-exception-opts opts)
                   {:label  "java.io.IOException (CAUGHT)"
-                   :header (enriched "Caused by bad value in "
+                   :header (bling "Caused by bad value in "
                                      [:italic file]
                                      "\n\nCould not open file:")})]
         (swap! messaging/warnings-and-errors
@@ -77,7 +77,7 @@
       (let [opts (merge 
                   (load-edn-exception-opts opts)
                   {:label  "RuntimeException (CAUGHT)"
-                   :header (enriched "Caused by bad value in "
+                   :header (bling "Caused by bad value in "
                                      [:italic file]
                                      "\n\nCould not parse file:")})]
         (swap! messaging/warnings-and-errors

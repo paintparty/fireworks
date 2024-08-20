@@ -3,7 +3,7 @@
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
-            [get-rich.core :refer [callout enriched]]
+            [bling.core :refer [callout bling]]
             [clojure.string :as string] [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
             [clojure.walk :as walk]
@@ -298,9 +298,9 @@
 (defn co2 [label form]
   (callout {:type          :subtle
             :border-weight :thin
-            :label         (enriched [:italic label])
+            :label         (bling [:italic label])
             :margin-bottom 0}
-           (enriched [:italic.subtle form])))
+           (bling [:italic.subtle form])))
 
 
 
@@ -456,14 +456,14 @@
 ;; (? :trace
 ;;  (-> 1 (+ 3)))
 
-;; (println (enriched [:italic.magenta "with xtra arg"]))
+;; (println (bling [:italic.magenta "with xtra arg"]))
 
 ;; (? :trace
 ;;  "my label"
 ;;  (-> 1 (+ 3)))
 
 ;; (callout {:border-weight :medium :type :magenta}
-;;          (enriched [:bold.magenta :trace-error]))
+;;          (bling [:bold.magenta :trace-error]))
 ;; (?trace 
 ;;  (let [[a & rest] ["a" "b" "c" "d" "e"]]
 ;;    [a rest]))
