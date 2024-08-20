@@ -5,19 +5,42 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## 0.6.0
+2024-08-20
 
-## Unreleased
 #### Added
-- [get-rich](https://github.com/paintparty/get-rich) lib added as dep for formatting of warnings and errors
+- [bling](https://github.com/paintparty/bling) lib added as dep for formatting of warnings and errors
+- Added support for hiding a given data structure's brackets via metadata ala: `^{:fw/hide-brackets? true}`
 
 #### Changed
 - Tweaked error and warning templates.
+- `fireworks.core/?` now has 0, 1, 2, and 3 arities.
+- `fireworks.core/?` now accepts a leading "flag" argument which determines the functionality.
+   This should be a keyword, one of the following:
+   - `:result`
+   - `:comment`
+   - `:file`
+   - `:log`
+   - `:log-`
+   - `:pp`
+   - `:pp-`
+   - `:trace`
+   - `:data`.
 
-#### Fixed
-- 2-arity version of `?trace` macro false warnings.
 
 #### Removed
 - `::fireworks.specs.tokens/color-tuple` (no longer needed).
+- Removed the following macros and fns, as their respective functionality is now provided by an optional leading keyword argument to `?`:
+  - `?-`
+  - `?--`
+  - `?log`
+  - `?log-`
+  - `?pp`
+  - `?pp-`
+  - `?l`
+  - `?i`
+  - `?trace`
+  - `p-data`
 
 <br>
 <br>
@@ -124,6 +147,18 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 ## Breaking changes
+#### 0.6.0
+- Removed the following macros and fns, as their respective functionality is now provided by an optional leading keyword argument to `?`:
+  - `?-`
+  - `?--`
+  - `?log`
+  - `?log-`
+  - `?pp`
+  - `?pp-`
+  - `?l`
+  - `?i`
+  - `?trace`
+  - `p-data`
 
 #### 0.5.0
 - Use pprint if label for printing is a map.

@@ -83,7 +83,7 @@ Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.5.0"]
+[io.github.paintparty/fireworks "0.6.0"]
 ```
 <br>
 
@@ -94,6 +94,14 @@ Import into your namespace:
   (:require
     [fireworks.core :refer [?]]))
 ```
+
+<br>
+
+### Two libraries
+
+In development, use the `io.github.paintparty/fireworks` library.
+
+For production builds, use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. The API is identical to `fireworks` but the macros don't print anything - they just expand to the original form itself.
 <br>
 <br>
 
