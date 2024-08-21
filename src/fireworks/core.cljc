@@ -57,6 +57,7 @@
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
+   {:keys [label-length-limit]} :user-opts
     :as opts}]
   (let [indent-spaces
         (or (some-> @state/margin-inline-start
@@ -79,8 +80,12 @@
                                    :eval-label)
                                   (tag/tag-reset!))
                             (string/split label #"\n")))
-                          (tag/tag-entity! (util/shortened label 25)
-                                           :eval-label))]
+                          (tag/tag-entity!
+                           (util/shortened label
+                                           (or (when (pos-int? label-length-limit)
+                                                      label-length-limit)
+                                               25))
+                           :eval-label))]
               (str indent-spaces label))))
         form  (when-not label
                 (when qf
@@ -998,6 +1003,7 @@
                              (list ?-call-sym
                                    (merge user-opts
                                           {:label               (str frm)
+                                           :label-length-limit  66
                                            :margin-inline-start 4})))
         fms                (interleave forms opts)
         call               (cons thread-sym fms)
