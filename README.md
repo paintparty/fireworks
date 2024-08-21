@@ -136,8 +136,8 @@ The first argument can also be a map, which supplies various [config options](#o
 
 <br>
 
-The first argument can also be a specific "flag", in the form of a keyword,
-which dictates a "mode" of functionality (See the table in the following section for more details):
+The first argument can also be a specific flag, in the form of a keyword,
+which dictates a mode of functionality (See the table in the following section for more details):
 
 ```Clojure
 (? :result 
@@ -149,13 +149,14 @@ which dictates a "mode" of functionality (See the table in the following section
 If you want to use a specific mode and also supply a custom label and/or override config options, you can call  **`fireworks.core/?`** with 3 arguments:
 
 ```Clojure
-;; Prints with custom label, file info.
-;; Instead of fireworks formatting, it prints result with js/console.log or pprint.
+;; Passing the `:log` flag as the first argument will print the value with js/console.log or pprint, instead of fireworks formatting.
+;; Prints with custom label of "My label", the file info, and returns the result.
 (? :log "My label" x)
 
-;; Prints only the result with fireworks formatting.
+;; Passing the `:result` flag as the first argument will print only the value.
 ;; Omits form (or custom label) and the file info.
 ;; Options map override default config options.
+;; Returns the result
 (? :result {:coll-limit 10} x)
 ```
 
@@ -167,7 +168,7 @@ If you want to use a specific mode and also supply a custom label and/or overrid
 <br>
 
 ### Tap-driven development
-Fireworks provides a bevy of options print-and-return functionality so that you can print values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
+Fireworks provides a bevy of options print-and-return functionality so that you can print values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
 
 When it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:log` or `:pp` as the leading argument to **`fireworks.core/?`**.
 
@@ -859,7 +860,7 @@ Debugging, tracing, observability:<br>
 [debux](https://github.com/philoskim/debux),
 [hashp](https://github.com/weavejester/hashp),
 [telemere](https://github.com/taoensso/telemere),
-[ken](https://github.com/amperity/ken) 
+[ken](https://github.com/amperity/ken), 
 [spyscope](https://github.com/dgrnbrg/spyscope),
 [omni-trace](https://github.com/cyrik/omni-trace),
 [postmortem](https://github.com/athos/postmortem),
