@@ -148,11 +148,11 @@
             :coll-trunction      :annotation
             :user-annotation     :annotation
             :find-in-output      :highlight
+            :eval-form           :eval-label
             :file-info           :annotation
             :line-number         :annotation
             :column-number       :annotation
             :file-info-separator :annotation
-            :eval-fat-arrow      :default
             :seq-brace           :brace
             :lazy-seq-brace      :brace}}}
 

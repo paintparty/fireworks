@@ -83,7 +83,7 @@ Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.6.0"]
+[io.github.paintparty/fireworks "0.6.1"]
 ```
 <br>
 
@@ -168,13 +168,13 @@ If you want to use a specific mode and also supply a custom label and/or overrid
 <br>
 
 ### Tap-driven development
-Fireworks provides a bevy of options print-and-return functionality so that you can print values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
+Fireworks prints values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
 
 When it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:log` or `:pp` as the leading argument to **`fireworks.core/?`**.
 
 Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedciated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
 
-All the available "modes" for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing a specific flag (keyword) as the leading argument. Unless noted otherwise, **`fireworks.core/?`** will always returns the value passed to it.
+All the available modes for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing a specific flag (keyword) as the leading argument. Unless noted otherwise, **`fireworks.core/?`** will always returns the value passed to it.
 
 Some annotated examples:
 
@@ -203,20 +203,20 @@ Some annotated examples:
 
 <br>
 
-| Name       | Prints with       | Prints label? | Prints file info? | Notes                   |
-| :---       | :---              | :---          | :---              | :--                     |
-|  none      | Fireworks         | ✓             | ✓                 |                         |
-| `:result`  | Fireworks         | ×             | ×                 | Omits both label and file info.                        |
-| `:comment` | Fireworks         | ✓             | ✓                 | Does not return a value.<br>Intended for user commentary. |
-| `:file`    | Fireworks         | ×             | ✓                 | Omits label.             |
-| `:log`     | `js/console.log`* | ✓             | ✓                 |                         |
-| `:log-`    | `js/console.log`* | ×             | ×                 |  Omits both label and file info.                       |
-| `:pp`      | `pp/pprint`       | ✓             | ✓                 |                         |
-| `:pp-`     | `pp/pprint`       | ×             | ×                 |  Omits both label and file info.                       |
-| `:trace`   | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`.|
-| `:data`    | ×                 | ×             | ×                 | Returns a map describing the Fireworks formatting & printing used by `?`.|
+| Mode       | Prints with       | Prints label? | Prints file info? | Notes                                                                                |
+| :---       | :---              | :---          | :---              | :--                                                                                  |
+|  none      | Fireworks         | ✓             | ✓                 |                                                                                      |
+| `:result`  | Fireworks         | ×             | ×                 | Omits both label and file info.                                                      |
+| `:file`    | Fireworks         | ×             | ✓                 | Omits label.                                                                         |
+| `:log`     | `js/console.log`* | ✓             | ✓                 |                                                                                      |
+| `:log-`    | `js/console.log`* | ×             | ×                 | Omits both label and file info.                                                     |
+| `:pp`      | `pp/pprint`       | ✓             | ✓                 |                                                                                      |
+| `:pp-`     | `pp/pprint`       | ×             | ×                 | Omits both label and file info.                                                     |
+| `:trace`   | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`.                                              |
+| `:data`    | N/A               | ×             | ×                 | Returns a map describing the Fireworks formatting & printing used by `?`.            |
+| `:comment` | N/A               | ✓             | ✓                 | Does not print a value.<br>Does not return a value.<br>Intended for user commentary. |
 
-<span>*</span> `?log` and `?log` will dispatch to `pp/pprint` in a JVM context.
+<span>*</span> `:log` and `:log-` will dispatch to `pp/pprint` in a JVM context.
 
 
 <br>
@@ -309,13 +309,7 @@ export FIREWORKS_CONFIG="/Users/your-home-folder/.fireworks/config.edn"
 
 You will need to substitute `your-home-folder` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `FIREWORKS_CONFIG` env var will be accessible in your dev environment.
 
-For the actual `config.edn` file, you can use the above example map (at the beginning of this section) as a starting point. Prior to doing this you can experiment with the various configuration options ala-carte via passing a leading options map to any of following macros:
-
-`?`<br>
-`?-`<br>
-`?i`<br>
-`?l`<br>
-`?trace`<br>
+For the actual `config.edn` file, you can use the above example map (at the beginning of this section) as a starting point. Prior to doing this you can experiment with the various configuration options ala-carte via passing a leading options map to `fireworks.core/?`:
 
 <br>
 
@@ -464,7 +458,7 @@ Find and highlight values in the printed output. See [Highlighting values](#high
 <br>
 
 **`:print-with`** `nil`<br>
-Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`. If you want to print with `pprint` or `js/console.log`, use `?fireworks.core/pp` or `?fireworks.core/log`.
+Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`. If you want to print with `pprint` or `js/console.log`, use `(? :pp ...)` or `(? :log ...)`.
 
 ```Clojure
 (? {:label      "My label"
@@ -531,10 +525,10 @@ You can also pass a custom highlighting style:
 
 Or pass multiple preds, with different styles:
 ```Clojure
-(? [1 33 99 777 -16]
-   {:find [{:pred #(= % 777)}
+(? {:find [{:pred #(= % 777)}
            {:pred #(= % -16)
-            :style {:background-color "#a0f7fd"}}]})
+            :style {:background-color "#a0f7fd"}}]}
+   [1 33 99 777 -16])
 ```
 <p align="center"><img src="resources/highlight-with-multiple-custom-styles.png" width="534px" /></p>
 
@@ -543,7 +537,45 @@ Or pass multiple preds, with different styles:
 
 ## Theming
 
-Fireworks includes a [handful of popular themes](#all-the-options). Making your own to perfectly match your current editor theme is straightforward.
+Fireworks includes a handful of popular themes:
+
+<div align="center"><sub><b><i>Alabaster Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Alabaster-Light.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Zenburn Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Zenburn-Light.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Solarized Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Solarized-Light.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Monokai Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Monokai-Light.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Degas Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Degas-Light.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Neutral Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Neutral-Light.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Alabaster Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Alabaster-Dark.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Zenburn Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Zenburn-Dark.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Solarized Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Solarized-Dark.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Monokai Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Monokai-Dark.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Degas Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Degas-Dark.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Neutral Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/Neutral-Dark.png" width="534px"/></div>
+
+Making your own Fireworks theme to perfectly match your current editor theme is straightforward.
 
 If you would like to make your own theme for use with Fireworks, check out `docs/example-theme.edn`. Notice how any of the keys in the `:classes` entry will act as a variable if the same keyword is used as a value in any of the other entries within the `:classes`, `:syntax`, or `:printer` maps.
 
@@ -593,7 +625,7 @@ For a token's `:color` or `:background-color`, the value must be a string which 
 <br>
 <br>
 
-## Aligning your console background color and font
+## Aligning your console background color and foreground color
 Fireworks can only color the foreground and background of "spans" of text. If you want to perfectly match the themed experience of your source code editor, you will need to manually set the font-family and background color of your terminal emulator and/or browser dev console.
 
 <br>
@@ -651,7 +683,7 @@ For theming parity between your editor and terminal emulator, this is probably n
 
 ```
 "Alabaster Light" #585858
-"Alabaster Dark"  #cecece
+"Alabaster Dark"  #989898
 "Neutral Light"   #585858
 "Neutral Dark"    #cecece
 "Degas Light"     #585858

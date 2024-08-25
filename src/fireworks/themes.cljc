@@ -7,19 +7,24 @@
    :mood   :light
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
+   :bracket-contrast "low"
    :tokens {:classes {:comment    {:color      "#AA3731"
                                    :font-style :italic}
-                      :metadata      {:color            "#be55bb"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :background-color "#fae8fd"}
-                      :metadata2     {:color            "#be55bb"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :background-color "#e9e5ff"}
-                      :eval-label {:color            "#2e6666"
+                      :metadata   {:color            "#be55bb"
                                    :text-shadow      "0 0 2px #ffffff"
-                                   :background-color "#e5f1fa"
+                                   :background-color "#fbf2fc"}
+                      :metadata2  {:color            "#8f7ed3"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :background-color "#f2f0ff"}
+                      :label      {:color            "#4a4b5e"
+                                   :background-color "#f1f5f8"
+                                   :text-shadow      "0 0 2px #000000"
+                                   :font-style       :italic}
+                      :eval-label {:color            "#3e76a8"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :background-color "#f0fbfe"
                                    :font-style       :italic}}
-            :printer {:file-info {:color                "#2e6666"
+            :printer {:file-info {:color                "#3e76a8"
                                   :font-style           :italic
                                   :padding-inline-start :0ch}}}})
                         
@@ -29,6 +34,7 @@
    :mood   :dark
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
+   :bracket-contrast "low"
    :tokens {:classes {:comment    {:color      "#e0d557"
                                    :font-style :italic}
                       :eval-label {:color            "#85b7e5"
@@ -37,13 +43,18 @@
                                    :background-color "#00345c"}
                       :metadata   {:color            "#bb7777"
                                    :text-shadow      "0 0 2px #003538"
-                                   :background-color "#351d1d"}
+                                   :background-color "#2e0a0a"}
+                      :label      {:color            "#a9aabc"
+                                   :background-color "#212d36"
+                                   :text-shadow      "0 0 2px #000000"
+                                   :font-style       :italic}
                       :metadata2  {:color            "#9773b5"
                                    :text-shadow      "0 0 2px #003538"
-                                   :background-color "#321f42"}}}
-            :printer {:file-info {:color                "#71ADE7"
+                                   :background-color "#260a3d"}} 
+            :printer {:file-info {:color                "#85b7e5"
                                   :font-style           :italic
-                                  :padding-inline-start :0ch}}})
+                                  :padding-inline-start :0ch}
+                      :eval-form :eval-label}}})
 
 (def alabaster-light
   {:name   "Alabaster Light"
@@ -65,16 +76,17 @@
                       :metadata2     {:color            "#be55bb"
                                       :text-shadow      "0 0 2px #ffffff"
                                       :background-color "#e9e5ff"}
-                      :label         {:color            "#b25cc7"
-                                      :background-color "#faebff"
-                                      :text-shadow      "0 0 2px #ffffff"
+                      :label         {:color            "#4d6dba"
+                                      :background-color "#edf2fc"
+                                      :text-shadow      "0 0 2px #00381d"
                                       :font-style       :italic}
-                      :eval-label    {:color            "#2e6666"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :background-color "#e5f1fa"
-                                      :font-style       :italic}}
+                      :eval-label    {:color            "#4d6dba"
+                                      :background-color "#edf2fc"
+                                      :text-shadow      "0 0 2px #00381d"
+                                      :font-style       :italic}
+                      }
             :syntax  {:js-object-key {:color "#888888"}}
-            :printer {:file-info     {:color                "#2e6666"
+            :printer {:file-info     {:color                "#4d6dba"
                                       :font-style           :italic
                                       :padding-inline-start :0ch}
                       :eval-form     :eval-label
@@ -103,14 +115,14 @@
                       :definition    {:color "#71ADE7"}
                       :annotation    {:color      "#DFDF8E"
                                       :font-style :italic}
-                      :metadata      {:color            "#bb7777"
+                      :metadata      {:color            "#ae849b"
+                                      :text-shadow      "0 0 2px #003538"
+                                      :background-color "#3a1228"}
+                      :metadata2     {:color            "#a08a40"
                                       :text-shadow      "0 0 2px #003538"
                                       :background-color "#351d1d"}
-                      :metadata2     {:color            "#9773b5"
-                                      :text-shadow      "0 0 2px #003538"
-                                      :background-color "#321f42"}
-                      :label         {:color            "#5abf8e"
-                                      :background-color "#004222"
+                      :label         {:color            "#5f9ed8"
+                                      :background-color "#162f46"
                                       :text-shadow      "0 0 2px #00381d"
                                       :font-style       :italic}
                       :eval-label    {:color            "#85b7e5"
@@ -178,32 +190,33 @@
   {:name   "Degas Dark"
    :desc   "A dark pastel theme for Clojure"
    :mood   "dark"
-   :tokens {:classes {:background    {:background-color "#363f4e"}
-                      :foreground    {:color "#bfbfbf"}
-                      :string        {:color "#8cc08c"}
-                      :constant      {:color "#c0a1bf"}
-                      :definition    {:color "#80a3ea"}
-                      :comment       {:color      "#e1d084"
-                                      :font-style :italic}
-                      :annotation    {:color      "#999999"
-                                      :font-style :italic}
-                      :metadata      {:color            "#b191b0"
-                                      :text-shadow      "0 0 2px #000738"
-                                      :background-color "#553f55"}
-                      :metadata2     {:color            "#999ad1"
-                                      :text-shadow      "0 0 2px #000738"
-                                      :background-color "#3e4379"}
-                      :label         {:color            "#8ba7d5"
-                                      :text-shadow      "0 0 2px #000738"
-                                      :background-color "#3d4b61"
-                                      :font-style       :italic}
-                      :eval-label    {:color             "#eaa580"
-                                      :text-shadow       "0 0 2px #202288"
-                                      :background-color  "#5f331b"
-                                      :font-style        :italic}}
+   :bracket-contrast "low"
+   :tokens {:classes {:background {:background-color "#363f4e"}
+                      :foreground {:color "#bfbfbf"}
+                      :string     {:color "#78ba78"}
+                      :constant   {:color "#c0a1bf"}
+                      :definition {:color "#80a3ea"}
+                      :comment    {:color      "#e1d084"
+                                   :font-style :italic}
+                      :annotation {:color      "#999999"
+                                   :font-style :italic}
+                      :metadata   {:color            "#cd98cc"
+                                   :text-shadow      "0 0 2px #000738"
+                                   :background-color "#544054"}
+                      :metadata2  {:color            "#9697d9"
+                                   :text-shadow      "0 0 2px #000738"
+                                   :background-color "#42477b"}
+                      :label      {:color            "#bc8b71"
+                                   :text-shadow      "0 0 2px #202288"
+                                   :background-color "#4d3f38"
+                                   :font-style       :italic}
+                      :eval-label {:color            "#9ac2d6"
+                                   :background-color "#2b4c69"
+                                   :text-shadow      "0 0 2px #002916"
+                                   :font-style       :italic}}
             :syntax  {:number        {:color "#afaf87"}
                       :js-object-key {:color "#888888"}}
-            :printer {:file-info     {:color                "#eaa580"
+            :printer {:file-info     {:color                "#9ac2d6"
                                       :font-style           :italic
                                       :padding-inline-start :0ch}
                       :eval-form     :eval-label
@@ -236,17 +249,17 @@
                                 :metadata2     {:color            "#7065c3"
                                                 :text-shadow      "0 0 2px #ffffff"
                                                 :background-color "#e4e0ff"}
-                                :label         {:color            "#c4793b"
-                                                :text-shadow      "0 0 2px #ffffff"
-                                                :background-color "#fff4eb"
-                                                :font-style       :italic}
-                                :eval-label    {:color             "#7b6c3d"
+                                :label         {:color             "#99770f"
                                                 :text-shadow       "0 0 2px #ffffff"
                                                 :background-color  "#f5eccc"
-                                                :font-style        :italic}}
+                                                :font-style        :italic}
+                                :eval-label    {:color            "#618d98"
+                                                :text-shadow      "0 0 2px #ffffff"
+                                                :font-style       :italic
+                                                :background-color "#e8f3fd"}}
                       :syntax  {:number        {:color "#3d7a99"}
                                 :js-object-key {:color "#888888"}}
-                      :printer {:file-info     {:color                "#7b6c3d" 
+                      :printer {:file-info     {:color                "#618d98"
                                                 :font-style           :italic
                                                 :padding-inline-start :0ch}
                                 :eval-label    :eval-label
@@ -258,6 +271,7 @@
                                                 :font-style        :italic}
                                 :function-args {:color "#9e9e9e"}
                                 :atom-wrapper  :label}}})
+
 
 (def zenburn-dark 
   {:name             "Zenburn Dark"
@@ -272,31 +286,28 @@
                                                 :font-style :italic}
                                 :annotation    {:color      "#999999"
                                                 :font-style :italic}
-                                :metadata      {:color            "#b19d8c"
-                                                :text-shadow      "0 0 2px #321d06"
-                                                :background-color "#524f4c"}
-                                :metadata2     {:color            "#afb18c"
-                                                :text-shadow      "0 0 2px #321d06"
-                                                :background-color "#585c2d"}
+                                :metadata      {:color            "#96a4e8"
+                                                :background-color "#353e69"
+                                                :text-shadow      "0 0 2px #002916"}
+                                :metadata2     {:color            "#b596c0"
+                                                :background-color "#4e3257"
+                                                :text-shadow      "0 0 2px #002916"}
                                 :label         {:color            "#b49d5f"
-                                                :background-color "#584928"
+                                                :background-color "#524019"
                                                 :text-shadow      "0 0 2px #000000"
                                                 :font-style       :italic}
-                                :eval-label    {:color             "#cccc7a"
-                                                :text-shadow       "0 0 2px #000000"
-                                                :background-color  "#525200"
-                                                :font-style        :italic}}
+                                :eval-label    {:color            "#9ac2d6"
+                                                :background-color "#2b4c69"
+                                                :text-shadow      "0 0 2px #002916"
+                                                :font-style       :italic}}
                       :syntax  {:number        {:color "#8fb8cc"}
                                 :js-object-key {:color "#888888"}}
-                      :printer {:file-info     {:color                "#bfbf97"
+                      :printer {:file-info     {:color                "#9ac2d6"
                                                 :font-style           :italic
                                                 :padding-inline-start :0ch}
-                                :eval-form     :eval-form
+                                :eval-form     :eval-label
                                 :eval-label    :eval-label
-                                :atom-wrapper  {:color            "#8eb4a9"
-                                                :background-color "#475c54"
-                                                :text-shadow      "0 0 2px #002916"
-                                                :font-style       :italic}}}})
+                                :atom-wrapper  :label}}})
 
 
 (def solarized-light 
@@ -304,31 +315,38 @@
    :desc             "A light low-contrast theme for Clojure"
    :mood             "light"
    :bracket-contrast "low"
-   :tokens           {:classes {:background    {:background-color "#fdf6e3"}
-                                :foreground    {:color "#666666"}
-                                :string        {:color "#4ba6a6"}
-                                :definition    {:color "#5270cc"}
-                                :comment       {:color      "#AA3731"
-                                                :font-style :italic}
-                                :annotation    {:color      "#999999"
-                                                :font-style :italic}
-                                :metadata      {:color            "#bc775c"
-                                                :text-shadow      "0 0 2px #ffffff"
-                                                :background-color "#ffe9e0"}
-                                :metadata2     {:color            "#93842f"
-                                                :text-shadow      "0 0 2px #ffffff"
-                                                :background-color "#faefbc"}
-                                :label         {:color            "#7e70a1"
-                                                :text-shadow      "0 0 2px #ffffff"
-                                                :background-color "#f0f0fc"
-                                                :font-style       :italic}
-                                :eval-label    {:color             "#497b3d"
-                                                :text-shadow       "0 0 2px #ffffff"
-                                                :background-color  "#e3fce3"
-                                                :font-style        :italic}}
+   :tokens           {:classes {:background {:background-color "#fdf6e3"}
+                                ;; :foreground {:color "#666666"}
+                                :foreground {:color "#657b83"}
+                                :constant   {:color "#657b83"}
+                                :string     {:color "#2aa198"}
+                                ;; :string     {:color "#859900"}
+                                :definition {:color "#268bd2"}
+                                ;; :definition {:color "#268bd2"}
+
+                                :comment    {:color      "#AA3731"
+                                             :font-style :italic}
+                                :annotation {:color      "#999999"
+                                             :font-style :italic}
+                                :metadata   {:color            "#bc775c"
+                                             :text-shadow      "0 0 2px #ffffff"
+                                             :background-color "#ffe9e0"}
+                                :metadata2  {:color            "#93842f"
+                                             :text-shadow      "0 0 2px #ffffff"
+                                             :background-color "#faefbc"}
+                                :label      {:color            "#6c71c4"
+                                             :text-shadow      "0 0 2px #ffffff"
+                                             :background-color "#eef3ec"
+                                             :font-style       :italic}
+                                :eval-label {:color            "#6c71c4"
+                                             :text-shadow      "0 0 2px #ffffff"
+                                             :background-color "#eef3ec"
+                                             :font-style       :italic}
+                                }
                       :syntax  {:number        {:color "#af5f5f"}
+                                :boolean       {:color "#b58900"}
                                 :js-object-key {:color "#888888"}}
-                      :printer {:file-info     {:color                "#497b3d"
+                      :printer {:file-info     {:color                "#6c71c4"
                                                 :font-style           :italic
                                                 :padding-inline-start :0ch}
                                 :eval-form     :eval-label
@@ -355,23 +373,23 @@
                                 :definition {:color "#5289cc"}
                                 :comment    {:color      "#ee63b4"
                                              :font-style :italic}
-                                :label      {:color            "#5e91cf"
-                                             :background-color "#143966"
+                                :label      {:color            "#a4862d"
+                                             :background-color "#293928"
                                              :text-shadow      "0 0 2px #000000"
                                              :font-style       :italic}
-                                :metadata   {:color            "#ad7b58"
-                                             :background-color "#4e321d"
+                                :metadata   {:color            "#bf6986"
+                                             :background-color "#34273a"
                                              :text-shadow      "0 0 2px #000000"}
-                                :metadata2  {:color            "#909353"
+                                :metadata2  {:color            "#ad5952"
                                              :text-shadow      "0 0 2px #321d06"
-                                             :background-color "#43471a"}
-                                :eval-label {:color            "#4ec181"
-                                             :background-color "#01461f"
-                                             :text-shadow      "0 0 2px #000000"
+                                             :background-color "#2c2f04"}
+                                :eval-label {:color            "#659bdc"
+                                             :background-color "#263d5a"
+                                             :text-shadow      "0 0 2px #002916"
                                              :font-style       :italic}}
                       :syntax  {:number        {:color "#bf6986"}
                                 :js-object-key {:color "#888888"}}
-                      :printer {:file-info     {:color                "#42ae72"
+                      :printer {:file-info     {:color                "#659bdc"
                                                 :font-style           :italic
                                                 :padding-inline-start :0ch}
                                 :eval-form     :eval-label
@@ -381,10 +399,7 @@
                                                 :background-color  "#e5f1fa"
                                                 :outline           "2px solid #e5f1fa"
                                                 :font-style        :italic}
-                                :atom-wrapper  {:color            "#42ae72"
-                                                :background-color "#03401d"
-                                                :text-shadow      "0 0 2px #000000"
-                                                :font-style       :italic}}}})
+                                :atom-wrapper  :label}}})
 
 (def monokai-light 
   {:name             "Monokai Light"
@@ -401,12 +416,12 @@
                                               :font-style :italic}
                                  :metadata   {:color            "#c256a9"
                                               :text-shadow      "0 0 2px #ffffff"
-                                              :background-color "#ffe5f9"}
-                                 :metadata2  {:color            "#a77ccb"
-                                              :text-shadow      "0 0 2px #003538"
-                                              :background-color "#462263"}
+                                              :background-color "#fcf3fa"}
+                                 :metadata2  {:color            "#c57634"
+                                              :text-shadow      "0 0 2px #ffffff"
+                                              :background-color "#fdf6ed"}
                                  :label      {:color            "#398962"
-                                              :background-color "#e5fbe5"
+                                              :background-color "#eefbee"
                                               :text-shadow      "0 0 2px #ffffff"
                                               :font-style       :italic}
                                  :eval-label {:color            "#316363"
@@ -445,26 +460,23 @@
                                              :font-style :italic}
                                 :metadata   {:color            "#c47878"
                                              :text-shadow      "0 0 2px #003538"
-                                             :background-color "#502020"}
+                                             :background-color "#3f2222"}
                                 :metadata2  {:color            "#a77ccb"
                                              :text-shadow      "0 0 2px #003538"
-                                             :background-color "#462263"}
-                                :label      {:color            "#d5993f"
-                                             :background-color "#573b00"
+                                             :background-color "#3d274f"}
+                                :label      {:color            "#cd8923"
+                                             :background-color "#3c2a06"
                                              :text-shadow      "0 0 2px #000000"
                                              :font-style       :italic}
-                                :eval-label {:color            "#ee7777"
-                                             :text-shadow      "0 0 2px #000000"
+                                :eval-label {:color            "#85b7e5"
                                              :font-style       :italic
-                                             :background-color "#500101"}}
+                                             :text-shadow      "0 0 2px #003d6b"
+                                             :background-color "#00345c"}}
                       :syntax  {:number        {:color "#14bcd2"}
                                 :js-object-key {:color "#888888"}}
-                      :printer {:file-info     {:color                "#e38282"
-                                                :font-style           :italic
-                                                :padding-inline-start :0ch}
-                                :eval-form     :eval-label
-                                :eval-label    :eval-label
-                                :atom-wrapper  {:color            "#81c581"
-                                                :background-color "#054305"
-                                                :text-shadow      "0 0 2px #152900"
-                                                :font-style       :italic}}}})
+                      :printer {:file-info    {:color                "#71ADE7"
+                                               :font-style           :italic
+                                               :padding-inline-start :0ch}
+                                :eval-form    :eval-label
+                                :eval-label   :eval-label
+                                :atom-wrapper :label}}})
