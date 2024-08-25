@@ -54,7 +54,6 @@
       "\n")
     "\n"))
 
-
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
    {:keys [label-length-limit]} :user-opts
@@ -684,7 +683,6 @@
     (keyed [cfg-opts defd])))
 
 
-
 (defn cast-var
   "Needs to be public, used at runtime by macros"
   [defd {:keys [ns-str]}]
@@ -998,7 +996,10 @@
   (let [?-call-sym         (if (contains? #{'-> 'some->} thread-sym)
                              'fireworks.core/?flop 
                              'fireworks.core/?)
-        user-opts          (when (map? user-opts) user-opts)
+        user-opts          (cond (map? user-opts)
+                                 user-opts
+                                 (map? a)
+                                 a)
         opts               (for [frm forms]
                              (list ?-call-sym
                                    (merge user-opts
@@ -1010,7 +1011,10 @@
         {:keys [cfg-opts]} (helper2 {:x         nil
                                      :a         a
                                      :&form     (:&form m)
-                                     :form-meta form-meta})]
+                                     :form-meta form-meta})
+        ;; cfg-opts           (merge cfg-opts
+        ;;                           (when (map? ) {:user-opts a}))
+        ]
     [cfg-opts call]))
 
 
