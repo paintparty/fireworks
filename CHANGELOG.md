@@ -5,6 +5,30 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## 0.6.2
+2024-08-25
+
+#### Added
+- `:fw/debug?` call-site option for printing diagnostic info about state and config.
+- `:fw/print-config?` call-site option for printing merged config options. 
+
+#### Fixed 
+- Override theme resolution when no theme is provided in `config.edn`
+- Syntax coloring for labels in cljs
+
+<br>
+<br>
+
+## 0.6.1
+2024-08-23
+
+#### Fixed 
+- Logic bug in :trace mode.
+- Various syntax coloring inconsistencies across stock themes
+
+<br>
+<br>
+
 ## 0.6.0
 2024-08-20
 
