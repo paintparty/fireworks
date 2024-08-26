@@ -18,7 +18,7 @@
                                    :background-color "#f2f0ff"}
                       :label      {:color            "#4a4b5e"
                                    :background-color "#f1f5f8"
-                                   :text-shadow      "0 0 2px #000000"
+                                   :text-shadow      "0 0 2px #ffffff"
                                    :font-style       :italic}
                       :eval-label {:color            "#3e76a8"
                                    :text-shadow      "0 0 2px #ffffff"
@@ -78,13 +78,12 @@
                                       :background-color "#e9e5ff"}
                       :label         {:color            "#4d6dba"
                                       :background-color "#edf2fc"
-                                      :text-shadow      "0 0 2px #00381d"
+                                      :text-shadow      "0 0 2px #ffffff"
                                       :font-style       :italic}
                       :eval-label    {:color            "#4d6dba"
                                       :background-color "#edf2fc"
-                                      :text-shadow      "0 0 2px #00381d"
-                                      :font-style       :italic}
-                      }
+                                      :text-shadow      "0 0 2px #ffffff"
+                                      :font-style       :italic}}
             :syntax  {:js-object-key {:color "#888888"}}
             :printer {:file-info     {:color                "#4d6dba"
                                       :font-style           :italic

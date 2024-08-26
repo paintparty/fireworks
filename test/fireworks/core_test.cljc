@@ -31,7 +31,7 @@
            :line          22,
            :end-line      22,
            :formatted+    {:string     "%cfoo%c  %cfireworks.core-test:22:21%c%c \n%c%c\"foo\"%c",
-                           :css-styles ["color:#4d6dba;background-color:#edf2fc;text-shadow:0 0 2px #00381d;font-style:italic;line-height:1.45;"
+                           :css-styles ["color:#4d6dba;background-color:#edf2fc;text-shadow:0 0 2px #ffffff;font-style:italic;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
                                         "color:#4d6dba;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
@@ -54,7 +54,7 @@
            :line          45,
            :end-line      45,
            :formatted+    {:string     "%cmy-label%c  %cfireworks.core-test:45:21%c%c \n%c%c\"foo\"%c",
-                           :css-styles ["color:#4d6dba;background-color:#edf2fc;text-shadow:0 0 2px #00381d;font-style:italic;line-height:1.45;"
+                           :css-styles ["color:#4d6dba;background-color:#edf2fc;text-shadow:0 0 2px #ffffff;font-style:italic;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
                                         "color:#4d6dba;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"
@@ -88,7 +88,7 @@
                :line          71,
                :end-line      76,
                :formatted+    {:string     "%cmy-label-from-opts%c  %cfireworks.core-test:71:25%c%c \n%c%c\"foo\"%c",
-                               :css-styles ["color:#4d6dba;background-color:#edf2fc;text-shadow:0 0 2px #00381d;font-style:italic;line-height:1.45;"
+                               :css-styles ["color:#4d6dba;background-color:#edf2fc;text-shadow:0 0 2px #ffffff;font-style:italic;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
                                             "color:#4d6dba;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
