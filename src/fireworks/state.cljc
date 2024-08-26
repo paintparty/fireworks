@@ -494,7 +494,7 @@
   ([reset]
    ;; TODO - Add observability for theme, user-config.
    ;; from env-vars, parsed and validated.
-   (let [theme*           (when (:theme user-options) (:theme @config))
+   (let [theme*           (:theme @config)
 
          fallback-theme   (fallback-theme)
 
@@ -530,10 +530,11 @@
          rainbow-brackets (rainbow-brackets mood theme)
 
         ;;  metadata-bgcs    (metadata-bgcs mood theme base-theme)
-
+         
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
 
          ret              (merge-theme+ base-theme theme)]
+
      ;; TODO - Add observability for theme
      ret)))
 
