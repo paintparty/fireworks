@@ -478,8 +478,8 @@
                                              :theme                      theme}
                                       smoke-test/record-sample)
                   formatted-string (-> ret :formatted :string)]
-              (pp/pprint 'p-data-record-sample)
-              (pp/pprint (escape-sgr formatted-string))
+              ;; (pp/pprint 'p-data-record-sample)
+              ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
             '("〠3;38;2;77;109;186;48;2;237;242;252〠"
               "Foos"
