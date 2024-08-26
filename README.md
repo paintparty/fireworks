@@ -28,12 +28,14 @@
 
 
 ## Intro
-**Fireworks is a themeable print debugging library for Clojure, ClojureScript, and Babashka.** It is designed to make your workflow easier, faster, and more enjoyable. If you like the idea of printing with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
+**Fireworks is a themeable tapping library for Clojure, ClojureScript, and Babashka.** It is designed to make your workflow easier, faster, and more enjoyable. If you like the idea of printing with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
 
 <br>
 <br>
 
 ## Features
+
+- Prints values without altering the execution of your program.
 
 - Achieve thematic parity between editor, terminal emulator, and browser dev console.
 
@@ -48,7 +50,7 @@
 <!-- - Trace values in `let` bindings and threading macros such as `->`. -->
 - Trace values in threading macros such as `->`, `->>`, `some->`, `some->>`.
 
-- High or low contrast rainbow brackets (optional).
+- Optional rainbow brackets, in high or low contrast.
 
 - Makes cljs color printing possible in all dark-mode-themed browser consoles. 
 
