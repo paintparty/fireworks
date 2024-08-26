@@ -16,7 +16,8 @@
    [fireworks.config :as config]
    [clojure.spec.alpha :as s]
    [lasertag.core :as lasertag]
-   [fireworks.util :as util])
+   [fireworks.util :as util]
+   [bling.core :refer [bling callout]])
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
 
@@ -580,8 +581,14 @@
    Returns the value."
 
   [opts x]
-  (reset-state! opts)
-  (let [
+  (let [fw-debug?
+        (-> opts :user-opts :fw/debug? true?) 
+
+        config-before
+        (when fw-debug? @state/config)
+
+        _
+        (reset-state! opts)
         ;; In cljs, if val is data structure but not cljs data structure
         ;; TODO - Mabye add tag-map to the opts to save a call in truncate
         native-logging
@@ -623,6 +630,62 @@
         (when-not (= (:template opts)
                      [:form-or-label :file-info])
           x)]
+
+    
+     (when fw-debug?
+       (callout {:label       "User-config, from config.edn file"
+                 :padding-top 1
+                 :type        :info}
+                (with-out-str (pprint state/user-config)))
+
+       (callout {:label       "fireworks.state/config, before reset"
+                 :padding-top 1
+                 :type        :info}
+                (with-out-str (pprint config-before)))
+        
+       (callout {:label       "fireworks.state/config, after reset"
+                 :padding-top 1
+                 :type        :info}
+                (with-out-str (pprint @state/config)))
+
+       (callout {:label       "fireworks.state/config, diff / user-supplied overrides"
+                 :padding-top 1
+                 :type        :info}
+                (with-out-str (pprint (nth (data/diff config-before
+                                                      @state/config)
+                                           1
+                                           nil)
+                                      )))
+    
+       (callout {:label       "fireworks.core/_p2, opts"
+                 :padding-top 1
+                 :type        :info}
+                (with-out-str (pprint opts)))
+
+       (callout {:label       "Selected fireworks.state atom values"
+                 :padding-top 1
+                 :type        :info}
+                (with-out-str (pprint {:state/margin-inline-start     
+                                       state/margin-inline-start
+                                       :state/top-level-value-is-sev?
+                                       state/top-level-value-is-sev?
+                                       :state/highlighting            
+                                       state/highlight}))))
+
+    (when (-> opts :user-opts :fw/print-config? true?)
+      (callout {:label       "fireworks.state/config"
+                :padding-top 1
+                :type        :info}
+               (str 
+                (bling [:italic (str
+                                 "Result of merging options from user's"
+                                 "\n"
+                                 "config.edn file with defaults, and then"
+                                 "\n"
+                                 "merging optional call-site overrides.")])
+                "\n"
+                "\n"
+                (with-out-str (pprint @state/config)))))
 
     ;; TODO Change this to (= (:mode opts) :data)
     (if (:p-data? opts) 
@@ -710,11 +773,15 @@
           :file    [:file-info :result]
           :result  [:result]
           :comment [:form-or-label :file-info]
+          ;; default-case nix?
           :data    [:form-or-label :file-info :result]
+          ;; default-case nix?
           :log     [:form-or-label :file-info :result]
           :log-    nil
+          ;; default-case nix?
           :pp      [:form-or-label :file-info :result]
           :pp-     nil
+          ;; default-case nix?
           :trace   [:form-or-label :file-info :result]}
          mode
          [:form-or-label :file-info :result])]
@@ -849,7 +916,7 @@
              {:keys [log?* defd qf-nil? cfg-opts]}
              (?2-helper (keyed [mode template cfg-opts* label &form x]))]
 
-        ;;  (ff "?, 2-arity, cfg-opts" cfg-opts)
+        ;;  #_(ff "?, 2-arity, cfg-opts" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
                 ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)]
             (when ~defd ~x)
@@ -896,6 +963,7 @@
        :pp-
        `(do (fireworks.core/pprint ~x)
             ~x)
+
        (let [cfg-opts*                             
              (when (map? a) a)
 
