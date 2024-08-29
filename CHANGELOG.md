@@ -5,6 +5,17 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## Unreleased
+#### Added
+
+#### Changed
+- Bump bling dep to `[io.github.paintparty/bling "0.1.1"]`
+
+#### Fixed
+
+#### Removed
+
+
 ## 0.6.2
 2024-08-25
 

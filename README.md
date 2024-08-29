@@ -48,7 +48,7 @@
 - Left-justification of values in maps.
 
 <!-- - Trace values in `let` bindings and threading macros such as `->`. -->
-- Trace values in threading macros such as `->`, `->>`, `some->`, `some->>`.
+<!-- - Trace values in threading macros such as `->`, `->>`, `some->`, `some->>`. -->
 
 - Optional rainbow brackets, in high or low contrast.
 
@@ -195,14 +195,6 @@ Some annotated examples:
 (? :pp "My label" (+ 1 1))
 ```
 
-
-
-<!--;; Prints a label and the result. Omits the file info.-->
-<!--(? :label (+ 1 1))-->
-
-<!--;; Prints a custom label and the result. Omits the file info.-->
-<!--(? :label "My label" (+ 1 1))-->
-
 <br>
 
 | Mode       | Prints with       | Prints label? | Prints file info? | Notes                                                                                |
@@ -214,9 +206,12 @@ Some annotated examples:
 | `:log-`    | `js/console.log`* | ×             | ×                 | Omits both label and file info.                                                     |
 | `:pp`      | `pp/pprint`       | ✓             | ✓                 |                                                                                      |
 | `:pp-`     | `pp/pprint`       | ×             | ×                 | Omits both label and file info.                                                     |
-| `:trace`   | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`.                                              |
 | `:data`    | N/A               | ×             | ×                 | Returns a map describing the Fireworks formatting & printing used by `?`.            |
 | `:comment` | N/A               | ✓             | ✓                 | Does not print a value.<br>Does not return a value.<br>Intended for user commentary. |
+
+
+<!--TODO put this back in once problems fixed>
+<!-- | `:trace`   | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`.                                              | -->
 
 <span>*</span> `:log` and `:log-` will dispatch to `pp/pprint` in a JVM context.
 
