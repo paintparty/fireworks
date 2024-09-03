@@ -94,7 +94,7 @@ Import into your namespace:
 ```clojure
 (ns myns.core
   (:require
-    [fireworks.core :refer [?]]))
+    [fireworks.core :refer [? !? ?> !?>]]))
 ```
 
 <br>
@@ -103,11 +103,17 @@ Import into your namespace:
 
 In development, use the `io.github.paintparty/fireworks` library.
 
-For production builds, use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. The API is identical to `fireworks` but the macros don't print anything - they just expand to the original form itself.
+For production builds, use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. The API is identical to `fireworks` but the macros don't print anything - they just expand to the original form itself. This way, you don't have to worry about production code that contains tapping/debugging code that you forgot to remove.
+
 <br>
 <br>
 
-## Usage 
+## Usage
+This section outlines the four public macros that fireworks offers:<br>
+**`?`**, **`!?`**, **`?>`**, and **`!?>`**.
+
+<br>
+
 **`fireworks.core/?`** is a macro that prints the form, namespace info, and resulting value. It returns the resulting value.
 
 ```Clojure
@@ -160,7 +166,20 @@ If you want to use a specific mode and also supply a custom label and/or overrid
 ;; Options map override default config options.
 ;; Returns the result
 (? :result {:coll-limit 10} x)
+
 ```
+
+<br>
+
+**`fireworks.core/!?`** is a no-op macro that just returns the value. It is intended for situations where you want to temporarily "silence" the printing, because you will likely turn it back on again in the near future.
+
+<br>
+
+**`fireworks.core/?>`** is a macro that sends the form to `clojure.core/tap>`, and then returns the value.
+
+<br>
+
+**`fireworks.core/?>`** is a no-macro that just returns the value, and then returns the value. It is intended for situations where you already have a form wrapped with `?>`, and you want to temporarily ~~not~~ send it to `clojure.core/tap>`.
 
 
 
@@ -172,11 +191,11 @@ If you want to use a specific mode and also supply a custom label and/or overrid
 ### Tap-driven development
 Fireworks prints values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
 
-When it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:log` or `:pp` as the leading argument to **`fireworks.core/?`**.
-
 Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedciated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
 
-All the available modes for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing a specific flag (keyword) as the leading argument. Unless noted otherwise, **`fireworks.core/?`** will always returns the value passed to it.
+The `?` macro also provides a bevy of functionality that can be controlled an optional leading keyword flag and/or a map of options. For example, when it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:log` or `:pp` as the leading argument to **`fireworks.core/?`**.
+
+All the available alternate printing modes for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing an optional leading keyword flag. Unless noted otherwise, **`fireworks.core/?`** will always return the value passed to it.
 
 Some annotated examples:
 
@@ -215,14 +234,6 @@ Some annotated examples:
 
 <span>*</span> `:log` and `:log-` will dispatch to `pp/pprint` in a JVM context.
 
-
-<br>
-<br>
-
-All the public macros and functions from `fireworks.core`:
-```Clojure
-[fireworks.core :refer [? !? ?> !?>]]
-```
 
 <br>
 <br>
@@ -578,17 +589,46 @@ If you would like to make your own theme for use with Fireworks, check out `docs
 
 For your own theme, you do not need to dictate every value that is present in the `:theme` map within the example (`docs/example-theme.edn`). For example, in the default `"Alabaster Light"`, you can see how just a small handful of the tokens are specified. Internally, this gets merged with the base light theme, which specifies how most of the other values inherit from the basic classes in `:classes`. 
 ```Clojure
-{:name    "Alabaster Light"
- :desc    "Based on @tonsky's Alabaster theme."
- :mood    :light
- :langs   ["Clojure" "ClojureScript" "Babashka"]
- :theme   {:classes {:string     {:color "#448C27"}
-                     :comment    {:color "#AA3731"
-                                  :font-style :italic}
-                     :constant   {:color "#7A3E9D"}
-                     :definition {:color "#4d6dba"}
-                     :annotation {:color "#999999"}}
-           :printer {:function-args {:color "#999999"}}}}
+(def alabaster-light
+  {:name   "Alabaster Light"
+   :desc   "Based on @tonsky's Alabaster theme."
+   :about  "This is additional documentation. Should support markdown here."
+   :url    "url goes here"
+   :author "Author Name"
+   :langs  ["Clojure" "ClojureScript" "Babashka"]
+   :mood   :light
+   :tokens {:classes {:background    {:background-color "#f7f7f7"}
+                      :string        {:color "#448C27"}
+                      :constant      {:color "#7A3E9D"}
+                      :definition    {:color "#4d6dba"}
+                      :annotation    {:color      "#8c8c8c" 
+                                      :font-style :italic}
+                      :metadata      {:color            "#be55bb"
+                                      :text-shadow      "0 0 2px #ffffff"
+                                      :background-color "#fae8fd"}
+                      :metadata2     {:color            "#be55bb"
+                                      :text-shadow      "0 0 2px #ffffff"
+                                      :background-color "#e9e5ff"}
+                      :label         {:color            "#4d6dba"
+                                      :background-color "#edf2fc"
+                                      :text-shadow      "0 0 2px #ffffff"
+                                      :font-style       :italic}
+                      :eval-label    {:color            "#4d6dba"
+                                      :background-color "#edf2fc"
+                                      :text-shadow      "0 0 2px #ffffff"
+                                      :font-style       :italic}}
+            :syntax  {:js-object-key {:color "#888888"}}
+            :printer {:file-info     {:color                "#4d6dba"
+                                      :font-style           :italic
+                                      :padding-inline-start :0ch}
+                      :eval-form     :eval-label
+                      :comment       {:color            "#2e6666"
+                                      :text-shadow      "0 0 2px #ffffff"
+                                      :background-color "#e5f1fa"
+                                      :outline          "2px solid #e5f1fa"
+                                      :font-style       :italic}
+                      :function-args {:color "#999999"}
+                      :atom-wrapper  :label}}})
 ```
 
 <br>
@@ -616,7 +656,7 @@ The simplest way to make a theme is to just start experimenting within any names
 
 Tweak the colors to your liking, save the theme as an `.edn` file somewhere on your computer, then set that path as the value of the `:theme` entry in your `.edn` config.
 
-For a token's `:color` or `:background-color`, the value must be a string which is a valid css hex(a) color. This hex will be used for both browser dev consoles and terminal consoles. Your terminal must support 24bit (TrueColor) , and you must explicitly set `:enable-terminal-truecolor?` to `true` in order for the colors to render as expected. If you are using a terminal that does not support 24bit color, such as the Terminal app on macOS, and Fireworks config option `:enable-terminal-truecolor?` is set to `false` (which is default), the specified hex color will automatically get converted to its closest `x256` equivalent.
+For a theme token's `:color` or `:background-color`, the value must be a string which is a valid css hex(a) color. This hex will be used for both browser dev consoles and terminal consoles. Your terminal must support 24bit (TrueColor) , and you must explicitly set `:enable-terminal-truecolor?` to `true` in order for the colors to render as expected. If you are using a terminal that does not support 24bit color, such as the Terminal app on macOS, and Fireworks config option `:enable-terminal-truecolor?` is set to `false` (which is default), the specified hex color will automatically get converted to its closest `x256` equivalent.
 
 
 <br>
