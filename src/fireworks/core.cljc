@@ -1172,8 +1172,7 @@
 
    (letfn
      [(pp [writer]
-        (let [writer (fireworks.pp/count-keeping-writer writer
-                                                        {:max-width max-width})]
+        (let [writer (fireworks.pp/count-keeping-writer writer {:max-width max-width})]
           (fireworks.pp/-pprint x writer
             (assoc opts
               :map-entry-separator map-entry-separator

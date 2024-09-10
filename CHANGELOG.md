@@ -9,12 +9,39 @@ For a list of breaking changes, check [here](#breaking-changes)
 #### Added
 
 #### Changed
-- Bump bling dep to `[io.github.paintparty/bling "0.1.1"]`
 
 #### Fixed
 
 #### Removed
 
+## 0.6.4
+2024-09-09
+
+#### Changed
+- Update `fireworks.pp` namespace to latest version of `me.flowthing/pp` (`2024-09-09.69`).
+
+#### Fixed 
+- Printing in `:pp` mode now displays converted map entries correctly
+
+```Clojure
+;; Before:
+(? :pp (into [] {:a "foo"})) => [:a "foo"]
+
+;; After:
+(? :pp (into [] {:a "foo"})) => [[:a "foo"]] 
+```
+
+<br>
+<br>
+
+## 0.6.3
+2024-09-01
+
+#### Changed
+- Update bling dep to `[io.github.paintparty/bling "0.1.1"]`
+
+<br>
+<br>
 
 ## 0.6.2
 2024-08-25
