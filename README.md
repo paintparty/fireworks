@@ -179,7 +179,7 @@ If you want to use a specific mode and also supply a custom label and/or overrid
 
 <br>
 
-**`fireworks.core/?>`** is a no-macro that just returns the value, and then returns the value. It is intended for situations where you already have a form wrapped with `?>`, and you want to temporarily ~~not~~ send it to `clojure.core/tap>`.
+**`fireworks.core/?>`** is a no-op that just returns the value. It is intended for situations where you already have a form wrapped with `?>`, and you want to temporarily *not* send it to `clojure.core/tap>`.
 
 
 
@@ -189,7 +189,7 @@ If you want to use a specific mode and also supply a custom label and/or overrid
 <br>
 
 ### Tap-driven development
-Fireworks prints values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't requiring the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
+Fireworks prints values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't require the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
 
 Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedciated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
 
@@ -225,7 +225,7 @@ Some annotated examples:
 | `:log-`    | `js/console.log`* | ×             | ×                 | Omits both label and file info.                                                     |
 | `:pp`      | `pp/pprint`       | ✓             | ✓                 |                                                                                      |
 | `:pp-`     | `pp/pprint`       | ×             | ×                 | Omits both label and file info.                                                     |
-| `:data`    | N/A               | ×             | ×                 | Returns a map describing the Fireworks formatting & printing used by `?`.            |
+| `:data`    | N/A               | ×             | ×                 | Returns a map describing the formatting used by `?`.            |
 | `:comment` | N/A               | ✓             | ✓                 | Does not print a value.<br>Does not return a value.<br>Intended for user commentary. |
 
 
