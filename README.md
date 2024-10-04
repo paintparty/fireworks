@@ -30,7 +30,6 @@
 **Fireworks is a themeable tapping library for Clojure, ClojureScript, and Babashka.** It is designed to make your workflow easier, faster, and more enjoyable. If you like the idea of printing with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
 
 <br>
-<br>
 
 ## Features
 
@@ -69,7 +68,6 @@
 <p align="center"><img width="830px" src="resources/fireworks-samples-cropped-xl-2.gif" alt="Fireworks light and dark themes animated slideshow"></img></p>
 <p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p>
 
-<br>
 <br>
 
 ## Setup
@@ -185,7 +183,6 @@ If you want to use a specific mode and also supply a custom label and/or overrid
 
 
 <br>
-<br>
 
 ### Tap-driven development
 Fireworks prints values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't require the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
@@ -234,7 +231,6 @@ Some annotated examples:
 <span>*</span> `:log` and `:log-` will dispatch to `pp/pprint` in a JVM context.
 
 
-<br>
 <br>
 
 
@@ -321,18 +317,22 @@ For the actual `config.edn` file, you can use the above example map (at the begi
 <br>
 
 ### All the options
-
 All of the available config options and their default values:
 
 <br>
 
-**`:mood`** `"light"`<br>
-Sets the mood to `"dark"` or `"light"`. Will use the default light (or dark) theme, which is `"Alabaster Light"` (or `"Alabaster Dark"`). Defaults to `"light"`.
+#### **`:mood`**
+
+Defaults to `"light"`<br>
+
+Sets the mood to `"dark"` or `"light"`. Will use the default light (or dark) theme, which is `"Alabaster Light"` (or `"Alabaster Dark"`).
 
 <br>
 <br>
 
-**`:theme`** `"Alabaster Light"`<br>
+#### **`:theme`**
+Defaults to `"Alabaster Light"`<br>
+
 Sets the theme. This will override `:mood` setting.
 This must be one of the following 3 types of values:
 
@@ -361,110 +361,146 @@ This will not work:
 <br>
 
 
-**`:line-height`** `1.45`<br>
+#### **`:line-height`**
+Defaults to `1.45`<br>
+
 Sets the line-height. Only takes effect in browser consoles.
 
 <br>
 
-**`:coll-limit`** `15`<br>
+#### **`:coll-limit`**
+Defaults to `15`<br>
+
 Sets the max length of collections.  Collections whose count are at least 2 greater than this number will be truncated. By default, Fireworks aggressively truncates collections to keep the display footprint of the printed output as short and narrow as possible.
 
 <br>
 
-**`:print-level`** `7`<br>
+#### **`:print-level`**
+ Defaults to `7`<br>
+
 Sets the max depth of printing for nested collections.
 
 <br>
 
-**`:non-coll-length-limit`** `33`<br>
+#### **`:non-coll-length-limit`**
+ Defaults to `33`<br>
+
 Sets the max length of things like strings, keywords, function names, etc., when they are nested more than one level deep inside a data structure. Values whose length exceeds this will be ellipsized.
 
 
 <br>
 
-**`:non-coll-mapkey-length-limit`** `20`<br>
+#### **`:non-coll-mapkey-length-limit`** 
+Defaults to `20`<br>
+
 Sets the max length of things like strings, keywords, function names, etc., when they are used as keys in maps. Longer values will be ellipsized.
 
 
 <br>
 
-**`:non-coll-result-length-limit`** `444`<br>
+#### **`:non-coll-result-length-limit`**
+Defaults to `444`<br>
+
 Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value itself is the result of the evaluation (not nested within a data structure).
 
 
 <br>
 
 
-**`:non-coll-depth-1-length-limit`** `69`<br>
+#### **`:non-coll-depth-1-length-limit`**
+Defaults to `69`<br>
+
 Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value is nested one level deep inside the result, which would be a non-associative collection such as a vector or seq.
 
 
 <br>
 
-**`:enable-rainbow-brackets?`** `true`<br>
+#### **`:enable-rainbow-brackets?`**
+Defaults to `true`<br>
+
 Whether or not to use rainbow brackets. Rainbow brackets can be customized in your theme.
 
 
 <br>
 
-**`:bracket-contrast`** `"high"`<br>
+#### **`:bracket-contrast`**
+Defaults to `"high"`<br>
+
 Sets the level of rainbow bracket intensity to `"high"` or `"low"`.  Default value can also be overridden by `:bracket-contrast` entry in a Fireworks theme map.
 
 
 <br>
 
-**`:display-namespaces?`** `true`<br>
+#### **`:display-namespaces?`**
+Defaults to `true`<br>
+
 Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:non-coll-length-limit` or the `:non-coll-mapkey-length-limit` (in the case of map keys).
 
 
 <br>
 
-**`:enable-terminal-truecolor?`** `false`<br>
+#### **`:enable-terminal-truecolor?`**
+Defaults to `false`<br>
+
 If set to `false` (default value), Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If you will be printing with Fireworks in a terminal, and your terminal emulator supports 24-bit color (most of them do), it is highly recommended to set this to `true`.
 
 
 <br>
 
-**`:enable-terminal-italics?`** `false`<br>
+#### **`:enable-terminal-italics?`**
+Defaults to `false`<br>
+
 If set to `false` (default value), any theme tokens specified to be italicized will not be italicized. If you will be printing with Fireworks in a terminal, and your terminal emulator supports italics (most of them do), it is highly recommended to set this option to `true`.
 
 
 <br>
 
-**`:enable-terminal-font-weights?`** `false`<br>
+#### **`:enable-terminal-font-weights?`**
+Defaults to `false`<br>
+
 If set to `false` (default value), any theme tokens specified to be bold will not be bold. If you will be printing with Fireworks in a terminal, and your terminal emulator supports bold fonts (most of them do), it is highly recommended to set this option to `true`.
 
 
 <br>
 
-**`:metadata-print-level`** `6`<br>
+#### **`:metadata-print-level`** 
+Defaults to `6`<br>
+
 Sets the max depth of printing for metadata maps that contain nested collections.
 
 <br>
 
-**`:display-metadata?`** `true`<br>
+#### **`:display-metadata?`**
+Defaults to `true`<br>
+
 Print metadata values.
 
 <br>
 
-**`:metadata-position`** `"inline"`<br>
+#### **`:metadata-position`** 
+Defaults to `"inline"`<br>
+
 Determines position of metadata relative to value that is carrying it. Options are `"inline"` (default), or `"block"`. 
 
 <br>
 
-<!-- **`:custom-printers`** `nil`
+<!-- #### **`:custom-printers`** `nil`
 
 Custom print handlers for objects and collections. See [Custom Printers](#custom-printers) section.
 
 <br>
 <br> -->
 
-**`:find`** `nil`<br>
+#### **`:find`** 
+Defaults to `nil`<br>
+
 Find and highlight values in the printed output. See [Highlighting values](#highlighting-values) section.
 
 <br>
 
-**`:print-with`** `nil`<br>
+#### **`:print-with`**
+Defaults to `nil`<br>
+
 Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`. If you want to print with `pprint` or `js/console.log`, use `(? :pp ...)` or `(? :log ...)`.
 
 ```Clojure
