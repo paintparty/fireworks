@@ -1,8 +1,7 @@
 <div align="center"><img src="./resources/color-printer-logo.png" width="400"></img></div> 
-
 <p align="center">
 <a href="https://clojars.org/io.github.paintparty/fireworks">
-<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=0969da&style=flat-square&cacheSeconds=3" alt="Fireworks on Clojars"></img>
+<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=0969da&style=flat&cacheSeconds=3" alt="Fireworks on Clojars"></img>
 </a>
 </p>
 
@@ -67,7 +66,7 @@
 <br>
 <br>
 
-<p align="center"><img width="830px" src="resources/fireworks-samples-w-chrome-cropped-xl-2.gif" alt="Fireworks light and dark themes animated slideshow"></img></p>
+<p align="center"><img width="830px" src="resources/fireworks-samples-cropped-xl-2.gif" alt="Fireworks light and dark themes animated slideshow"></img></p>
 <p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p>
 
 <br>
@@ -121,7 +120,7 @@ This section outlines the four public macros that fireworks offers:<br>
 
 (? x)
 ```
-<p align="center"><img src="resources/fireworks-core-par.png" width="534px" /></p>
+<p align="center"><img src="resources/features/fireworks-core-par.png" width="534px" /></p>
 
 
 Calling **`fireworks.core/?`** with two arguments will print a label (instead of the form), the namespace info, and the result:
@@ -129,7 +128,7 @@ Calling **`fireworks.core/?`** with two arguments will print a label (instead of
 ```Clojure
 (? "My label" x)
 ```
-<p align="center"><img src="resources/fireworks-core-par-label.png" width="534px" /></p>
+<p align="center"><img src="resources/features/fireworks-core-par-label.png" width="534px" /></p>
 
 
 The first argument can also be a map, which supplies various [config options](#options):
@@ -487,7 +486,7 @@ For data structures, the metadata map is displayed inline, immediately following
 (? ^{:a "a"} ['foo 'bar 'baz]
 ```
 
-<p align="center"><img src="resources/metadata-coll-inline.png" width="534px" /></p>
+<p align="center"><img src="resources/features/metadata-coll-inline.png" width="534px" /></p>
 
 
 Here is the same vector, with the second symbol in the vector carrying metadata:  
@@ -496,13 +495,13 @@ Here is the same vector, with the second symbol in the vector carrying metadata:
 (? ^{:a "a"} ['foo (with-meta (symbol "bar") {:b "b"}) 'baz]
 ```
 
-<p align="center"><img src="resources/metadata-coll-and-symbol-inline.png" width="534px" /></p>
+<p align="center"><img src="resources/features/metadata-coll-and-symbol-inline.png" width="534px" /></p>
 
 
 If you would rather print metadata in the traditional "block" position, you can set the config value of `:metadata-positioning` to `:block`:
 
 
-<p align="center"><img src="resources/metadata-coll-and-symbol-block.png" width="534px" /></p>
+<p align="center"><img src="resources/features/metadata-coll-and-symbol-block.png" width="534px" /></p>
 
 
 <br>
@@ -516,7 +515,7 @@ Fireworks offers a `:find` option which takes a map containing a `:pred` entry. 
 
 (? {:find {:pred #(= % 777)}} x)
 ```
-<p align="center"><img src="resources/highlight.png" width="534px" /></p>
+<p align="center"><img src="resources/features/highlight.png" width="534px" /></p>
 
 
 
@@ -527,7 +526,7 @@ You can also pass a custom highlighting style:
            :style {:background-color "#a0f7fd"}}}
    [1 33 99 777 -16])
 ```
-<p align="center"><img src="resources/highlight-with-custom-style.png" width="534px" /></p>
+<p align="center"><img src="resources/features/highlight-with-custom-style.png" width="534px" /></p>
 
 
 
@@ -538,7 +537,7 @@ Or pass multiple preds, with different styles:
             :style {:background-color "#a0f7fd"}}]}
    [1 33 99 777 -16])
 ```
-<p align="center"><img src="resources/highlight-with-multiple-custom-styles.png" width="534px" /></p>
+<p align="center"><img src="resources/features/highlight-with-multiple-custom-styles.png" width="534px" /></p>
 
 <br>
 <br>
@@ -548,40 +547,40 @@ Or pass multiple preds, with different styles:
 Fireworks includes a handful of popular themes:
 
 <div align="center"><sub><b><i>Alabaster Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Alabaster-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Alabaster-Light.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Zenburn Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Zenburn-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Zenburn-Light.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Solarized Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Solarized-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Solarized-Light.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Monokai Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Monokai-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Monokai-Light.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Degas Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Degas-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Degas-Light.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Neutral Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Neutral-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Neutral-Light.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Alabaster Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Alabaster-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Alabaster-Dark.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Zenburn Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Zenburn-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Zenburn-Dark.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Solarized Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Solarized-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Solarized-Dark.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Monokai Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Monokai-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Monokai-Dark.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Degas Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Degas-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Degas-Dark.png" width="534px"/></div>
 
 <div align="center"><sub><b><i>Neutral Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/Neutral-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Neutral-Dark.png" width="534px"/></div>
 
 Making your own Fireworks theme to perfectly match your current editor theme is straightforward.
 
@@ -779,7 +778,7 @@ When printing maps that contain keys which are data-structures, `clojure.pprint/
 
 Fireworks will always print these maps consistently - every key on its own line & empty line between all entries:
 
-<p align="center"><img src="resources/printing-maps-with-colls-as-keys.png" width="534px" /></p>
+<p align="center"><img src="resources/features/printing-maps-with-colls-as-keys.png" width="534px" /></p>
 
 <br>
 
@@ -830,7 +829,7 @@ A sample vector of 3 functions:
 <br>
 Fireworks:
 
-<p align="center"><img src="resources/printing-functions-in-cljs.png" width="534px" /></p>
+<p align="center"><img src="resources/features/printing-functions-in-cljs.png" width="534px" /></p>
 
 By default, Fireworks will print the function name with the fully-qualified namespace. This can be disabled by changing the config option `:display-namespaces?` to `false`.
 
@@ -854,7 +853,7 @@ Example vector of built-in JS Functions and Constructors:
    js/EvalError
    js/Date]
  ```
-`clojure.pprint/pprint` result:
+Output from `clojure.pprint/pprint`:
 ```
 [#object[decodeURI]
  #object[isFinite]
@@ -862,23 +861,23 @@ Example vector of built-in JS Functions and Constructors:
  #object[Date]]
 ```
 
-`js/console.log` result:
+Output from `js/console.log`:
 ```
 [f decodeURI() {[native code]}
  f isFinite() {[native code]}
  f EvalError() {[native code]}
  f Date() {[native code]}]
 ```
-Fireworks:
+Output from Fireworks:
 
-<p align="center"><img src="resources/printing-built-in-functions-in-cljs.png" width="534px" /></p>
+<p align="center"><img src="resources/features/printing-built-in-functions-in-cljs.png" width="534px" /></p>
 
 
 <br>
 
 JS built-in objects such as `js/Math` or `js/JSON` which cannot be called like functions or constructors are printed like this:
 
-<p align="center"><img src="resources/printing-built-in-objects-in-cljs.png" width="534px" /></p>
+<p align="center"><img src="resources/features/printing-built-in-objects-in-cljs.png" width="534px" /></p>
 
 
 <br>
