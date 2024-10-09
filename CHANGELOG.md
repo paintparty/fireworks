@@ -14,6 +14,16 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 #### Removed
 
+## 0.6.5
+2024-10-09
+
+#### Fixed 
+- [Fixes printing of map entries](https://github.com/paintparty/fireworks/issues/24)
+
+<br>
+<br>
+
+
 ## 0.6.4
 2024-09-09
 
