@@ -13,7 +13,7 @@
 
 #?(:cljs
    (do 
-     (defn inline-style->map [v]
+     (defn- inline-style->map [v]
        (as-> v $
          (string/split $ #";")
          (map #(let [kv    (-> % string/trim (string/split #":") )
@@ -22,7 +22,7 @@
               $)
          (into {} $)))
 
-     (defn dom-el-attrs-map
+     (defn- dom-el-attrs-map
        [x]
        (when-let [el x]
          ;; Check for when no attrs
@@ -38,13 +38,13 @@
                             (= k "class") (into [] (string/split v " "))
                             :else         v)]))))))
 
-     (defn prune-synthetic-base-event [x]
+     (defn- prune-synthetic-base-event [x]
        (doto x
          (js-delete "view")
          (js-delete "nativeEvent")
          (js-delete "target")))))
 
-(defn cljc-atom?
+(defn- cljc-atom?
   [x]
   #?(:cljs (= cljs.core/Atom (type x))
      :clj  (= clojure.lang.Atom (type x))))
@@ -74,21 +74,37 @@
 (declare truncate)
 
 
-(defn truncate-iterable
+(defn- truncate-iterable
   [x
    coll-limit
    map-like?
    depth]
-  (let [ret (->> x
-                 (take coll-limit)
-                 (into [])
-                 (mapv (partial truncate {:depth (inc depth)})))]
+  (let [;; First we need to check if collection is both not map-like and 
+        ;; comprised only of map entries. If this is the case it is most likely
+        ;; the result of something like `(into [] {:a "a" :b "b"})`, and we need
+        ;; to treat all elements in the coll as 2-el vectors (not map-entries),
+        ;; in the subsequent nested calls to `truncate`. This is done by passing
+        ;; a value of `true` for the :map-entry-in-non-map? option. 
+        all-map-entries?
+        (and (not map-like?)
+             (some->> x
+                      seq
+                      (take (min 50 coll-limit))
+                      (every? #(-> % map-entry?))))     
+
+        ret
+        (->> x
+             (take coll-limit)
+             (into [])
+             (mapv (partial truncate
+                            {:depth                 (inc depth)
+                             :map-entry-in-non-map? all-map-entries?})))]
     (if map-like?
       (seq->sorted-map ret)
       ret)))
 
 
-(defn new-coll-info
+(defn- new-coll-info
   [coll {:keys [uid-entry?
                 coll-size
                 all-tags
@@ -112,7 +128,7 @@
 
 
 
-(defn new-coll2
+(defn- new-coll2
   [{:keys [x
            t
            depth
@@ -150,7 +166,8 @@
         atom?      (cljc-atom? x)
         x          (if atom? @x x)
         user-meta  (user-meta* x)
-        kv?        (map-entry? x)
+        kv?        (boolean (when-not (:map-entry-in-non-map? opts)
+                              (map-entry? x)))
         tag-map    (when-not kv?
                      (set/rename-keys (lasertag/tag-map x)
                                       {:tag :t}))
@@ -170,7 +187,7 @@
     (merge (:tag-map ret)
            (dissoc ret :tag-map)))) 
 
-(defn new-x
+(defn- new-x
   [depth
    x
    {:keys [coll-type? kv?]
@@ -187,7 +204,7 @@
     (if (or (:carries-meta? opts+)
             (util/carries-meta? x))
       x
-      (symbol (str  x)))))
+      (symbol (str x)))))
 
 
 (defn with-badge-and-ellipsized
@@ -200,9 +217,10 @@
 
 
 (defn truncate
-  [{:keys [depth map-value? key? user-meta?]
+  [{:keys [depth user-meta?]
     :as opts}
    x]
+
   (let [{:keys [x             
                 t     
                 kv?           
@@ -237,7 +255,7 @@
         ;;   (merge mm*
         ;;          ;; TODO - put this up in mm* binding
         ;;          (keyed [key? map-value?])))
-
+        
         ret           
         (with-meta new-x
           (merge {:fw/truncated mm*
