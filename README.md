@@ -512,7 +512,7 @@ Although more of an edge-case, you can pass a `:print-with` option at the call s
 <br>
 <br>
 
-### Displaying metadata
+## Displaying metadata
 By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value to which it is attached. In practice, I find this formatting much faster to comprehend as compared to conventional "block" positioning of the metadata (above the carrying value), especially when working with metadata-heavy code.
 
 For data structures, the metadata map is displayed inline, immediately following the opening bracket. This means that any collection carrying metadata will always be display multi-line, with each value on its own line. Below is an example vector of three quoted symbols:
@@ -543,7 +543,7 @@ If you would rather print metadata in the traditional "block" position, you can 
 <br>
 <br>
 
-### Highlighting values in printed output
+## Highlighting values in printed output
 
 Fireworks offers a `:find` option which takes a map containing a `:pred` entry. It will highlight any matches in the printed output. 
 ```Clojure
