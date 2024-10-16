@@ -14,13 +14,28 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 #### Removed
 
-## 0.6.6
+
+## 0.7.1
+2024-10-16
+
+#### Changed 
+- Bump version of Bling dep
+
+<br>
+<br>
+
+## 0.7.0
 2024-10-16
 
 #### Fixed 
 - [Fixes array-map entry order](https://github.com/paintparty/fireworks/issues/19)
+
+#### Added 
 - [Add support for `:single-line-coll-length-limit` option](https://github.com/paintparty/fireworks/issues/20)
+
 - Add support for `:label-length-limit` option
+
+- Add separate shadow-cljs project for cljc visual regression testing in `test/fireworks/visual`
 
 <br>
 <br>
