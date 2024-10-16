@@ -4,12 +4,16 @@
   (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
             [bling.core :refer [callout bling]]
-            [clojure.string :as string] [fireworks.pp :as pp]
+            [clojure.string :as string]
+            [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
+            [lasertag.core :refer [tag-map]]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
+
+;; (array-map "one" 1 "two" 2 "three" 3 "four" 4 "five" 5 "six" 6 "seven" 7 "eight" 8 "nine" 9)
 
 ;; This is example config. If you want to run fireworks.core-test tests locally,
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.

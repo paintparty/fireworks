@@ -294,16 +294,16 @@
 
 
 
-       #_(when key?
-         (?pp stringified)
-         (?pp (keyed [#_m
-                      t
-                      stringified
-                      stringified-len
-                      num-chars-over
-                      exceeds?
-                      inline-badge-count
-                      s
-                      atom-wrap-count
-                      ellipsized-char-count])))
+        ;;  (when key?
+        ;;    (?pp stringified)
+        ;;    (?pp (keyed [#_m
+        ;;                 t
+        ;;                 stringified
+        ;;                 stringified-len
+        ;;                 num-chars-over
+        ;;                 exceeds?
+        ;;                 inline-badge-count
+        ;;                 s
+        ;;                 atom-wrap-count
+        ;;                 ellipsized-char-count])))
           ret)))))

@@ -78,6 +78,7 @@
   [x
    coll-limit
    map-like?
+   array-map?
    depth]
   (let [;; First we need to check if collection is both not map-like and 
         ;; comprised only of map entries. If this is the case it is most likely
@@ -100,7 +101,7 @@
                             {:depth                 (inc depth)
                              :map-entry-in-non-map? all-map-entries?})))]
     (if map-like?
-      (seq->sorted-map ret)
+      (seq->sorted-map ret array-map?)
       ret)))
 
 
@@ -127,7 +128,6 @@
     ret))
 
 
-
 (defn- new-coll2
   [{:keys [x
            t
@@ -136,10 +136,11 @@
            too-deep?
            dom-node-type]
     :as opts+}]
-  (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))]
+  (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))
+        array-map? (and map-like? (contains? (:all-tags opts+) :array-map))]
     #?(:cljs
        (if (satisfies? ISeqable x)
-         (truncate-iterable x coll-limit map-like? depth)
+         (truncate-iterable x coll-limit map-like? array-map? depth)
          (if dom-node-type
            (truncate {:depth (inc depth)} (dom-el-attrs-map x))
            (do 
@@ -149,7 +150,8 @@
                   (map (partial truncate {:depth (inc depth)}))
                   (into {})))))
        :clj
-       (truncate-iterable x coll-limit map-like? depth))))
+       (truncate-iterable x coll-limit map-like? array-map? depth))))
+
 
 (defn- user-meta* [x]
   (let [m (meta x)
@@ -159,6 +161,7 @@
                               (keys m)))
               m))]
     m))
+
 
 (defn- truncate-opts
   [opts x]
@@ -187,19 +190,23 @@
     (merge (:tag-map ret)
            (dissoc ret :tag-map)))) 
 
+
 (defn- new-x
   [depth
    x
    {:keys [coll-type? kv?]
     :as opts+}]
   (let [x (cond
-            kv?        (let [[k v] x]
-                         [(truncate {:depth depth
-                                     :key?  true} k)
-                          (truncate {:depth      depth
-                                     :map-value? true} v)])
-            coll-type? (new-coll2 opts+)
-            :else      x)]
+            kv?        
+            (let [[k v] x]
+              [(truncate {:depth depth :key? true} k)
+               (truncate {:depth depth :map-value? true} v)])
+
+            coll-type?
+            (new-coll2 opts+)
+
+            :else      
+            x)]
 
     (if (or (:carries-meta? opts+)
             (util/carries-meta? x))

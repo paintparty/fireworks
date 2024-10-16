@@ -153,9 +153,11 @@
 
 
 (defn seq->sorted-map
-  [coll]
-  (if (< 8 (count coll))
+  "Only map-like colls should get sent here."
+  [coll array-map?]
+  (if (and (< 8 (count coll))
+           (not array-map?))
     (seq->array-map (sort rank coll))
     (if (map? coll)
       coll
-      (into {} coll))))
+      (apply array-map (reduce (fn [acc [k v]] (conj acc k v)) coll)))))
