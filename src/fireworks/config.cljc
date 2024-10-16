@@ -13,6 +13,8 @@
                                    :updates-theme? true}
    :coll-limit                    {:spec    ::config/coll-limit
                                    :default 15}
+   :single-line-coll-length-limit {:spec    ::config/single-line-coll-length-limit
+                                   :default 15}
    :evaled-form-coll-limit        {:spec    ::config/evaled-form-coll-limit
                                    :default 7}
    :non-coll-result-length-limit  {:spec    ::config/non-coll-result-length-limit
@@ -51,6 +53,8 @@
    :line-height                   {:spec           ::config/line-height
                                    :default        1.45
                                    :updates-theme? true}
+   :label-length-limit            {:spec           ::config/label-length-limit
+                                   :default        25}
    :custom-printers               {:spec    ::config/custom-printers
                                    :default {}}
    :find                          {:spec    ::config/custom-printers
@@ -58,8 +62,10 @@
    })
 
 ;; Add new option keys to this list!
+;; TODO - maybe dynamically construct this from (-> options-map keys (into #{}))
 (def option-keys
   #{:line-height
+    :label-length-limit
     :enable-terminal-italics?
     :enable-terminal-font-weights?
     :non-coll-result-length-limit
@@ -74,6 +80,7 @@
     :metadata-print-level
     :mood
     :coll-limit
+    :single-line-coll-length-limit
     :evaled-form-coll-limit
     :display-metadata?
     :metadata-position
@@ -82,6 +89,12 @@
     })
 
 ;; Add new option keys that update theme to this list!
+;; TODO - maybe dynamically construct this from
+;; (->> options-map
+;;      (filter (fn [[_ m]] (:updates-theme? m)))
+;;      keys
+;;      (into #{}))
+
 (def option-keys-that-update-theme
   #{:line-height
     :enable-terminal-italics?

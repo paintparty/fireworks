@@ -588,3 +588,11 @@
            {:a   "foo"
             :xyz "bar"}))))
 
+;; (deftest ^:test-refresh/focus test-addition
+;;   (is (= 2 (+ 1 1))))
+
+
+;; TODO - Add tests for:
+;; :single-line-coll-length-limit option 
+;; :correct order of array map entries
+;; Do an assessment of other things you need to cover with tests
