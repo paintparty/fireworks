@@ -38,6 +38,9 @@
 (s/def ::line-height
   (s/and number? #(<= 0.5 % 3.0)))
 
+(s/def ::single-line-coll-length-limit
+  (s/and int? #(<= 2 % 200)))
+
 (s/def ::coll-limit
   ::fw-coll-limit)
 

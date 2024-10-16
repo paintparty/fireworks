@@ -234,6 +234,7 @@
 )
    
    :clj
+   #_nil
    (do 
      (deftest  p-data-with-label-from-opts
        (is (= 
