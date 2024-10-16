@@ -14,6 +14,18 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 #### Removed
 
+## 0.6.6
+2024-10-16
+
+#### Fixed 
+- [Fixes array-map entry order](https://github.com/paintparty/fireworks/issues/19)
+- [Add support for `:single-line-coll-length-limit` option](https://github.com/paintparty/fireworks/issues/20)
+- Add support for `:label-length-limit` option
+
+<br>
+<br>
+
+
 ## 0.6.5
 2024-10-09
 

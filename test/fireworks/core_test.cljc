@@ -234,7 +234,6 @@
 )
    
    :clj
-   #_nil
    (do 
      (deftest  p-data-with-label-from-opts
        (is (= 
@@ -588,6 +587,9 @@
                  :xyz "bar"})
            {:a   "foo"
             :xyz "bar"}))))
+
+;; (deftest ^:test-refresh/focus test-addition
+;;   (is (= 2 (+ 1 1))))
 
 
 ;; TODO - Add tests for:

@@ -53,6 +53,8 @@
    :line-height                   {:spec           ::config/line-height
                                    :default        1.45
                                    :updates-theme? true}
+   :label-length-limit            {:spec           ::config/label-length-limit
+                                   :default        25}
    :custom-printers               {:spec    ::config/custom-printers
                                    :default {}}
    :find                          {:spec    ::config/custom-printers
@@ -63,6 +65,7 @@
 ;; TODO - maybe dynamically construct this from (-> options-map keys (into #{}))
 (def option-keys
   #{:line-height
+    :label-length-limit
     :enable-terminal-italics?
     :enable-terminal-font-weights?
     :non-coll-result-length-limit

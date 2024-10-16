@@ -5,6 +5,7 @@
    [clojure.data :as data]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
+   [fireworks.specs.config :as specs.config]
    [fireworks.state :as state]
    [fireworks.tag :as tag]
    #?(:cljs [fireworks.macros
@@ -55,6 +56,16 @@
       "\n")
     "\n"))
 
+
+(defn resolve-label-length [label-length-limit]
+  (or (when (s/valid? ::specs.config/label-length-limit
+                      label-length-limit)
+        label-length-limit)
+      (:label-length-limit @state/config)
+      (-> config/options
+          :label-length-limit
+          :default)))
+
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
    {:keys [label-length-limit]} :user-opts
@@ -71,33 +82,36 @@
                  [:form-or-label :file-info]}
                template)
           (when label
-            (let [label (if mll?
-                          (string/join
-                           "\n"
-                           (map
-                            #(str (tag/tag-entity!
-                                   (str indent-spaces %)
-                                   :eval-label)
-                                  (tag/tag-reset!))
-                            (string/split label #"\n")))
-                          (tag/tag-entity!
-                           (util/shortened label
-                                           (or (when (pos-int? label-length-limit)
-                                                      label-length-limit)
-                                               25))
-                           :eval-label))]
+            (let [label
+                  (if mll?
+                    (string/join
+                     "\n"
+                     (map
+                      #(str (tag/tag-entity!
+                             (str indent-spaces %)
+                             :eval-label)
+                            (tag/tag-reset!))
+                      (string/split label #"\n")))
+                    (tag/tag-entity!
+                     (util/shortened label
+                                     (resolve-label-length label-length-limit))
+                     :eval-label))]
               (str indent-spaces label))))
-        form  (when-not label
-                (when qf
-                  (reset! state/formatting-form-to-be-evaled?
-                          true)
-                  (let [shortened (tag/tag-entity! 
-                                   (util/shortened qf 25)
-                                   :eval-form) 
-                        ret       shortened]
-                    (reset! state/formatting-form-to-be-evaled?
-                            false)
-                    (str indent-spaces ret))))]
+
+        form
+        (when-not label
+          (when qf
+            (reset! state/formatting-form-to-be-evaled?
+                    true)
+            (let [shortened
+                  (tag/tag-entity! 
+                   (util/shortened qf
+                                   (resolve-label-length label-length-limit))
+                   :eval-form) 
+                  ret       shortened]
+              (reset! state/formatting-form-to-be-evaled?
+                      false)
+              (str indent-spaces ret))))]
     [label form]))
 
 
@@ -572,14 +586,12 @@
           (when return-result? x)))))))
 
 
-(defn ^{:public true}
-  _p2 
+(defn ^{:public true} _p2 
   "Internal runtime dispatch target for fireworks macros.
 
    Pretty-prints the value with syntax coloring.
    Takes an optional leading argument (custom label or options map).
    Returns the value."
-
   [opts x]
   (let [fw-debug?
         (-> opts :user-opts :fw/debug? true?) 
