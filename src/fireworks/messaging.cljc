@@ -67,7 +67,6 @@
    (caught-exception nil opts))
   ([err {:keys [k v form body]
          :as   opts}]
-   (?pp err)
    (callout (merge opts
                    {:type        :error
                     :label       #?(:cljs
