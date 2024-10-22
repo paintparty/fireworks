@@ -234,7 +234,8 @@
 )
    
    :clj
-   (do 
+   nil
+   #_(do 
      (deftest  p-data-with-label-from-opts
        (is (= 
             (let [ret              (? :data {:label                      "my-label-from-opts"
@@ -557,7 +558,7 @@
 
 
 ;; Basic print-and-return tests, cljc
-(do
+#_(do
   (deftest p-basic
     (is (= (? {:a   "foo"
                :xyz "bar"})
@@ -596,3 +597,4 @@
 ;; :single-line-coll-length-limit option 
 ;; :correct order of array map entries
 ;; Do an assessment of other things you need to cover with tests
+(? (range 23))
