@@ -595,6 +595,7 @@
 
 ;; TODO - Add tests for:
 ;; :single-line-coll-length-limit option 
-;; :correct order of array map entries
+;; :when pred option for selective printing
+;; correct order of array map entries
 ;; Do an assessment of other things you need to cover with tests
 (? (range 23))

@@ -120,6 +120,8 @@
         :vector
         (s/coll-of ::find-for-highlighting-map :kind? vector?)))
 
+(s/def ::when fn?)
+
 (s/def ::fireworks-user-config
   (s/and map?
          (s/keys :opt-un [::line-height 

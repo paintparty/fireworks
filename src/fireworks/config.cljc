@@ -52,11 +52,13 @@
    :line-height                   {:spec           ::config/line-height
                                    :default        1.45
                                    :updates-theme? true}
-   :label-length-limit            {:spec           ::config/label-length-limit
-                                   :default        25}
+   :label-length-limit            {:spec    ::config/label-length-limit
+                                   :default 25}
    :custom-printers               {:spec    ::config/custom-printers
                                    :default {}}
    :find                          {:spec    ::config/custom-printers
+                                   :default nil}
+   :when                          {:spec    ::config/when
                                    :default nil}})
 
 ;; Option keys
