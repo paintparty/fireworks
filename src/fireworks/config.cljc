@@ -3,7 +3,6 @@
    [fireworks.specs.config :as config]
    [fireworks.specs.theme :as theme]))
 
-   
 (def options
   {:theme                         {:spec           ::config/theme
                                    :default        "Alabaster Light"
@@ -58,49 +57,15 @@
    :custom-printers               {:spec    ::config/custom-printers
                                    :default {}}
    :find                          {:spec    ::config/custom-printers
-                                   :default nil}
-   })
+                                   :default nil}})
 
-;; Add new option keys to this list!
-;; TODO - maybe dynamically construct this from (-> options-map keys (into #{}))
+;; Option keys
 (def option-keys
-  #{:line-height
-    :label-length-limit
-    :enable-terminal-italics?
-    :enable-terminal-font-weights?
-    :non-coll-result-length-limit
-    :non-coll-depth-1-length-limit
-    :non-coll-mapkey-length-limit
-    :non-coll-length-limit
-    :display-namespaces?
-    :enable-rainbow-brackets?
-    :enable-terminal-truecolor?
-    :print-level
-    :theme
-    :metadata-print-level
-    :mood
-    :coll-limit
-    :single-line-coll-length-limit
-    :evaled-form-coll-limit
-    :display-metadata?
-    :metadata-position
-    :bracket-contrast
-    :custom-printers
-    })
+  (->> options keys (into #{})))
 
-;; Add new option keys that update theme to this list!
-;; TODO - maybe dynamically construct this from
-;; (->> options-map
-;;      (filter (fn [[_ m]] (:updates-theme? m)))
-;;      keys
-;;      (into #{}))
-
+;; Option keys that update theme
 (def option-keys-that-update-theme
-  #{:line-height
-    :enable-terminal-italics?
-    :enable-terminal-font-weights?
-    :enable-rainbow-brackets?
-    :enable-terminal-truecolor?
-    :mood
-    :bracket-contrast
-    :theme})
+  (->> options
+       (filter (fn [[_ m]] (:updates-theme? m)))
+       keys
+       (into #{})))
