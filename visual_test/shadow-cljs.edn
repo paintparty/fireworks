@@ -3,7 +3,7 @@
                 ;; Local Fireworks
                 ;; "../src/"
                 ]
- :dependencies [[io.github.paintparty/fireworks "0.7.0-SNAPSHOT"]]
+ :dependencies [[io.github.paintparty/fireworks "0.7.1"]]
  :dev-http     {8020 "public"}
  :builds       {:app  {:target           :browser
                        :output-dir       "public/js"
