@@ -105,6 +105,7 @@
                                               :bracket-contrast             "high"
                                               :theme                        theme
                                               :custom-printers              {}
+                                              :coll-limit                   20
                                               :non-coll-length-limit        (-> fireworks.config/options
                                                                                 :non-coll-length-limit
                                                                                 :default)
@@ -234,8 +235,8 @@
 )
    
    :clj
-   nil
-   #_(do 
+   #_nil
+   (do 
      (deftest  p-data-with-label-from-opts
        (is (= 
             (let [ret              (? :data {:label                      "my-label-from-opts"
@@ -558,7 +559,7 @@
 
 
 ;; Basic print-and-return tests, cljc
-#_(do
+(do
   (deftest p-basic
     (is (= (? {:a   "foo"
                :xyz "bar"})
@@ -598,4 +599,3 @@
 ;; :when pred option for selective printing
 ;; correct order of array map entries
 ;; Do an assessment of other things you need to cover with tests
-(? (range 23))
