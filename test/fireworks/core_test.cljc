@@ -105,6 +105,7 @@
                                               :bracket-contrast             "high"
                                               :theme                        theme
                                               :custom-printers              {}
+                                              :coll-limit                   20
                                               :non-coll-length-limit        (-> fireworks.config/options
                                                                                 :non-coll-length-limit
                                                                                 :default)
@@ -234,6 +235,7 @@
 )
    
    :clj
+   #_nil
    (do 
      (deftest  p-data-with-label-from-opts
        (is (= 
@@ -594,5 +596,6 @@
 
 ;; TODO - Add tests for:
 ;; :single-line-coll-length-limit option 
-;; :correct order of array map entries
+;; :when pred option for selective printing
+;; correct order of array map entries
 ;; Do an assessment of other things you need to cover with tests

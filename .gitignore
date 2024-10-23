@@ -27,4 +27,4 @@ node_modules/
 .ls
 .clj-kondo/.cache
 /public/js
-test/fireworks/visual/public/js
+visual_test/public/js

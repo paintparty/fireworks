@@ -3,7 +3,6 @@
    [fireworks.specs.config :as config]
    [fireworks.specs.theme :as theme]))
 
-   
 (def options
   {:theme                         {:spec           ::config/theme
                                    :default        "Alabaster Light"
@@ -15,8 +14,6 @@
                                    :default 15}
    :single-line-coll-length-limit {:spec    ::config/single-line-coll-length-limit
                                    :default 15}
-   :evaled-form-coll-limit        {:spec    ::config/evaled-form-coll-limit
-                                   :default 7}
    :non-coll-result-length-limit  {:spec    ::config/non-coll-result-length-limit
                                    :default 444}
    :non-coll-depth-1-length-limit {:spec    ::config/non-coll-depth-1-length-limit
@@ -41,66 +38,42 @@
    :bracket-contrast              {:spec           ::config/bracket-contrast
                                    :default        "high"
                                    :updates-theme? true}
-   :enable-terminal-truecolor?    {:spec           ::config/enable-terminal-truecolor?
+   :legacy-terminal?              {:spec           ::config/legacy-terminal?
                                    :default        false
+                                   :updates-theme? true}
+   :enable-terminal-truecolor?    {:spec           ::config/enable-terminal-truecolor?
+                                   :default        true
                                    :updates-theme? true}
    :enable-terminal-italics?      {:spec           ::config/enable-terminal-italics?
-                                   :default        false
+                                   :default        true
                                    :updates-theme? true}
    :enable-terminal-font-weights? {:spec           ::config/enable-terminal-font-weights?
-                                   :default        false
+                                   :default        true
                                    :updates-theme? true}
    :line-height                   {:spec           ::config/line-height
                                    :default        1.45
                                    :updates-theme? true}
-   :label-length-limit            {:spec           ::config/label-length-limit
-                                   :default        25}
+   :label-length-limit            {:spec    ::config/label-length-limit
+                                   :default 25}
    :custom-printers               {:spec    ::config/custom-printers
                                    :default {}}
    :find                          {:spec    ::config/custom-printers
                                    :default nil}
+   :when                          {:spec    ::config/when
+                                   :default nil}
+   
+   ;; Remove?
+   :evaled-form-coll-limit        {:spec    ::config/evaled-form-coll-limit
+                                   :default 7}
+
    })
 
-;; Add new option keys to this list!
-;; TODO - maybe dynamically construct this from (-> options-map keys (into #{}))
+;; Option keys
 (def option-keys
-  #{:line-height
-    :label-length-limit
-    :enable-terminal-italics?
-    :enable-terminal-font-weights?
-    :non-coll-result-length-limit
-    :non-coll-depth-1-length-limit
-    :non-coll-mapkey-length-limit
-    :non-coll-length-limit
-    :display-namespaces?
-    :enable-rainbow-brackets?
-    :enable-terminal-truecolor?
-    :print-level
-    :theme
-    :metadata-print-level
-    :mood
-    :coll-limit
-    :single-line-coll-length-limit
-    :evaled-form-coll-limit
-    :display-metadata?
-    :metadata-position
-    :bracket-contrast
-    :custom-printers
-    })
-
-;; Add new option keys that update theme to this list!
-;; TODO - maybe dynamically construct this from
-;; (->> options-map
-;;      (filter (fn [[_ m]] (:updates-theme? m)))
-;;      keys
-;;      (into #{}))
-
+  (->> options keys (into #{})))
+;; Option keys that update theme
 (def option-keys-that-update-theme
-  #{:line-height
-    :enable-terminal-italics?
-    :enable-terminal-font-weights?
-    :enable-rainbow-brackets?
-    :enable-terminal-truecolor?
-    :mood
-    :bracket-contrast
-    :theme})
+  (->> options
+       (filter (fn [[_ m]] (:updates-theme? m)))
+       keys
+       (into #{})))

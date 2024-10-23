@@ -479,3 +479,68 @@
                                 :eval-form    :eval-label
                                 :eval-label   :eval-label
                                 :atom-wrapper :label}}})
+
+(def universal-neutral
+  {:name   "Universal Neutral"
+   :desc   (str "A neutral syntax theme for Clojure data that works on both light and dark backgrounds."
+                "The eval label is printed in blue, metadata is printed in purple, and object labels are printed in green.")
+   :mood   "dark"
+   :rainbow-brackets {:browser [:neutral "#9e9e9e"
+                                :blue    "#00afff"
+                                :orange  "#ff8700"
+                                :green   "#00d700"
+                                :purple  "#ff00ff"]
+                      :x-term  [:neutral 247
+                                :blue    39
+                                :orange  208 
+                                :green   40
+                                :purple  201]}
+   :tokens {:classes {:foreground {:color "#9e9e9e"}
+                      :metadata   {:color "#af87ff"}      ;; purple
+                      :metadata2  {:color "#87af00"}      ;; yellow
+                      :label      {:color       "#ff8700" ;; yellow
+                                   :font-style  :italic}
+                      :eval-label {:color      "#00afff"
+                                   :font-style :italic}}
+            :syntax  {:js-object-key {:color "#ff00ff"}}
+
+            :printer {:file-info     {:color      "#9e9e9e" ;; gray
+                                      :font-style :italic }
+                      :eval-form     :eval-label
+                      :eval-label    :eval-label
+                      :comment       {:font-style :italic}
+                      :function-args {:color "#9e9e9e"}}}})
+
+(def universal
+  {:name   "Universal"
+   :desc   "A colorized syntax theme for Clojure data that works on both light and dark backgrounds."
+   :mood   "dark"
+   :rainbow-brackets {:browser [:neutral "#9e9e9e"
+                                :blue    "#00afff"
+                                :orange  "#ff8700"
+                                :green   "#00d700"
+                                :purple  "#ff00ff"]
+                      :x-term  [:neutral 247
+                                :blue    39
+                                :orange  208 
+                                :green   40
+                                :purple  201]}
+   :tokens {:classes {:foreground {:color "#9e9e9e"}
+                      :string     {:color "#00d700"}
+                      :definition {:color "#00afff"}
+                      :metadata   {:color "#af87ff"}     ;; purple 
+                      :metadata2  {:color "#87af00"}     ;; yellow
+                      :label      {:color      "#ff00ff" ;; magenta
+                                   :font-style :italic}
+                      :eval-label {:color      "#af87ff"
+                                   :font-style :italic}}
+
+            :syntax  {:number        {:color "#ff8700"} ;; orange 
+                      :js-object-key {:color "#ff00ff"}}
+
+            :printer {:file-info     {:color      "#9e9e9e"
+                                      :font-style :italic}
+                      :eval-form     :eval-label
+                      :eval-label    :eval-label
+                      :comment       {:font-style :italic}
+                      :function-args {:color "#9e9e9e"}}}})

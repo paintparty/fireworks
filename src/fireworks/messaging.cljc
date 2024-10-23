@@ -18,7 +18,13 @@
             :label          nil}
            (point-of-interest
             (merge {:type   :warning
-                    :form   (or form (symbol (str k " " v)))          
+                    :form   (or form
+                                (let [str? (string? v)]
+                                 (symbol (str k
+                                              " "
+                                              (when str? "\"")
+                                              v
+                                              (when str? "\"")))))          
                     :line   line
                     :column column
                     :file   file

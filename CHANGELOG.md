@@ -5,14 +5,54 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
-## Unreleased
+## 0.8.0
 #### Added
+- [Add `"Universal Neutral"` theme](https://github.com/paintparty/fireworks/issues/21) that works on both light and dark backgrounds
+
+- [Add `:when` option](https://github.com/paintparty/fireworks/issues/12) that works on both light and dark backgrounds
+
+- Add `:legacy-terminal?` option 
 
 #### Changed
+- Undocumented the folowing options:
+  - `:enable-terminal-truecolor?`
+  - `:enable-terminal-italics?`
+  - `:enable-terminal-font-weights?`
 
-#### Fixed
+- All the above are now `true` by default. User should now only set `:legacy-terminal?` to true if they want truecolor conversion for a terminal that doesn't support trucolor.
+
+- Moved cljc visual regression testing to `visual_test/`
 
 #### Removed
+- `:evaled-form-coll-limit` option
+
+<br>
+<br>
+
+## 0.7.1
+2024-10-16
+
+#### Changed 
+- Bump version of Bling dep
+
+<br>
+<br>
+
+## 0.7.0
+2024-10-16
+
+#### Fixed 
+- [Fixes array-map entry order](https://github.com/paintparty/fireworks/issues/19)
+
+#### Added 
+- [Add support for `:single-line-coll-length-limit` option](https://github.com/paintparty/fireworks/issues/20)
+
+- Add support for `:label-length-limit` option
+
+- Add separate shadow-cljs project for cljc visual regression testing in `test/fireworks/visual`
+
+<br>
+<br>
 
 
 ## 0.7.1
@@ -246,6 +286,9 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 ## Breaking changes
+#### 0.8.0
+- If no theme (or invalid theme) is provided, `"Universal Neutral"` is used, which works on both light and dark backgrounds.
+
 #### 0.6.0
 - Removed the following macros and fns, as their respective functionality is now provided by an optional leading keyword argument to `?`:
   - `?-`

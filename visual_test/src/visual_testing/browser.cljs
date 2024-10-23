@@ -2,9 +2,7 @@
   (:require
    [fireworks.core :refer [? !? ?> !?>]]
    [visual-testing.macros :refer-macros [test-clj]]
-   [visual-testing.shared :refer [foo test-suite]]
-   ))
-
+   [visual-testing.shared :refer [foo test-suite]]))
 
 ;; start is called by init and after code reloading finishes
 (defn ^:dev/after-load start []
@@ -81,43 +79,3 @@
 (defn ^:dev/before-load stop []
   #_(js/console.log "stop"))
 
-(def degas-dark
-  {:name   "Degas Dark"
-   :desc   "A dark pastel theme for Clojure"
-   :mood   "dark"
-   :tokens {:classes {:background    {:background-color "#363f4e"}
-                      :foreground    {:color "#bfbfbf"}
-                      :string        {:color "#8cc08c"}
-                      :constant      {:color "#c0a1bf"}
-                      :definition    {:color "#80a3ea"}
-                      :comment       {:color      "#e1d084"
-                                      :font-style :italic}
-                      :annotation    {:color      "#999999"
-                                      :font-style :italic}
-                      :metadata      {:color            "#b191b0"
-                                      :text-shadow      "0 0 2px #000738"
-                                      :background-color "#553f55"}
-                      :metadata2     {:color            "#999ad1"
-                                      :text-shadow      "0 0 2px #000738"
-                                      :background-color "#3e4379"}
-                      :label         {:color            "#8ba7d5"
-                                      :text-shadow      "0 0 2px #000738"
-                                      :background-color "#3d4b61"
-                                      :font-style       :italic}
-                      :eval-label    {:color             "#eaa580"
-                                      :text-shadow       "0 0 2px #202288"
-                                      :background-color  "#5f331b"
-                                      :font-style        :italic}}
-            :syntax  {:number        {:color "#afaf87"}
-                      :js-object-key {:color "#888888"}}
-            :printer {:file-info     {:color                "#eaa580"
-                                      :font-style           :italic
-                                      :padding-inline-start :0ch}
-                      :eval-form     :eval-label
-                      :eval-label    :eval-label
-                      :comment       {:color             "#2e6666"
-                                      :text-shadow       "0 0 2px #ffffff"
-                                      :background-color  "#e5f1fa"
-                                      :outline           "2px solid #e5f1fa"
-                                      :font-style        :italic}
-                      :function-args {:color "#b3b3b3"}}}})

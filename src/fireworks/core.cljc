@@ -517,6 +517,8 @@
        (print (margin-bottom-str user-opts))
        x)))
 
+;; TODO - Is it possible to retire this in favor of directing all internal calls
+;; to fireworks.core/_p2 ?
 (defn ^{:public true}
   _p 
   "Internal runtime dispatch target for fireworks macros.
@@ -575,10 +577,11 @@
 
           ;; Fireworks formatting and printing  does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
-          ;; - fireworks.core/?log or fireworks.core/?log- is used
-          ;; - fireworks.core/?pp or fireworks.core/?pp- is used
+          ;; - :log or :log- leading flag is used
+          ;; - :pp or :pp- leading flag is used
           
-          (when (and (not (:fw/log? opts)) (:log? opts))
+          (when (and (not (:fw/log? opts))
+                     (:log? opts))
             #?(:cljs (js/console.log x)
                :clj (fireworks.core/pprint x)))
 
@@ -702,15 +705,19 @@
     ;; TODO Change this to (= (:mode opts) :data)
     (if (:p-data? opts) 
       printing-opts
-      (do 
-        (print-formatted printing-opts #?(:cljs js-print))
+      (let [print? (if-let [user-when-fn (some-> opts :when (util/maybe fn?))] 
+                     (boolean (apply user-when-fn [x]))
+                     true)] 
+        (when print? (print-formatted printing-opts #?(:cljs js-print)))
 
-          ;; Fireworks formatting and printing of formatted does not happen when:
-          ;; - Value being printed is non-cljs or non-clj data-structure
-          ;; - fireworks.core/?log or fireworks.core/?log- is used
-          ;; - fireworks.core/?pp or fireworks.core/?pp- is used
+        ;; Fireworks formatting and printing of formatted does not happen when:
+        ;; - Value being printed is non-cljs or non-clj data-structure
+        ;; - fireworks.core/?log or fireworks.core/?log- is used
+        ;; - fireworks.core/?pp or fireworks.core/?pp- is used
         
-        (when (and (not (:fw/log? opts)) (:log? opts))
+        (when (and print?
+                   (not (:fw/log? opts))
+                   (:log? opts))
           #?(:cljs (js/console.log x)
              :clj (fireworks.core/pprint x)))
 

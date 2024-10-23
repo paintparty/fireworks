@@ -12,7 +12,7 @@
 
 (s/def ::name
   (s/and string?
-         #(re-find #"^[A-Z][^\n\t\r]* (?:Light|Dark)$" %)))
+         #(re-find #"^[A-Z][^\n\t\r]* (?:Light|Dark)$|^Universal$|^Universal Neutral$" %)))
 
 
 (expound/defmsg ::name

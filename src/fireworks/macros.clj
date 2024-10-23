@@ -118,7 +118,7 @@
   []
   (use 'clojure.java.io)
   (reset! messaging/warnings-and-errors [])
-  (when-let [path-to-user-config (System/getenv "FIREWORKS_CONFIG")]
+  (if-let [path-to-user-config (System/getenv "FIREWORKS_CONFIG")]
     (let [form-meta   (meta &form)
           valid-path? (s/valid?
                        ::config/edn-file-path 
@@ -162,8 +162,31 @@
 
                 ;; :theme entry exists, but doesn't resolve to a map
                 ;; dissoc :theme entry and issue warning for user
-                (let [config (dissoc config :theme)]
+                (let [config (assoc config 
+                                    :theme
+                                    (get basethemes/stock-themes
+                                         "Universal Neutral"
+                                         nil))
+                      opts {:v      theme*
+                            :k      ":theme"
+                            :spec   ::config/theme
+                            :header (str "[fireworks.core/_p] Invalid value "
+                                         "for :theme entry.")
+                            :body   (bling "The default theme "
+                                           [:italic "\"Universal Neutral\" "]
+                                           "will be used instead.")}]
+
+                  (messaging/bad-option-value-warning opts)
+
+                  (swap! messaging/warnings-and-errors
+                         conj
+                         [:messaging/bad-option-value-warning opts])                 
+
                   `~config))
 
               ;; :theme entry is nil or non-existant, just return user config map
-              `~config)))))))
+              `~config)))))
+
+    ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, we set theme to
+    ;; default \"Universal Neutral\"" stock theme.
+    {:theme "Universal Neutral"}))

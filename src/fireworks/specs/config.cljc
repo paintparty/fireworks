@@ -87,6 +87,9 @@
 (s/def ::bracket-contrast
   #{:high :low "high" "low"})
 
+(s/def ::legacy-terminal?
+  boolean?)
+
 (s/def ::enable-terminal-truecolor?
   boolean?)
 
@@ -119,6 +122,8 @@
         ::find-for-highlighting-map
         :vector
         (s/coll-of ::find-for-highlighting-map :kind? vector?)))
+
+(s/def ::when fn?)
 
 (s/def ::fireworks-user-config
   (s/and map?
