@@ -35,7 +35,10 @@
       :label "Alabaster Light"} foo)
   (? {:theme "Monokai Light"
       :label "Monokai Light"} foo)
-
+  (? {:theme "Alabaster Dark"
+      :label "Alabaster Dark"} foo)
+  (? {:theme "Monokai Dark"
+      :label "Monokai Dark"} foo)
 ;; OFF-start
 ;; (? {:theme "Zenburn Light" :label "Zenburn Light"} foo)
 ;; (? {:theme "Solarized Light" :label "Solarized Light"} foo)
@@ -69,4 +72,5 @@
 
   (println "\n:single-line-coll-length-limit of 50")
   (? {:single-line-coll-length-limit 50} (range 20))
-  nil)
+  nil
+  )

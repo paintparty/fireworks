@@ -710,10 +710,10 @@
                      true)] 
         (when print? (print-formatted printing-opts #?(:cljs js-print)))
 
-          ;; Fireworks formatting and printing of formatted does not happen when:
-          ;; - Value being printed is non-cljs or non-clj data-structure
-          ;; - fireworks.core/?log or fireworks.core/?log- is used
-          ;; - fireworks.core/?pp or fireworks.core/?pp- is used
+        ;; Fireworks formatting and printing of formatted does not happen when:
+        ;; - Value being printed is non-cljs or non-clj data-structure
+        ;; - fireworks.core/?log or fireworks.core/?log- is used
+        ;; - fireworks.core/?pp or fireworks.core/?pp- is used
         
         (when (and print?
                    (not (:fw/log? opts))

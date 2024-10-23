@@ -76,7 +76,53 @@ Requires Clojure `1.10.3` or higher
 
 If using with Babashka, requires Babashka `v1.3.187` or higher
 
-<br>
+
+
+#### Step 1:
+
+Add a [system-wide config file](#system-wide-config) at `"/Users/<your-home-folder>/.fireworks/config.edn"` (suggested path). There are a [bunch of options](#all-the-options), but at minimum you'll probably want to specify a stock light or dark theme:
+
+```Clojure
+ {:theme "Alabaster Light"
+  ;; :theme "Alabaster Dark"    
+  ;; :theme "Neutral Light"     
+  ;; :theme "Neutral Dark"      
+  ;; :theme "Degas Light"       
+  ;; :theme "Degas Dark"        
+  ;; :theme "Zenburn Light"     
+  ;; :theme "Zenburn Dark"      
+  ;; :theme "Solarized Light"   
+  ;; :theme "Solarized Dark"    
+  ;; :theme "Monokai Light"     
+  ;; :theme "Monokai Dark"
+  ;; :theme "Universal Neutral" ; works with both light and dark bg
+  
+  ;; set to true if your terminal doesn't support truecolor
+  ;; :legacy-terminal? false 
+  }
+```
+
+Most terminal-emulators support truecolor (16m colors). If your terminal does not, then you definately will want to set the `:legacy-terminal?` option to `true`. You can check support by pasting this into your terminal:
+
+```
+echo -e "\033[1;38;2;255;0;0mRED\033[0m \033[1;38;2;0;255;0mGREEN\033[0m \033[1;38;2;0;0;255mBLUE\033[0m \033[1;38;2;255;255;0mYELLOW\033[0m"
+```
+
+If the words in the resulting output are not colored red, green, blue, and yellow, then your terminal does not support truecolor.
+
+
+
+#### Step 2:
+
+Add a [system-wide environmental variable](#system-wide-config) in the right place (in your `.zshrc` or similar), to let Fireworks know where to find your config:
+
+```Clojureexport FIREWORKS_CONFIG="/Users/your-home-folder/.fireworks/config.edn"
+export FIREWORKS_CONFIG="/Users/<your-home-folder>/.fireworks/config.edn"
+```
+
+
+
+#### Step 3:
 
 Add as a dependency to your project:
 
@@ -84,7 +130,9 @@ Add as a dependency to your project:
 ```clojure
 [io.github.paintparty/fireworks "0.7.1"]
 ```
-<br>
+
+
+#### Step 4:
 
 Import into your namespace:
 
@@ -96,7 +144,9 @@ Import into your namespace:
 
 <br>
 
-### Two libraries
+<br>
+
+## Two libraries
 
 In development, use the `io.github.paintparty/fireworks` library.
 
@@ -278,25 +328,24 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
 
 ```Clojure
 {:theme                         "Alabaster Light"
- :mood                          :light            ; :light | :dark
  :line-height                   1.45
  :print-level                   7
+ :label-length-limit            25
  :non-coll-length-limit         33
  :non-coll-mapkey-length-limit  20
  :non-coll-result-length-limit  444
  :non-coll-depth-1-length-limit 59
+ :single-line-coll-length-limit 15
  :coll-limit                    15
- :evaled-form-coll-limit        7
  :display-namespaces?           true
  :metadata-print-level          7
  :display-metadata?             true
- :metadata-position             :inline           ; :inline | :block
+ :metadata-position             :inline   ; :inline | :block
  :enable-rainbow-brackets?      true
- :bracket-contrast              :high             ; :high | :low
- :enable-terminal-truecolor?    false
- :enable-terminal-italics?      false
- :custom-printers               nil
- :find                          nil}
+ :bracket-contrast              :high     ; :high | :low
+ :legacy-terminal?              false     
+ :find                          nil
+ :when                          nil}
 ```
 
 <br>
@@ -321,11 +370,11 @@ All of the available config options and their default values:
 
 <br>
 
-#### **`:mood`**
+#### <!--**`:mood`**-->
 
-Defaults to `"light"`<br>
+<!--Defaults to `"light"`<br>-->
 
-Sets the mood to `"dark"` or `"light"`. Will use the default light (or dark) theme, which is `"Alabaster Light"` (or `"Alabaster Dark"`).
+<!--Sets the mood to `"dark"` or `"light"`. Will use the default light (or dark) theme, which is `"Alabaster Light"` (or `"Alabaster Dark"`).-->
 
 <br>
 <br>
@@ -372,6 +421,14 @@ Sets the line-height. Only takes effect in browser consoles.
 Defaults to `15`<br>
 
 Sets the max length of collections.  Collections whose count are at least 2 greater than this number will be truncated. By default, Fireworks aggressively truncates collections to keep the display footprint of the printed output as short and narrow as possible.
+
+<br>
+
+#### **`:label-length-limit`**
+
+ Defaults to `25`<br>
+
+Sets the max length of the form-to-be-evaled labe, or the user label, if supplied.
 
 <br>
 
@@ -436,32 +493,43 @@ Defaults to `true`<br>
 
 Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:non-coll-length-limit` or the `:non-coll-mapkey-length-limit` (in the case of map keys).
 
-
 <br>
 
-#### **`:enable-terminal-truecolor?`**
+#### **`:legacy-terminal?`**
+
 Defaults to `false`<br>
 
-If set to `false` (default value), Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If you will be printing with Fireworks in a terminal, and your terminal emulator supports 24-bit color (most of them do), it is highly recommended to set this to `true`.
+If set to `true` (default value), Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If you will be printing with Fireworks in a terminal, and your terminal emulator does not supports 24-bit color, it is highly recommended to set this to `true`. The majority of modern terminal emulators offer support for truecolor. You can test whether or not your terminal supports truecolor by pasting the following in your terminal:
 
+```
+echo -e "\033[1;38;2;255;0;0mRED\033[0m \033[1;38;2;0;255;0mGREEN\033[0m \033[1;38;2;0;0;255mBLUE\033[0m \033[1;38;2;255;255;0mYELLOW\033[0m"
+```
 
-<br>
-
-#### **`:enable-terminal-italics?`**
-Defaults to `false`<br>
-
-If set to `false` (default value), any theme tokens specified to be italicized will not be italicized. If you will be printing with Fireworks in a terminal, and your terminal emulator supports italics (most of them do), it is highly recommended to set this option to `true`.
-
+If the words in the resulting output are not colored red, green, blue, and yellow, then your terminal does not support truecolor, and you will want to set this option to `true`.
 
 <br>
 
-#### **`:enable-terminal-font-weights?`**
-Defaults to `false`<br>
+#### <!--**`:enable-terminal-truecolor?`**-->
+<!--Defaults to `true`<br>-->
 
-If set to `false` (default value), any theme tokens specified to be bold will not be bold. If you will be printing with Fireworks in a terminal, and your terminal emulator supports bold fonts (most of them do), it is highly recommended to set this option to `true`.
+<!--If set to `false`, Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If you will be printing with Fireworks in a terminal, and your terminal emulator does not support 24-bit color, it is highly recommended to set this to `false`.-->
+
+<!--<br>-->
+
+#### <!--**`:enable-terminal-italics?`**-->
+<!--Defaults to `true`<br>-->
+
+<!--If set to `false`, any theme tokens specified to be italicized will not be italicized. You probably don't want to change this option.-->
 
 
-<br>
+<!--<br>-->
+
+#### <!--**`:enable-terminal-font-weights?`**-->
+<!--Defaults to `true`<br>-->
+
+<!--If set to `false`, any theme tokens specified to be bold will NOT be bold. You .-->
+
+<!--<br>-->
 
 #### **`:metadata-print-level`** 
 Defaults to `6`<br>
@@ -484,17 +552,18 @@ Determines position of metadata relative to value that is carrying it. Options a
 
 <br>
 
-<!-- #### **`:custom-printers`** `nil`
-
-Custom print handlers for objects and collections. See [Custom Printers](#custom-printers) section.
-
-<br>
-<br> -->
-
 #### **`:find`** 
 Defaults to `nil`<br>
 
 Find and highlight values in the printed output. See [Highlighting values](#highlighting-values) section.
+
+<br>
+
+#### **`:when`** 
+
+Defaults to `nil`<br>
+
+If supplied, this value should be a predicate. Will only print something if value passes predicate.
 
 <br>
 

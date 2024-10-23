@@ -220,7 +220,6 @@
                  (with-removed-or-resolved-color :background-color opts))]
     ret))
 
-
 (defn x->sgr [x k]
   (when x
     (let [n (if (= k :fg) 38 48)]
@@ -230,6 +229,9 @@
               ret       (str n ";2;" r ";" g ";" b)]
           ret)))))
 
+(defn legacy? [k]
+  (or (:legacy-terminal? @config)
+      (false? (k @config))))
 
 (defn m->sgr
   [{fgc*        :color
@@ -242,10 +244,10 @@
   (let [fgc    (x->sgr fgc* :fg)
         bgc    (do #_(when bgc* (println "m->sgr:bgc* " bgc*))
                    (x->sgr bgc* :bg))
-        italic (when (and (:enable-terminal-italics? @config)
+        italic (when (and (not (false? (:enable-terminal-italics? @config)))
                           (contains? #{"italic" :italic} font-style))
                  "3;")
-        weight (when (and (:enable-terminal-font-weights? @config)
+        weight (when (and (not (false? (:enable-terminal-font-weights? @config)))
                           (contains? #{"bold" :bold} font-weight))
                  ";1")
         ret    (str "\033[" 
@@ -303,15 +305,7 @@
                      v) 
                    :clj
                    (do 
-                     (if (:enable-terminal-truecolor? @config) 
-                       (do 
-                         (when debug?
-                           (println
-                            (str "enable-terminal-truecolor? is set to"
-                                 " true, so converting to [r g b a] vector"
-                                 " via (color/hexa->rgba v) => "
-                                 (color/hexa->rgba v))))
-                         (color/hexa->rgba v))
+                     (if (legacy? :enable-terminal-truecolor?) 
                        (do 
                          (when debug?
                            (println 
@@ -319,7 +313,15 @@
                                  " false, so converting to x256 id (int)"
                                  " via (color/hexa->x256 v) => "
                                  (color/hexa->x256 v))))
-                         (color/hexa->x256 v)))))))
+                         (color/hexa->x256 v))
+                       (do 
+                         (when debug?
+                           (println
+                            (str "enable-terminal-truecolor? is set to"
+                                 " true, so converting to [r g b a] vector"
+                                 " via (color/hexa->rgba v) => "
+                                 (color/hexa->rgba v))))
+                         (color/hexa->rgba v)))))))
             v)]
     [k x]))
 
@@ -353,13 +355,12 @@
     #?(:cljs
        ret
        :clj
-       ;; TODO remove font-weight
-       (let [ret* (if (:enable-terminal-italics? @config)
-                    ret
-                    (dissoc ret :font-style))
-             ret (if (:enable-terminal-font-weights @config)
-                   ret*
-                   (dissoc ret* :font-weight))]
+       (let [ret* (if (false? (:enable-terminal-italics? @config)) 
+                    (dissoc ret :font-style)
+                    ret)
+             ret (if (false? (:enable-terminal-font-weights? @config))
+                   (dissoc ret* :font-weight)
+                   ret*)]
          ret))))
 
 
@@ -455,11 +456,13 @@
                      :low))
         context  #?(:cljs :browser
                     :clj :x-term)
-        ret      (->> basethemes/bracket-colors
-                      mood
-                      context
-                      contrast
-                      vals)
+        ;; TODO - Figure out best way to pull rainbow brackets from theme?
+        ret     (or (some->> theme :rainbow-brackets context rest (take-nth 2))
+                    (->> basethemes/bracket-colors
+                         mood
+                         context
+                         contrast
+                         vals))
         ret      #?(:cljs ret
                     :clj (map xterm-id->sgr ret))]
     ret))
@@ -483,10 +486,6 @@
 ;;         ]
 ;;     (?pp :bgc bgc)))
 
-(defn fallback-theme []
-  (if (dark? (:mood @config))
-    themes/alabaster-dark
-    themes/alabaster-light))
 
 (defn merged-theme*
   ([]
@@ -496,7 +495,7 @@
    ;; from env-vars, parsed and validated.
    (let [theme*           (:theme @config)
 
-         fallback-theme   (fallback-theme)
+         fallback-theme   themes/universal-neutral
 
          valid-user-theme (when (map? theme*) 
                             (if (s/valid? ::theme/theme theme*)

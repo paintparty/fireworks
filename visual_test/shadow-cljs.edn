@@ -1,7 +1,7 @@
 ;; shadow-cljs configuration
 {:source-paths ["src/"
                 ;; Local Fireworks
-                ;; "../src/"
+                "../src/"
                 ]
  :dependencies [[io.github.paintparty/fireworks "0.7.1"]]
  :dev-http     {8020 "public"}

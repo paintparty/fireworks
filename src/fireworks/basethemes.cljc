@@ -127,15 +127,17 @@
 
 
 (def stock-themes
-  {"Alabaster Light" themes/alabaster-light
-   "Alabaster Dark"  themes/alabaster-dark
-   "Neutral Light"   themes/neutral-light
-   "Neutral Dark"    themes/neutral-dark
-   "Degas Light"     themes/degas-light
-   "Degas Dark"      themes/degas-dark
-   "Zenburn Light"   themes/zenburn-light
-   "Zenburn Dark"    themes/zenburn-dark
-   "Solarized Light" themes/solarized-light
-   "Solarized Dark"  themes/solarized-dark
-   "Monokai Light"   themes/monokai-light
-   "Monokai Dark"    themes/monokai-dark})
+  {"Alabaster Light"   themes/alabaster-light
+   "Alabaster Dark"    themes/alabaster-dark
+   "Neutral Light"     themes/neutral-light
+   "Neutral Dark"      themes/neutral-dark
+   "Degas Light"       themes/degas-light
+   "Degas Dark"        themes/degas-dark
+   "Zenburn Light"     themes/zenburn-light
+   "Zenburn Dark"      themes/zenburn-dark
+   "Solarized Light"   themes/solarized-light
+   "Solarized Dark"    themes/solarized-dark
+   "Monokai Light"     themes/monokai-light
+   "Monokai Dark"      themes/monokai-dark
+   "Universal"         themes/universal
+   "Universal Neutral" themes/universal-neutral})

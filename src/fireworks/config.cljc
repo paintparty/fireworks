@@ -14,8 +14,6 @@
                                    :default 15}
    :single-line-coll-length-limit {:spec    ::config/single-line-coll-length-limit
                                    :default 15}
-   :evaled-form-coll-limit        {:spec    ::config/evaled-form-coll-limit
-                                   :default 7}
    :non-coll-result-length-limit  {:spec    ::config/non-coll-result-length-limit
                                    :default 444}
    :non-coll-depth-1-length-limit {:spec    ::config/non-coll-depth-1-length-limit
@@ -40,14 +38,17 @@
    :bracket-contrast              {:spec           ::config/bracket-contrast
                                    :default        "high"
                                    :updates-theme? true}
-   :enable-terminal-truecolor?    {:spec           ::config/enable-terminal-truecolor?
+   :legacy-terminal?              {:spec           ::config/legacy-terminal?
                                    :default        false
+                                   :updates-theme? true}
+   :enable-terminal-truecolor?    {:spec           ::config/enable-terminal-truecolor?
+                                   :default        true
                                    :updates-theme? true}
    :enable-terminal-italics?      {:spec           ::config/enable-terminal-italics?
-                                   :default        false
+                                   :default        true
                                    :updates-theme? true}
    :enable-terminal-font-weights? {:spec           ::config/enable-terminal-font-weights?
-                                   :default        false
+                                   :default        true
                                    :updates-theme? true}
    :line-height                   {:spec           ::config/line-height
                                    :default        1.45
@@ -59,12 +60,17 @@
    :find                          {:spec    ::config/custom-printers
                                    :default nil}
    :when                          {:spec    ::config/when
-                                   :default nil}})
+                                   :default nil}
+   
+   ;; Remove?
+   :evaled-form-coll-limit        {:spec    ::config/evaled-form-coll-limit
+                                   :default 7}
+
+   })
 
 ;; Option keys
 (def option-keys
   (->> options keys (into #{})))
-
 ;; Option keys that update theme
 (def option-keys-that-update-theme
   (->> options

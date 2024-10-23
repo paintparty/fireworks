@@ -87,6 +87,9 @@
 (s/def ::bracket-contrast
   #{:high :low "high" "low"})
 
+(s/def ::legacy-terminal?
+  boolean?)
+
 (s/def ::enable-terminal-truecolor?
   boolean?)
 
