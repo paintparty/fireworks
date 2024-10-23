@@ -39,6 +39,8 @@
       :label "Alabaster Dark"} foo)
   (? {:theme "Monokai Dark"
       :label "Monokai Dark"} foo)
+  (? {:theme "Universal Neutral"
+      :label "Universal Neutral"} foo)
 ;; OFF-start
 ;; (? {:theme "Zenburn Light" :label "Zenburn Light"} foo)
 ;; (? {:theme "Solarized Light" :label "Solarized Light"} foo)
