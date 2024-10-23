@@ -2,9 +2,7 @@
   (:require
    [fireworks.core :refer [? !? ?> !?>]]
    [visual-testing.macros :refer-macros [test-clj]]
-   [visual-testing.shared :refer [foo test-suite]]
-   ))
-
+   [visual-testing.shared :refer [foo test-suite]]))
 
 ;; start is called by init and after code reloading finishes
 (defn ^:dev/after-load start []

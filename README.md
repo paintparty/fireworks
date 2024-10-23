@@ -78,9 +78,9 @@ If using with Babashka, requires Babashka `v1.3.187` or higher
 
 
 
-#### Step 1:
+### Step 1:
 
-Add a [system-wide config file](#system-wide-config) at `"/Users/<your-home-folder>/.fireworks/config.edn"` (suggested path). There are a [bunch of options](#all-the-options), but at minimum you'll probably want to specify a stock light or dark theme:
+Add a [system-wide config file](#system-wide-config) at `/Users/<your-home-folder>/.fireworks/config.edn` (suggested path). You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. There are a [bunch of options](#all-the-options), but at minimum you'll probably want to specify a light or dark stock theme:
 
 ```Clojure
  {:theme "Alabaster Light"
@@ -110,29 +110,30 @@ echo -e "\033[1;38;2;255;0;0mRED\033[0m \033[1;38;2;0;255;0mGREEN\033[0m \033[1;
 
 If the words in the resulting output are not colored red, green, blue, and yellow, then your terminal does not support truecolor.
 
+<br>
 
-
-#### Step 2:
+### Step 2:
 
 Add a [system-wide environmental variable](#system-wide-config) in the right place (in your `.zshrc` or similar), to let Fireworks know where to find your config:
 
-```Clojureexport FIREWORKS_CONFIG="/Users/your-home-folder/.fireworks/config.edn"
+```Clojure
 export FIREWORKS_CONFIG="/Users/<your-home-folder>/.fireworks/config.edn"
 ```
 
+<br>
 
-
-#### Step 3:
+### Step 3:
 
 Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.7.1"]
+[io.github.paintparty/fireworks "0.8.0"]
 ```
 
+<br>
 
-#### Step 4:
+### Step 4:
 
 Import into your namespace:
 
@@ -356,10 +357,10 @@ Fireworks is designed to pick up your preferred theming and formatting options f
 This `.edn` config file can live anywhere on your computer, but by convention should be `~/.fireworks/config.edn`. If you were to set the environment variable in your `.zshrc` (or similar), it would look like this:
 
 ```
-export FIREWORKS_CONFIG="/Users/your-home-folder/.fireworks/config.edn"
+export FIREWORKS_CONFIG="/Users/<your-home-folder>/.fireworks/config.edn"
 ```
 
-You will need to substitute `your-home-folder` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `FIREWORKS_CONFIG` env var will be accessible in your dev environment.
+You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `FIREWORKS_CONFIG` env var will be accessible in your dev environment.
 
 For the actual `config.edn` file, you can use the above example map (at the beginning of this section) as a starting point. Prior to doing this you can experiment with the various configuration options ala-carte via passing a leading options map to `fireworks.core/?`:
 
@@ -368,15 +369,6 @@ For the actual `config.edn` file, you can use the above example map (at the begi
 ### All the options
 All of the available config options and their default values:
 
-<br>
-
-#### <!--**`:mood`**-->
-
-<!--Defaults to `"light"`<br>-->
-
-<!--Sets the mood to `"dark"` or `"light"`. Will use the default light (or dark) theme, which is `"Alabaster Light"` (or `"Alabaster Dark"`).-->
-
-<br>
 <br>
 
 #### **`:theme`**
@@ -399,7 +391,7 @@ This must be one of the following 3 types of values:
 `"Monokai Light"`<br>
 `"Monokai Dark"`<br>
 
-- A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/your-home-folder/.fireworks/my-theme.edn"`<br>
+- A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/<your-home-folder>/.fireworks/my-theme.edn"`<br>
 This will not work:
 `"~/.fireworks/my-theme.edn"`
 <br>If the map in this `.edn` file fails to satisfy the `fireworks.specs.theme/theme` spec it will issue a warning and fall back to the default light or dark theme (depending on the value of `:mood`). 
