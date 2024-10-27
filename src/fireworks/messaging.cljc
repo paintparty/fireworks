@@ -101,11 +101,10 @@
                            "\n"
                            (string/replace (.getMessage err) #"\(" "\n(")
                            "\n\n"
-                           [:italic.subtle.bold "Stacktrace preview:"]
-                           "\n"
                            (stack-trace-preview
                             {:error err
-                             :regex #"^fireworks\.|^lasertag\."})
+                             :regex #"^fireworks\.|^lasertag\."
+                             :depth 12})
                            (some->> body (str "\n\n"))))
                        body)})))))
 
