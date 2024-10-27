@@ -12,7 +12,7 @@
              :refer-macros
              [keyed
               compile-time-warnings-and-errors]])
-   #?(:clj [fireworks.macros :refer [keyed]])
+   #?(:clj [fireworks.macros :refer [keyed get-user-config-edn-dynamic]])
    [clojure.string :as string]
    [fireworks.config :as config]
    [clojure.spec.alpha :as s]
@@ -802,12 +802,15 @@
         (some-> defd str)))))
 
 
-(defn- helper2
-  "Extracts the :label entry when present fireworks config opts"
-  [m]
-  (let [cfg-opts (cfg-opts m)
-        defd     (defd (:x m))]
-    (keyed [cfg-opts defd])))
+#?(:clj
+   (defn- helper2
+     "Extracts the :label entry when present fireworks config opts"
+     [m]
+    ;;  (ff 'helper2 (get-user-config-edn-dynamic))
+     (let [cfg-opts (cfg-opts m)
+           defd     (defd (:x m))]
+       (keyed [cfg-opts defd]))))
+
 
 
 (defn cast-var
@@ -852,47 +855,43 @@
     {:mode     mode
      :template template}))
 
-(defn- ?2-helper
-  [{:keys [cfg-opts* mode template label &form x]}]
-  (let [defd
-        (defd x)
+#?(:clj
+   (defn- ?2-helper
+     [{:keys [cfg-opts* mode template label &form x]}]
+    ;;  (ff '?-helper2 (get-user-config-edn-dynamic))
+     (let [defd           (defd x)
 
-        log?*
-        (contains? #{:log :pp} mode)
+           log?*          (contains? #{:log :pp} mode)
 
-        quoted-fw-form
-        (if (contains? #{:result :log- :pp-} mode)
-         (list 'quote nil)
-         (list 'quote &form))
+           quoted-fw-form (if (contains? #{:result :log- :pp-} mode)
+                            (list 'quote nil)
+                            (list 'quote &form))
 
-        fw-fnsym
-        (when-not (contains? #{:result :log- :pp-} mode)
-         "fireworks.core/?")
+           fw-fnsym       (when-not (contains? #{:result :log- :pp-} mode)
+                            "fireworks.core/?")
 
-        form-meta
-        (when-not (contains? #{:result :log- :pp-} mode)
-          (meta &form))
+           form-meta      (when-not (contains? #{:result :log- :pp-} mode)
+                            (meta &form))
 
-        qf-nil?
-        (contains? #{:comment :result} mode)
+           qf-nil?        (contains? #{:comment :result} mode)
 
-        cfg-opts
-        (merge (dissoc (or cfg-opts* {}) :label)
-               {:mode           mode
-                :label          label
-                :template       template
-                :ns-str         (some-> *ns* ns-name str)
-                :user-opts      cfg-opts*
-                :quoted-fw-form quoted-fw-form
-                :fw-fnsym       fw-fnsym}
-                (when form-meta
-                  {:form-meta form-meta})
-                (when log?*
-                  {:log?    log?*
-                   :fw/log? log?*})
-                (when (= mode :data)
-                  {:p-data? true}))]
-   (keyed [defd x qf-nil? cfg-opts log?*])))
+           cfg-opts       (merge (dissoc (or cfg-opts* {}) :label)
+                                 {:mode           mode
+                                  :label          label
+                                  :template       template
+                                  :ns-str         (some-> *ns* ns-name str)
+                                  :user-opts      cfg-opts*
+                                  :quoted-fw-form quoted-fw-form
+                                  :fw-fnsym       fw-fnsym}
+                                 (when form-meta
+                                   {:form-meta form-meta})
+                                 (when log?*
+                                   {:log?    log?*
+                                    :fw/log? log?*})
+                                 (when (= mode :data)
+                                   {:p-data? true}))]
+       (keyed [defd x qf-nil? cfg-opts log?*]))))
+
                                                                
                                                                
 ;                  AAA               PPPPPPPPPPPPPPPPP   IIIIIIIIII

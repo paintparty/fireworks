@@ -74,6 +74,12 @@
          (get-user-configs)))
       (get-user-configs)))
 
+(defn user-config-edn*-dynamic []
+  (do (when debug-config?
+        (messaging/fw-debug-report-template
+         "def fireworks.state/user-config-edn* (with :path-to-user-config)"
+         (get-user-configs)))
+      (get-user-configs)))
 
 ;; -----------------------------------------------------------------------------
 ;; Validated config options from user's config.edn
@@ -82,6 +88,23 @@
 ;; TODO - figure out how to get filename, line, and column.
 (defn validate-option-from-user-config-edn
   [k v {:keys [spec default]}]
+  (let [undefined? (or (when (string? v) (string/blank? v))
+                       (nil? v))
+        valid?     (when-not undefined? (if spec (s/valid? spec v) v))
+        invalid?   (and (not undefined?) (not valid?))]
+    (if invalid?
+      (messaging/bad-option-value-warning
+       (assoc (keyed [k v default spec])
+              :header (str (some-> user-config-edn*
+                                   :path-to-user-config
+                                   (str "\n\n"))
+                           (str "Invalid value for " k " in user config."))))
+      (if (or undefined? (not valid?))
+        nil
+        v))))
+
+(defn validate-option-from-user-config-edn-dynamic
+  [k v {:keys [spec default]} user-config-edn*]
   (let [undefined? (or (when (string? v) (string/blank? v))
                        (nil? v))
         valid?     (when-not undefined? (if spec (s/valid? spec v) v))
@@ -137,6 +160,44 @@
              [:messaging/print-error e])
       {})))
 
+(defn user-config-edn-dynamic []
+  (try 
+    (let [user-config-edn*
+          (user-config-edn*-dynamic)
+
+          ret
+          (into {}
+                (map (fn [[k v]]
+                       (let [m         
+                             (k config/options)
+
+                             validated
+                             (validate-option-from-user-config-edn-dynamic
+                              k
+                              v
+                              m
+                              user-config-edn*)]
+                         [k validated]))
+                     user-config-edn*))]
+      (when debug-config?
+        (messaging/fw-debug-report-template
+         "Invalid options from user-config-edn*"
+         (config-diffs user-config-edn* ret)))
+      (when debug-config?
+        (messaging/fw-debug-report-template
+         "def fireworks.state/user-cofig-edn (validated)"
+         ret))
+      ret)
+
+    ;; TODO - check if this actually catches anything?
+    (catch #?(:cljs js/Object
+              :clj Exception)
+           e
+      (messaging/caught-exception e {})
+      (swap! messaging/warnings-and-errors
+             conj
+             [:messaging/print-error e])
+      {})))
 
 ;; -----------------------------------------------------------------------------
 ;; Internal state atom for merged config
@@ -150,7 +211,7 @@
   (contains? #{:dark "dark"} x))
 
 
-(defn- user-opt-val [k]
+(defn- user-opt-val [user-config-edn k]
   (let [opt (k user-config-edn)
         ;; todo - why the string check?
         opt (when-not (and (string? opt)
@@ -168,10 +229,11 @@
     ret))
 
 (defn merged-config []
-  (into {}
-        (map (fn [[k _]]
-               [k (user-opt-val k)])
-             config/options)))
+  (let [user-config-edn (user-config-edn-dynamic)]
+   (into {}
+         (map (fn [[k _]]
+                [k (user-opt-val user-config-edn k)])
+              config/options))))
 
 (def config
   (do 
