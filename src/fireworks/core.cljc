@@ -49,8 +49,8 @@
 ;   FFFFFFFFFFF           
 
 
-(defn- margin-bottom-str [user-opts]
-  (if-let [mb (:margin-bottom user-opts)]
+(defn- margin-block-str [user-opts k]
+  (if-let [mb (k user-opts)]
     (if (or (zero? mb) (pos-int? mb))
       (string/join (repeat mb "\n"))
       "\n")
@@ -299,7 +299,10 @@
        ;; needs to be set in fireworks.core/_log or fireworks.core/_pp
        :margin-bottom (if (contains? #{:log :pp} mode)
                         "\n"
-                        (margin-bottom-str user-opts))})))
+                        (margin-block-str user-opts :margin-bottom))
+       :margin-top    (if (contains? #{:log :pp} mode)
+                        "\n"
+                        (margin-block-str user-opts :margin-top))})))
 
 
 #?(:cljs 
@@ -488,7 +491,12 @@
         (f x)
         :clj
         (do 
+          ;; If it has been formatted by fireworks, it will print here.
+          (print (:margin-top x))
           (some-> fmt print)
+
+          ;; Extra line based on :margin-bottom
+          ;; TODO - not print if fmt is nil or blank string?
           ((if log? print println) (:margin-bottom x)))))))
 
 (defn ^{:public true}
@@ -500,9 +508,10 @@
          x)
      :clj
      (do
+       (print (margin-block-str user-opts :margin-top))
        (pprint x)
        ;; Extra line after pprint result
-       (print (margin-bottom-str user-opts))
+       (print (margin-block-str user-opts :margin-bottom))
        x)))
 
 (defn ^{:public true} _log 
@@ -512,9 +521,10 @@
          x)
      :clj
      (do
+       (print (margin-block-str user-opts :margin-top))
        (pprint x)
        ;; Extra line after pprint result
-       (print (margin-bottom-str user-opts))
+       (print (margin-block-str user-opts :margin-bottom))
        x)))
 
 ;; TODO - Is it possible to retire this in favor of directing all internal calls
