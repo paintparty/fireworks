@@ -442,8 +442,13 @@
     (reset! state/top-level-value-is-sev? false)
     (reset! messaging/warnings-and-errors [])
     ;; Resetting config to user's config.edn merged with defaults
-    (reset! state/config (state/config*))
-    ;; Reset config & potentially reset/remerging the theme
+    (do (when state/debug-config?
+          (messaging/fw-debug-report-template
+           "Resetting fireworks.state/config atom to"
+           (state/merged-config)
+           :magenta))
+        (reset! state/config (state/merged-config)))
+    ;; Reset config & potentially reset/remerge the theme
     (reset-config+theme! config-before user-opts opts))
   
   ;; Reset the highlight state.
@@ -527,6 +532,81 @@
        (print (margin-block-str user-opts :margin-bottom))
        x)))
 
+
+(defn- fw-debug-report [config-before opts fname]
+  (let [reports 
+        [
+         #_["Options from user config.edn file"
+          state/user-config-edn
+          :magenta]
+
+         #_["fireworks.state/config, before reset"
+          config-before
+          :magenta]
+         
+         #_["Options from user config.edn that will override defaults"
+          (into {}
+                (keep (fn [[k v]]
+                        (when (and (not= v (get config-before k nil))
+                                   (not= :path-to-user-config k))
+                          [k v]))
+                      state/user-config-edn))
+          :magenta]
+
+        ;;  ["fireworks.state/config, after reset"
+        ;;   @state/config]
+         
+         #_["Options that were overidden by user options"
+          (into {}
+                (keep (fn [[k v]]
+                        (when (and (not= v (get config-before k nil))
+                                   (not= :path-to-user-config k))
+                          [k v]))
+                       @state/config))]
+
+        ;;  ["fireworks.state/config, diff / user-supplied overrides"
+        ;;   (nth (data/diff config-before @state/config) 1 nil)]
+
+        ;;  [(str fname ", opts")
+        ;;   opts ]
+
+        ;;  ["Selected fireworks.state atom values"
+        ;;   {:state/margin-inline-start     state/margin-inline-start
+        ;;    :state/top-level-value-is-sev? state/top-level-value-is-sev?
+        ;;    :state/highlighting            state/highlight}]
+         ]]
+
+    (doseq [[label v k] reports]
+      (messaging/fw-debug-report-template label v k))))
+
+
+(defn- fw-config-report []
+  (callout {:label       "fireworks.state/config"
+            :padding-top 1
+            :type        :info}
+           (str 
+            (bling [:italic (str
+                             "Result of merging options from user's"
+                             "\n"
+                             "config.edn file with defaults, and then"
+                             "\n"
+                             "merging optional call-site overrides.")])
+            "\n"
+            "\n"
+            (with-out-str (pprint @state/config)))) )
+
+(defn- native-logging*
+  [x]
+  #?(:cljs (let [{:keys [coll-type? carries-meta? tag] :as tag-map} 
+                 ;; Maybe add {:exclude-all-extra-info? true} as an override opt to lasertag?
+                 (lasertag/tag-map x {:include-function-info?           false
+                                      :include-js-built-in-object-info? false})]
+             (when (and coll-type?
+                        (not carries-meta?)
+                        (not= tag :cljs.core/Atom))
+               {:log? true}))
+     :clj nil))
+
 ;; TODO - Is it possible to retire this in favor of directing all internal calls
 ;; to fireworks.core/_p2 ?
 (defn ^{:public true}
@@ -545,39 +625,41 @@
   
   (let [opts (if (map? a)
                (merge (dissoc opts x :label) a)
-               opts)]
+               opts)
+        
+        debug-config?
+        (or state/debug-config?
+            (-> opts :user-opts :fw/debug-config? true?)) 
+
+        config-before
+        (when debug-config? @state/config)]
+
     (reset-state! opts)
+
     (let [
           ;; In cljs, if val is data structure but not cljs data structure
           ;; TODO - Mabye add tag-map to the opts to save a call in truncate
-          native-logging 
-          #?(:cljs (let [{:keys [coll-type? carries-meta? tag]
-                          :as   tag-map} 
-                         ;; Maybe add :exclude-all-extra-info? true
-                         ;; override opt to lasertag?
-                         (lasertag/tag-map 
-                          x
-                          {:include-function-info?           false
-                           :include-js-built-in-object-info? false})]
-                     (when (and coll-type?
-                                (not carries-meta?)
-                                (not= tag :cljs.core/Atom))
-                       {:log? true}))
-             :clj nil)
-          opts          (merge opts native-logging)
-          printing-opts (try (formatted x opts)
-                             (catch #?(:cljs js/Object :clj Exception)
-                                    e
-                               (messaging/->FireworksThrowable
-                                e
-                                x
-                                (assoc opts
-                                       :header
-                                       "fireworks.core/formatted"))))
-          return-result?
-          (when-not (= (:template opts)
-                       [:form-or-label :file-info])
-            x)]
+          native-logging (native-logging* x) 
+          opts           (merge opts native-logging)
+          printing-opts  (try (formatted x opts)
+                              (catch #?(:cljs js/Object :clj Exception)
+                                     e
+                                (messaging/->FireworksThrowable
+                                 e
+                                 x
+                                 (assoc opts
+                                        :header
+                                        "fireworks.core/formatted"))))
+          return-result? (when-not (= (:template opts)
+                                      [:form-or-label :file-info])
+                           x)]
+
+      (when debug-config?
+        (fw-debug-report config-before opts "fireworks.core/_p2")) 
+
+      (when (or state/print-config?
+                (-> opts :user-opts :fw/print-config? true?))
+        (fw-config-report))
 
       ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
@@ -602,137 +684,90 @@
 (defn ^{:public true} _p2 
   "Internal runtime dispatch target for fireworks macros.
 
-   Pretty-prints the value with syntax coloring.
    Takes an optional leading argument (custom label or options map).
-   Returns the value."
+
+   Pretty-prints the value with syntax coloring.
+   
+   Returns the value.
+   
+   Will not use fireworks formatting if:
+
+   - In ClojureScript, if value is native data structure.
+     Value will be printed with js/console.log or fireworks.core/pprint.
+   
+   - A native printing flag is supplied at callsite to fireworks.core/?
+     Flag must be a leading keyword, one of:
+     `#{:pp, :pp-, :log, or :log-}`
+     Example: `(? :pp (+ 1 1))`
+     
+   - A valid `:print-with` option is supplied at callsite to fireworks.core/?
+     Value must be one of the following functions from `clojure.core`:
+     `#{pr pr-str prn prn-str print println}`
+     Example: `(? {:print-with prn} (+ 1 1))`
+   "
   [opts x]
-  (let [fw-debug?
-        (-> opts :user-opts :fw/debug? true?) 
+  (let [debug-config? (or state/debug-config?
+                          (-> opts :user-opts :fw/debug-config? true?)) 
+        config-before (when debug-config? @state/config)]
 
-        config-before
-        (when fw-debug? @state/config)
+    ;; !! reseting the state here
+    (reset-state! opts)
 
-        _
-        (reset-state! opts)
-        ;; In cljs, if val is data structure but not cljs data structure
-        ;; TODO - Mabye add tag-map to the opts to save a call in truncate
-        native-logging
-        #?(:cljs (let [{:keys [coll-type? carries-meta? tag]
-                        :as   tag-map} 
-                       ;; Maybe add {:exclude-all-extra-info? true}
-                       ;; as an override opt to lasertag?
-                       (lasertag/tag-map 
-                        x
-                        {:include-function-info?           false
-                         :include-js-built-in-object-info? false})]
-                   (when (and coll-type?
-                              (not carries-meta?)
-                              (not= tag :cljs.core/Atom))
-                     {:log? true}))
-           :clj nil)
+    (let [
+          ;; In cljs, if val is data structure but not cljs data structure
+          native-logging (native-logging* x)
 
-        opts           
-        (merge opts
-               native-logging
-               ;; Hack for threading
-               ;; TODO - Think about a better way to do it
-               (when (some-> opts :label :threading?)
-                 {:label (or (some-> opts :label :label)
-                             "threading:")}))
+          ;; TODO - Think about a better way to do the hack for threading 
+          opts           (merge opts
+                                native-logging
+                                (when (some-> opts :label :threading?)
+                                  {:label (or (some-> opts :label :label)
+                                              "threading:")}))
 
-        printing-opts  
-        (try (formatted x opts)
-             (catch #?(:cljs js/Object :clj Exception)
-                    e
-               (messaging/->FireworksThrowable
-                e
-                x
-                (assoc opts
-                       :header
-                       "fireworks.core/formatted"))))
+          printing-opts  (try (formatted x opts)
+                              (catch #?(:cljs js/Object :clj Exception)
+                                     e
+                                (messaging/->FireworksThrowable
+                                 e
+                                 x
+                                 (assoc opts
+                                        :header
+                                        "fireworks.core/formatted"))))
 
-        return-result?
-        (when-not (= (:template opts)
-                     [:form-or-label :file-info])
-          x)]
+          return-result? (when-not (= (:template opts)
+                                      [:form-or-label :file-info])
+                           x)]
 
-    
-     (when fw-debug?
-       (callout {:label       "User-config, from config.edn file"
-                 :padding-top 1
-                 :type        :info}
-                (with-out-str (pprint state/user-config)))
+      
+      (when debug-config? 
+        (fw-debug-report config-before opts "fireworks.core/_p2")) 
 
-       (callout {:label       "fireworks.state/config, before reset"
-                 :padding-top 1
-                 :type        :info}
-                (with-out-str (pprint config-before)))
-        
-       (callout {:label       "fireworks.state/config, after reset"
-                 :padding-top 1
-                 :type        :info}
-                (with-out-str (pprint @state/config)))
+      (when (or state/print-config?
+                (-> opts :user-opts :fw/print-config? true?))
+        (fw-config-report))
 
-       (callout {:label       "fireworks.state/config, diff / user-supplied overrides"
-                 :padding-top 1
-                 :type        :info}
-                (with-out-str (pprint (nth (data/diff config-before
-                                                      @state/config)
-                                           1
-                                           nil)
-                                      )))
-    
-       (callout {:label       "fireworks.core/_p2, opts"
-                 :padding-top 1
-                 :type        :info}
-                (with-out-str (pprint opts)))
+      ;; TODO Change this to (= (:mode opts) :data)
+      (if (:p-data? opts) 
+        printing-opts
+        (let [print? (if-let [user-when-fn (some-> opts :when (util/maybe fn?))] 
+                       (boolean (apply user-when-fn [x]))
+                       true)] 
+          (when print? (print-formatted printing-opts #?(:cljs js-print)))
 
-       (callout {:label       "Selected fireworks.state atom values"
-                 :padding-top 1
-                 :type        :info}
-                (with-out-str (pprint {:state/margin-inline-start     
-                                       state/margin-inline-start
-                                       :state/top-level-value-is-sev?
-                                       state/top-level-value-is-sev?
-                                       :state/highlighting            
-                                       state/highlight}))))
+          ;; Fireworks formatting and printing of does not happen when:
+          ;; - Value being printed is non-cljs or non-clj data-structure
+          ;; - fireworks.core/?log or fireworks.core/?log- is used
+          ;; - fireworks.core/?pp or fireworks.core/?pp- is used
+          
+          (when (and print?
+                     (not (:fw/log? opts))
+                     (:log? opts))
+            #?(:cljs (js/console.log x)
+               :clj (fireworks.core/pprint x)))
 
-    (when (-> opts :user-opts :fw/print-config? true?)
-      (callout {:label       "fireworks.state/config"
-                :padding-top 1
-                :type        :info}
-               (str 
-                (bling [:italic (str
-                                 "Result of merging options from user's"
-                                 "\n"
-                                 "config.edn file with defaults, and then"
-                                 "\n"
-                                 "merging optional call-site overrides.")])
-                "\n"
-                "\n"
-                (with-out-str (pprint @state/config)))))
+          (reset! state/formatting-form-to-be-evaled? false)
+          (when return-result? x))))))
 
-    ;; TODO Change this to (= (:mode opts) :data)
-    (if (:p-data? opts) 
-      printing-opts
-      (let [print? (if-let [user-when-fn (some-> opts :when (util/maybe fn?))] 
-                     (boolean (apply user-when-fn [x]))
-                     true)] 
-        (when print? (print-formatted printing-opts #?(:cljs js-print)))
-
-        ;; Fireworks formatting and printing of formatted does not happen when:
-        ;; - Value being printed is non-cljs or non-clj data-structure
-        ;; - fireworks.core/?log or fireworks.core/?log- is used
-        ;; - fireworks.core/?pp or fireworks.core/?pp- is used
-        
-        (when (and print?
-                   (not (:fw/log? opts))
-                   (:log? opts))
-          #?(:cljs (js/console.log x)
-             :clj (fireworks.core/pprint x)))
-
-        (reset! state/formatting-form-to-be-evaled? false)
-        (when return-result? x)))))
 
 
 (defn- cfg-opts

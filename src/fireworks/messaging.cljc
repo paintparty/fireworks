@@ -1,6 +1,6 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
-            [fireworks.pp :refer [?pp]]
+            [fireworks.pp :refer [?pp pprint]]
             [expound.alpha :as expound]
             [bling.core :refer [stack-trace-preview bling point-of-interest callout]]))
 
@@ -9,6 +9,14 @@
 ;; Compile time errors for surfacing to cljs browser console
 (def warnings-and-errors (atom []))
 
+(defn fw-debug-report-template
+  ([s x]
+   (fw-debug-report-template s x :info))
+  ([s x k]
+   (callout {:label       s
+             :padding-top 1
+             :type        k}
+            (with-out-str (pprint x)))))
 
 (defn bad-option-value-warning
   [{:keys [k v spec default header body line column file form]}]
