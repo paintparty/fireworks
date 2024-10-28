@@ -27,9 +27,6 @@
 (def core-defs 
   (set '(def defn defrecord defstruct defprotocol defmulti deftype defmethod)))
 
-(def core-defs-clj-classes 
-  (set '(defrecord deftype)))
-
 
 ;   FFFFFFFFFFFFFFFFFFFFFF
 ;   F::::::::::::::::::::F
@@ -47,14 +44,6 @@
 ;   F::::::::FF           
 ;   F::::::::FF           
 ;   FFFFFFFFFFF           
-
-
-(defn- margin-block-str [user-opts k]
-  (if-let [mb (k user-opts)]
-    (if (or (zero? mb) (pos-int? mb))
-      (string/join (repeat mb "\n"))
-      "\n")
-    "\n"))
 
 
 (defn resolve-label-length [label-length-limit]
@@ -219,6 +208,29 @@
       :fmt+       fmt+
       :file-info* file-info*}))
 
+
+(defn- margin-block-str
+  [{:keys [template user-opts mode]}
+   k]
+  (cond
+    (and (= template [:result])
+         (not (pos-int? (k user-opts))))
+    ""
+    (contains? #{:log :pp} mode)
+    "\n"
+    :else
+    (string/join (repeat (get @state/config k 0) "\n")))
+
+  #_(ff k (get @state/config k 0))
+  #_(string/join (repeat (get @state/config k 0) "\n"))
+  #_(if-let [mb (ff (k user-opts))]
+      (if (or (zero? mb) (pos-int? mb))
+        (string/join (repeat mb "\n"))
+        "\n")
+      ""))
+
+
+
 (defn- formatted
   "Formatted log with file-info, form/comment, fat-arrow and syntax-colored
    pretty-printed result. Used by fireworks.core/? macro."
@@ -293,16 +305,12 @@
       ;; Else if print-and-return fns, return printing opts
       {:fmt           fmt+
        :log?          log?
-       ;; Trailing line for read-ability.
-       ;; Single line is default, can be overridden at call-site.
-       ;; If using :log or :pp, this should be zero, and margin-bottom
-       ;; needs to be set in fireworks.core/_log or fireworks.core/_pp
-       :margin-bottom (if (contains? #{:log :pp} mode)
-                        "\n"
-                        (margin-block-str user-opts :margin-bottom))
-       :margin-top    (if (contains? #{:log :pp} mode)
-                        "\n"
-                        (margin-block-str user-opts :margin-top))})))
+
+       ;; Defaults to {:margin-bottom 1 :margin-top 0}
+       ;; If :result flag is used it will be {:margin-bottom 0 :margin-top 0}
+       ;; If :result flag is used w call-site opts for :margin-*, those will win
+       :margin-bottom (margin-block-str opts :margin-bottom)
+       :margin-top    (margin-block-str opts :margin-top)})))
 
 
 #?(:cljs 
@@ -802,14 +810,13 @@
         (some-> defd str)))))
 
 
-#?(:clj
-   (defn- helper2
-     "Extracts the :label entry when present fireworks config opts"
-     [m]
+(defn- helper2
+  "Extracts the :label entry when present fireworks config opts"
+  [m]
     ;;  (ff 'helper2 (get-user-config-edn-dynamic))
-     (let [cfg-opts (cfg-opts m)
-           defd     (defd (:x m))]
-       (keyed [cfg-opts defd]))))
+  (let [cfg-opts (cfg-opts m)
+        defd     (defd (:x m))]
+    (keyed [cfg-opts defd])))
 
 
 
