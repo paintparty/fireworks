@@ -11,9 +11,9 @@
                                    :default        "light"
                                    :updates-theme? true}
    :coll-limit                    {:spec    ::config/coll-limit
-                                   :default 15}
+                                   :default 33}
    :single-line-coll-length-limit {:spec    ::config/single-line-coll-length-limit
-                                   :default 15}
+                                   :default 33}
    :non-coll-result-length-limit  {:spec    ::config/non-coll-result-length-limit
                                    :default 444}
    :non-coll-depth-1-length-limit {:spec    ::config/non-coll-depth-1-length-limit
@@ -55,6 +55,10 @@
                                    :updates-theme? true}
    :label-length-limit            {:spec    ::config/label-length-limit
                                    :default 25}
+   :margin-bottom                 {:spec    ::config/margin-bottom
+                                   :default 1}
+   :margin-top                    {:spec    ::config/margin-top
+                                   :default 0}
    :custom-printers               {:spec    ::config/custom-printers
                                    :default {}}
    :find                          {:spec    ::config/custom-printers
