@@ -100,33 +100,34 @@
        (deftest p-data-basic-samples
          (is (= 
               (let [ret              (? :data {:label                        "my-label"
-                                              :enable-terminal-truecolor?   true
-                                              :enable-terminal-italics?     true
-                                              :bracket-contrast             "high"
-                                              :theme                        theme
-                                              :custom-printers              {}
-                                              :coll-limit                   20
-                                              :non-coll-length-limit        (-> fireworks.config/options
-                                                                                :non-coll-length-limit
-                                                                                :default)
-                                              :display-namespaces?          (-> fireworks.config/options
-                                                                                :display-namespaces?
-                                                                                :default)
-                                              :metadata-position            (-> fireworks.config/options
-                                                                                :metadata-position
-                                                                                :default)
-                                              :metadata-print-level         (-> fireworks.config/options
-                                                                                :metadata-print-level
-                                                                                :default)
-                                              :non-coll-mapkey-length-limit (-> fireworks.config/options
-                                                                                :non-coll-mapkey-length-limit
-                                                                                :default)}
-                                             smoke-test/basic-samples-cljc)
+                                               :enable-terminal-truecolor?   true
+                                               :enable-terminal-italics?     true
+                                               :bracket-contrast             "high"
+                                               :theme                        theme
+                                               :custom-printers              {}
+                                               :coll-limit                   20
+                                               :non-coll-length-limit        (-> fireworks.config/options
+                                                                                 :non-coll-length-limit
+                                                                                 :default)
+                                               :display-namespaces?          (-> fireworks.config/options
+                                                                                 :display-namespaces?
+                                                                                 :default)
+                                               :metadata-position            (-> fireworks.config/options
+                                                                                 :metadata-position
+                                                                                 :default)
+                                               :metadata-print-level         (-> fireworks.config/options
+                                                                                 :metadata-print-level
+                                                                                 :default)
+                                               :non-coll-mapkey-length-limit (-> fireworks.config/options
+                                                                                 :non-coll-mapkey-length-limit
+                                                                                 :default)}
+                                        smoke-test/basic-samples-cljc)
                     formatted-string (-> ret :formatted :string)]
                 ;; (pp/pprint 'p-data-basic-samples)
                 ;; (pp/pprint formatted-string)
                 formatted-string)
-                "%c{%c%c:abcdefg%c %c{%c%c:boolean%c            %ctrue%c\n           %c:brackets%c           %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n           %c:fn%c                 %ccljs.core/juxt%c%c[var_args]%c\n           %c:lamda%c              %cλ%c%c%c%c[%1]%c\n           %c:number%c             %c1234%c\n           %c:record%c             %cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n           %c:regex%c              %c#\"^hi$\"%c\n           %c:string%c             %c\"string\"%c\n           %c:symbol%c             %cmysym%c %c    %c%c^{%c%c:foo%c %c:bar%c%c}%c\n           %c:symbol2%c            %cmysym%c %c    %c%c^{%c%c:foo%c %c[%c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c{%c%c:a%c %c\"foo\"%c%c %c%c:b%c %c[%c%c1%c%c %c%c2%c%c %c%c[%c%c1%c%c %c%c2%c%c %c%c3%c%c %c%c4%c%c]%c%c]%c%c}%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c]%c%c\n                                           %c%c:bar%c %c\"fooz\"%c%c}%c\n           %c:uuid%c               %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c\n           %c:atom/number%c        %cAtom<%c%c1%c%c>%c\n           %c:atom/record%c        %cAtom<%c%cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n           %c:map/multi-line%c     %c{%c%c:abc%c%c\n                                %c%c\"bar\"%c%c\n                                \n                                %c%c\"asdfasdfa\"%c%c\n                                %c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                \n                                %c%c[%c%c:a%c %c:b%c%c]%c%c\n                                %c%c123444%c%c}%c\n           %c:map/nested-meta%c    %c{%c %c    %c%c^{%c%c:a%c %cfoo%c %c    %c%c^{%c%c:abc%c %cbar%c%c\n                                                    %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c}%c%c}%c%c\n                                %c%ca%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                %c%cfoo%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                \n                                %c%c:b%c%c\n                                %c%c2%c%c}%c\n           %c:map/single-line%c    %c{%c%c:a%c %c1%c %c:b%c %c2%c %c:c%c %c\"three\"%c%c}%c\n           %c:set/multi-line%c     %c#{%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                 %c%c3333333%c%c\n                                 %c%c:22222%c%c}%c\n           %c:set/single-line%c    %c#{%c%c1%c %c\"three\"%c %c:2%c%c}%c\n           %c:vector/multi-line%c  %c[%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                %c%c:22222%c%c\n                                %c%c3333333%c%c]%c\n           %c:vector/single-line%c %c[%c%c1%c %c:2%c %c\"three\"%c%c]%c%c}%c%c}%c")))
+              "%c{%c%c:abcdefg%c %c{%c%c:boolean%c            %ctrue%c\n           %c:brackets%c           %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n           %c:fn%c                 %ccljs.core/juxt%c%c[var_args]%c\n           %c:lamda%c              %cλ%c%c%c%c[%1]%c\n           %c:number%c             %c1234%c\n           %c:record%c             %cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n           %c:regex%c              %c#\"^hi$\"%c\n           %c:string%c             %c\"string\"%c\n           %c:symbol%c             %cmysym%c %c    %c%c^{%c%c:foo%c %c:bar%c%c}%c\n           %c:symbol2%c            %cmysym%c %c    %c%c^{%c%c:foo%c %c[%c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c{%c%c:a%c %c\"foo\"%c%c %c%c:b%c %c[%c%c1%c%c %c%c2%c%c %c%c[%c%c1%c%c %c%c2%c%c %c%c3%c%c %c%c4%c%c]%c%c]%c%c}%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c]%c%c\n                                           %c%c:bar%c %c\"fooz\"%c%c}%c\n           %c:uuid%c               %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c\n           %c:atom/number%c        %cAtom<%c%c1%c%c>%c\n           %c:atom/record%c        %cAtom<%c%cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n           %c:map/multi-line%c     %c{%c%c:abc%c%c\n                                %c%c\"bar\"%c%c\n                                \n                                %c%c\"asdfasdfa\"%c%c\n                                %c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                \n                                %c%c[%c%c:a%c %c:b%c%c]%c%c\n                                %c%c123444%c%c}%c\n           %c:map/nested-meta%c    %c{%c %c    %c%c^{%c%c:a%c %cfoo%c %c    %c%c^{%c%c:abc%c %cbar%c%c\n                                                    %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzzz\"%c...%c%c%c}%c%c}%c%c\n                                %c%ca%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                %c%cfoo%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                \n                                %c%c:b%c%c\n                                %c%c2%c%c}%c\n           %c:map/single-line%c    %c{%c%c:a%c %c1%c %c:b%c %c2%c %c:c%c %c\"three\"%c%c}%c\n           %c:set/multi-line%c     %c#{%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                 %c%c3333333%c%c\n                                 %c%c:22222%c%c}%c\n           %c:set/single-line%c    %c#{%c%c1%c %c\"three\"%c %c:2%c%c}%c\n           %c:vector/multi-line%c  %c[%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                %c%c:22222%c%c\n                                %c%c3333333%c%c]%c\n           %c:vector/single-line%c %c[%c%c1%c %c:2%c %c\"three\"%c%c]%c%c}%c%c}%c"
+              )))
        
        (deftest p-data-with-coll-limit
          (is (= 
@@ -186,11 +187,11 @@
        (deftest p-data-record-sample-in-atom
          (is (= 
               (let [ret              (? :data {:label                      "my-label"
-                                              :enable-terminal-truecolor? true
-                                              :enable-terminal-italics?   true
-                                              :bracket-contrast           "high"
-                                              :theme                      theme}
-                                             (atom smoke-test/record-sample))
+                                               :enable-terminal-truecolor? true
+                                               :enable-terminal-italics?   true
+                                               :bracket-contrast           "high"
+                                               :theme                      theme}
+                                        (atom smoke-test/record-sample))
                     formatted-string (-> ret :formatted :string)]
                 ;; (pp/pprint 'p-data-record-sample-in-atom)
                 ;; (pp/pprint formatted-string)
@@ -531,7 +532,7 @@
               "〠38;2;190;85;187;48;2;250;232;253〠"
               "^{"
               "〠0〠"
-              "〠38;2;190;85;187;1;48;2;250;232;253〠"
+              "〠38;2;190;85;187;48;2;250;232;253〠"
               ":foo"
               "〠0〠"
               "〠38;2;190;85;187;48;2;250;232;253〠"
@@ -560,35 +561,16 @@
 
 ;; Basic print-and-return tests, cljc
 (do
-  (deftest p-basic
-    (is (= (? {:a   "foo"
-               :xyz "bar"})
-           {:a   "foo"
-            :xyz "bar"})))
-
-  (deftest ?-basic
-    (is (= (? {:a   "foo"
-               :xyz "bar"})
-           {:a   "foo"
-            :xyz "bar"})))
-
-  (deftest !?-basic
-    (is (= (!? {:a   "foo"
-                :xyz "bar"})
-           {:a   "foo"
-            :xyz "bar"})))
-
-  (deftest ?>-basic
-    (is (= (?> {:a   "foo"
-                :xyz "bar"})
-           {:a   "foo"
-            :xyz "bar"})))
-
-  (deftest !?>-basic
-    (is (= (!?> {:a   "foo"
-                 :xyz "bar"})
-           {:a   "foo"
-            :xyz "bar"}))))
+  (deftest ?-par-result
+    (is (= (? :result "par?") "par?")))
+  (deftest ?-par
+    (is (= (? "par?") "par?")))
+  (deftest !?-par
+    (is (= (!? "par?") "par?")))
+  (deftest ?>-par
+    (is (= (?> "par?") "par?")))
+  (deftest !?>-par
+    (is (= (!?> "par?") "par?"))))
 
 ;; (deftest ^:test-refresh/focus test-addition
 ;;   (is (= 2 (+ 1 1))))
@@ -598,4 +580,9 @@
 ;; :single-line-coll-length-limit option 
 ;; :when pred option for selective printing
 ;; correct order of array map entries
+;; correct margins when using margin options
+;; correct margins when using :result flag
+
 ;; Do an assessment of other things you need to cover with tests
+
+

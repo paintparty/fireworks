@@ -28,7 +28,55 @@
   ;;                            :xyz "abcdefghijklmnop"})})
    })
 
+(def basic-samples-cljc 
+  {:abcdefg {:string             "string"
+             :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+             :number             1234
+             :symbol             (with-meta 'mysym {:foo :bar})
+             :symbol2            (with-meta 'mysym
+                                   {:foo ["afasdfasf"
+                                          "afasdfasf"
+                                          {:a "foo"
+                                           :b [1 2 [1 2 3 4]]}
+                                          "afasdfasf"
+                                          "afasdfasf"]
+
+                                    :bar "fooz"})
+             :boolean            true
+             :lamda              #(inc %)
+             :fn                 juxt
+             :regex              #"^hi$"
+             :record             record-sample
+             :atom/record        (atom record-sample)
+             :atom/number        (atom 1)
+             :brackets           [[[[[[]]]]]]
+             :map/nested-meta    (with-meta 
+                                   {(with-meta (symbol :a)
+                                      {:abc "bar"
+                                       :xyz "abc"}) (with-meta (symbol "foo")
+                                                      {:abc "bar"
+                                                       :xyz "abc"})
+                                    :b                                               2}
+                                   {:a (with-meta (symbol "foo")
+                                         {:abc (symbol "bar")
+                                          :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
+             :map/single-line    {:a 1
+                                  :b 2
+                                  :c "three"}
+             :map/multi-line     {:abc      "bar"
+                                  "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                                  [:a :b]   123444}
+             :vector/single-line [1 :2 "three"]
+             :vector/multi-line  ["abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                                  :22222
+                                  3333333]
+             :set/single-line    #{1 :2 "three"}
+             :set/multi-line     #{"abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                                   :22222
+                                   3333333}}})
+
 (defn test-suite []
+  (? {:coll-limit 30} basic-samples-cljc)
   (? foo)
   (? :default foo)
   (? {:theme "Alabaster Light"

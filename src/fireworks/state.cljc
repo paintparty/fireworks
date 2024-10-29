@@ -1,6 +1,8 @@
+;; TODO - what is difference between @config and user-config-edn
+
 (ns ^:dev/always fireworks.state
   (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs keyed]]
-      :clj  [fireworks.macros :refer        [get-user-configs keyed]])
+               :clj  [fireworks.macros :refer        [get-user-configs keyed]])
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [fireworks.basethemes :as basethemes]
@@ -17,17 +19,8 @@
 
 ;; Internal state atoms for development debugging ------------------------
 
-;; Temp for debugging theme tokens
-(def debug-on-token? (atom false))
-(def token-debugging-target
-  #_:nothing
-  #_:annotation
-  #_:definition
-  #_:constant
-  #_:comment)
-
-(defn reset-token-debugging! [k]
-  (reset! debug-on-token? (= k token-debugging-target)))
+(def debug-config? false)
+(def print-config? false)
 
 ;; Temp for debugging tagging 
 (def *debug-tagging? (atom false))
@@ -36,7 +29,9 @@
   @*debug-tagging?)
 
 
-;; Internal state atoms for printing and formatting ------------------------
+;; -----------------------------------------------------------------------------
+;; Internal state atoms for printing and formatting
+;; -----------------------------------------------------------------------------
 
 ;; For ClojureScript, browser dev console %c formatting
 (def styles (atom []))
@@ -55,7 +50,7 @@
 (def top-level-value-is-sev? (atom false))
 
 ;; This will make map brackets transparent, when printing
-;; result of `?let`, `?if-let`, or `?when-let`
+;; results related to let bindings
 (def let-bindings? (atom false))
 
 ;; This will indent the whole output - label, file-info, and result
@@ -68,8 +63,27 @@
 ;; Recommended location for path is "~/.fireworks/config.edn"
 
 
-(def user-config (get-user-configs))
+;; -----------------------------------------------------------------------------
+;; Config options from user's config.edn
+;; -----------------------------------------------------------------------------
 
+(def user-config-edn* 
+  (do (when debug-config?
+        (messaging/fw-debug-report-template
+         "def fireworks.state/user-config-edn* (with :path-to-user-config)"
+         (get-user-configs)))
+      (get-user-configs)))
+
+(defn user-config-edn*-dynamic []
+  (do (when debug-config?
+        (messaging/fw-debug-report-template
+         "def fireworks.state/user-config-edn* (with :path-to-user-config)"
+         (get-user-configs)))
+      (get-user-configs)))
+
+;; -----------------------------------------------------------------------------
+;; Validated config options from user's config.edn
+;; -----------------------------------------------------------------------------
 
 ;; TODO - figure out how to get filename, line, and column.
 (defn validate-option-from-user-config-edn
@@ -81,7 +95,7 @@
     (if invalid?
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
-              :header (str (some-> user-config
+              :header (str (some-> user-config-edn*
                                    :path-to-user-config
                                    (str "\n\n"))
                            (str "Invalid value for " k " in user config."))))
@@ -89,16 +103,52 @@
         nil
         v))))
 
+(defn validate-option-from-user-config-edn-dynamic
+  [k v {:keys [spec default]} user-config-edn*]
+  (let [undefined? (or (when (string? v) (string/blank? v))
+                       (nil? v))
+        valid?     (when-not undefined? (if spec (s/valid? spec v) v))
+        invalid?   (and (not undefined?) (not valid?))]
+    (if invalid?
+      (messaging/bad-option-value-warning
+       (assoc (keyed [k v default spec])
+              :header (str (some-> user-config-edn*
+                                   :path-to-user-config
+                                   (str "\n\n"))
+                           (str "Invalid value for " k " in user config."))))
+      (if (or undefined? (not valid?))
+        nil
+        v))))
 
-;; Validated config options from user's config.edn
-(def user-options
+(defn- config-diffs [m1 m2]
+  (into {}
+        (keep (fn [[k v]]
+                (when (and (not= v (get m1 k nil))
+                           (not= :path-to-user-config k))
+                  [k v]))
+              m2)))
+
+(def user-config-edn
   (try 
-    (into {}
-          (map (fn [[k v]]
-                 (let [m         (k config/options)
-                       validated (validate-option-from-user-config-edn k v m)]
-                   [k validated]))
-               user-config))
+    (let [ret
+          (into {}
+                (map (fn [[k v]]
+                       (let [m         
+                             (k config/options)
+
+                             validated
+                             (validate-option-from-user-config-edn k v m)]
+                         [k validated]))
+                     user-config-edn*))]
+      (when debug-config?
+        (messaging/fw-debug-report-template
+         "Invalid options from user-config-edn*"
+         (config-diffs user-config-edn* ret)))
+      (when debug-config?
+        (messaging/fw-debug-report-template
+         "def fireworks.state/user-cofig-edn (validated)"
+         ret))
+      ret)
 
     ;; TODO - check if this actually catches anything?
     (catch #?(:cljs js/Object
@@ -110,40 +160,98 @@
              [:messaging/print-error e])
       {})))
 
+(defn user-config-edn-dynamic []
+  (try 
+    (let [user-config-edn*
+          (user-config-edn*-dynamic)
 
-(def fallbacks
+          ret
+          (into {}
+                (map (fn [[k v]]
+                       (let [m         
+                             (k config/options)
+
+                             validated
+                             (validate-option-from-user-config-edn-dynamic
+                              k
+                              v
+                              m
+                              user-config-edn*)]
+                         [k validated]))
+                     user-config-edn*))]
+      (when debug-config?
+        (messaging/fw-debug-report-template
+         "Invalid options from user-config-edn*"
+         (config-diffs user-config-edn* ret)))
+      (when debug-config?
+        (messaging/fw-debug-report-template
+         "def fireworks.state/user-cofig-edn (validated)"
+         ret))
+      ret)
+
+    ;; TODO - check if this actually catches anything?
+    (catch #?(:cljs js/Object
+              :clj Exception)
+           e
+      (messaging/caught-exception e {})
+      (swap! messaging/warnings-and-errors
+             conj
+             [:messaging/print-error e])
+      {})))
+
+;; -----------------------------------------------------------------------------
+;; Internal state atom for merged config
+;; -----------------------------------------------------------------------------
+
+(def ^:private default-config
   (into {} (map (fn [[k v]] [k (:default v)]) config/options)))
+
 
 (defn- dark? [x]
   (contains? #{:dark "dark"} x))
 
-(defn user-opt-val [k]
-  (let [opt (k user-options)
-        opt (when-not 
-             (and (string? opt)
-                  (string/blank? opt))
-              opt)]
-    (or opt
-        (if (= k :theme)
-            ;; TODO !!!
-            ;; Should these resolve to map to be consistent?
-          (if (dark? (:mood user-options))
-            "Alabaster Dark"
-            "Alabaster Light")
-          (k fallbacks)))))
 
+(defn- user-opt-val [user-config-edn k]
+  (let [opt (k user-config-edn)
+        ;; todo - why the string check?
+        opt (when-not (and (string? opt)
+                           (string/blank? opt))
+              opt)
+        ret (if (not (nil? opt))
+              opt
+              (if (= k :theme)
+                ;; maybe nix cos theme should already be there
+                (if (dark? (:mood user-config-edn))
+                  "Alabaster Dark"
+                  "Alabaster Light")
+                (k default-config)))]
+    #_(println k opt ret)
+    ret))
 
-;; Internal state atom for user options ------------------------------------
-(defn config* []
-  (into {}
-        (map (fn [[k _]]
-               [k (user-opt-val k)])
-             config/options)))
+(defn merged-config []
+  (let [user-config-edn (user-config-edn-dynamic)]
+   (into {}
+         (map (fn [[k _]]
+                [k (user-opt-val user-config-edn k)])
+              config/options))))
+
 (def config
-  (atom (config*)))
+  (do 
+    (when debug-config?
+      (messaging/fw-debug-report-template
+       "Options from user-config-edn that will override defaults"
+       (config-diffs default-config user-config-edn*)))
+    (when debug-config?
+      (messaging/fw-debug-report-template
+       "def config, initial value of atom"
+       (merged-config)))
+    (atom (merged-config))))
 
 
-;; Theme merging functions -------------------------------------------------
+;; -----------------------------------------------------------------------------
+;; Theme merging functions
+;; -----------------------------------------------------------------------------
+
 (defn- resolved-hex [c k]
   (when-not (and (= k :background-color)
                  (contains? #{:transparent "transparent"} c))
@@ -185,6 +293,7 @@
       :else
       m)))
 
+
 (defn invalid-color-warning 
   [{:keys [header v k footer theme-token from-custom-badge-style?]}]
   (str header
@@ -220,6 +329,7 @@
                  (with-removed-or-resolved-color :background-color opts))]
     ret))
 
+
 (defn x->sgr [x k]
   (when x
     (let [n (if (= k :fg) 38 48)]
@@ -229,25 +339,20 @@
               ret       (str n ";2;" r ";" g ";" b)]
           ret)))))
 
-(defn legacy? [k]
-  (or (:legacy-terminal? @config)
-      (false? (k @config))))
-
 (defn m->sgr
   [{fgc*        :color
     bgc*        :background-color
     font-style  :font-style
     font-weight :font-weight
     :as         m}]
-  (when @debug-on-token?
-    (println "\n(fireworks.state/m->sgr " m ")"))
-  (let [fgc    (x->sgr fgc* :fg)
+  (let [debug? false
+        fgc    (x->sgr fgc* :fg)
         bgc    (do #_(when bgc* (println "m->sgr:bgc* " bgc*))
-                   (x->sgr bgc* :bg))
-        italic (when (and (not (false? (:enable-terminal-italics? @config)))
+                (x->sgr bgc* :bg))
+        italic (when (and (:enable-terminal-italics? @config)
                           (contains? #{"italic" :italic} font-style))
                  "3;")
-        weight (when (and (not (false? (:enable-terminal-font-weights? @config)))
+        weight (when (and (:enable-terminal-font-weights? @config)
                           (contains? #{"bold" :bold} font-weight))
                  ";1")
         ret    (str "\033[" 
@@ -259,7 +364,7 @@
                       ";")
                     bgc
                     "m")]
-    (when  @debug-on-token?
+    (when debug?
       (?pp "\nCombining the fg and bg into a single sgr..." m)
       (println "=>\n"
                (util/readable-sgr ret)
@@ -287,53 +392,45 @@
 (defn map-vals [f m]
   (into {} (map f m)))
 
+(defn enable-truecolor-debug-message [v]
+  (println
+   (str "enable-terminal-truecolor? is set to true, so converting to [r g b a] "
+        "vector via (color/hexa->rgba v) => " v)))
+
+(defn disable-truecolor-debug-message [v]
+  (println
+   (str "enable-terminal-truecolor? is set to false, so converting to x256 id "
+        "(int) via (color/hexa->x256 v) => " v)))
 
 (defn hexa-or-sgr
   [[k v]]
-  (let [debug? @debug-on-token?
-        x (if (or (= k :color)
-                  (= k :background-color))
-            (cond
-              (string? v)
-              (do 
-                (when debug? 
-                  (println
-                   (str "(string? v) Value for " k " is " v)))
-                #?(:cljs
-                   (do 
-                     (when debug? (println (str "Returning " v)))
-                     v) 
-                   :clj
-                   (do 
-                     (if (legacy? :enable-terminal-truecolor?) 
-                       (do 
-                         (when debug?
-                           (println 
-                            (str "enable-terminal-truecolor? is set to"
-                                 " false, so converting to x256 id (int)"
-                                 " via (color/hexa->x256 v) => "
-                                 (color/hexa->x256 v))))
-                         (color/hexa->x256 v))
-                       (do 
-                         (when debug?
-                           (println
-                            (str "enable-terminal-truecolor? is set to"
-                                 " true, so converting to [r g b a] vector"
-                                 " via (color/hexa->rgba v) => "
-                                 (color/hexa->rgba v))))
-                         (color/hexa->rgba v)))))))
-            v)]
+  (let [debug? false
+        x      (if (and (or (= k :color) (= k :background-color))
+                        (string? v))
+                 (do
+                   (when debug? 
+                     (println (str "(string? v) Value for " k " is " v)))
+                   #?(:cljs
+                      (do 
+                        (when debug? (println (str "Returning " v)))
+                        v) 
+                      :clj
+                      (if (:enable-terminal-truecolor? @config) 
+                        (let [ret (color/hexa->rgba v)] 
+                          (when debug? (enable-truecolor-debug-message ret))
+                          ret)
+                        (let [ret (color/hexa->x256 v)]
+                          (when debug? (disable-truecolor-debug-message ret))
+                          ret))))
+                 v)]
     [k x]))
 
 
 (defn- fully-hydrated-map [m]
   (let [f (fn [[k v]] 
-            (reset-token-debugging! k)
             [k
              (if (map? v)
-               (do (when @debug-on-token?
-                     (println "(map-vals hexa-or-sgr v) =>"))
-                   (map-vals hexa-or-sgr v))
+               (map-vals hexa-or-sgr v)
                v)])]
     (map-vals f m)))
 
@@ -378,9 +475,6 @@
                 #?(:cljs (let [m (with-line-height m)]
                            [k (string/join (map kv->css2 m))])
                    :clj (do
-                          (reset-token-debugging! k)
-                          (when @debug-on-token?
-                            (println "\n" "(serialize-style-maps) => \n" k m))
                           [k (m->sgr m-with-k)]))))
             merged))
 
@@ -401,8 +495,11 @@
        ret     (reduce-from-base (merge base tokens*) classes)]
    ret))
 
-(defn- add-metadata-key-entries [m]
-  (assoc m
+(defn- add-metadata-key-entries
+  [m]
+  m
+  ;; Augment the font-style or font-weight (leave off for now)
+  #_(assoc m
          :metadata-key
          (assoc (:metadata m) :font-weight :bold)
          :metadata-key2
@@ -436,6 +533,9 @@
         printer (hydrated* base theme classes :printer)
         merged  (add-metadata-key-entries (merge classes syntax printer))
         merged2 (serialize-style-maps merged)]
+    ;; (?pp 'base (-> base :classes :label))
+    ;; (?pp 'theme (-> theme))
+    ;; (?pp classes)
     {:with-style-maps            merged
      :with-serialized-style-maps (assoc
                                   merged2
@@ -486,59 +586,54 @@
 ;;         ]
 ;;     (?pp :bgc bgc)))
 
+(defn valid-user-theme [theme*]
+  (when (map? theme*) 
+    (if (s/valid? ::theme/theme theme*)
+      theme*
+      (messaging/bad-option-value-warning
+       (let [m (:theme config/options)]
+         (merge m
+                {:k      :theme
+                 :v      theme*
+                 :header (str "[fireworks.core/_p]."
+                              "Problem with the supplied Fireworks theme \""
+                              (:name theme*)
+                              "\":")}))))))
 
 (defn merged-theme*
   ([]
    (merged-theme* nil))
   ([reset]
-   ;; TODO - Add observability for theme, user-config.
-   ;; from env-vars, parsed and validated.
-   (let [theme*           (:theme @config)
-
+   (let [theme*           (:theme @config) ;; TODO - should this be user-config?
          fallback-theme   themes/universal-neutral
-
-         valid-user-theme (when (map? theme*) 
-                            (if (s/valid? ::theme/theme theme*)
-                              theme*
-                              (messaging/bad-option-value-warning
-                               (let [m (:theme config/options)]
-                                 (merge m
-                                        {:k      :theme
-                                         :v      theme*
-                                         :header (str "[fireworks.core/_p]."
-                                                      "Problem with the supplied Fireworks theme \""
-                                                      (:name theme*)
-                                                      "\":")})))))
-
+         user-theme       (valid-user-theme theme*)
          theme            (cond
                             (string? theme*)
                             (get basethemes/stock-themes theme*)
-                            valid-user-theme
-                            valid-user-theme
+                            user-theme
+                            user-theme
                             :else
                             fallback-theme)
-
          mood             (if (dark? (:mood theme))
                             :dark
                             :light)     
-
          base-theme       (if (= mood :dark)
                             basethemes/base-theme-dark*
                             basethemes/base-theme-light*)
-
          rainbow-brackets (rainbow-brackets mood theme)
-
         ;;  metadata-bgcs    (metadata-bgcs mood theme base-theme)
-         
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
-
          ret              (merge-theme+ base-theme theme)]
-
      ;; TODO - Add observability for theme
      ret)))
 
 
-;; The merged theme to use for printing --------------------------------
+
+
+;; -----------------------------------------------------------------------------
+;; The merged-theme to use for printing, defs inside let form
+;; -----------------------------------------------------------------------------
+
 (let [{:keys [with-style-maps
               with-serialized-style-maps
               err
@@ -568,12 +663,20 @@
           (atom with-style-maps)))))
 
 
-;; Helpers for css -----------------------------------------------------
+
+;; -----------------------------------------------------------------------------
+;; Helpers for css 
+;; -----------------------------------------------------------------------------
+
 (defn line-height-css []
   (str "line-height:" (:line-height @config) ";"))
 
 
-;; Helpers for highlighting --------------------------------------------
+
+;; -----------------------------------------------------------------------------
+;; Helpers for highlighting
+;; -----------------------------------------------------------------------------
+
 (defn highlight-style* [{:keys [style pred]}]
   (let [css-str (if style 
                   (let [style (sanitize-style-map style)]

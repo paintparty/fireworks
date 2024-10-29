@@ -79,7 +79,8 @@
    coll-limit
    map-like?
    array-map?
-   depth]
+   depth
+   coll-size]
   (let [;; First we need to check if collection is both not map-like and 
         ;; comprised only of map entries. If this is the case it is most likely
         ;; the result of something like `(into [] {:a "a" :b "b"})`, and we need
@@ -101,7 +102,7 @@
                             {:depth                 (inc depth)
                              :map-entry-in-non-map? all-map-entries?})))]
     (if map-like?
-      (seq->sorted-map ret array-map?)
+      (if (zero? coll-size) ret (seq->sorted-map ret array-map?))
       ret)))
 
 
@@ -134,13 +135,14 @@
            depth
            map-like?
            too-deep?
-           dom-node-type]
+           dom-node-type
+           coll-size]
     :as opts+}]
   (let [coll-limit (if too-deep? 0 (:coll-limit @state/config))
         array-map? (and map-like? (contains? (:all-tags opts+) :array-map))]
     #?(:cljs
        (if (satisfies? ISeqable x)
-         (truncate-iterable x coll-limit map-like? array-map? depth)
+         (truncate-iterable x coll-limit map-like? array-map? depth coll-size)
          (if dom-node-type
            (truncate {:depth (inc depth)} (dom-el-attrs-map x))
            (do 
@@ -150,7 +152,7 @@
                   (map (partial truncate {:depth (inc depth)}))
                   (into {})))))
        :clj
-       (truncate-iterable x coll-limit map-like? array-map? depth))))
+       (truncate-iterable x coll-limit map-like? array-map? depth coll-size))))
 
 
 (defn- user-meta* [x]

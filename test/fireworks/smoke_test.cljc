@@ -3,7 +3,7 @@
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
-            [bling.core :refer [callout bling]]
+            [bling.core :refer [callout bling ?sgr]]
             [clojure.string :as string]
             [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
@@ -12,6 +12,8 @@
             [lasertag.core :refer [tag-map]]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
+
+(def theme themes/alabaster-light)
 
 ;; testing label length
 ;; (? (str "asdfasdfasdfasdfadsfasfasdf" "zzzzzzzzzzzzz" "xxxxxxx"))
@@ -228,20 +230,6 @@
                             {:abc (symbol "bar")
                              :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
 
-(def basic-samples 
-  {:string   "string"
-   :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number   1234
-   :boolean  true
-   :lamda    #(inc %)
-   :fn       juxt
-   :regex    #"^hi$"
-   :record   record-sample
-   :atom2    (atom record-sample)
-   :atom1    (atom 1)
-   :brackets [[[[[[]]]]]]})
-
-(? #_{:theme "Universal Neutral"} basic-samples-cljc-theme)
 
 ;; (?
 ;;  "Nested metadata, on val"
@@ -924,3 +912,109 @@
 ;;          {:a                "foo"
 ;;           :xyz              "bar" 
 ;;           "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"})))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(def basic-samples 
+  {:string   "string"
+   :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number   1234
+   :boolean  true
+   :lamda    #(inc %)
+   :fn       juxt
+   :regex    #"^hi$"
+   :record   record-sample
+   :atom2    (atom record-sample)
+   :atom1    (atom 1)
+   :brackets [[[[[[]]]]]]})
+
+
+basic-samples
+
+;; (? (meta #'basic-samples))
+
+;; (map #(* % 33) (range 100))
+
+#_(?sgr (-> (? :data {:label                      "my-label-from-opts"
+                    :enable-terminal-truecolor? false
+                    :enable-terminal-italics?   false
+                    :theme                      theme}
+             "foo")
+          :formatted
+          :string))
+
+;; (def themez  "Monokai Light")
+;; (? #_{:theme themez} record-sample)
+;; (? #_{:theme "Monokai Light"} (with-meta 'foo {:a "a"}))
+;; (? "Fix italics" #_(select-keys (:abcdefg basic-samples-cljc) [:uuid :symbol :symbol2]))
+;; (? (remove true? [true]))
+;; (? :pp (select-keys {:a 1 :b 2} [:f :g :c]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
