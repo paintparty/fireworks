@@ -929,7 +929,6 @@
 
 
 
-(+ 1 1)
 
 (def basic-samples 
   {:string   "string"
@@ -949,7 +948,7 @@ basic-samples
 
 ;; (? (meta #'basic-samples))
 
-(map #(* % 33) (range 100))
+;; (map #(* % 33) (range 100))
 
 #_(?sgr (-> (? :data {:label                      "my-label-from-opts"
                     :enable-terminal-truecolor? false
@@ -959,8 +958,8 @@ basic-samples
           :formatted
           :string))
 
-(def themez  "Monokai Light")
-(? #_{:theme themez} record-sample)
+;; (def themez  "Monokai Light")
+;; (? #_{:theme themez} record-sample)
 ;; (? #_{:theme "Monokai Light"} (with-meta 'foo {:a "a"}))
 ;; (? "Fix italics" #_(select-keys (:abcdefg basic-samples-cljc) [:uuid :symbol :symbol2]))
 ;; (? (remove true? [true]))
