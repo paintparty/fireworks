@@ -5,6 +5,17 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## 0.8.1
+#### Fixes
+- Fixes empty map bug
+
+#### Added
+- Exposes `:margin-top` and `:margin-bottom` options
+
+#### Changed
+- Increase depth of caught-exception (in `fireworks.core/formatted`) stack trace preview to 12 frames
+
+
 ## 0.8.0
 #### Added
 - [Add `"Universal Neutral"` theme](https://github.com/paintparty/fireworks/issues/21) that works on both light and dark backgrounds
