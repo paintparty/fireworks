@@ -983,7 +983,7 @@ basic-samples
 ;; (?  basic-samples-cljc)
 (!?  #_{} basic-samples-array-map)
 (!?  #_{} basic-samples-cljc)
-(? {:coll-limit 5} (with-meta (range 8) {:foo :bar}))
+(? {:coll-limit 5} (atom (with-meta (range 8) {:foo :bar})))
 
 
 

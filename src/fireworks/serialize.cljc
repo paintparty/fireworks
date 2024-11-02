@@ -866,6 +866,8 @@
 (defn formatted*
   ([source]
    (formatted* source nil))
+  ;; user-meta? when the value being formatted is a user meta map
+  ;; TODO - Maybe change :user-meta? to :value-is-user-meta-map?
   ([source {:keys [indent user-meta?]
             :or   {indent (or @state/margin-inline-start 0)}
             :as   opts}]

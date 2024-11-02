@@ -279,6 +279,11 @@
         ;; mm*
         ;; (with-badge-and-ellipsized x kv? mm*)
         ]
+    #_(when (coll? truncated-x)
+      (?pp (meta (with-meta truncated-x
+                   (merge {:fw/truncated mm*
+                           :fw/user-meta user-meta}
+                          (some->> m* :user-meta? (hash-map :fw/user-meta-map?)))))))
     (with-meta truncated-x
       (merge {:fw/truncated mm*
               :fw/user-meta user-meta}
