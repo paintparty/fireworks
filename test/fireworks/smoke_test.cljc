@@ -939,6 +939,7 @@
    :fn       juxt
    :regex    #"^hi$"
    :record   record-sample
+   :range    (range 40)
    :atom2    (atom record-sample)
    :atom1    (atom 1)
    :brackets [[[[[[]]]]]]})
@@ -953,6 +954,7 @@
    :fn       juxt
    :regex    #"^hi$"
    :record   record-sample
+   :range    (range 40)
    :atom2    (atom record-sample)
    :atom1    (atom 1)
    :brackets [[[[[[]]]]]] ))
@@ -979,9 +981,9 @@ basic-samples
 ;; (? :pp (select-keys {:a 1 :b 2} [:f :g :c]))
 
 ;; (?  basic-samples-cljc)
-(?  #_{} basic-samples-array-map)
-(?  #_{} basic-samples-cljc)
-
+(!?  #_{} basic-samples-array-map)
+(!?  #_{} basic-samples-cljc)
+(? {:coll-limit 5} (with-meta (range 8) {:foo :bar}))
 
 
 

@@ -27,8 +27,6 @@
 
 (declare formatted*)                                                                             
 
-;;; For dealing with self-evaluating values
-
 (defn collection-type? [k]
   (contains? #{:set
                :map
@@ -42,18 +40,23 @@
              k))
 
 (defn add-truncation-annotation! 
-  [{:keys [num-chars-dropped t truncate-fn-name? top-level-sev?]}]
+  [{:keys [num-chars-dropped t truncate-fn-name? top-level-sev?]
+    :as m}]
   (when (or truncate-fn-name?
             (some-> num-chars-dropped pos?))
     (let [theme-tag (if (pos? (state/formatting-meta-level))
                       (state/metadata-token)
                       :ellipsis)
+          ;; TODO/perf - replace collection-type? with (:coll-type? m)
           s         (if (collection-type? t)
                       (str "+" num-chars-dropped)
                       defs/ellipsis)]
 
       (when (state/debug-tagging?)
-        (println "\nserialize/add-truncation-annotation:  tagging \"" s "\" with " theme-tag ))
+        (println "\nserialize/add-truncation-annotation:  tagging \""
+                 s 
+                 "\" with " 
+                 theme-tag ))
 
       (if top-level-sev?
         s
@@ -310,6 +313,7 @@
                                         3)
                                       "."))))
 
+
 (defn- num-dropped-annotation!
   [{:keys [indent
            too-deep?
@@ -323,16 +327,16 @@
         map-key-ghost      (map-key-ghost m)
         coll-is-map?       (boolean max-keylen)
         spaces-between-kv  (when coll-is-map?
-                             (let [max-keylen+space (inc max-keylen)
-                                   num-spaces       (if too-deep?
-                                                      0
-                                                      (- max-keylen+space
-                                                         (count map-key-ghost)))]
-                               (spaces num-spaces)))
+                             (let [max-keylen+space (inc max-keylen)]
+                               (spaces (if too-deep?
+                                         0
+                                         (- max-keylen+space
+                                            (count map-key-ghost))))))
         num-indent-chars   indent      
         indent-chars       (spaces num-indent-chars)      
         extra*             (let [leading+indent (str (leading-space m)
-                                                     (when multi-line? indent-chars))]
+                                                     (when multi-line?
+                                                       indent-chars))]
                              (if coll-is-map?
                                (str leading+indent
                                     map-key-ghost
@@ -340,16 +344,12 @@
                                     num-dropped-syntax)
                                (str leading+indent
                                     num-dropped-syntax
-                                    spaces-between-kv)))
-        _                  (when (state/debug-tagging?)
-                             (println "\nnum-dropped-annotion! : tagging "
-                                      extra*
-                                      " with "
-                                      :ellipsis))
-        extra              (str (tag! :ellipsis)
-                                extra*
-                                (tag-reset!))]
-    extra))
+                                    spaces-between-kv)))]
+
+    (when (state/debug-tagging?)
+      (println "\nnum-dropped-annotion! : tagging " extra* " with " :ellipsis))
+
+    (str (tag! :ellipsis) extra* (tag-reset!))))
 
 
 (defn- stringified-bracketed-coll-with-num-dropped-syntax! 

@@ -11,9 +11,14 @@
             [fireworks.util :as util]
             [lasertag.core :as lasertag]))
 
+;; The following set of cljs functions optimizes the printing of js objects.
+;; This only applies when the js object is nested within a cljs data structure.
 #?(:cljs
    (do 
-     (defn- inline-style->map [v]
+
+     (defn- inline-style->map 
+       "Converts inline css style string to cljs map"
+       [v]
        (as-> v $
          (string/split $ #";")
          (map #(let [kv    (-> % string/trim (string/split #":") )
@@ -22,7 +27,9 @@
               $)
          (into {} $)))
 
+
      (defn- dom-el-attrs-map
+       "Converts html attribute map into cljs map"
        [x]
        (when-let [el x]
          ;; Check for when no attrs
@@ -38,11 +45,15 @@
                             (= k "class") (into [] (string/split v " "))
                             :else         v)]))))))
 
-     (defn- prune-synthetic-base-event [x]
+     
+     (defn- prune-synthetic-base-event 
+       "Removes uneeded properties from React synthetic object"
+       [x]
        (doto x
          (js-delete "view")
          (js-delete "nativeEvent")
          (js-delete "target")))))
+
 
 (defn- cljc-atom?
   [x]
@@ -50,9 +61,9 @@
      :clj  (= clojure.lang.Atom (type x))))
 
 
-;; Performance gain?
+;; Potential performance gains:
 ;; Maybe declare truncate new above this and incorporate into kv
-;; Mabye use reduce-kv or transducer to speed this up?
+;; Mabye use reduce-kv or transducer to speed this up
 #?(:cljs 
    (defn- js-obj->array-map 
      [{:keys [x coll-limit depth uid-entry?]}]
@@ -79,7 +90,8 @@
            depth
            coll-size]}
    x]
-  (let [;; First we need to check if collection is both not map-like and 
+  (let [
+        ;; First we need to check if collection is both not map-like and 
         ;; comprised only of map entries. If this is the case it is most likely
         ;; the result of something like `(into [] {:a "a" :b "b"})`, and we need
         ;; to treat all elements in the coll as 2-el vectors (not map-entries),
@@ -146,7 +158,7 @@
 
 
 (defn- truncation-profile
-  [{:keys [depth map-entry-in-non-map? map-value?]
+  [{:keys [depth map-entry-in-non-map?]
     :as   m*}
    x]
   (let [atom?     (cljc-atom? x)
@@ -154,18 +166,18 @@
         kv?       (boolean (when-not map-entry-in-non-map? (map-entry? x)))
         tag-map   (when-not kv?
                     (set/rename-keys (lasertag/tag-map x) {:tag :t}))
-        too-deep? (> depth (:print-level @state/config))]
-    ;; TODO - maybe add m* to merge?
-    (merge (keyed [depth atom? kv? x])
+        too-deep? (> depth (:print-level @state/config))
+        sev?      (boolean (when-not kv?
+                             (not (:coll-type? tag-map))))]
+    (merge m* ;; m* added for :key? and :map-value? entries
+           (keyed [depth atom? kv? x too-deep? sev?])
            tag-map
-           {:user-meta     (value-meta x)
-            :ex/og-x       x
-            :uid-entry?    (volatile! false)
-            :too-deep?     too-deep?
-            :coll-limit    (if too-deep? 0 (:coll-limit @state/config))
-            :array-map?    (contains? (:all-tags tag-map) :array-map)
-            :sev?          (boolean (when-not kv?
-                                      (not (:coll-type? tag-map))))}))) 
+           {:user-meta      (value-meta x)
+            :og-x           x
+            :uid-entry?     (volatile! false)
+            :coll-limit     (if too-deep? 0 (:coll-limit @state/config))
+            :array-map?     (contains? (:all-tags tag-map) :array-map)
+            :top-level-sev? (and sev? (zero? depth))}))) 
 
 
 (defn- truncated-x*
@@ -199,25 +211,58 @@
     (merge mm* ellipsized)))
 
 
+;; Make sure to update :fw/truncated entry in example in docstring, if the shape
+;; of that value changes.
 (defn truncate
-  [{:keys [depth
-           user-meta?
-
-          ;; Leave these 2 out until you incorporate with-badge-and-ellipsized
-          ;;  map-value?
-          ;;  key?
-           ]
-    :as m*}
-   x]
-
+  "Example:
+   (? {:coll-limit 5} (with-meta (range 8) {:foo :bar}))
+   
+   Assuming x is a (contrived) coll limit of 8, fireworks.truncate/truncate
+   gets called recursively, and all coll types are converted to vectors.
+   Metadata gets attached to all values and nested values.
+   
+   ^{:fw/truncated {:og-x                '(0 1 2 3 4 5 6 7),
+                    :coll-type?          true,
+                    :carries-meta?       true,
+                    :array-map?          false,
+                    :kv?                 false,
+                    :user-meta           {:foo :bar},
+                    :truncated-coll-size 5,
+                    :map-like?           false,
+                    :user-meta?          nil,
+                    :type                'clojure.lang.LongRange,
+                    :too-deep?           false,
+                    :coll-size           8,
+                    :all-tags            #{:coll :seq},
+                    :coll-limit          5,
+                    :coll-size-adjust    8,
+                    :sev?                false,
+                    :num-dropped         3,
+                    :top-level-sev?      false,
+                    :depth               0,
+                    :t                   :seq,
+                    :x                   '(0 1 2 3 4 5 6 7),
+                    :js-typed-array?     false,
+                    :atom?               false,
+                    :number-type?        false,
+                    :js-map-like?        false},
+   :user-meta      {:foo :bar}}
+  [^{...}
+   1
+   ^{...}
+   2
+   ^{...} 
+   3
+   ^{...}
+   4]"
+  [m* x]
   (let [
-        ;; truncation-profile calls lasertag/tag-map
-        ;; x, if atom, potentially gets reified in truncation profile
+        ;; fireworks.truncate/truncation-profile calls lasertag/tag-map
+        ;; x, if atom, gets reified in fireworks.truncate/truncation-profile
         {:keys [x             
                 kv?           
                 user-meta         
-                coll-type?
-                sev?]
+                coll-type?]
          :as   m}
         (truncation-profile m* x)
 
@@ -226,25 +271,16 @@
 
         mm*           
         (-> m
-            (dissoc :uid-entry?)
+            (dissoc :uid-entry?) ;; this removes the volatile
             (merge (when (and (not kv?) coll-type?)
-                     (new-coll-info m truncated-x))
-                   {:og-x x}
-                   (when (and sev? (zero? depth))
-                     {:top-level-sev? true})))
+                     (new-coll-info m truncated-x))))
 
-        ;; TODO - Use this instead of what you are doing in profile
+        ;; TODO - Use this instead of what is happening in fireworks.profile
         ;; mm*
-        ;; (with-badge-and-ellipsized
-        ;;   x
-        ;;   kv?
-        ;;   (merge mm*
-        ;;          ;; TODO - put this up in mm* binding
-        ;;          (keyed [key? map-value?])))
-        
+        ;; (with-badge-and-ellipsized x kv? mm*)
         ]
     (with-meta truncated-x
       (merge {:fw/truncated mm*
               :fw/user-meta user-meta}
-             (when user-meta? {:fw/user-meta-map? user-meta?})))))
+             (some->> m* :user-meta? (hash-map :fw/user-meta-map?))))))
 
