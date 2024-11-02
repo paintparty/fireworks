@@ -943,6 +943,19 @@
    :atom1    (atom 1)
    :brackets [[[[[[]]]]]]})
 
+(def basic-samples-array-map
+  (array-map
+   :string   "string"
+   :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number   1234
+   :boolean  true
+   :lamda    #(inc %)
+   :fn       juxt
+   :regex    #"^hi$"
+   :record   record-sample
+   :atom2    (atom record-sample)
+   :atom1    (atom 1)
+   :brackets [[[[[[]]]]]] ))
 
 basic-samples
 
@@ -965,6 +978,9 @@ basic-samples
 ;; (? (remove true? [true]))
 ;; (? :pp (select-keys {:a 1 :b 2} [:f :g :c]))
 
+;; (?  basic-samples-cljc)
+(?  #_{} basic-samples-array-map)
+(?  #_{} basic-samples-cljc)
 
 
 

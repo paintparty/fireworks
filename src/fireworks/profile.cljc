@@ -239,12 +239,12 @@
 
                   (highlighting og-x)
 
-                     ;; TODO - need this mapkey map?
+                  ;; TODO - need this mapkey map?
                   mapkey
 
-                     ;; TODO - after getting custom printing working
-                     ;; refactor this :fw/type-after-custom-printing
-                     ;; into select-keys vec and use rename-keys
+                  ;; TODO - after getting custom printing working
+                  ;; refactor this :fw/type-after-custom-printing
+                  ;; into select-keys vec and use rename-keys
                   (some->> x
                            meta
                            :fw/type-after-custom-printing 
