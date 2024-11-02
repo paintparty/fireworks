@@ -655,9 +655,8 @@
                                       multi-line?
                                       separator]))
 
-                  map-value?
-                  (and single-column-map-layout?
-                       (odd? idx))
+                  value-in-mapentry?
+                  (and single-column-map-layout? (odd? idx))
 
                   maybe-comma
                   (when (or js-typed-array?
@@ -665,11 +664,8 @@
                     ",")
 
                   separator
-                  (cond map-value?
-                        (str separator separator)
-                        :else
-                        (str maybe-comma
-                             separator))
+                  (str (if value-in-mapentry? separator maybe-comma)
+                       separator)
 
                   ret         
                   (str
