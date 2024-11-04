@@ -73,7 +73,7 @@
                       :metadata      {:color            "#be55bb"
                                       :text-shadow      "0 0 2px #ffffff"
                                       :background-color "#fae8fd"}
-                      :metadata2     {:color            "#be55bb"
+                      :metadata2     {:color            "#9f60be"
                                       :text-shadow      "0 0 2px #ffffff"
                                       :background-color "#e9e5ff"}
                       :label         {:color            "#4d6dba"
