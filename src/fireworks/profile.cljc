@@ -4,13 +4,14 @@
    [fireworks.defs :as defs]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
-   [fireworks.pp :as pp :refer [?pp]]
    [lasertag.core :as lasertag]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [clojure.string :as string]))
 
 
+;; TODO revist how your doing this, maybe there should be a :classname entry
+;; returned from lasertag
 (def badges-by-lasertag
   {:js/Set         "js/Set"
    :js/Promise     "js/Promise"
@@ -25,11 +26,15 @@
 
 ;; Understand and doc how this works for custom types
 (defn annotation-badge
-  [{:keys [t
+  [{:keys [t 
            lamda?
            js-built-in-object?
            js-built-in-object-name
            all-tags
+           java-util-class?
+           java-lang-class?
+           coll-type?
+           classname
            :fw/custom-badge-text]
     :as m}]
   (when (map? m)
@@ -38,6 +43,16 @@
                (cond
                  (contains? all-tags :record)
                  (name t)
+
+                 ;; Interesting visualization in JVM Clojure
+                 ;; Labels everything, including primitives
+                 ;; Maybe this could be exposed in an option 
+                  #_(or java-util-class? java-lang-class?)
+                  #_classname
+
+                 (or java-util-class?
+                     (and coll-type? java-lang-class?))
+                 classname
 
                  js-built-in-object?
                  (str "js/" js-built-in-object-name)
@@ -163,6 +178,7 @@
                     ellipsis-char-count
                     (or (when (:exceeds? ellipsized) defs/ellipsis-count) 0)
 
+                    ;; TODO - Do we still need str-len-with-badge2
                     str-len-with-badge2
                     (+ badge-count
                        atom-wrap-count
@@ -239,12 +255,12 @@
 
                   (highlighting og-x)
 
-                     ;; TODO - need this mapkey map?
+                  ;; TODO - need this mapkey map?
                   mapkey
 
-                     ;; TODO - after getting custom printing working
-                     ;; refactor this :fw/type-after-custom-printing
-                     ;; into select-keys vec and use rename-keys
+                  ;; TODO - after getting custom printing working
+                  ;; refactor this :fw/type-after-custom-printing
+                  ;; into select-keys vec and use rename-keys
                   (some->> x
                            meta
                            :fw/type-after-custom-printing 
@@ -302,7 +318,73 @@
            x))
     x))
 
+;; TODO - Address the following:
+;; - Is one of :user-meta and :fw/user-meta redundant?
+;; - Is :str-len-with-badge2 redundant?
+;; - Maybe use :tag instead of :t globally?
+
 (defn profile
+  "Enriches value's metadata map by merging it with :fw/truncated entry and
+   adding addtional entries to such as:
+
+   :some-colls-as-keys?                 
+   :str-len-with-badge2                 
+   :single-column-map-layout?           
+   :some-syms-carrying-metadata-as-keys?
+   :str-len-with-badge                  
+   :some-elements-carry-user-metadata?  
+
+   These additional entries address things like:
+   - Data structures as map keys
+   - Map keys with metadata
+   - Elements in collection with metadata
+   - Lables for objects, records, transients
+   - Ellipises
+   - Adjusted string length
+
+   Example:
+   (? {:coll-limit 5} (with-meta (range 8) {:foo :bar}))
+
+   ^{:og-x                                 '(0 1 2 3 4 5 6 7),
+     :some-colls-as-keys?                  false,
+     :str-len-with-badge2                  0,
+     :coll-type?                           true,
+     :carries-meta?                        true,
+     :array-map?                           false,
+     :kv?                                  false,
+     :user-meta                            {:foo :bar},
+     :truncated-coll-size                  5,
+     :map-like?                            false,
+     :user-meta?                           nil,
+     :single-column-map-layout?            false,
+     :type                                 'clojure.lang.LongRange,
+     :too-deep?                            false,
+     :coll-size                            8,
+     :some-syms-carrying-metadata-as-keys? false,
+     :all-tags                             #{:coll :seq},
+     :str-len-with-badge                   11,
+     :coll-limit                           5,
+     :some-elements-carry-user-metadata?   false,
+     :fw/user-meta                         {:foo :bar},
+     :coll-size-adjust                     8,
+     :sev?                                 false,
+     :num-dropped                          3,
+     :top-level-sev?                       false,
+     :depth                                0,
+     :t                                    :seq,
+     :x                                    '(0 1 2 3 4 5 6 7),
+     :js-typed-array?                      false,
+     :atom?                                false,
+     :number-type?                         false,
+     :js-map-like?                         false}
+  [^{...}
+   1
+   ^{...}
+   2
+   ^{...} 
+   3
+   ^{...}
+   4]"
   ([x]
    (profile x nil))
   ([x {:keys [key?
@@ -314,7 +396,7 @@
    (if (-> x meta :ellipsized-char-count)
      x
      (let [meta-map*
-          (meta-map* x mapkey)
+           (meta-map* x mapkey)
 
            ellipsized
            (when-not (:coll-type? meta-map*)
@@ -339,5 +421,4 @@
 
            ret
            (maybe-ellipsize (keyed [coll-type? ellipsized x t meta-map]))]
-
        ret))))

@@ -497,13 +497,13 @@
 
 (defn- add-metadata-key-entries
   [m]
-  m
-  ;; Augment the font-style or font-weight (leave off for now)
-  #_(assoc m
+  ;; Augment the font-style or font-weight
+  ;; Currently, set at defaults as bolding creates problems for some terminals.
+  (assoc m
          :metadata-key
-         (assoc (:metadata m) :font-weight :bold)
+         (assoc (:metadata m) :font-weight :normal)
          :metadata-key2
-         (assoc (:metadata2 m) :font-weight :bold)))
+         (assoc (:metadata2 m) :font-weight :normal)))
 
 (defn merge-theme+
   "Merges a theme (light or dark) with base theme (light or dark).

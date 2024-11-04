@@ -1,9 +1,24 @@
 # Changelog
 [Fireworks](https://github.com/paintparty/fireworks): A color printer for Clojure, ClojureScript, and Babashka. 
 
-
-
 For a list of breaking changes, check [here](#breaking-changes)
+
+<br>
+
+## 0.9.0
+#### Added
+- Supports proper labelling of more Java classes such as `java.util.Hashmap`
+
+#### Changed
+- Bumps `lastertag` dep to `0.7.0`
+- Internal refactoring of `fireworks.truncate`
+
+#### Removed
+- Unused `fireworks.alert` namespace
+
+
+<br>
+<br>
 
 ## 0.8.1
 #### Fixes
@@ -15,6 +30,8 @@ For a list of breaking changes, check [here](#breaking-changes)
 #### Changed
 - Increase depth of caught-exception (in `fireworks.core/formatted`) stack trace preview to 12 frames
 
+<br>
+<br>
 
 ## 0.8.0
 #### Added

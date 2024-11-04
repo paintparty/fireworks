@@ -170,6 +170,7 @@
                                  template)
                       log?
                       threading?)
+          ;; TODO - is the space before the newline necessary ?
           (tag/tag-entity! " \n" :result-header))
 
         fmt           
@@ -808,7 +809,6 @@
       (let [defd (when (contains? core-defs sym)
                    (nth x 1 nil))]
         (some-> defd str)))))
-
 
 (defn- helper2
   "Extracts the :label entry when present fireworks config opts"

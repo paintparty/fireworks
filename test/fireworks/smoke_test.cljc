@@ -9,7 +9,7 @@
             [clojure.pprint :refer [pprint]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
-            [lasertag.core :refer [tag-map]]
+            [lasertag.core :refer [tag-map tag]]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
@@ -939,10 +939,25 @@
    :fn       juxt
    :regex    #"^hi$"
    :record   record-sample
+   :range    (range 40)
    :atom2    (atom record-sample)
    :atom1    (atom 1)
    :brackets [[[[[[]]]]]]})
 
+(def basic-samples-array-map
+  (array-map
+   :string   "string"
+   :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number   1234
+   :boolean  true
+   :lamda    #(inc %)
+   :fn       juxt
+   :regex    #"^hi$"
+   :record   record-sample
+   :range    (range 40)
+   :atom2    (atom record-sample)
+   :atom1    (atom 1)
+   :brackets [[[[[[]]]]]] ))
 
 basic-samples
 
@@ -965,7 +980,52 @@ basic-samples
 ;; (? (remove true? [true]))
 ;; (? :pp (select-keys {:a 1 :b 2} [:f :g :c]))
 
+;; (?  basic-samples-cljc)
+(!?  #_{} basic-samples-array-map)
+(!?  #_{} basic-samples-cljc)
+(!? {:coll-limit 5} (atom (with-meta (range 8) {:foo :bar})))
+#?(:clj
+   (do 
+     (!? (instance? java.util.AbstractCollection (java.util.HashMap. {"a" 1
+                                                                      "b" 2})))
+    ;;  (? (java.lang.String. "welcome"))
+    ;;  (? "welcome")
+    ;;  (? #{"a" 1 "b" 2})                        
 
+     (!? (java.util.HashSet. #{"a" 1
+                              "b" 2}))
+     (!? (tag (java.util.HashSet. #{"a" 1
+                                   "b" 2})))
+
+     (? (java.util.HashMap. {"a" 1
+                              "b" 2}))
+    ;;  (? (tag (java.util.HashMap. {"a" 1
+    ;;                               "b" 2})))
+    ;;  (? (tag [1 2]))
+    ;;  (? (tag (list 1 2)))
+    ;;  (? (tag '(1 2)))
+    ;;  (? (tag (range 3)))
+    ;;  (? (tag (map inc (range 3))))
+
+    ;;  (!? (java.util.ArrayList. [1 2 3]))
+    ;;  (? (tag (java.util.ArrayList. [1 2 3])))
+    ;;  (? (tag-map (java.util.ArrayList. [1 2 3])))
+    ;;  (? (.isArray (.getClass (java.util.ArrayList. [1 2 3]))))
+
+
+    ;;  (!? (tag (to-array '(1 2 3 4))))
+
+     (? (tag-map (to-array '(1 2 3 4))))
+
+    ;;  (println (type (to-array '(1 2 3 4))))
+
+    ;;  (!? (.isArray (.getClass (to-array '(1 2 3 4)))))
+
+     (? (to-array '(1 2 3 4)))
+
+
+     (!? (instance? java.util.ArrayList (java.util.ArrayList. [1 2 3])))
+     (!? (instance? java.util.ArrayList [1 2 3]))))
 
 
 

@@ -76,9 +76,32 @@ Requires Clojure `1.10.3` or higher
 
 If using with Babashka, requires Babashka `v1.3.187` or higher
 
-
+<br>
 
 ### Step 1:
+
+Add as a dependency to your project:
+
+
+```clojure
+[io.github.paintparty/fireworks "0.9.0"]
+```
+
+<br>
+
+### Step 2:
+
+Import into your namespace:
+
+```clojure
+(ns myns.core
+  (:require
+    [fireworks.core :refer [? !? ?> !?>]]))
+```
+
+<br>
+
+### Step 3:
 
 Add a [system-wide config file](#system-wide-config) at `/Users/<your-home-folder>/.fireworks/config.edn` (suggested path). You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. There are a [bunch of options](#all-the-options), but at minimum you'll probably want to specify a light or dark stock theme:
 
@@ -102,7 +125,7 @@ Add a [system-wide config file](#system-wide-config) at `/Users/<your-home-folde
   }
 ```
 
-Most terminal-emulators support truecolor (16m colors). If your terminal does not, then you definately will want to set the `:legacy-terminal?` option to `true`. You can check support by pasting this into your terminal:
+Most terminal-emulators support truecolor (16m colors). If your terminal does not, then you definitely will want to set the `:legacy-terminal?` option to `true`. You can check support by pasting this into your terminal:
 
 ```
 echo -e "\033[1;38;2;255;0;0mRED\033[0m \033[1;38;2;0;255;0mGREEN\033[0m \033[1;38;2;0;0;255mBLUE\033[0m \033[1;38;2;255;255;0mYELLOW\033[0m"
@@ -112,39 +135,23 @@ If the words in the resulting output are not colored red, green, blue, and yello
 
 <br>
 
-### Step 2:
+### Step 4:
 
 Add a [system-wide environmental variable](#system-wide-config) in the right place (in your `.zshrc` or similar), to let Fireworks know where to find your config:
 
 ```Clojure
 export FIREWORKS_CONFIG="/Users/<your-home-folder>/.fireworks/config.edn"
 ```
-
 <br>
 
-### Step 3:
+### Step 5:
 
-Add as a dependency to your project:
-
-
-```clojure
-[io.github.paintparty/fireworks "0.8.1"]
-```
+Align your terminal and/or browser dev console background color with the
+Fireworks theme you are using. See
+[this section](#aligning-your-console-background-color-and-foreground-color) for
+details.
 
 <br>
-
-### Step 4:
-
-Import into your namespace:
-
-```clojure
-(ns myns.core
-  (:require
-    [fireworks.core :refer [? !? ?> !?>]]))
-```
-
-<br>
-
 <br>
 
 ## Two libraries
