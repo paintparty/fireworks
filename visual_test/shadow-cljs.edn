@@ -4,7 +4,7 @@
                 ;; Local Fireworks - uncomment if debugging Fireworks locally
                 ;; "../src/"
                 ]
- :dependencies [[io.github.paintparty/fireworks "0.8.1-SNAPSHOT"]]
+ :dependencies [[io.github.paintparty/fireworks "0.9.0-SNAPSHOT"]]
  :dev-http     {8020 "public"}
  :builds       {:app  {:target           :browser
                        :output-dir       "public/js"

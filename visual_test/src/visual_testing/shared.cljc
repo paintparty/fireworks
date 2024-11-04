@@ -2,6 +2,7 @@
  
   (:require [fireworks.config]
             [fireworks.themes]
+            [lasertag.core]
             [fireworks.core :refer [?]]))
 
 (defrecord Foo [a b])
@@ -201,7 +202,10 @@
                                         3333333}}}
      )
 
-
+  #?(:cljs
+     (? (lasertag.core/tag (array 1 2 3)))
+     :clj
+     ())
 
   nil
   )
