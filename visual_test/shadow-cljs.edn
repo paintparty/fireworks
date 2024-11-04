@@ -1,6 +1,7 @@
+;; Mostly for visual testing of -SNAPSHOT RELEASES
 ;; shadow-cljs configuration
 {:source-paths ["src/"
-                ;; Local Fireworks
+                ;; Local Fireworks - uncomment if debugging Fireworks locally
                 ;; "../src/"
                 ]
  :dependencies [[io.github.paintparty/fireworks "0.8.1-SNAPSHOT"]]

@@ -9,7 +9,7 @@
             [clojure.pprint :refer [pprint]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
-            [lasertag.core :refer [tag-map]]
+            [lasertag.core :refer [tag-map tag]]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
@@ -983,7 +983,49 @@ basic-samples
 ;; (?  basic-samples-cljc)
 (!?  #_{} basic-samples-array-map)
 (!?  #_{} basic-samples-cljc)
-(? {:coll-limit 5} (atom (with-meta (range 8) {:foo :bar})))
+(!? {:coll-limit 5} (atom (with-meta (range 8) {:foo :bar})))
+#?(:clj
+   (do 
+     (!? (instance? java.util.AbstractCollection (java.util.HashMap. {"a" 1
+                                                                      "b" 2})))
+    ;;  (? (java.lang.String. "welcome"))
+    ;;  (? "welcome")
+    ;;  (? #{"a" 1 "b" 2})                        
+
+     (!? (java.util.HashSet. #{"a" 1
+                              "b" 2}))
+     (!? (tag (java.util.HashSet. #{"a" 1
+                                   "b" 2})))
+
+     (? (java.util.HashMap. {"a" 1
+                              "b" 2}))
+    ;;  (? (tag (java.util.HashMap. {"a" 1
+    ;;                               "b" 2})))
+    ;;  (? (tag [1 2]))
+    ;;  (? (tag (list 1 2)))
+    ;;  (? (tag '(1 2)))
+    ;;  (? (tag (range 3)))
+    ;;  (? (tag (map inc (range 3))))
+
+    ;;  (!? (java.util.ArrayList. [1 2 3]))
+    ;;  (? (tag (java.util.ArrayList. [1 2 3])))
+    ;;  (? (tag-map (java.util.ArrayList. [1 2 3])))
+    ;;  (? (.isArray (.getClass (java.util.ArrayList. [1 2 3]))))
+
+
+    ;;  (!? (tag (to-array '(1 2 3 4))))
+
+     (? (tag-map (to-array '(1 2 3 4))))
+
+    ;;  (println (type (to-array '(1 2 3 4))))
+
+    ;;  (!? (.isArray (.getClass (to-array '(1 2 3 4)))))
+
+     (? (to-array '(1 2 3 4)))
+
+
+     (!? (instance? java.util.ArrayList (java.util.ArrayList. [1 2 3])))
+     (!? (instance? java.util.ArrayList [1 2 3]))))
 
 
 

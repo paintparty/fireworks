@@ -831,6 +831,7 @@
                 coll-type?]}                         
          val-props
         
+        ;; TODO - why is this named source-is-scalar?
         source-is-scalar?
         (nil? t)]
     

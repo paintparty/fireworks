@@ -4,13 +4,14 @@
    [fireworks.defs :as defs]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
-   [fireworks.pp :as pp :refer [?pp]]
    [lasertag.core :as lasertag]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [clojure.string :as string]))
 
 
+;; TODO revist how your doing this, maybe there should be a :classname entry
+;; returned from lasertag
 (def badges-by-lasertag
   {:js/Set         "js/Set"
    :js/Promise     "js/Promise"
@@ -25,11 +26,15 @@
 
 ;; Understand and doc how this works for custom types
 (defn annotation-badge
-  [{:keys [t
+  [{:keys [t 
            lamda?
            js-built-in-object?
            js-built-in-object-name
            all-tags
+           java-util-class?
+           java-lang-class?
+           coll-type?
+           classname
            :fw/custom-badge-text]
     :as m}]
   (when (map? m)
@@ -38,6 +43,16 @@
                (cond
                  (contains? all-tags :record)
                  (name t)
+
+                 ;; Interesting visualization in JVM Clojure
+                 ;; Labels everything, including primitives
+                 ;; Maybe this could be exposed in an option 
+                  #_(or java-util-class? java-lang-class?)
+                  #_classname
+
+                 (or java-util-class?
+                     (and coll-type? java-lang-class?))
+                 classname
 
                  js-built-in-object?
                  (str "js/" js-built-in-object-name)

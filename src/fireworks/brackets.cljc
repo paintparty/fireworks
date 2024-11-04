@@ -1,13 +1,18 @@
 (ns ^:dev/always fireworks.brackets
-  (:require
-   [clojure.string :as string]
-   [fireworks.defs :as defs]
-   [fireworks.state :as state]
-   [fireworks.tag :as tag :refer [tag! tag-reset! style-from-theme]]
-   [fireworks.util :refer [badge-type readable-sgr]]))
+  (:require [clojure.string :as string]
+            [fireworks.defs :as defs]
+            [fireworks.state :as state]
+            [fireworks.tag :as tag :refer [style-from-theme tag! tag-reset!]]
+            [fireworks.util :refer [badge-type]]))
 
 (defn brackets-by-type
-  [{:keys [t map-like? js-map-like? js-typed-array? :fw/user-meta-map?] :as m}]
+  [{:keys [t
+           map-like?
+           set-like?
+           js-map-like?
+           js-typed-array?
+           :fw/user-meta-map?]
+    :as m}]
   (cond 
     (or map-like?
         (contains? #{:map :js/Object :record :js/Map} t)
@@ -24,7 +29,7 @@
     (or (= :seq t) (= :list t))
     ["(" ")"]
 
-    (or (= t :set) (= t :js/Set))
+    set-like?
     ["#{" "}"]
 
     (= t :meta-map)
