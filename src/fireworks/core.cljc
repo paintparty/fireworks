@@ -173,6 +173,9 @@
           ;; TODO - is the space before the newline necessary ?
           (tag/tag-entity! " \n" :result-header))
 
+        css-count*
+        (count @state/styles)
+
         fmt           
         (when-not (or log?
                       threading?
@@ -207,7 +210,8 @@
 
      {:fmt        fmt
       :fmt+       fmt+
-      :file-info* file-info*}))
+      :file-info* file-info*
+      :css-count* css-count*}))
 
 
 (defn- margin-block-str
@@ -277,7 +281,7 @@
                  (or mll?
                      (< 44 (count (str label))))))
 
-        {:keys [fmt+ fmt file-info*]}
+        {:keys [fmt+ fmt file-info* css-count*]}
         (fmt+ (keyed [file-info-first? 
                       user-print-fn
                       threading?
@@ -301,7 +305,7 @@
         :formatted  (merge {:string fmt}
                            #?(:cljs {:css-styles (subvec
                                                   @state/styles 
-                                                  (count @state/styles))}))})
+                                                  css-count*)}))})
 
       ;; Else if print-and-return fns, return printing opts
       {:fmt           fmt+
