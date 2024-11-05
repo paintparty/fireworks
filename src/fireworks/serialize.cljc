@@ -424,21 +424,12 @@
                       (or str-len-with-badge 0))))))
 
         ;; This is where indenting for multi-line collections is determined
-        t-for-indent
-        (cond
-          user-meta-map?
-          :meta-map
-          (or record? js-map-like? map-like?)
-          :map
-          :else
-          t) 
-
         num-indent-spaces-for-t
-        (t-for-indent brackets/num-indent-spaces)
+        (if (or set-like? user-meta-map? (= t :js/Set)) 2 1)
 
         indent       
         (+ (or indent* 0)
-           (or num-indent-spaces-for-t 1))
+           num-indent-spaces-for-t)
 
         badge-above?
         (some->> badge (contains? defs/inline-badges) not)

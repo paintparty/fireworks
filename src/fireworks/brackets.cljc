@@ -43,27 +43,6 @@
         ;; :list-like? :array-like?
     ["[" "]"]))
 
-
-(def num-indent-spaces
-  (reduce (fn [acc k] 
-            (assoc acc
-                   k 
-                   (-> {:t k}
-                       brackets-by-type
-                       first
-                       count)))
-          {}
-          [:meta-map
-           :map       
-           :js/Object 
-           :js/Array  
-           :record    
-           :set       
-           :js/Set    
-           :vector    
-           :list      
-           :seq]))
-
 (defn- rainbow-bracket-color
   []
   (let [rb           (:rainbow-brackets @state/merged-theme) 
