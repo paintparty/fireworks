@@ -841,7 +841,7 @@ For theming parity between your editor and terminal emulator, this is probably n
 
 ## Printing conventions
 
-The following sections are comparisons of various default printing conventions (`clojure.pprint/pprint` vs `js/console.log` vs `fireworks.core/?`).
+The following sections are comparisons of various default printing conventions (`clojure.pprint/pprint`(or `js/console.log`) vs `fireworks.core/?`).
 
 <br>
 

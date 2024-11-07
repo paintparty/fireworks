@@ -21,7 +21,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Supports proper labelling of more Java classes such as `java.util.Hashmap`
 
 #### Changed
-- Bumps `lastertag` dep to `0.7.0`
+- Bumps `lasertag` dep to `0.7.0`
 - Internal refactoring of `fireworks.truncate`
 
 #### Removed

@@ -1028,28 +1028,18 @@ basic-samples
 
     ;;  (? {:non-coll-length-limit 50} (tag-map (transient [1 2 3 4])))
      
-     #_(? (transient [1 2 3 4]))
-
-     #_(let [x (transient #{:a 1
-                          :b 2
-                          :c 3
-                          :d 4
-                          :e 5
-                          :f 6
-                          :g 7
-                          :h 8
-                          :i 9
-                          :j 10 })]
-       (? {:coll-limit 7} x)
-       (conj! x 11))
-
+    ;;  (? (transient [1 2 3 4]))
+     
+    ;;  (let [x (transient #{:a 1})]
+    ;;    (? x)
+    ;;    (conj! x 11))
+     
     ;;  (? (lasertag.core/tag-map 1))
      
     ;;  (? (transient (into [] (range 333))))
      
     ;;  (? (atom (into [] (range 33))))
      
-    ;;  (? (to-array '(1 2 3 4 5 6 7 8 9 0)))
      
     ;;  (? (tag-map (transient [1 2 3 4])))
     ;;  (? (transient (into #{} (range 100))))
@@ -1078,25 +1068,35 @@ basic-samples
     ;;                       17  18
     ;;                       191 20
     ;;                       21  22})))
-     ))
-
-;; #?(:clj
-;;    (do 
+     
 ;;      (!? (instance? java.util.AbstractCollection (java.util.HashMap. {"a" 1
 ;;                                                                       "b" 2})))
-;;     ;;  (? (java.lang.String. "welcome"))
+    ;;  (? (java.lang.String. "welcome"))
 ;;     ;;  (? "welcome")
 ;;     ;;  (? #{"a" 1 "b" 2})                        
+     
 
-
-    ;;  (? (java.util.HashSet. #{"a" 1
-    ;;                           "b" 2}))
-
+     
 ;;      (!? (tag (java.util.HashSet. #{"a" 1
 ;;                                    "b" 2})))
+     
 
-    ;;  (? (java.util.HashMap. {"a" 1
-    ;;                           "b" 2}))
+     
+
+    ;;  (? [1 2 3 4 5 6 7])
+    ;;  (? :result 
+    ;;     [(to-array '(1 2 3 4 5))
+    ;;      (java.util.HashSet. #{"a" "b" "c" "d" "e"})
+    ;;      (java.util.ArrayList. [1 2 3 4 5 6 7])
+    ;;      (java.util.HashMap. {"a" 1 "b" 2 "c" 3})])
+    ;;  (println "\n\n")
+    ;;  (pprint [(to-array '(1 2 3 4 5))
+    ;;           (java.util.HashSet. #{"a" "b" "c" "d" "e"})
+    ;;           (java.util.ArrayList. [1 2 3 4 5])
+    ;;           (java.util.HashMap. {"a" 1 "b" 2 "c" 3})]
+    ;;          #_{:max-width 20})
+    ;;  (println "\n\n")
+
 ;;     ;;  (? (tag (java.util.HashMap. {"a" 1
 ;;     ;;                               "b" 2})))
 ;;     ;;  (? (tag [1 2]))
@@ -1104,27 +1104,30 @@ basic-samples
 ;;     ;;  (? (tag '(1 2)))
 ;;     ;;  (? (tag (range 3)))
 ;;     ;;  (? (tag (map inc (range 3))))
-
-    ;;  (? (java.util.ArrayList. [1 2 3]))
+     
 ;;     ;;  (? (tag (java.util.ArrayList. [1 2 3])))
 ;;     ;;  (? (tag-map (java.util.ArrayList. [1 2 3])))
 ;;     ;;  (? (.isArray (.getClass (java.util.ArrayList. [1 2 3]))))
-
+     
       ;;  (? {:non-coll-length-limit 50} (tag-map (transient [1 2 3])))
-
+     
 ;;     ;;  (!? (tag (to-array '(1 2 3 4))))
-
+     
 ;;      (? (tag-map (to-array '(1 2 3 4))))
-
+     
 ;;     ;;  (println (type (to-array '(1 2 3 4))))
-
+     
 ;;     ;;  (!? (.isArray (.getClass (to-array '(1 2 3 4)))))
-
+     
 ;;      (? (to-array '(1 2 3 4)))
-
+     
 
 ;;      (!? (instance? java.util.ArrayList (java.util.ArrayList. [1 2 3])))
-;;      (!? (instance? java.util.ArrayList [1 2 3]))))
+;;      (!? (instance? java.util.ArrayList [1 2 3]))
+     ))
+
+;; #?(:clj
+;;    )
 
 
 
