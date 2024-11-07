@@ -18,7 +18,6 @@
             [fireworks.util :as util]))
 
 ;; Internal state atoms for development debugging ------------------------
-
 (def debug-config? false)
 (def print-config? false)
 

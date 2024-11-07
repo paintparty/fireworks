@@ -3,7 +3,7 @@
   (:require [fireworks.config]
             [fireworks.themes]
             [lasertag.core]
-            [fireworks.core :refer [?]]))
+            [fireworks.core :refer [? pprint]]))
 
 (defrecord Foo [a b])
 
@@ -16,7 +16,7 @@
   ;;  :symbol          (with-meta 'mysym {:foo :bar})
    :symbol        {:foo :bar}
    :boolean       true
-   :lamda         #(inc %)
+   :lambda         #(inc %)
    :fn            juxt
    :regex         #"^hi$"
    :record        record-sample
@@ -47,7 +47,7 @@
 
                                     :bar "fooz"})
              :boolean            true
-             :lamda              #(inc %)
+             :lambda              #(inc %)
              :fn                 juxt
              :regex              #"^hi$"
              :record             record-sample
@@ -80,7 +80,6 @@
                                    3333333}}})
 
 (defn test-suite []
-  (? {:coll-limit 30} basic-samples-cljc)
   (? foo)
   (? :default foo)
   (? {:theme "Alabaster Light"
@@ -126,7 +125,7 @@
 
   (println "\n:single-line-coll-length-limit of 50")
   (? {:single-line-coll-length-limit 50} (range 20))
-  
+
   (? {:label                        "my-label"
       :enable-terminal-truecolor?   true
       :enable-terminal-italics?     true
@@ -169,7 +168,7 @@
 
                                          :bar "fooz"})
                   :boolean            true
-                  :lamda              #(inc %)
+                  :lambda              #(inc %)
                   :fn                 juxt
                   :regex              #"^hi$"
                   :record             record-sample
@@ -202,14 +201,167 @@
                                         3333333}}}
      )
 
-  #?(:cljs
-     (? (lasertag.core/tag (array 1 2 3)))
+  
+  (println "\n:Volatile, record")
+  (? {:label                      "my-label"
+      :enable-terminal-truecolor? true
+      :enable-terminal-italics?   true
+      :bracket-contrast           "high"}
+     (volatile! record-sample))
+
+  (println "\n:Transient Array")
+  (let [x (transient [1 2 3 4 5 6 7 8 9 0])]
+    (? {:coll-limit                 7
+        :label                      "my-label"
+        :enable-terminal-truecolor? true
+        :enable-terminal-italics?   true
+        :bracket-contrast           "high"}
+       x)
+    (conj! x 5)) 
+
+  (println "\n:Transient Map")
+  (let [x (transient {:a 1
+                      :b 2
+                      :c 3
+                      :d 4
+                      :e 5
+                      :f 6
+                      :g 7
+                      :h 8
+                      :i 9
+                      :j 10 })]
+    (? {:coll-limit 7} x)
+    (assoc! x :k 11))
+
+  (println "\n:Transient Set")
+  (let [x (transient #{1 2 3 4 5 6 7 8 9 0})]
+    (? {:label "Transient Set" :coll-limit 7} x)
+    (conj! x 11))
+  nil)
+
+
+
+;; For trying stuff out
+#_(defn test-suite []
+
+  (? {:label                        "my-label"
+      :enable-terminal-truecolor?   true
+      :enable-terminal-italics?     true
+      :bracket-contrast             "high"
+      :custom-printers              {}
+      :coll-limit                   20
+      :non-coll-length-limit        (-> fireworks.config/options
+                                        :non-coll-length-limit
+                                        :default)
+      :display-namespaces?          (-> fireworks.config/options
+                                        :display-namespaces?
+                                        :default)
+      :metadata-position            (-> fireworks.config/options
+                                        :metadata-position
+                                        :default)
+      :metadata-print-level         (-> fireworks.config/options
+                                        :metadata-print-level
+                                        :default)
+      :non-coll-mapkey-length-limit (-> fireworks.config/options
+                                        :non-coll-mapkey-length-limit
+                                        :default)} basic-samples-cljc)
+  ;; (println "v")
+  ;; (pprint (? :data (volatile! record-sample)))
+  
+ #_#?(:cljs
+     (do 
+      ;;  (println "atom")
+      ;;  (pprint (:formatted (? :data (atom record-sample))))
+      ;;  (? (atom record-sample))
+       
+      ;;  (println "\n\n")
+       
+      ;;  (println "Volatile")
+       (pprint (:formatted (? :data 
+                              {:label                      "my-label"
+                               :enable-terminal-truecolor? true
+                               :enable-terminal-italics?   true
+                               :bracket-contrast           "high"}
+                              (volatile! record-sample))))
+      ;;  (? (volatile! record-sample))
+      ;;  (? (lasertag.core/js-object-instance (transient [1 2 3 4])))
+       #_(let [x (transient [1 2 3 4 5 6 7 8 9 0])]
+         (? {:coll-limit                 7
+             :label                      "my-label"
+             :enable-terminal-truecolor? true
+             :enable-terminal-italics?   true
+             :bracket-contrast           "high"}
+          x)
+         #_(pprint (? :data {:coll-limit                 7
+                           :label                      "my-label"
+                           :enable-terminal-truecolor? true
+                           :enable-terminal-italics?   true
+                           :bracket-contrast           "high"}
+                    x))
+         (conj! x 5))
+       
+      ;;  (let [x (transient #{1 2 3 4 5 6 7 8 9 0})]
+      ;;    (? "Transient set" {:coll-limit 7} x)
+      ;;    (conj! x 11))
+       
+       #_(? {})
+
+       #_(let [x (transient {:a 1
+                             :b 2
+                             :c 3
+                             :d 4
+                             :e 5
+                             :f 6
+                             :g 7
+                             :h 8
+                             :i 9
+                             :j 10 })]
+           (? {:coll-limit 7} x)
+           (assoc! x :k 11))
+       
+       #_(? (volatile! record-sample))
+
+       #_(let [x (transient #{:a 1
+                            :b 2
+                            :c 3
+                            :d 4
+                            :e 5
+                            :f 6
+                            :g 7
+                            :h 8
+                            :i 9
+                            :j 10 })]
+         (? {:coll-limit 7} x)
+         (conj! x 11))
+       
+       #_(? (transient {:a 1
+                        :b 2
+                        :c 3
+                        :d 4
+                        :e 5
+                        :f 6
+                        :g 7
+                        :h 8
+                        :i 9
+                        :j 10}))
+      ;;  (? (lasertag.core/tag-map 1))
+      ;;  (js/console.log lasertag.cljs-interop/js-built-in-objects-by-object-map)
+      ;;  (js/console.log lasertag.cljs-interop/js-built-ins-by-category)
+       
+      ;;  (? (lasertag.core/js-object-instance 1))
+       
+      ;;  (? (transient [1 2 3 4]))
+      ;;  (? (type (transient #{1 2 3 4})))
+      ;;  (? (type (transient {1 2 3 4})))
+      ;;  (? (type (transient {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 191 20 21 22})))
+      ;;  (? (type (transient {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 191 20 21 22})))
+       
+      ;;  (? (atom record-sample))
+       )
      :clj
-     ())
+     nil)
 
-  nil
-  )
-
+  nil)
 
 
 

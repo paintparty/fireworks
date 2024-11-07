@@ -1,13 +1,14 @@
 (ns ^:dev/always fireworks.profile
   (:require
-   [clojure.set :as set]
    [fireworks.defs :as defs]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
-   [lasertag.core :as lasertag]
+   [fireworks.util :as util]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
-   [clojure.string :as string]))
+   [clojure.string :as string])
+  #?(:clj
+     (:import (clojure.lang PersistentVector))))
 
 
 ;; TODO revist how your doing this, maybe there should be a :classname entry
@@ -18,7 +19,8 @@
    :js/Iterator    defs/js-literal-badge
    :js/Object      defs/js-literal-badge
    :js/Array       defs/js-literal-badge
-   :lamda          defs/lamda-symbol
+   :lambda          defs/lambda-symbol
+   :transient      defs/transient-label
    :uuid           defs/uuid-badge
    :js/Date        defs/inst-badge
    :java.util.Date defs/inst-badge})
@@ -27,18 +29,24 @@
 ;; Understand and doc how this works for custom types
 (defn annotation-badge
   [{:keys [t 
-           lamda?
+           lambda?
            js-built-in-object?
            js-built-in-object-name
            all-tags
            java-util-class?
            java-lang-class?
            coll-type?
+           transient?
            classname
            :fw/custom-badge-text]
     :as m}]
   (when (map? m)
-   (let [t (if lamda? :lamda t)
+   (let [t (cond lambda?
+                 :lambda
+                 transient?
+                 :transient
+                 :else
+                 t)
          b (or custom-badge-text
                (cond
                  (contains? all-tags :record)
@@ -47,8 +55,8 @@
                  ;; Interesting visualization in JVM Clojure
                  ;; Labels everything, including primitives
                  ;; Maybe this could be exposed in an option 
-                  #_(or java-util-class? java-lang-class?)
-                  #_classname
+                 #_(or java-util-class? java-lang-class?)
+                 #_classname
 
                  (or java-util-class?
                      (and coll-type? java-lang-class?))
@@ -62,6 +70,12 @@
                           (contains? all-tags :js/TypedArray)))
                  (or (t badges-by-lasertag)
                      (subs (str t) 1))
+                 
+                 transient?
+                 (or (some->> #?(:cljs #"/" :clj #"\$")
+                              (string/split classname)
+                              last)
+                     defs/transient-label)
 
                  :else
                  (get badges-by-lasertag t nil)))
@@ -90,54 +104,66 @@
       (some (partial highlighting* x) hl))))
 
 
-(defn- str-len-with-badge
-  [badge atom? x]
-  (let [extra-str-from-custom-badges
-        (when (coll? x)
-          (reduce (fn [acc el]
-                    (if-not (-> el :fw/truncated)
-                      (+ acc (or (-> el
-                                     meta
-                                     :fw/custom-badge-text
-                                     count)
-                                 0))
-                      acc))
-                  0
-                  x))
+(defn- extra-str-from-custom-badges [x]
+  (when (coll? x)
+    (reduce (fn [acc el]
+              (if-not (-> el :fw/truncated)
+                (+ acc (or (-> el
+                               meta
+                               :fw/custom-badge-text
+                               count)
+                           0))
+                acc))
+            0
+            x)))
 
-        badge-len
+;; TODO - double check accuracy of this
+;; It seems this value is still used in fireworks.serialize/reduce-coll-profile
+;; To determine if coll should be printed multi-line?
+(defn- str-len-with-badge
+  [badge val-is-atom? x]
+  (let [badge-len
         (or (some-> badge :badge count) 0)
 
         val-len
         (or (-> x str count) 0)
 
+        ;; This currently only checks encapsulation-closing-bracket-len,
+        ;; maybe don't need this.
         encapsulation-closing-bracket-len
-        (or (when atom? 
+        (or (when val-is-atom? 
               (count defs/encapsulation-closing-bracket))
-            0)
-        extra-str-from-custom-badges-len
-        (or extra-str-from-custom-badges 0)]
+            0)]
 
-    #_(when-not @state/formatting-form-to-be-evaled?
-      (?pp
-       (keyed [badge-len
-               x
-               val-len
-               encapsulation-closing-bracket-len
-               extra-str-from-custom-badges-len ])))
+    ;; (when-not @state/formatting-form-to-be-evaled?
+    ;;   (?pp
+    ;;    (keyed [badge-len
+    ;;            x
+    ;;            val-len
+    ;;            encapsulation-closing-bracket-len
+    ;;            extra-str-from-custom-badges-len ])))
 
     (+ badge-len
        val-len
-       encapsulation-closing-bracket-len
-       extra-str-from-custom-badges-len)))
+       ;; Not currenlty supporting custom-badges, so leave commented
+       #_(or (extra-str-from-custom-badges x) 0)
+       encapsulation-closing-bracket-len)))
 
+(defn- mutable-wrapper-count
+  [{:keys [val-is-atom? val-is-volatile?]}]
+  (cond val-is-atom?
+        defs/atom-wrap-count
+        val-is-volatile?
+        defs/volatile-wrap-count
+        :else
+        0))
 
 (defn maybe-ellipsize
   "Attaches badge and ellipsis, when appropriate.
 
    Wraps atoms and volatiles.
 
-   Adds :strlen-with-badge entry to meta, to be used for formatting in
+   Adds :strlen-with-badge2 entry to meta, to be used for formatting in
    fireworks.serialize/serialized."
    
   [{:keys [coll-type? ellipsized x t meta-map] :as m}]
@@ -169,9 +195,6 @@
               (let [badge-count
                     (or (some-> meta-map :badge count) 0)
 
-                    atom-wrap-count
-                    (or (when (some-> meta-map :atom?) defs/atom-wrap-count) 0)
-
                     ellipsized-char-count
                     (or (some-> ellipsized :ellipsized-char-count) 0)
 
@@ -181,7 +204,7 @@
                     ;; TODO - Do we still need str-len-with-badge2
                     str-len-with-badge2
                     (+ badge-count
-                       atom-wrap-count
+                       (mutable-wrapper-count meta-map)
                        ellipsized-char-count
                        ellipsis-char-count)
 
@@ -192,7 +215,7 @@
                     ;;                  atom-wrap-count
                     ;;                  ellipsized-char-count
                     ;;                  str-len-with-badge2])))
-
+                    
                     meta-map            
                     (assoc meta-map
                            :str-len-with-badge2
@@ -237,17 +260,31 @@
               els-with-meta))))))
 
 
+(def ^:private meta-map-mapentry-vector
+  "Performance cheat to save a call to util-tag-map*"
+  {:type          #?(:cljs cljs.core/PersistentVector
+                     :clj clojure.lang.PersistentVector) 
+   :all-tags      #{:coll :vector :coll-type :carries-meta}
+   :classname     #?(:cljs "cljs.core/PersistentVector"
+                     :clj "clojure.lang.PersistentVector")
+   :coll-size     2
+   :t             :vector
+   :carries-meta? true
+   :coll-type?    true})
+
 (defn meta-map*
   [x mapkey]
   (let [mm (meta x)]
    (if (:fw/pre-profiled-mapkey mm)
      mm
-     (let [{:keys [og-x atom?]
-            :as fw-truncated-meta}  (or (some-> x meta :fw/truncated)
-                                        ;; only for map-entries (kvs)
-                                        (-> x
-                                            lasertag/tag-map
-                                            (set/rename-keys {:tag :t})))
+     (let [{:keys [og-x val-is-atom?]
+            :as fw-truncated-meta}  (or (:fw/truncated mm)
+                                        ;;  TODO - describe why it is necessary
+                                        ;; to provide this map here
+                                        meta-map-mapentry-vector
+                                        #_(do
+                                          (println "mm" (util/tag-map* x))
+                                          (util/tag-map* x)))
            ret   (merge 
                   fw-truncated-meta
                   {:x    (or (:x fw-truncated-meta) x)
@@ -261,18 +298,16 @@
                   ;; TODO - after getting custom printing working
                   ;; refactor this :fw/type-after-custom-printing
                   ;; into select-keys vec and use rename-keys
-                  (some->> x
-                           meta
+                  (some->> mm
                            :fw/type-after-custom-printing 
                            (hash-map :t))
-                  (some-> x
-                          meta
+                  (some-> mm
                           (select-keys [:fw/custom-badge-style
                                         :fw/custom-badge-text
                                         :fw/user-meta
                                         :fw/user-meta-map?])))
 
-            ;; TODO - make dedicated badge fn?
+           ;; TODO - make dedicated badge fn?
            badge (annotation-badge ret)
            ret   (let [some-colls-as-keys?                  
                        (some-colls-as-keys? x)
@@ -293,8 +328,17 @@
                           (keyed [some-colls-as-keys?
                                   some-syms-carrying-metadata-as-keys?
                                   single-column-map-layout?])
+
+                          ;; TODO - Currently, str-len-with-badge is only used
+                          ;; in fireworks.serialize/reduce-coll-profile to
+                          ;; determine if collection should be multiline.
+
+                          ;; Maybe it can be left out here and just called
+                          ;; inline at fireworks.serialize/reduce-coll-profile,
+                          ;; only if needed.
+
                           {:str-len-with-badge            
-                           (str-len-with-badge badge atom? x)
+                           (str-len-with-badge badge val-is-atom? x)
                            
                            :some-elements-carry-user-metadata?
                            (some-elements-carry-user-metadata? x)}))]
@@ -325,7 +369,7 @@
 
 (defn profile
   "Enriches value's metadata map by merging it with :fw/truncated entry and
-   adding addtional entries to such as:
+   adding additional entries to such as:
 
    :some-colls-as-keys?                 
    :str-len-with-badge2                 
@@ -374,7 +418,8 @@
      :t                                    :seq,
      :x                                    '(0 1 2 3 4 5 6 7),
      :js-typed-array?                      false,
-     :atom?                                false,
+     :val-is-atom?                         false,
+     :val-is-volatile?                     false,
      :number-type?                         false,
      :js-map-like?                         false}
   [^{...}
@@ -407,11 +452,10 @@
                   ellipsized
                   (when (contains? (:all-tags meta-map*) :record)
                     {:record? true})
-                  (when key? {:key? true})
+                  (when key? {:key? true :fw/pre-profiled-mapkey true})
                   (when associated-value {:associated-value associated-value})
                   (when js-map-like-key? {:js-map-like-key? true})
-                  (when key? {:fw/pre-profiled-mapkey true})
-                  (when index {:index index}) )
+                  (when index {:index index}))
 
            x
            (re-profile x meta-map profile)
@@ -419,6 +463,7 @@
            {:keys [coll-type? t]}
            meta-map
 
+           ;; this adds more stuff to the meta-map
            ret
            (maybe-ellipsize (keyed [coll-type? ellipsized x t meta-map]))]
        ret))))

@@ -74,8 +74,10 @@
    :function-args         :bracket
    :literal-label         :label
    :type-label            :label
-   :lamda-label           :label
+   :lambda-label           :label
+   :mutable-wrapper       :label
    :atom-wrapper          :label
+   :volatile-wrapper      :label
    :metadata              :metadata
    :metadata2             :metadata2
    :metadata-key          :metadata
@@ -155,16 +157,26 @@
 
 (def volatile-label "Volatile")
 
+(def transient-label "Transient")
+
 (def encapsulation-opening-bracket "<")
 
 (def encapsulation-closing-bracket ">")
 
-(def atom-wrap-count
-  (count (str atom-label
-              encapsulation-opening-bracket
-              encapsulation-closing-bracket)))
+(defn- mutable-wrap-count
+  "Counts the label plus opening and closing encapsulation brackets.
+   Example:
+   (mutable-wrap-count \"Atom\") ; => 6"
+  [s]
+  (count (str s encapsulation-opening-bracket encapsulation-closing-bracket)))
 
-(def lamda-symbol "λ")
+(def atom-wrap-count
+  (mutable-wrap-count atom-label))
+
+(def volatile-wrap-count
+  (mutable-wrap-count volatile-label))
+
+(def lambda-symbol "λ")
 
 (def js-literal-badge "#js ")
 
@@ -180,4 +192,4 @@
 (def js-map-arrow "->")
 
 (def inline-badges
-  #{js-literal-badge inst-badge uuid-badge lamda-symbol})
+  #{js-literal-badge inst-badge uuid-badge lambda-symbol})

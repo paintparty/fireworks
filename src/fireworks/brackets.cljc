@@ -35,34 +35,13 @@
     (= t :meta-map)
     ["^{" "}"]
 
-    (or (= :function t) (= :lamda t))
+    (or (= :function t) (= :lambda t))
     ["" ""]
     :else
         ;; This should probably be ["" ""]
         ;; We need more granularity from lasertag first
         ;; :list-like? :array-like?
     ["[" "]"]))
-
-
-(def num-indent-spaces
-  (reduce (fn [acc k] 
-            (assoc acc
-                   k 
-                   (-> {:t k}
-                       brackets-by-type
-                       first
-                       count)))
-          {}
-          [:meta-map
-           :map       
-           :js/Object 
-           :js/Array  
-           :record    
-           :set       
-           :js/Set    
-           :vector    
-           :list      
-           :seq]))
 
 (defn- rainbow-bracket-color
   []
@@ -213,12 +192,15 @@
     ob))
 
 (defn closing-angle-bracket! 
-  "This is for when collections are also like atoms,
-   so they can be printed like `Atom<[1 2 3]>`"
+  "This is for when collections are encapsulated in a mutable construct such as
+   an atom or volatile, so they can be printed like `Atom<[1 2 3]>`"
   [m]
-  (when (-> m :coll meta :atom?)
-    (when (state/debug-tagging?)
-      (println "\ntagging " defs/encapsulation-closing-bracket " with " :atom-wrapper))
-    (str (tag! :atom-wrapper)
-         defs/encapsulation-closing-bracket
-         (tag-reset!))))
+  ;; TODO - change names to avoid shadowing
+  (let [{:keys [val-is-atom? val-is-volatile?]} (-> m :coll meta)]
+    (when (or val-is-atom? val-is-volatile?)
+      (let [k (if val-is-atom? :atom-wrapper :volatile-wrapper)]
+        (when (state/debug-tagging?)
+          (println "\ntagging " defs/encapsulation-closing-bracket " with " k))
+        (str (tag! k)
+             defs/encapsulation-closing-bracket
+             (tag-reset!))))))

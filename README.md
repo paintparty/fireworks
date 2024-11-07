@@ -748,13 +748,13 @@ The simplest way to make a theme is to just start experimenting within any names
 
 ;; And then just try it out with some kind of sample value like this:
 (? {:theme my-theme}
-   {:string-sample  "string"
-    :number-sample  1234
-    :boolean-sample true
-    :lamda-sample   #(inc %)
-    :fn-sample      juxt
-    :regex-sample   #"^hi$"
-    :symbol-sample  'mysym})
+   {:string-sample   "string"
+    :number-sample   1234
+    :boolean-sample  true
+    :labmda-sample   #(inc %)
+    :fn-sample       juxt
+    :regex-sample    #"^hi$"
+    :symbol-sample   'mysym})
 ```
 
 Tweak the colors to your liking, save the theme as an `.edn` file somewhere on your computer, then set that path as the value of the `:theme` entry in your `.edn` config.

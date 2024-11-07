@@ -3,7 +3,6 @@
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
    [fireworks.truncate :as truncate]
-   [fireworks.pp :refer [?pp !?pp]]
    [fireworks.brackets
     :as brackets
     :refer [closing-bracket! 
@@ -79,7 +78,6 @@
            t
            key?
            sev?
-           atom?
            badge
            indent
            fn-args
@@ -87,10 +85,12 @@
            separator
            max-keylen
            multi-line?
+           val-is-atom?
            number-type?
            highlighting
            :fw/user-meta
            fn-display-name
+           val-is-volatile?
            js-map-like-key?
            num-chars-dropped
            str-len-with-badge
@@ -99,6 +99,12 @@
     :as m}]
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
+
+        mutable-tagging-opts
+        (when (or val-is-atom? val-is-volatile?)
+          {:theme-token  (if val-is-atom? :atom-wrapper :volatile-wrapper)
+           :display?     true
+           :highlighting highlighting})
 
         ;; State mutation start  ---------------------------------------------
         
@@ -133,11 +139,9 @@
                                spaces))))
 
         atom-tagged
-        (tagged (str defs/atom-label
-                     defs/encapsulation-opening-bracket) 
-                {:theme-token  :atom-wrapper
-                 :display?     atom?
-                 :highlighting highlighting})
+        (some->> mutable-tagging-opts
+                 (tagged (str (if val-is-volatile? defs/volatile-label defs/atom-label)
+                              defs/encapsulation-opening-bracket)))
 
         badge-tagged
         (tagged badge
@@ -145,8 +149,8 @@
                  :theme-token        (cond
                                        (pos? (state/formatting-meta-level))
                                        (state/metadata-token)
-                                       (= badge defs/lamda-symbol) 
-                                       :lamda-label 
+                                       (= badge defs/lambda-symbol) 
+                                       :lambda-label 
                                        :else
                                        :literal-label)})
 
@@ -170,7 +174,6 @@
                 (if l2? :metadata2 :metadata)))
             theme-tag))
 
-
         _ 
         (when (state/debug-tagging?)
             (println "\nsev!   tagging " s " with " theme-tag))
@@ -192,10 +195,9 @@
         (tagged fn-args {:theme-token :function-args})
 
         atom-closing-bracket-tagged
-        (tagged defs/encapsulation-closing-bracket
-                {:theme-token  :atom-wrapper 
-                 :display?     atom?
-                 :highlighting highlighting})
+
+        (some->> mutable-tagging-opts 
+                 (tagged defs/encapsulation-closing-bracket))
 
         user-meta-inline-tagged
         (when (sev-user-meta-position-match? user-meta :inline)
@@ -203,13 +205,15 @@
           (let [offset        defs/metadata-position-inline-offset
                 inline-offset (tagged (spaces (dec offset))
                                       {:theme-token (state/metadata-token)})
-                ret           (formatted* user-meta
-                                          {:indent     (+ indent
-                                                          offset
-                                                          (or str-len-with-badge
-                                                              0))
-                                           :user-meta? true})]
+                ret           (formatted*
+                               user-meta
+                               {:indent     (+ indent
+                                               offset
+                                               (or ellipsized-char-count 0))
+                                :user-meta? true})]
             (swap! state/*formatting-meta-level dec)
+            ;; TODO - figure out how to create left arrow char with foreground
+            ;; color of metadata background.
             (str " " inline-offset ret)))
 
         ;; Atom mutation end  ------------------------------------------------
@@ -380,7 +384,6 @@
        seq
        boolean))
 
-
 (defn- reduce-coll-profile
   [coll indent*]
   (let [{:keys [some-elements-carry-user-metadata?  
@@ -388,15 +391,16 @@
                 :fw/custom-badge-style
                 str-len-with-badge
                 :fw/user-meta-map?
+                val-is-volatile?
                 :fw/user-meta
-                js-map-like?
-                num-dropped         
+                js-map-like?         
+                val-is-atom?
+                num-dropped
                 too-deep?
-                map-like?
+                set-like?
                 record?
                 badge
                 depth
-                atom?
                 t]
          :as   meta-map}
         (meta coll)
@@ -424,21 +428,12 @@
                       (or str-len-with-badge 0))))))
 
         ;; This is where indenting for multi-line collections is determined
-        t-for-indent
-        (cond
-          user-meta-map?
-          :meta-map
-          (or record? js-map-like? map-like?)
-          :map
-          :else
-          t) 
-
         num-indent-spaces-for-t
-        (t-for-indent brackets/num-indent-spaces)
+        (if (or set-like? user-meta-map? (= t :js/Set)) 2 1)
 
         indent       
         (+ (or indent* 0)
-           (or num-indent-spaces-for-t 1))
+           num-indent-spaces-for-t)
 
         badge-above?
         (some->> badge (contains? defs/inline-badges) not)
@@ -458,8 +453,10 @@
             indent)
 
         ;; Add support for volatile! encapsulation
-        indent (if (and atom? (not badge-above?))
-                 (+ (or (count (str defs/atom-label
+        indent (if (and (or val-is-atom? val-is-volatile?) (not badge-above?))
+                 (+ (or (count (str (if val-is-atom?
+                                      defs/atom-label
+                                      defs/volatile-label)
                                     defs/encapsulation-opening-bracket))
                         0)
                     indent)
@@ -494,17 +491,18 @@
                 annotation-newline 
                 metadata-position
                 user-meta-above?
+                val-is-volatile?
                 let-bindings?
+                val-is-atom?   
                 num-dropped
-                multi-line?   
+                multi-line?
                 coll-count
                 separator
                 user-meta
                 too-deep?
                 record?
                 indent
-                badge
-                atom?])]
+                badge])]
       ret))
 
 
@@ -523,7 +521,7 @@
 (defn- user-meta-inline
   [{:keys [user-meta
            metadata-position
-           atom-opening-encapsulation
+           mutable-opening-encapsulation
            badge
            coll
            indent*]}]
@@ -539,7 +537,7 @@
                           {:user-meta?
                            true
                            :indent 
-                           (let [ob (str atom-opening-encapsulation
+                           (let [ob (str mutable-opening-encapsulation
                                          badge
                                          (some-> coll
                                                  meta
@@ -554,22 +552,24 @@
 
 (defn- profile+ob
   [coll indent*]
-  (let [{:keys [atom?
-                badge
+  (let [{:keys [badge
                 record?
                 user-meta
                 separator
+                val-is-atom?
                 let-bindings?
+                val-is-volatile?
                 annotation-newline
                 custom-badge-style]
          :as m} 
         (reduce-coll-profile coll indent*)
-        ;; Atom-wrapper opening made here
-        atom-opening-encapsulation
-        (when atom? 
-          (tagged (str defs/atom-label
+
+        ;; Mutable-wrapper opening made here
+        mutable-opening-encapsulation
+        (when (or val-is-atom? val-is-volatile?) 
+          (tagged (str (if val-is-atom? defs/atom-label defs/volatile-label)
                        defs/encapsulation-opening-bracket) 
-                  {:theme-token :atom-wrapper}))
+                  {:theme-token (if val-is-atom? :atom-wrapper :volatile-wrapper)}))
 
         ;; Block-level badges for colls (display above coll) are made here
         badge               
@@ -589,7 +589,7 @@
         (user-meta-block indent* metadata-position m)
 
         ob* 
-        (str atom-opening-encapsulation
+        (str mutable-opening-encapsulation
              badge
              (some-> user-meta-block (str (when badge " ")))
              annotation-newline
@@ -598,7 +598,7 @@
                (tagged "#" {:theme-token :max-print-level-label})))
         
         user-meta-inline
-        (user-meta-inline (keyed [atom-opening-encapsulation
+        (user-meta-inline (keyed [mutable-opening-encapsulation
                                   metadata-position
                                   user-meta
                                   indent*
@@ -822,7 +822,8 @@
            indent
            multi-line?
            separator
-           max-keylen]}]
+           max-keylen]
+    :as m}]
   (let [t                          
         (or t (:t val-props))
 
@@ -876,20 +877,23 @@
    ;; Just for debugging
    ;;  #?(:cljs (js/console.clear))
    
-   (let [truncated      (truncate/truncate {:depth      0
-                                            :user-meta? user-meta?}
-                                           source)
-         custom-printed truncated
+   (let [truncated  (truncate/truncate {:depth      0
+                                        :user-meta? user-meta?}
+                                       source)
+        ;;  custom-printed truncated
          ;; TODO - revisit this custom printing stuff
          ;; custom-printed (if (:evaled-form? opts)
          ;;                  truncated
          ;;                  (walk/postwalk printers/custom truncated))
-         profiled       (walk/prewalk profile/profile custom-printed)
-         serialized     (serialized profiled indent)
-         len            (-> profiled meta :str-len-with-badge)
+         profiled   (walk/prewalk profile/profile truncated)
+         serialized (serialized profiled indent)
+        ;;  len            (-> profiled meta :str-len-with-badge)
          ]
 
     ;; Just for debugging
+    ;;  (when (:coll-type? (meta profiled))
+    ;;      (?pp (meta profiled)))
+    ;; (?pp (meta profiled))
     ;;  (?pp (map 
     ;;        (fn [a b]
     ;;          [a b])

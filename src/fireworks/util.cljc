@@ -1,18 +1,20 @@
 (ns fireworks.util
   (:require [clojure.string :as string]
-            [fireworks.defs :as defs]))
+            [fireworks.defs :as defs]
+            [clojure.set :as set]
+            [lasertag.core :as lasertag]))
 
 (defn spaces [n] (string/join (repeat n " ")))
 
 (defn badge-type
   "Derived badge type keyword, based on input string.\n
    (badge-type \"#js \") => :literal-label\n
-   (badge-type \"λ\") => :lamda-label\n
+   (badge-type \"λ\") => :lambda-label\n
    (badge-type \"SomeOtherTypeOrClass\") => :type-label"
   [s]
   (cond
     (contains? defs/inline-badges s) :literal-label 
-    (= s defs/lamda-symbol)          :lamda-label
+    (= s defs/lambda-symbol)          :lambda-label
     :else                            :type-label))
 
 (defrecord Wrapper [x])
@@ -135,3 +137,26 @@
           (contains? pred x)
           (pred x))
     x))
+
+(defn tag-map*
+  ([x]
+   (tag-map* x nil))
+  ([x opts]
+   (let [{:keys [all-tags]
+          :as   tag-map}
+         (-> x
+             (lasertag/tag-map opts)
+             (set/rename-keys {:tag :t}))]
+     (merge 
+      tag-map
+      (when (contains? all-tags :carries-meta) {:carries-meta? true})
+      (when (contains? all-tags :coll-type) {:coll-type? true})
+      (when (contains? all-tags :map-like) {:map-like? true})
+      (when (contains? all-tags :set-like) {:set-like? true})
+      (when (contains? all-tags :transient) {:transient? true})
+      (when (contains? all-tags :number-type) {:number-type? true})
+      (when (contains? all-tags :java-lang-class) {:java-lang-class? true})
+      (when (contains? all-tags :java-util-class) {:java-util-class? true})
+      #?(:cljs (merge (when (object? x) {:js-object? true})
+                      (when (array? x) {:js-array? true})))))))
+
