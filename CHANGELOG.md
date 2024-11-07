@@ -5,6 +5,17 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 <br>
 
+## 0.10.0
+#### Added
+- Support for labeling and printing volatiles
+- Support for labeling and printing transient data structures
+
+#### Breaking changes
+- Rename `:lamda-label` to `:lambda-label` in theme syntax
+
+<br>
+<br>
+
 ## 0.9.0
 #### Added
 - Supports proper labelling of more Java classes such as `java.util.Hashmap`
@@ -314,6 +325,9 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 ## Breaking changes
+#### 0.10.0
+- Rename `:lamda-label` to `:lambda-label` in theme syntax
+
 #### 0.8.0
 - If no theme (or invalid theme) is provided, `"Universal Neutral"` is used, which works on both light and dark backgrounds.
 
