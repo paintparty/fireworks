@@ -16,7 +16,6 @@
    [clojure.string :as string]
    [fireworks.config :as config]
    [clojure.spec.alpha :as s]
-   [lasertag.core :as lasertag]
    [fireworks.util :as util]
    [bling.core :refer [bling callout]])
   #?(:cljs (:require-macros 
@@ -90,16 +89,16 @@
         form
         (when-not label
           (when qf
-            (reset! state/formatting-form-to-be-evaled?
-                    true)
+            ;; TODO - Confirm that toggling this state doesn't matter, remove it
+            (reset! state/formatting-form-to-be-evaled? true)
             (let [shortened
                   (tag/tag-entity! 
                    (util/shortened qf
                                    (resolve-label-length label-length-limit))
                    :eval-form) 
                   ret       shortened]
-              (reset! state/formatting-form-to-be-evaled?
-                      false)
+              ;; TODO - Confirm that toggling this state doesn't matter, remove it
+              (reset! state/formatting-form-to-be-evaled? false)
               (str indent-spaces ret))))]
     [label form]))
 
@@ -177,6 +176,8 @@
         (count @state/styles)
 
         fmt           
+        ;; TODO - Don't really get this logic ... atom vs volatile! 
+        ;; maybe cos log? is true for volatile?
         (when-not (or log?
                       threading?
                       (= template [:form-or-label :file-info]))
@@ -592,7 +593,6 @@
     (doseq [[label v k] reports]
       (messaging/fw-debug-report-template label v k))))
 
-
 (defn- fw-config-report []
   (callout {:label       "fireworks.state/config"
             :padding-top 1
@@ -610,13 +610,15 @@
 
 (defn- native-logging*
   [x]
-  #?(:cljs (let [{:keys [coll-type? carries-meta? tag] :as tag-map} 
-                 ;; Maybe add {:exclude-all-extra-info? true} as an override opt to lasertag?
-                 (lasertag/tag-map x {:include-function-info?           false
-                                      :include-js-built-in-object-info? false})]
+  #?(:cljs (let [{:keys [coll-type? carries-meta? t transient?]} 
+                 (util/tag-map* x
+                                {:include-function-info?           false
+                                 :include-js-built-in-object-info? false})]
              (when (and coll-type?
                         (not carries-meta?)
-                        (not= tag :cljs.core/Atom))
+                        (not= t :cljs.core/Atom)
+                        (not= t :cljs.core/Volatile)
+                        (not transient?))
                {:log? true}))
      :clj nil))
 

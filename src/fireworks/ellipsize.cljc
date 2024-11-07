@@ -37,6 +37,14 @@
      (or (count s) 0)
      (or (when num-chars-dropped defs/ellipsis-count) 0)))
 
+(defn- mutable-wrapper-count
+  [{:keys [val-is-atom? val-is-volatile?]}]
+  (cond val-is-atom?
+        defs/atom-wrap-count
+        val-is-volatile?
+        defs/volatile-wrap-count
+        :else
+        0))
 
 (defn- pre-truncate-function-name
   "Potentially shortens, or drops, one or more of the following parts of
@@ -51,14 +59,12 @@
            js-built-in-function?
            js-built-in-method-of
            badge
-           lamda?
-           atom?]
+           lambda?]
     :as   m}]
   (let [;; Create `budge-diff` partial, which will be used to calculate
         ;; the difference between the length of the fn name (at a given
         ;; stage of shortening) and the (:non-coll-length-limit @state/config).
-        atom-wrap-count (or (when atom? defs/atom-wrap-count) 0)
-        budge-diff      (partial budge-diff limit atom-wrap-count)
+        budge-diff      (partial budge-diff limit (mutable-wrapper-count m))
         
 
         ;; Construct the fn display name with proper js/built-in prefix
@@ -114,7 +120,7 @@
                                string/join 
                                symbol)
                           nm)
-        fn-display-name (when-not lamda?
+        fn-display-name (when-not lambda?
                           (when-not (string/blank? (str fn-display-name))
                             fn-display-name))
 
@@ -218,14 +224,13 @@
    - Optional atom or volatile encapsulation e.g. `Atom<42>`"
   [x 
    {:keys [t 
-           limit
            key?
-           map-value?
-           badge
-           inline-badge?
-           atom?
            sev?
            depth
+           limit
+           badge
+           map-value?
+           inline-badge?
            top-level-sev?]
     :as   m}]
 
@@ -260,13 +265,12 @@
         (let [ret (pre-truncate-function-name limit m)]
           ret)
         (let [stringified           (stringified x t m)
-              atom-wrap-count       (or (when atom? defs/atom-wrap-count) 0)
               inline-badge-count    (or (when (and badge inline-badge?)
                                           (len badge))
                                         0)
               stringified-len       (count stringified)
               char-len              (+ (or stringified-len 0)
-                                       atom-wrap-count
+                                       (mutable-wrapper-count m)
                                        inline-badge-count)
               num-chars-over        (or (- char-len limit) 0)
               exceeds?              (pos? num-chars-over)

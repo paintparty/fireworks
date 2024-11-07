@@ -22,7 +22,7 @@
           (let [ret (? :data {:theme theme} "foo")] #_(pp/pprint "p-data basic") #_(pp/pprint ret) ret)
           {:quoted-form   "foo",
            :formatted     {:string     "%c\"foo\"%c"
-                           :css-styles []},
+                           :css-styles ["color:#448C27;line-height:1.45;" "color:#585858;line-height:1.45;"]},
            :file          "fireworks/core_test.cljc",
            :end-column    51,
            :ns-str        "fireworks.core-test",
@@ -45,7 +45,7 @@
           (let [ret (? :data "my-label" "foo")] #_(pp/pprint "p-data-with-label") #_(pp/pprint ret) ret)
           {:quoted-form   "foo",
            :formatted     {:string     "%c\"foo\"%c"
-                           :css-styles []},
+                           :css-styles ["color:#448C27;line-height:1.45;" "color:#585858;line-height:1.45;"]},
            :file          "fireworks/core_test.cljc",
            :end-column    47,
            :ns-str        "fireworks.core-test",
@@ -64,7 +64,6 @@
                                         "color:#585858;line-height:1.45;"]}}))))
 
 
-
 #?(:cljs
    (do (deftest p-data-with-label-from-opts
          (is (= 
@@ -78,16 +77,17 @@
                 ;; (pp/pprint ret)
                 ret)
               {:quoted-form   "foo",
-               :formatted     {:string     "%c\"foo\"%c"
-                               :css-styles []},
+               :formatted     {:string     "%c\"foo\"%c",
+                               :css-styles ["color:#448C27;line-height:1.45;"
+                                            "color:#585858;line-height:1.45;"]},
                :file          "fireworks/core_test.cljc",
                :end-column    34,
                :ns-str        "fireworks.core-test",
-               :file-info-str "fireworks.core-test:71:25",
+               :file-info-str "fireworks.core-test:70:25",
                :column        25,
-               :line          71,
-               :end-line      76,
-               :formatted+    {:string     "%cmy-label-from-opts%c  %cfireworks.core-test:71:25%c%c \n%c%c\"foo\"%c",
+               :line          70,
+               :end-line      75,
+               :formatted+    {:string     "%cmy-label-from-opts%c  %cfireworks.core-test:70:25%c%c \n%c%c\"foo\"%c",
                                :css-styles ["color:#4d6dba;background-color:#edf2fc;text-shadow:0 0 2px #ffffff;font-style:italic;line-height:1.45;"
                                             "color:#585858;line-height:1.45;"
                                             "color:#4d6dba;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
@@ -126,17 +126,17 @@
                 ;; (pp/pprint 'p-data-basic-samples)
                 ;; (pp/pprint formatted-string)
                 formatted-string)
-               "%c{%c%c:abcdefg%c %c{%c%c:boolean%c            %ctrue%c\n           %c:brackets%c           %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n           %c:fn%c                 %ccljs.core/juxt%c%c[var_args]%c\n           %c:lamda%c              %cλ%c%c%c%c[%1]%c\n           %c:number%c             %c1234%c\n           %c:record%c             %cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n           %c:regex%c              %c#\"^hi$\"%c\n           %c:string%c             %c\"string\"%c\n           %c:symbol%c             %cmysym%c %c    %c%c^{%c%c:foo%c %c:bar%c%c}%c\n           %c:symbol2%c            %cmysym%c %c    %c%c^{%c%c:foo%c %c[%c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c{%c%c:a%c %c\"foo\"%c%c %c%c:b%c %c[%c%c1%c%c %c%c2%c%c %c%c[%c%c1%c%c %c%c2%c%c %c%c3%c%c %c%c4%c%c]%c%c]%c%c}%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c]%c%c\n                                           %c%c:bar%c %c\"fooz\"%c%c}%c\n           %c:uuid%c               %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c\n           %c:atom/number%c        %cAtom<%c%c1%c%c>%c\n           %c:atom/record%c        %cAtom<%c%cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n           %c:map/multi-line%c     %c{%c%c:abc%c%c\n                                %c%c\"bar\"%c%c\n                                \n                                %c%c\"asdfasdfa\"%c%c\n                                %c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                \n                                %c%c[%c%c:a%c %c:b%c%c]%c%c\n                                %c%c123444%c%c}%c\n           %c:map/nested-meta%c    %c{%c %c    %c%c^{%c%c:a%c %cfoo%c %c    %c%c^{%c%c:abc%c %cbar%c%c\n                                                    %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzzz\"%c...%c%c%c}%c%c}%c%c\n                                %c%ca%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                %c%cfoo%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                \n                                %c%c:b%c%c\n                                %c%c2%c%c}%c\n           %c:map/single-line%c    %c{%c%c:a%c %c1%c %c:b%c %c2%c %c:c%c %c\"three\"%c%c}%c\n           %c:set/multi-line%c     %c[%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                %c%c3333333%c%c\n                                %c%c:22222%c%c]%c\n           %c:set/single-line%c    %c[%c%c1%c %c\"three\"%c %c:2%c%c]%c\n           %c:vector/multi-line%c  %c[%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                %c%c:22222%c%c\n                                %c%c3333333%c%c]%c\n           %c:vector/single-line%c %c[%c%c1%c %c:2%c %c\"three\"%c%c]%c%c}%c%c}%c"
+              "%c{%c%c:abcdefg%c %c{%c%c:boolean%c            %ctrue%c\n           %c:brackets%c           %c[%c%c[%c%c[%c%c[%c%c[%c%c[%c%c]%c%c]%c%c]%c%c]%c%c]%c%c]%c\n           %c:fn%c                 %ccljs.core/juxt%c%c[var_args]%c\n           %c:lambda%c             %c%c%c[%1]%c\n           %c:number%c             %c1234%c\n           %c:record%c             %cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c\n           %c:regex%c              %c#\"^hi$\"%c\n           %c:string%c             %c\"string\"%c\n           %c:symbol%c             %cmysym%c %c    %c%c^{%c%c:foo%c %c:bar%c%c}%c\n           %c:symbol2%c            %cmysym%c %c    %c%c^{%c%c:foo%c %c[%c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c{%c%c:a%c %c\"foo\"%c%c %c%c:b%c %c[%c%c1%c%c %c%c2%c%c %c%c[%c%c1%c%c %c%c2%c%c %c%c3%c%c %c%c4%c%c]%c%c]%c%c}%c%c\n                                                 %c%c\"afasdfasf\"%c%c\n                                                 %c%c\"afasdfasf\"%c%c]%c%c\n                                           %c%c:bar%c %c\"fooz\"%c%c}%c\n           %c:uuid%c               %c#uuid %c%c\"4fe5d828-6444-11e8-822\"%c...%c%c\n           %c:atom/number%c        %cAtom<%c%c1%c%c>%c\n           %c:atom/record%c        %cAtom<%c%cFoos%c\n                               %c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c\n           %c:map/multi-line%c     %c{%c%c:abc%c%c\n                                %c%c\"bar\"%c%c\n                                \n                                %c%c\"asdfasdfa\"%c%c\n                                %c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                \n                                %c%c[%c%c:a%c %c:b%c%c]%c%c\n                                %c%c123444%c%c}%c\n           %c:map/nested-meta%c    %c{%c %c    %c%c^{%c%c:a%c %cfoo%c %c    %c%c^{%c%c:abc%c %cbar%c%c\n                                                    %c%c:xyz%c %c\"abcdefghijklmnopqrstuvwxyzzzz\"%c...%c%c%c}%c%c}%c%c\n                                %c%ca%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                %c%cfoo%c %c    %c%c^{%c%c:abc%c %c\"bar\"%c%c %c%c:xyz%c %c\"abc\"%c%c}%c%c\n                                \n                                %c%c:b%c%c\n                                %c%c2%c%c}%c\n           %c:map/single-line%c    %c{%c%c:a%c %c1%c %c:b%c %c2%c %c:c%c %c\"three\"%c%c}%c\n           %c:set/multi-line%c     %c[%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                %c%c3333333%c%c\n                                %c%c:22222%c%c]%c\n           %c:set/single-line%c    %c[%c%c1%c %c\"three\"%c %c:2%c%c]%c\n           %c:vector/multi-line%c  %c[%c%c\"abcdefghijklmnopqrstuvwxyzzz\"%c...%c%c%c\n                                %c%c:22222%c%c\n                                %c%c3333333%c%c]%c\n           %c:vector/single-line%c %c[%c%c1%c %c:2%c %c\"three\"%c%c]%c%c}%c%c}%c"
               )))
        
        (deftest p-data-with-coll-limit
          (is (= 
               (let [ret              (? :data {:label                      "my-label"
-                                              :enable-terminal-truecolor? true
-                                              :enable-terminal-italics?   true
-                                              :coll-limit                 5
-                                              :theme                      theme}
-                                             [1 2 3 4 5 6 7 8])
+                                               :enable-terminal-truecolor? true
+                                               :enable-terminal-italics?   true
+                                               :coll-limit                 5
+                                               :theme                      theme}
+                                        [1 2 3 4 5 6 7 8])
                     formatted-string (-> ret :formatted :string)]
                 ;; (pp/pprint formatted-string)
                 formatted-string)
@@ -145,12 +145,12 @@
        (deftest p-data-with-non-coll-level-1-depth-length-limit
          (is (= 
               (let [ret              (? :data {:label                         "my-label"
-                                          :enable-terminal-truecolor?    true
-                                          :enable-terminal-italics?      true
-                                          :bracket-contrast              "high"
-                                          :theme                         theme
-                                          :non-coll-depth-1-length-limit 60}
-                                         ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
+                                               :enable-terminal-truecolor?    true
+                                               :enable-terminal-italics?      true
+                                               :bracket-contrast              "high"
+                                               :theme                         theme
+                                               :non-coll-depth-1-length-limit 60}
+                                        ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
                     formatted-string (-> ret :formatted :string)]
                 ;; (pp/pprint formatted-string)
                 formatted-string)
@@ -159,12 +159,12 @@
        (deftest p-data-with-non-coll-length-limit
          (is (= 
               (let [ret              (? :data {:label                        "my-label"
-                                              :enable-terminal-truecolor?   true
-                                              :enable-terminal-italics?     true
-                                              :bracket-contrast             "high"
-                                              :theme                        theme
-                                              :non-coll-result-length-limit 42}
-                                             "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
+                                               :enable-terminal-truecolor?   true
+                                               :enable-terminal-italics?     true
+                                               :bracket-contrast             "high"
+                                               :theme                        theme
+                                               :non-coll-result-length-limit 42}
+                                        "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
                     formatted-string (-> ret :formatted :string)]
                 ;; (pp/pprint 'p-data-with-non-coll-length-limit)
                 ;; (pp/pprint formatted-string)
@@ -174,11 +174,11 @@
        (deftest p-data-rainbow-brackets
          (is (= 
               (let [ret              (? :data {:label                      "my-label"
-                                              :enable-terminal-truecolor? true
-                                              :enable-terminal-italics?   true
-                                              :bracket-contrast           "high"
-                                              :theme                      theme}
-                                         [[[[[]]]]])
+                                               :enable-terminal-truecolor? true
+                                               :enable-terminal-italics?   true
+                                               :bracket-contrast           "high"
+                                               :theme                      theme}
+                                        [[[[[]]]]])
                     formatted-string (-> ret :formatted :string)]
                 ;; (pp/pprint formatted-string)
                 formatted-string)
@@ -203,37 +203,75 @@
        (deftest p-data-js-array
          (is (= 
               (let [ret              (? :data {:label                      "my-label"
-                                              :enable-terminal-truecolor? true
-                                              :enable-terminal-italics?   true
-                                              :bracket-contrast           "high"
-                                              :theme                      theme}
-                                             #js [1 2 3])
+                                               :enable-terminal-truecolor? true
+                                               :enable-terminal-italics?   true
+                                               :bracket-contrast           "high"
+                                               :theme                      theme}
+                                        #js [1 2 3])
                     formatted-string (-> ret :formatted :string)]
                 ;; (pp/pprint 'p-data-js-array)
                 ;; (pp/pprint formatted-string)
                 formatted-string)
-             nil)))
+              nil)))
+       
+       (deftest p-data-record-sample-in-volatile
+         (is (= 
+              (let [ret              (? :data {:label                      "my-label"
+                                               :enable-terminal-truecolor? true
+                                               :enable-terminal-italics?   true
+                                               :bracket-contrast           "high"
+                                               :theme                      theme}
+                                        (volatile! smoke-test/record-sample))
+                    formatted-string (-> ret :formatted :string)]
+                ;; (pp/pprint 'p-data-record-sample-in-volatile)
+                ;; (pp/pprint formatted-string)
+                formatted-string)
+              "%cVolatile<%c%cFoos%c\n%c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c")))
+
+       
+
+       ;; Leave this out until you figure out what is going on with transients in node-based testing
+       #_(deftest transient-vector
+           (is (= 
+                (let [ret              (let [x   (transient [1 2 3 4 5 6 7 8 9 0])
+                                             ret (? :data {:coll-limit                 7
+                                                           :label                      "my-label"
+                                                           :enable-terminal-truecolor? true
+                                                           :enable-terminal-italics?   true
+                                                           :bracket-contrast           "high"
+                                                           :theme                      theme}
+                                                    x)]
+                                         (conj! x 5)
+                                         ret)
+
+                      _                (do (println "FUUUU")
+                                           (pp/pprint ret))
+                      formatted-string (-> ret :formatted :string)]
+                  (pp/pprint ret)
+                  (pp/pprint 'transient-vector)
+                  (pp/pprint formatted-string)
+                  formatted-string)
+                "%cVolatile<%c%cFoos%c\n%c{%c%c:a%c %c1%c %c:b%c %c2%c%c}%c%c>%c")))
 
 
        ;; Leave this out until you support custom printers 
        #_(deftest p-data-custom-printers
-         (is (= 
-              (let [ret              
-                    (p-data {:custom-printers {:vector {:pred        (fn [x] (= x [1 2 3 4]))
-                                                    :f           (fn [x] (into #{} x))
-                                                    :badge-text  " Set💩 "
-                                                    :badge-style {:color            "#000"
-                                                                  :background-color "lime"
-                                                                  :border-radius    "999px"
-                                                                  :text-shadow      "none"
-                                                                  :font-style       "normal"}}}}
-                        [1 2 3 4])
-                    formatted-string (-> ret :formatted :string)]
-                (pp/pprint formatted-string)
-                formatted-string)
-              "%c Set💩 %c
+           (is (= 
+                (let [ret              (p-data {:custom-printers {:vector {:pred        (fn [x] (= x [1 2 3 4]))
+                                                                           :f           (fn [x] (into #{} x))
+                                                                           :badge-text  " Set💩 "
+                                                                           :badge-style {:color            "#000"
+                                                                                         :background-color "lime"
+                                                                                         :border-radius    "999px"
+                                                                                         :text-shadow      "none"
+                                                                                         :font-style       "normal"}}}}
+                                               [1 2 3 4])
+                      formatted-string (-> ret :formatted :string)]
+                  (pp/pprint formatted-string)
+                  formatted-string)
+                "%c Set💩 %c
 %c#{%c%c1%c %c2%c %c3%c %c4%c%c}%c")))
-)
+       )
    
    :clj
    #_nil
@@ -252,10 +290,10 @@
      (deftest p-data-with-label-from-opts-primitive-terminal-emulator
        (is (= 
             (let [ret              (? :data {:label                      "my-label-from-opts"
-                                            :enable-terminal-truecolor? false
-                                            :enable-terminal-italics?   false
-                                            :theme                      theme}
-                                           "foo")
+                                             :enable-terminal-truecolor? false
+                                             :enable-terminal-italics?   false
+                                             :theme                      theme}
+                                      "foo")
                   formatted-string (-> ret :formatted :string)]
               ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
@@ -264,12 +302,12 @@
      (deftest p-data-with-non-coll-level-1-depth-length-limit
        (is (= 
             (let [ret              (? :data {:label                         "my-label"
-                                            :enable-terminal-truecolor?    true
-                                            :enable-terminal-italics?      true
-                                            :bracket-contrast              "high"
-                                            :theme                         theme
-                                            :non-coll-depth-1-length-limit 60}
-                                           ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
+                                             :enable-terminal-truecolor?    true
+                                             :enable-terminal-italics?      true
+                                             :bracket-contrast              "high"
+                                             :theme                         theme
+                                             :non-coll-depth-1-length-limit 60}
+                                      ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
                   formatted-string (-> ret :formatted :string)]
               (escape-sgr formatted-string))
             '("〠38;5;241〠"
@@ -288,12 +326,12 @@
      (deftest p-data-with-non-coll-result-length-limit
        (is (= 
             (let [ret              (? :data {:label                        "my-label"
-                                            :enable-terminal-truecolor?   true
-                                            :enable-terminal-italics?     true
-                                            :bracket-contrast             "high"
-                                            :theme                        theme
-                                            :non-coll-result-length-limit 42}
-                                           "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
+                                             :enable-terminal-truecolor?   true
+                                             :enable-terminal-italics?     true
+                                             :bracket-contrast             "high"
+                                             :theme                        theme
+                                             :non-coll-result-length-limit 42}
+                                      "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
                   formatted-string (-> ret :formatted :string)]
               ;; (pp/pprint 'p-data-with-non-coll-result-length-limit)
               ;; (pp/pprint (escape-sgr formatted-string))
@@ -305,12 +343,12 @@
      (deftest p-data-with-coll-limit
        (is (= 
             (let [ret              (? :data {:label                      "my-label"
-                                            :enable-terminal-truecolor? true
-                                            :enable-terminal-italics?   true
-                                            :coll-limit                 5
-                                            :theme                      theme
-                                            :custom-printers            {}}
-                                           [1 2 3 4 5 6 7 8])
+                                             :enable-terminal-truecolor? true
+                                             :enable-terminal-italics?   true
+                                             :coll-limit                 5
+                                             :theme                      theme
+                                             :custom-printers            {}}
+                                      [1 2 3 4 5 6 7 8])
                   formatted-string (-> ret :formatted :string)]
               ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
@@ -346,11 +384,11 @@
      (deftest p-data-rainbow-brackets
        (is (= 
             (let [ret              (? :data {:label                      "my-label"
-                                            :enable-terminal-truecolor? true
-                                            :enable-terminal-italics?   true
-                                            :bracket-contrast           "high"
-                                            :theme                      theme}
-                                           [[[[[]]]]])
+                                             :enable-terminal-truecolor? true
+                                             :enable-terminal-italics?   true
+                                             :bracket-contrast           "high"
+                                             :theme                      theme}
+                                      [[[[[]]]]])
                   formatted-string (-> ret :formatted :string)]
               ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
@@ -388,11 +426,11 @@
      (deftest p-data-rainbow-brackets-low-contrast
        (is (= 
             (let [ret              (? :data {:label                      "my-label"
-                                            :enable-terminal-truecolor? true
-                                            :enable-terminal-italics?   true
-                                            :bracket-contrast           "low"
-                                            :theme                      theme}
-                                           [[[[[]]]]])
+                                             :enable-terminal-truecolor? true
+                                             :enable-terminal-italics?   true
+                                             :bracket-contrast           "low"
+                                             :theme                      theme}
+                                      [[[[[]]]]])
                   formatted-string (-> ret :formatted :string)]
               ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
@@ -440,14 +478,14 @@
               ;; (pp/pprint 'p-data-record-sample-in-atom)
               ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
-            '("〠3;38;2;77;109;186;48;2;237;242;252〠"
+            '("〠3;38;2;57;137;98;48;2;238;251;238〠"
               "Atom<"
               "〠0〠"
-              "〠3;38;2;77;109;186;48;2;237;242;252〠"
+              "〠3;38;2;57;137;98;48;2;238;251;238〠"
               "Foos"
               "〠0〠"
               "\n"
-              "〠38;5;241;48;2;237;242;252〠"
+              "〠38;5;241;48;2;238;251;238〠"
               "{"
               "〠0〠"
               "〠38;2;122;62;157〠"
@@ -465,10 +503,10 @@
               "〠38;2;122;62;157〠"
               "2"
               "〠0〠"
-              "〠38;5;241;48;2;237;242;252〠"
+              "〠38;5;241;48;2;238;251;238〠"
               "}"
               "〠0〠"
-              "〠3;38;2;77;109;186;48;2;237;242;252〠"
+              "〠3;38;2;57;137;98;48;2;238;251;238〠"
               ">"
               "〠0〠"))))
 
@@ -484,11 +522,11 @@
               ;; (pp/pprint 'p-data-record-sample)
               ;; (pp/pprint (escape-sgr formatted-string))
               (escape-sgr formatted-string))
-            '("〠3;38;2;77;109;186;48;2;237;242;252〠"
+            '("〠3;38;2;57;137;98;48;2;238;251;238〠"
               "Foos"
               "〠0〠"
               "\n"
-              "〠38;5;241;48;2;237;242;252〠"
+              "〠38;5;241;48;2;238;251;238〠"
               "{"
               "〠0〠"
               "〠38;2;122;62;157〠"
@@ -506,18 +544,18 @@
               "〠38;2;122;62;157〠"
               "2"
               "〠0〠"
-              "〠38;5;241;48;2;237;242;252〠"
+              "〠38;5;241;48;2;238;251;238〠"
               "}"
               "〠0〠"))))
 
      (deftest p-data-symbol-with-meta
        (is (= 
             (let [ret              (? :data {:label                      "my-label"
-                                            :enable-terminal-truecolor? true
-                                            :enable-terminal-italics?   true
-                                            :bracket-contrast           "high"
-                                            :theme                      theme}
-                                           (with-meta 'mysym {:foo :bar}))
+                                             :enable-terminal-truecolor? true
+                                             :enable-terminal-italics?   true
+                                             :bracket-contrast           "high"
+                                             :theme                      theme}
+                                      (with-meta 'mysym {:foo :bar}))
                   formatted-string (-> ret :formatted :string)]
               ;; (pp/pprint 'p-data-symbol-with-meta)
               ;; (pp/pprint (escape-sgr formatted-string))
@@ -543,6 +581,583 @@
               "〠0〠"
               "〠38;2;190;85;187;48;2;250;232;253〠"
               "}"
+              "〠0〠"))))
+
+     (deftest transient-vector
+       (is (= 
+            (let [ret              (let [x   (transient [1 2 3 4 5 6 7 8 9 0])
+                                         ret (? :data {:coll-limit                 7
+                                                       :label                      "my-label"
+                                                       :enable-terminal-truecolor? true
+                                                       :enable-terminal-italics?   true
+                                                       :bracket-contrast           "high"
+                                                       :theme                      theme}
+                                                x)]
+                                     (conj! x 5)
+                                     ret)
+                  formatted-string (-> ret :formatted :string)]
+              ;; (pp/pprint 'transient-vector)
+              ;; (pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠3;38;2;57;137;98;48;2;238;251;238〠"
+              "TransientVector"
+              "〠0〠"
+              "\n"
+              "〠38;5;241;48;2;238;251;238〠"
+              "["
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "1"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "2"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "3"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "4"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "5"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "6"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "7"
+              "〠0〠"
+              "〠3;38;2;140;140;140〠"
+              " ...+3"
+              "〠0〠"
+              "〠38;5;241;48;2;238;251;238〠"
+              "]"
+              "〠0〠"))))
+     
+     (deftest transient-set
+       (is (= 
+            (let [ret              (let [x   (transient #{:a 1
+                                                          :b 2
+                                                          :c 3
+                                                          :d 4
+                                                          :e 5
+                                                          :f 6
+                                                          :g 7
+                                                          :h 8
+                                                          :i 9
+                                                          :j 10 })
+                                         ret (? :data {:coll-limit                 7
+                                                       :label                      "my-label"
+                                                       :enable-terminal-truecolor? true
+                                                       :enable-terminal-italics?   true
+                                                       :bracket-contrast           "high"
+                                                       :theme                      theme}
+                                                x)]
+                                     (conj! x 11)
+                                     ret)
+                  formatted-string (-> ret :formatted :string)]
+              ;; (pp/pprint 'transient-set)
+              ;; (pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠3;38;2;57;137;98;48;2;238;251;238〠"
+              "TransientHashSet"
+              "〠0〠"
+              "\n"
+              "〠38;5;241;48;2;238;251;238〠"
+              "#{"
+              "〠0〠"
+              "〠3;38;2;140;140;140〠"
+              "...+20"
+              "〠0〠"
+              "〠38;5;241;48;2;238;251;238〠"
+              "}"
+              "〠0〠"))))
+     
+     (deftest transient-map
+       (is (= 
+            (let [ret              (let [x   (transient {:a 1
+                                                         :b 2
+                                                         :c 3
+                                                         :d 4
+                                                         :e 5
+                                                         :f 6
+                                                         :g 7
+                                                         :h 8
+                                                         :i 9
+                                                         :j 10 })
+                                         ret (? :data {:coll-limit                 7
+                                                       :label                      "my-label"
+                                                       :enable-terminal-truecolor? true
+                                                       :enable-terminal-italics?   true
+                                                       :bracket-contrast           "high"
+                                                       :theme                      theme}
+                                                x)]
+                                     (assoc! x :k 11)
+                                     ret)
+                  formatted-string (-> ret :formatted :string)]
+              ;; (pp/pprint 'transient-set)
+              ;; (pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠3;38;2;57;137;98;48;2;238;251;238〠"
+              "TransientHashMap"
+              "〠0〠"
+              "\n"
+              "〠38;5;241;48;2;238;251;238〠"
+              "{"
+              "〠0〠"
+              "〠3;38;2;140;140;140〠"
+              " ......+10"
+              "〠0〠"
+              "〠38;5;241;48;2;238;251;238〠"
+              "}"
+              "〠0〠"))))
+     
+     (deftest array-map-order
+       (is (= 
+            (let [ret              (? :data 
+                                      {:enable-terminal-truecolor? true
+                                       :enable-terminal-italics?   true
+                                       :bracket-contrast           "high"
+                                       :theme                      theme}
+                                      (array-map :a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8 :i 9 :j 10))
+                  formatted-string (-> ret :formatted :string)]
+              ;; (pp/pprint 'array-map-order)
+              ;; (pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠38;5;241〠"
+              "{"
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              ":a"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "1"
+              "〠0〠"
+              "\n "
+              "〠38;2;122;62;157〠"
+              ":b"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "2"
+              "〠0〠"
+              "\n "
+              "〠38;2;122;62;157〠"
+              ":c"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "3"
+              "〠0〠"
+              "\n "
+              "〠38;2;122;62;157〠"
+              ":d"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "4"
+              "〠0〠"
+              "\n "
+              "〠38;2;122;62;157〠"
+              ":e"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "5"
+              "〠0〠"
+              "\n "
+              "〠38;2;122;62;157〠"
+              ":f"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "6"
+              "〠0〠"
+              "\n "
+              "〠38;2;122;62;157〠"
+              ":g"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "7"
+              "〠0〠"
+              "\n "
+              "〠38;2;122;62;157〠"
+              ":h"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "8"
+              "〠0〠"
+              "\n "
+              "〠38;2;122;62;157〠"
+              ":i"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "9"
+              "〠0〠"
+              "\n "
+              "〠38;2;122;62;157〠"
+              ":j"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "10"
+              "〠0〠"
+              "〠38;5;241〠"
+              "}"
+              "〠0〠"))))
+     
+     (deftest single-line-coll-length-limit-50-19
+       (is (= 
+            (let [ret              (? :data 
+                                      {:enable-terminal-truecolor?    true
+                                       :enable-terminal-italics?      true
+                                       :bracket-contrast              "high"
+                                       :single-line-coll-length-limit 50
+                                       :theme                         theme}
+                                      (range 19))
+                  formatted-string (-> ret :formatted :string)]
+              ;; (pp/pprint 'single-line-coll-length-limit-50-19)
+              ;; (pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠38;5;241〠"
+              "("
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "0"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "1"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "2"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "3"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "4"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "5"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "6"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "7"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "8"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "9"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "10"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "11"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "12"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "13"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "14"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "15"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "16"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "17"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "18"
+              "〠0〠"
+              "〠38;5;241〠"
+              ")"
+              "〠0〠"))))
+     
+     (deftest single-line-coll-length-limit-50-20
+       (is (= 
+            (let [ret              (? :data 
+                                      {:enable-terminal-truecolor?    true
+                                       :enable-terminal-italics?      true
+                                       :bracket-contrast              "high"
+                                       :single-line-coll-length-limit 50
+                                       :theme                         theme}
+                                      (range 20))
+                  formatted-string (-> ret :formatted :string)]
+              ;; (pp/pprint 'array-map-order)
+              ;; (pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠38;5;241〠"
+              "("
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "0"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "1"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "2"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "3"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "4"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "5"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "6"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "7"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "8"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "9"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "10"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "11"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "12"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "13"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "14"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "15"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "16"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "17"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "18"
+              "〠0〠"
+              "〠38;2;88;88;88〠"
+              "\n "
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "19"
+              "〠0〠"
+              "〠38;5;241〠"
+              ")"
+              "〠0〠"))))
+
+     (deftest java-util-hashset
+       (is (= 
+            (let [ret              (? :data 
+                                      {:enable-terminal-truecolor? true
+                                       :enable-terminal-italics?   true
+                                       :bracket-contrast           "high"
+                                       :theme                      theme}
+                                      (java.util.HashSet. #{"a" 1
+                                                            "b" 2}))
+                  formatted-string (-> ret :formatted :string)]
+              ;; (pp/pprint 'java-util-hashset)
+              ;; (pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠3;38;2;57;137;98;48;2;238;251;238〠"
+              "java.util.HashSet"
+              "〠0〠"
+              "\n"
+              "〠38;5;241;48;2;238;251;238〠"
+              "#{"
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "1"
+              "〠0〠"
+              " "
+              "〠38;2;68;140;39〠"
+              "\"a\""
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "2"
+              "〠0〠"
+              " "
+              "〠38;2;68;140;39〠"
+              "\"b\""
+              "〠0〠"
+              "〠38;5;241;48;2;238;251;238〠"
+              "}"
+              "〠0〠"))))
+     
+     (deftest java-util-hashmap
+       (is (= 
+            (let [ret              (? :data 
+                                      {:enable-terminal-truecolor? true
+                                       :enable-terminal-italics?   true
+                                       :bracket-contrast           "high"
+                                       :theme                      theme}
+                                      (java.util.HashMap. {"a" 1
+                                                           "b" 2}))
+                  formatted-string (-> ret :formatted :string)]
+              ;; (pp/pprint 'java-util-hashmap)
+              ;; (pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠3;38;2;57;137;98;48;2;238;251;238〠"
+              "java.util.HashMap"
+              "〠0〠"
+              "\n"
+              "〠38;5;241;48;2;238;251;238〠"
+              "{"
+              "〠0〠"
+              "〠38;2;68;140;39〠"
+              "\"a\""
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "1"
+              "〠0〠"
+              " "
+              "〠38;2;68;140;39〠"
+              "\"b\""
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "2"
+              "〠0〠"
+              "〠38;5;241;48;2;238;251;238〠"
+              "}"
+              "〠0〠"))))
+     
+     (deftest java-util-arraylist
+       (is (= 
+            (let [ret              (? :data 
+                                      {:enable-terminal-truecolor? true
+                                       :enable-terminal-italics?   true
+                                       :bracket-contrast           "high"
+                                       :theme                      theme}
+                                      (java.util.ArrayList. [1 2 3]))
+                  formatted-string (-> ret :formatted :string)]
+              ;; (pp/pprint 'java-util-hashmap)
+              ;; (pp/pprint (escape-sgr formatted-string))
+              (escape-sgr formatted-string))
+            '("〠3;38;2;57;137;98;48;2;238;251;238〠"
+              "java.util.ArrayList"
+              "〠0〠"
+              "\n"
+              "〠38;5;241;48;2;238;251;238〠"
+              "["
+              "〠0〠"
+              "〠38;2;122;62;157〠"
+              "1"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "2"
+              "〠0〠"
+              " "
+              "〠38;2;122;62;157〠"
+              "3"
+              "〠0〠"
+              "〠38;5;241;48;2;238;251;238〠"
+              "]"
               "〠0〠"))))))
 
 (defn- escape-sgr
@@ -572,16 +1187,16 @@
   (deftest !?>-par
     (is (= (!?> "par?") "par?"))))
 
+
 ;; (deftest ^:test-refresh/focus test-addition
 ;;   (is (= 2 (+ 1 1))))
 
 
 ;; TODO - Add tests for:
-;; :single-line-coll-length-limit option 
 ;; :when pred option for selective printing
-;; correct order of array map entries
 ;; correct margins when using margin options
 ;; correct margins when using :result flag
 ;; Java Objects from java.util.*
 ;; More native js Objects
-;; Other transient Clojure(Script) types
+
+;; Other transient ClojureScript types (strange in node testing)

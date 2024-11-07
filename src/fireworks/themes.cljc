@@ -64,26 +64,26 @@
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
    :mood   :light
-   :tokens {:classes {:background    {:background-color "#f7f7f7"}
-                      :string        {:color "#448C27"}
-                      :constant      {:color "#7A3E9D"}
-                      :definition    {:color "#4d6dba"}
-                      :annotation    {:color      "#8c8c8c" 
-                                      :font-style :italic}
-                      :metadata      {:color            "#be55bb"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :background-color "#fae8fd"}
-                      :metadata2     {:color            "#9f60be"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :background-color "#e9e5ff"}
-                      :label         {:color            "#4d6dba"
-                                      :background-color "#edf2fc"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :font-style       :italic}
-                      :eval-label    {:color            "#4d6dba"
-                                      :background-color "#edf2fc"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :font-style       :italic}}
+   :tokens {:classes {:background {:background-color "#f7f7f7"}
+                      :string     {:color "#448C27"}
+                      :constant   {:color "#7A3E9D"}
+                      :definition {:color "#4d6dba"}
+                      :annotation {:color      "#8c8c8c" 
+                                   :font-style :italic}
+                      :metadata   {:color            "#be55bb"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :background-color "#fae8fd"}
+                      :metadata2  {:color            "#9f60be"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :background-color "#e9e5ff"}
+                      :label      {:color            "#398962"
+                                   :background-color "#eefbee"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :font-style       :italic}
+                      :eval-label {:color            "#4d6dba"
+                                   :background-color "#edf2fc"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :font-style       :italic}}
             :syntax  {:js-object-key {:color "#888888"}}
             :printer {:file-info     {:color                "#4d6dba"
                                       :font-style           :italic

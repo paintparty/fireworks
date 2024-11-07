@@ -1,15 +1,12 @@
 (ns ^:dev/always fireworks.truncate
   (:require #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.macros :refer [keyed]])
-            [clojure.set :as set]
             [clojure.string :as string]
             [fireworks.ellipsize :as ellipsize]
             [fireworks.order :refer [seq->sorted-map]]
-            [fireworks.pp :refer [?pp]]
             [fireworks.profile :as profile]
             [fireworks.state :as state]
-            [fireworks.util :as util]
-            [lasertag.core :as lasertag]))
+            [fireworks.util :as util]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -88,7 +85,8 @@
            map-like?
            array-map?
            depth
-           coll-size]}
+           coll-size
+           transient?]}
    x]
   (let [
         ;; First we need to check if collection is both not map-like and 
@@ -112,7 +110,10 @@
                             {:depth                 (inc depth)
                              :map-entry-in-non-map? all-map-entries?})))]
     (if map-like?
-      (if (zero? coll-size) ret (seq->sorted-map ret array-map?))
+      (if (or (zero? coll-size)
+              transient?)  ; treat transient maps as empty map
+        ret
+        (seq->sorted-map ret array-map?))
       ret)))
 
 
@@ -157,20 +158,41 @@
       m)))
 
 
+(defn- reify-if-transient [x tag-map]
+  (if (:transient? tag-map)
+    (let [t (:t tag-map)]
+      (cond
+        (= t :map)
+        {}
+        (= t :set)
+        #{}
+        :else
+        (for [n (take (:coll-limit @state/config) (range (count x)))]
+          (nth x n))))
+    x))
+
+
 (defn- truncation-profile
   [{:keys [depth map-entry-in-non-map?]
     :as   m*}
    x]
-  (let [atom?     (cljc-atom? x)
-        x         (if atom? @x x)
-        kv?       (boolean (when-not map-entry-in-non-map? (map-entry? x)))
-        tag-map   (when-not kv?
-                    (set/rename-keys (lasertag/tag-map x) {:tag :t}))
-        too-deep? (> depth (:print-level @state/config))
-        sev?      (boolean (when-not kv?
-                             (not (:coll-type? tag-map))))]
+  (let [val-is-atom?     (cljc-atom? x)
+        val-is-volatile? (volatile? x) 
+        x                (if (or val-is-atom? val-is-volatile?) @x x)
+        kv?              (boolean (when-not map-entry-in-non-map? (map-entry? x)))
+        tag-map          (when-not kv? (util/tag-map* x) )
+        x                (reify-if-transient x tag-map)
+        too-deep?        (> depth (:print-level @state/config))
+        sev?             (boolean (when-not kv?
+                                    (not (:coll-type? tag-map))))]
     (merge m* ;; m* added for :key? and :map-value? entries
-           (keyed [depth atom? kv? x too-deep? sev?])
+           (keyed [val-is-atom?
+                   val-is-volatile?
+                   too-deep?
+                   depth
+                   sev?
+                   kv?
+                   x])
            tag-map
            {:user-meta      (value-meta x)
             :og-x           x
@@ -243,7 +265,8 @@
                     :t                   :seq,
                     :x                   '(0 1 2 3 4 5 6 7),
                     :js-typed-array?     false,
-                    :atom?               false,
+                    :val-is-atom?        false,
+                    :val-is-volatile?    false,
                     :number-type?        false,
                     :js-map-like?        false},
    :user-meta      {:foo :bar}}
@@ -279,11 +302,6 @@
         ;; mm*
         ;; (with-badge-and-ellipsized x kv? mm*)
         ]
-    #_(when (coll? truncated-x)
-      (?pp (meta (with-meta truncated-x
-                   (merge {:fw/truncated mm*
-                           :fw/user-meta user-meta}
-                          (some->> m* :user-meta? (hash-map :fw/user-meta-map?)))))))
     (with-meta truncated-x
       (merge {:fw/truncated mm*
               :fw/user-meta user-meta}

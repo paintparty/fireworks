@@ -35,7 +35,7 @@
     (= t :meta-map)
     ["^{" "}"]
 
-    (or (= :function t) (= :lamda t))
+    (or (= :function t) (= :lambda t))
     ["" ""]
     :else
         ;; This should probably be ["" ""]
@@ -192,12 +192,15 @@
     ob))
 
 (defn closing-angle-bracket! 
-  "This is for when collections are also like atoms,
-   so they can be printed like `Atom<[1 2 3]>`"
+  "This is for when collections are encapsulated in a mutable construct such as
+   an atom or volatile, so they can be printed like `Atom<[1 2 3]>`"
   [m]
-  (when (-> m :coll meta :atom?)
-    (when (state/debug-tagging?)
-      (println "\ntagging " defs/encapsulation-closing-bracket " with " :atom-wrapper))
-    (str (tag! :atom-wrapper)
-         defs/encapsulation-closing-bracket
-         (tag-reset!))))
+  ;; TODO - change names to avoid shadowing
+  (let [{:keys [val-is-atom? val-is-volatile?]} (-> m :coll meta)]
+    (when (or val-is-atom? val-is-volatile?)
+      (let [k (if val-is-atom? :atom-wrapper :volatile-wrapper)]
+        (when (state/debug-tagging?)
+          (println "\ntagging " defs/encapsulation-closing-bracket " with " k))
+        (str (tag! k)
+             defs/encapsulation-closing-bracket
+             (tag-reset!))))))
