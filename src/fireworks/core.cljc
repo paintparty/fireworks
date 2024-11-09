@@ -942,10 +942,10 @@
                    :template  [:form-or-label :file-info :result]
                    :&form     &form
                    :form-meta (meta &form)})]
-       `(do 
-          (when ~defd ~x)
-          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                             (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
+     `(do 
+        (when ~defd ~x)
+        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                           (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
   ([a x]
    (let [{:keys [mode template]}
          (mode+template a)]
