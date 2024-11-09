@@ -1022,7 +1022,8 @@ basic-samples
    ()
    :clj
    (do
-     (? (tag-map {:a 1}))
+     #_(? (tag-map (fn [a] (inc a))))
+     #_(? basic-samples-cljc)
      #_(? #{"abcdefghijklmnopqrstuvwxyzzz"
             3333333})
 

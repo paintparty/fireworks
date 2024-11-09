@@ -19,7 +19,7 @@
    :js/Iterator    defs/js-literal-badge
    :js/Object      defs/js-literal-badge
    :js/Array       defs/js-literal-badge
-   :lambda          defs/lambda-symbol
+   :lambda         defs/lambda-symbol
    :transient      defs/transient-label
    :uuid           defs/uuid-badge
    :js/Date        defs/inst-badge
@@ -281,10 +281,7 @@
             :as fw-truncated-meta}  (or (:fw/truncated mm)
                                         ;;  TODO - describe why it is necessary
                                         ;; to provide this map here
-                                        meta-map-mapentry-vector
-                                        #_(do
-                                          (println "mm" (util/tag-map* x))
-                                          (util/tag-map* x)))
+                                        meta-map-mapentry-vector)
            ret   (merge 
                   fw-truncated-meta
                   {:x    (or (:x fw-truncated-meta) x)

@@ -139,9 +139,26 @@
   #?(:cljs
      (if (satisfies? ISeqable x)
        (truncate-iterable m x)
-       (let [{:keys [t dom-node-type depth]} m]
-         (if dom-node-type
+       (let [{:keys [t
+                     all-tags
+                     dom-node-type
+                     depth
+                     js-array?
+                     coll-size
+                     coll-limit]}
+             m]
+         (cond
+           dom-node-type
            (truncate {:depth (inc depth)} (dom-el-attrs-map x))
+
+           (or js-array? (contains? all-tags :js/TypedArray))
+           (mapv 
+             (fn [i]
+               (truncate {:depth (inc depth)}
+                         (aget x i)))
+             (range (min coll-limit coll-size)))
+
+           :else
            (do 
              (when (= t :SyntheticBaseEvent) (prune-synthetic-base-event x))
              (->> m 
