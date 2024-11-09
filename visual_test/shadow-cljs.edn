@@ -6,7 +6,7 @@
                 ;; Local Lasertag - uncomment if debugging Lasertag locally
                 ;; "../../lasertag/src/"
                 ]
- :dependencies [[io.github.paintparty/fireworks "0.10.0-SNAPSHOT"]
+ :dependencies [[io.github.paintparty/fireworks "0.10.2-SNAPSHOT"]
                 [binaryage/devtools "1.0.6"]]
  :dev-http     {8020 "public"}
  :builds       {:app  {:target           :browser
