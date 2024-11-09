@@ -5,7 +5,33 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 <br>
 
+## 0.10.2
+2024-11-8
+
+#### Fixed
+- Bug with printing js Arrays
+
+#### Changed
+- Bumps `lasertag` dep to `0.8.2`
+
+<br>
+<br>
+
+## 0.10.1
+2024-11-7
+#### Fixed
+- Bug with printing lambda fns
+
+#### Changed
+- Bumps `lasertag` dep to `0.8.1`
+
+<br>
+<br>
+
+
 ## 0.10.0
+2024-11-6
+
 #### Added
 - Support for labeling and printing volatiles
 - Support for labeling and printing transient data structures
@@ -17,6 +43,8 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 ## 0.9.0
+2024-11-3
+
 #### Added
 - Supports proper labelling of more Java classes such as `java.util.Hashmap`
 
@@ -45,6 +73,8 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 ## 0.8.0
+2024-10-23
+
 #### Added
 - [Add `"Universal Neutral"` theme](https://github.com/paintparty/fireworks/issues/21) that works on both light and dark backgrounds
 
