@@ -106,6 +106,7 @@
    :mood   :dark
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
+   :bracket-contrast "low"
    :tokens {:classes {:background    {:background-color "#0e1415"}
                       :string        {:color "#8cbd7a"}
                       :comment       {:color      "#DFDF8E"
@@ -120,10 +121,10 @@
                       :metadata2     {:color            "#a08a40"
                                       :text-shadow      "0 0 2px #003538"
                                       :background-color "#351d1d"}
-                      :label         {:color            "#5f9ed8"
-                                      :background-color "#162f46"
-                                      :text-shadow      "0 0 2px #00381d"
-                                      :font-style       :italic}
+                      :label      {:color            "#6b948a"
+                                   :background-color "#003828"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :font-style       :italic}
                       :eval-label    {:color            "#85b7e5"
                                       :font-style       :italic
                                       :text-shadow      "0 0 2px #003d6b"
