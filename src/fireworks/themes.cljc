@@ -76,8 +76,8 @@
                       :metadata2  {:color            "#9f60be"
                                    :text-shadow      "0 0 2px #ffffff"
                                    :background-color "#e9e5ff"}
-                      :label      {:color            "#398962"
-                                   :background-color "#eefbee"
+                      :label      {:color            "#619488"
+                                   :background-color "#e7f9f5"
                                    :text-shadow      "0 0 2px #ffffff"
                                    :font-style       :italic}
                       :eval-label {:color            "#4d6dba"
@@ -511,6 +511,7 @@
                       :comment       {:font-style :italic}
                       :function-args {:color "#9e9e9e"}}}})
 
+;; Not really used, maybe a bad idea
 (def universal
   {:name   "Universal"
    :desc   "A colorized syntax theme for Clojure data that works on both light and dark backgrounds."
