@@ -4,6 +4,7 @@
             [fireworks.config]
             [fireworks.pp :as pp :refer [?pp]]
             [fireworks.smoke-test :as smoke-test]
+            [fireworks.demo-tour]
             [fireworks.themes :as themes]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))

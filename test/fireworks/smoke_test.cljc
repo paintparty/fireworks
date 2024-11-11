@@ -981,9 +981,9 @@ basic-samples
 ;; (? :pp (select-keys {:a 1 :b 2} [:f :g :c]))
 
 ;; (?  basic-samples-cljc)
-(!?  #_{} basic-samples-array-map)
-(!?  #_{} basic-samples-cljc)
-(!? {:coll-limit 5} (atom (with-meta (range 8) {:foo :bar})))
+;; (!?  #_{} basic-samples-array-map)
+;; (!?  #_{} basic-samples-cljc)
+;; (!? {:coll-limit 5} (atom (with-meta (range 8) {:foo :bar})))
 
 
 #_(? :result (atom 1))
@@ -1125,6 +1125,80 @@ basic-samples
 
 ;;      (!? (instance? java.util.ArrayList (java.util.ArrayList. [1 2 3])))
 ;;      (!? (instance? java.util.ArrayList [1 2 3]))
+     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
      ))
 
 ;; #?(:clj

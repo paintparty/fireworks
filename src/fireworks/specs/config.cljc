@@ -5,6 +5,7 @@
    [fireworks.defs :as defs]
    [fireworks.basethemes :as basethemes]
    [fireworks.specs.theme :as theme]
+   [fireworks.specs.tokens :as tokens]
    [clojure.spec.alpha :as s]))
 
 ;; User config validation specs
@@ -106,8 +107,7 @@
   boolean?)
 
 ;; flesh out this spec
-(s/def ::custom-printers
-  map?)
+(s/def ::custom-printers map?)
 
 ;; find for highlighting related -----------------------------------------------
 (s/def ::returns-boolean
@@ -117,11 +117,10 @@
 (s/def ::pred 
   (s/and fn? ::returns-boolean))
 
-
 (s/def ::find-for-highlighting-map
   (s/and map?
          (s/keys :req-un [::pred]
-                 :opt-un [::style])))
+                 :opt-un [::tokens/style])))
 
 (s/def ::find
   (s/or :map
@@ -153,5 +152,5 @@
                           ::bracket-contrast
                           ::custom-printers
                           ;; TODO test this
-                          ;; ::find
+                          ::find
                           ])))

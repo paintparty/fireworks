@@ -61,7 +61,7 @@
                                    :default 0}
    :custom-printers               {:spec    ::config/custom-printers
                                    :default {}}
-   :find                          {:spec    ::config/custom-printers
+   :find                          {:spec    ::config/find
                                    :default nil}
    :when                          {:spec    ::config/when
                                    :default nil}
