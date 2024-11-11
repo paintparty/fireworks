@@ -1008,7 +1008,7 @@
    
   ([mode-or-label a x]
    (let [{:keys [mode template]}
-         (ff (mode+template mode-or-label))]
+         (mode+template mode-or-label)]
      (case mode
        :trace
        (let [form-meta (meta &form)]
