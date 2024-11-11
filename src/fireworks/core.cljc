@@ -473,22 +473,22 @@
           
 
 
-;                         PPPPPPPPPPPPPPPPP
-;                         P::::::::::::::::P
-;                         P::::::PPPPPP:::::P
-;                         PP:::::P     P:::::P
-;                           P::::P     P:::::P
-;                           P::::P     P:::::P
-;                           P::::PPPPPP:::::P
-;                           P:::::::::::::PP
-;                           P::::PPPPPPPPP
-;                           P::::P
-;                           P::::P
-;                           P::::P
-;                         PP::::::PP
-;                         P::::::::P
-;                         P::::::::P
-;                         PPPPPPPPPP
+;  PPPPPPPPPPPPPPPPP
+;  P::::::::::::::::P
+;  P::::::PPPPPP:::::P
+;  PP:::::P     P:::::P
+;    P::::P     P:::::P
+;    P::::P     P:::::P
+;    P::::PPPPPP:::::P
+;    P:::::::::::::PP
+;    P::::PPPPPPPPP
+;    P::::P
+;    P::::P
+;    P::::P
+;  PP::::::PP
+;  P::::::::P
+;  P::::::::P
+;  PPPPPPPPPP
 
 
 (defn- print-formatted
@@ -1006,9 +1006,9 @@
                  (if ~defd (cast-var ~defd ~cfg-opts) ~x)))
               (fireworks.core/_p2 cfg-opts# ret#)))))))
    
-  ([mode a x]
+  ([mode-or-label a x]
    (let [{:keys [mode template]}
-         (mode+template mode)]
+         (ff (mode+template mode-or-label))]
      (case mode
        :trace
        (let [form-meta (meta &form)]
@@ -1045,13 +1045,15 @@
 
              label                                 
              (or (:label cfg-opts*)
-                 (cond (= mode :comment) x
-                       :else             (when-not cfg-opts* a)))
+                 (cond
+                   (= mode :comment) x
+                   (not cfg-opts*)   a
+                   :else             nil #_(when-not mode mode-or-label)))
 
              {:keys [log?* defd qf-nil? cfg-opts]}
              (?2-helper (keyed [mode template cfg-opts* label &form x]))]
 
-         ;; (ff "?, 3-arity" cfg-opts)
+        ;;  (ff "?, 3-arity" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
                 ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)] 
             (when ~defd ~x)
