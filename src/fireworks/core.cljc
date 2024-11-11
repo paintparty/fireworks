@@ -467,9 +467,9 @@
   
   ;; Reset the highlight state.
   ;; It may pull hightlight style from merged theme.
-  (some->> find-vals
-           state/highlight-style
-           (reset! state/highlight)))
+  (reset! state/highlight
+          (some->> find-vals 
+                   state/highlight-style)) )
           
 
 
