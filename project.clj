@@ -1,4 +1,4 @@
-(defproject io.github.paintparty/fireworks "0.10.2"
+(defproject io.github.paintparty/fireworks "0.10.3-SNAPSHOT"
   :description "Themeable print debugging library for Clojure, ClojureScript, and Babashka"
   :url "https://github.com/paintparty/fireworks"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
@@ -6,7 +6,7 @@
   :source-paths ["src"
                  ;; for local dev bling and fireworks deps
                  ;; "../bling/src"
-                ;;  "../lasertag/src"
+                 ;;  "../lasertag/src"
                  ]
   :dependencies [[org.clojure/clojure "1.10.3"]
                  [expound "0.9.0"]

@@ -82,7 +82,6 @@
 (defn test-suite []
   #?(:cljs
      (do
-
        #_(? #_{:label                      "my-label"
                :enable-terminal-truecolor? true
                :enable-terminal-italics?   true
@@ -267,6 +266,14 @@
   (let [x (transient #{1 2 3 4 5 6 7 8 9 0})]
     (? {:label "Transient Set" :coll-limit 7} x)
     (conj! x 11))
+
+
+       #?(:cljs
+          (do 
+            (? :pp (into-array '(1 2 3)))
+            (pprint (into-array '(1 2 3))))
+          :clj
+          ())
 
   nil)
 

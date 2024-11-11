@@ -469,7 +469,7 @@
   ;; It may pull hightlight style from merged theme.
   (reset! state/highlight
           (some->> find-vals 
-                   state/highlight-style)) )
+                   state/highlight-style)))
           
 
 
@@ -1048,7 +1048,7 @@
                  (cond
                    (= mode :comment) x
                    (not cfg-opts*)   a
-                   :else             nil #_(when-not mode mode-or-label)))
+                   :else             (when-not mode mode-or-label)))
 
              {:keys [log?* defd qf-nil? cfg-opts]}
              (?2-helper (keyed [mode template cfg-opts* label &form x]))]
