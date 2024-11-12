@@ -1,4 +1,4 @@
-(defproject io.github.paintparty/fireworks "0.10.3-SNAPSHOT"
+(defproject io.github.paintparty/fireworks "0.10.3"
   :description "Themeable print debugging library for Clojure, ClojureScript, and Babashka"
   :url "https://github.com/paintparty/fireworks"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"

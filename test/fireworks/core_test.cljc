@@ -13,8 +13,7 @@
 ;; Change it to that temporarily if you want to run these tests locally. This will be fixed in the near future.
 ;; By design, all cljs tests that test fireworks.core/p-data in this namespace will break if the line number that they are on changes!
 
-
-(def theme themes/alabaster-light)
+(def theme themes/alabaster-light-legacy)
 (declare escape-sgr)
 
 #?(:cljs

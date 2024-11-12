@@ -76,8 +76,8 @@
                       :metadata2  {:color            "#9f60be"
                                    :text-shadow      "0 0 2px #ffffff"
                                    :background-color "#e9e5ff"}
-                      :label      {:color            "#588d81"
-                                   :background-color "#e6f4f1"
+                      :label      {:color            "#398962"
+                                   :background-color "#eefbee"
                                    :text-shadow      "0 0 2px #ffffff"
                                    :font-style       :italic}
                       :eval-label {:color            "#4d6dba"
@@ -106,7 +106,6 @@
    :mood   :dark
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
-   :bracket-contrast "low"
    :tokens {:classes {:background    {:background-color "#0e1415"}
                       :string        {:color "#8cbd7a"}
                       :comment       {:color      "#DFDF8E"
@@ -121,10 +120,10 @@
                       :metadata2     {:color            "#a08a40"
                                       :text-shadow      "0 0 2px #003538"
                                       :background-color "#351d1d"}
-                      :label      {:color            "#6b948a"
-                                   :background-color "#003828"
-                                   :text-shadow      "0 0 2px #ffffff"
-                                   :font-style       :italic}
+                      :label         {:color            "#5f9ed8"
+                                      :background-color "#162f46"
+                                      :text-shadow      "0 0 2px #00381d"
+                                      :font-style       :italic}
                       :eval-label    {:color            "#85b7e5"
                                       :font-style       :italic
                                       :text-shadow      "0 0 2px #003d6b"
@@ -512,7 +511,6 @@
                       :comment       {:font-style :italic}
                       :function-args {:color "#9e9e9e"}}}})
 
-;; Not really used, maybe a bad idea
 (def universal
   {:name   "Universal"
    :desc   "A colorized syntax theme for Clojure data that works on both light and dark backgrounds."
@@ -546,3 +544,46 @@
                       :eval-label    :eval-label
                       :comment       {:font-style :italic}
                       :function-args {:color "#9e9e9e"}}}})
+
+(def alabaster-light-legacy
+  {:name   "Alabaster Light"
+   :desc   "Based on @tonsky's Alabaster theme."
+   :about  "This is additional documentation. Should support markdown here."
+   :url    "url goes here"
+   :author "Author Name"
+   :langs  ["Clojure" "ClojureScript" "Babashka"]
+   :mood   :light
+   :tokens {:classes {:background {:background-color "#f7f7f7"}
+                      :string     {:color "#448C27"}
+                      :constant   {:color "#7A3E9D"}
+                      :definition {:color "#4d6dba"}
+                      :annotation {:color      "#8c8c8c" 
+                                   :font-style :italic}
+                      :metadata   {:color            "#be55bb"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :background-color "#fae8fd"}
+                      :metadata2  {:color            "#9f60be"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :background-color "#e9e5ff"}
+                      :label      {:color            "#398962"
+                                   :background-color "#eefbee"
+                                  ;;  :color            "#619488"
+                                  ;;  :background-color "#e7f9f5"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :font-style       :italic}
+                      :eval-label {:color            "#4d6dba"
+                                   :background-color "#edf2fc"
+                                   :text-shadow      "0 0 2px #ffffff"
+                                   :font-style       :italic}}
+            :syntax  {:js-object-key {:color "#888888"}}
+            :printer {:file-info     {:color                "#4d6dba"
+                                      :font-style           :italic
+                                      :padding-inline-start :0ch}
+                      :eval-form     :eval-label
+                      :comment       {:color            "#2e6666"
+                                      :text-shadow      "0 0 2px #ffffff"
+                                      :background-color "#e5f1fa"
+                                      :outline          "2px solid #e5f1fa"
+                                      :font-style       :italic}
+                      :function-args {:color "#999999"}
+                      :atom-wrapper  :label}}})
