@@ -596,6 +596,18 @@ Although more of an edge-case, you can pass a `:print-with` option at the call s
 <br>
 <br>
 
+
+
+### Helpful warnings for bad option values
+
+If you happen to pass a bad value for an option, either at the call-site or in your global config, Fireworks will issue an actionable warning:
+
+<p align="center"><img src="resources/features/helpful-warnings.png" width="634px" /></p>
+
+
+
+
+
 ## Displaying metadata
 By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value to which it is attached. In practice, I find this formatting much faster to comprehend as compared to conventional "block" positioning of the metadata (above the carrying value), especially when working with metadata-heavy code.
 

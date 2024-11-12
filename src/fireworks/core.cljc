@@ -363,6 +363,7 @@
          (merge m 
                 (keyed [k line column])
                 {:header (:fw-fnsym opts)
+                 :k      k
                  :v      new-val
                  :form   (:quoted-fw-form opts) 
                  :file   (:ns-str opts)}))))))

@@ -37,7 +37,17 @@
                     :column column
                     :file   file
                     :header (or header "Invalid option value:")
-                    :body   (str (expound/expound-str spec
+                    :body   (str (when (and form k v)
+                                   (bling "\n"
+                                          "Bad value:\n"
+                                          [:bold k] " " [:bold v]
+                                          (str "\n"
+                                               (string/join (repeat (count (str k)) " "))
+                                               " "
+                                               )
+                                          [:bold.warning (string/join (repeat (count (str v)) "^"))]
+                                          "\n\n\n"))
+                                 (expound/expound-str spec
                                                       v
                                                       {:print-specs? false})
                                  (when default
