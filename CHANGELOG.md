@@ -5,6 +5,17 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 <br>
 
+## 0.10.3
+2024-11-11
+
+#### Fixed
+- #38 
+- #40 
+- #36
+
+<br>
+<br>
+
 ## 0.10.2
 2024-11-8
 
