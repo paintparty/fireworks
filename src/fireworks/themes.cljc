@@ -76,8 +76,8 @@
                       :metadata2  {:color            "#9f60be"
                                    :text-shadow      "0 0 2px #ffffff"
                                    :background-color "#e9e5ff"}
-                      :label      {:color            "#619488"
-                                   :background-color "#e7f9f5"
+                      :label      {:color            "#588d81"
+                                   :background-color "#e6f4f1"
                                    :text-shadow      "0 0 2px #ffffff"
                                    :font-style       :italic}
                       :eval-label {:color            "#4d6dba"

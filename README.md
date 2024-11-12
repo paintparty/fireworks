@@ -24,7 +24,29 @@
 
 <br>
 <br>
+<br>
+<br>
 
+<p align="center"><sub><b>Fireworks (Alabaster Dark) + Clojure + lein-test-refresh + integrated terminal</b></sub></p>
+<p align="center">
+  <img width="830px"
+       src="resources/tour/fw-tour-intro-dark.gif"
+       alt="Fireworks light and dark themes animated slideshow">
+  </img>
+</p>
+<br>
+<p align="center"><sub><b>Fireworks (Alabaster Light) + Clojure + lein-test-refresh + integrated terminal</b></sub></p>
+<p align="center">
+  <img width="830px"
+       src="resources/tour/fw-tour-intro-light.gif"
+       alt="Fireworks light and dark themes animated slideshow">
+  </img>
+</p>
+<!-- <p align="center"><img width="830px" src="resources/fireworks-samples-cropped-xl-2.gif" alt="Fireworks light and dark themes animated slideshow"></img></p> -->
+<!-- <p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p> -->
+
+<br>
+<br>
 
 ## Intro
 **Fireworks is a themeable tapping library for Clojure, ClojureScript, and Babashka.** It is designed to make your workflow easier, faster, and more enjoyable. If you like the idea of printing with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
@@ -61,12 +83,6 @@
 - Call site options let you easily try out different themes and formatting options.
 
 - Ships with several popular themes in light and dark variants.
-
-<br>
-<br>
-
-<p align="center"><img width="830px" src="resources/fireworks-samples-cropped-xl-2.gif" alt="Fireworks light and dark themes animated slideshow"></img></p>
-<p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p>
 
 <br>
 
