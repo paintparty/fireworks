@@ -1,13 +1,69 @@
 (ns fireworks.demo
-  (:require [fireworks.core :refer [? !? ?> !?>]]
+  (:require [fireworks.core :refer [? !? ?> !?> pprint]]
             [clojure.string :as string]))
 
+
+
+
+
+
+(str "hello " "world")
+
+(range 9)
+
+(range 20)
+
+(def sample
+  {:string      "string"
+   :number      1234
+   :symbol      'foo
+   :symbol+     (with-meta 'foo {:foo :bar})
+   :boolean     true
+   :set         #{1 2 3}
+   :lambda      #(inc %)
+   :fn          juxt
+   :regex       #"^hi$"
+   :atom/number (atom 1)
+   :brackets    [[[[[[]]]]]]
+   :java/array  (into-array [1 2 3 4])})
+
+sample
+
+(defn sample-fn [s]
+  (-> s
+      (string/split #" ")
+      drop-last
+      string/join
+      string/upper-case))
+
+(sample-fn "foo bar baz")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;; Tour -----------------------------------------
 
 (str "hello " "world")
 
 (def m {:a "a" :b "b" :c "c"})
 
 m
+
 
 ;; collections are printed on one line
 (range 9)
@@ -16,9 +72,9 @@ m
 (range 20)
 
 ;; Large collections are always truncated for
-;; printing. This :coll-limit value can be tweaked
-;; in your config or at the call site.
-(range 50)
+;; printing. This :coll-limit value can be
+;; tweaked in your config or at the call site.
+(range 42)
 
 
 ;; Values in maps are always justified
@@ -33,8 +89,8 @@ m
  "d"                 "string"
  #{1 2 3}            "set"}
 
-;; Atoms and Volatiles are displayed with a tag
-;; and ecapsulated in angle brackets
+;; Atoms and Volatiles are displayed with a
+;; tag and ecapsulated in angle brackets
 (atom m)
 (volatile! m)
 
@@ -66,10 +122,9 @@ coll-with-meta
 
 
 
-;; You can tweak the display of the label and file
-;; info alacarte...
+;; You can tweak the display of the context...
 
-;; Show just the result (omit label and file info)
+;; Show just the result 
 (!? :result {:a 1 :b 2})
 
 ;; Customize the label
@@ -80,12 +135,19 @@ coll-with-meta
 
 
 
-;; You can also use a different formatting method...
+;; You can also use a different printing fn...
+
 ;; Use pprint instead of fireworks
 (!? :pp- {:a 1 :b 2})
 
-;; use pprint, just result (omit label and file info)
+;; use pprint, just result
 (!? :pp- {:a 1 :b 2})
+
+
+
+
+
+;; Rainbow Brackets --------------------------
 
 
 ;; Rainbow brackets are enabled be default
@@ -93,60 +155,63 @@ coll-with-meta
 
 ;; Rainbow brackets contrast can be set in your
 ;; global fireworks config, or at call site 
-(!? "low-contrast rainbow-brackets" {:bracket-contrast :low} [[[[[[]]]]]])
+(!? "low-contrast rainbow-brackets" 
+    {:bracket-contrast :low}
+    [[[[[[]]]]]])
 
-(!? "no rainbow-brackets" {:enable-rainbow-brackets? false} [[[[[[]]]]]])
-
-(!? "WTF" {:coll-limit 10} {:asdfasd 1
-                            :b 2
-                            :xasdfasd 1
-                            :c 2
-                            :dddf 2
-                            })
+;; Or disabled entirely
+(!? "no rainbow-brackets"
+    {:enable-rainbow-brackets? false}
+    [[[[[[]]]]]])
 
 
-;; Unlike pprint, Fireworks is more explicit about
-;; labeling native Java objects
+;; Fireworks is more explicit than pprint
+;; wrt labeling native Java objects
 #_(pprint (java.util.ArrayList. (range 6)))
 (!? (java.util.ArrayList. (range 6)))
 
 
-;; A map with a bunch of different value types
-(def kitchen-sink 
- {:string             "string"
-  :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-  :number             1234
-  :symbol             'foo
-  :symbol-w-meta      (with-meta 'foo {:foo :bar})
-  :boolean            true
-  :set                #{1 2 3}
-  :lambda             #(inc %)
-  :fn                 juxt
-  :regex              #"^hi$"
-  :record             myrecord
-  :atom/number        (atom 1)
-  :brackets           [[[[[[]]]]]]
-  :hash-map/with-meta (with-meta
-                        {:a :foo
-                         :b 2}
-                        {:a {:abc 1
-                             :xyz "abcdefg"}})
-  :java/array         (into-array [1 2 3 4])
-  :java/HashSet       (java.util.HashSet. #{1 2 3})
-  :java/HashMap       (java.util.HashMap. {:a 1
-                                           :b 2})
-  })
 
-(!? kitchen-sink)
 
+
+
+
+
+
+;; Sample --------------------------
+
+(def sample
+ {:string       "string"
+  :number       1234
+  :symbol       'foo
+  :symbol+      (with-meta 'foo {:foo :bar})
+  :boolean      true
+  :set          #{1 2 3}
+  :lambda       #(inc %)
+  :fn           juxt
+  :regex        #"^hi$"
+  :record       myrecord
+  :atom/number  (atom 1)
+  :brackets     [[[[[[]]]]]]
+  :java/array   (into-array [1 2 3 4])
+  :java/HashSet (java.util.HashSet. #{1 2 3})})
+
+(!? sample)
+
+
+
+
+
+
+;; Find --------------------------
 
 ;; Find and hightlight a specific value
-(!? {:find {:pred #(= 2 %)}} kitchen-sink)
+(!? {:find {:pred #(= 2 %)}} sample)
 
 ;; Find and hightlight multiple values
 (!?
  {:find [{:pred #(= 2 %)}
          {:pred  #(= 1 %)
           :style {:background-color "#a0f7fd"}}]}
- kitchen-sink)
+ sample)
 
