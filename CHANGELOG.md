@@ -3,6 +3,13 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+
+## Unreleased
+
+#### Added
+- Add formatted key and value printing to body of `fireworks.messaging/bad-option-value-warning`
+
+<br>
 <br>
 
 ## 0.10.3
