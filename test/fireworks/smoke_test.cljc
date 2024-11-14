@@ -213,22 +213,26 @@
                                    3333333}}})
 
 (def basic-samples-cljc-theme
-  {:string          "string"
-   :uuid            #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number          1234
-   :symbol          (with-meta 'mysym {:foo :bar})
-   :boolean         true
-   :lambda           #(inc %)
-   :fn              juxt
-   :regex           #"^hi$"
-   :record          record-sample
-   :atom/number     (atom 1)
-   :brackets        [[[[[[]]]]]]
-   :map/nested-meta (with-meta {:a :foo
-                                :b 2}
-                      {:a (with-meta (symbol "foo")
-                            {:abc (symbol "bar")
-                             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})})
+  {:string        "string"
+   :uuid          #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number        1234
+   :symbol-w-meta (with-meta 'mysym {:foo :bar})
+   :boolean       true
+   :lambda        #(inc %)
+   :fn            juxt
+   :regex         #"^hi$"
+   :record        record-sample
+   :atom/number   (atom 1)
+   :brackets      [[[[[[]]]]]]
+   :map/with-meta (with-meta {:a :foo
+                              :b :bar} {:k1 "abcdefghijklmnop"
+                                        :k2 "qrstuvwxyz"})
+  ;;  :map/nested-meta (with-meta {:a :foo
+  ;;                               :b 2}
+  ;;                     {:a (with-meta (symbol "foo")
+  ;;                           {:abc (symbol "bar")
+  ;;                            :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
+   })
 
 
 ;; (?
@@ -1023,7 +1027,7 @@ basic-samples
    :clj
    (do
      #_(? (tag-map (fn [a] (inc a))))
-     #_(? basic-samples-cljc)
+     (? "Universal Neutral" {:theme "Universal Neutral"} basic-samples-cljc-theme)
      #_(? #{"abcdefghijklmnopqrstuvwxyzzz"
             3333333})
 

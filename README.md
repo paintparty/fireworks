@@ -696,6 +696,11 @@ Fireworks includes a handful of popular themes:
 <div align="center"><sub><b><i>Neutral Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
 <div align="center"><img src="resources/themes/light/Neutral-Light.png" width="534px"/></div>
 
+<div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/themes/light/Universal-Neutral-On-Light.png" width="534px"/></div>
+
+
+
 <div align="center"><sub><b><i>Alabaster Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Alabaster-Dark.png" width="534px"/></div>
 
@@ -713,6 +718,11 @@ Fireworks includes a handful of popular themes:
 
 <div align="center"><sub><b><i>Neutral Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Neutral-Dark.png" width="534px"/></div>
+
+<div align="center"><sub><b><i>Univeral Neutral (used if no theme is specified)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><img src="resources/themes/dark/Universal-Neutral-On-Dark.png" width="534px"/></div>
+
+
 
 Making your own Fireworks theme to perfectly match your current editor theme is straightforward.
 
