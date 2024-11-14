@@ -79,7 +79,7 @@
                                    :22222
                                    3333333}}})
 
-(defn test-suite []
+#_(defn test-suite []
   #?(:cljs
      (do
        #_(? #_{:label                      "my-label"
@@ -263,7 +263,7 @@
     (assoc! x :k 11))
 
   (println "\n:Transient Set")
-  (let [x (transient #{1 2 3 4 5 6 7 8 9 0})]
+  #_(let [x (transient #{1 2 3 4 5 6 7 8 9 0})]
     (? {:label "Transient Set" :coll-limit 7} x)
     (conj! x 11))
 
@@ -280,9 +280,10 @@
 
 
 ;; For trying stuff out
-#_(defn test-suite []
+(defn test-suite []
 
-  (? {:label                        "my-label"
+  (? :pp (into-array '(1 2 3)))
+  #_(? {:label                        "my-label"
       :enable-terminal-truecolor?   true
       :enable-terminal-italics?     true
       :bracket-contrast             "high"

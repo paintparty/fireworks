@@ -9,6 +9,9 @@ For a list of breaking changes, check [here](#breaking-changes)
 #### Added
 - Add formatted key and value printing to body of `fireworks.messaging/bad-option-value-warning`
 
+#### Fixed
+- Java array printing in `:pp` mode via incorporation of upstream patch from `me.flowthing.pp 2024-11-13.77` into `fireworks.pp`
+
 <br>
 <br>
 

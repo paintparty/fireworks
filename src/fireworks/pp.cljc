@@ -37,12 +37,9 @@
               (recur (rest m) k-ns (assoc nm (strip-ns k) v)))))
         [ns nm]))))
 
-(defn ^:private cljc-array? [x]
-#?(:cljs
-   (array? x)
-   :clj
-   (boolean (some-> ~x class .isArray))))
-
+(defmacro ^:private array?
+  [x]
+  `(some-> ~x class .isArray))
 
 (defn ^:private open-delim
   "Return the opening delimiter (a string) of coll."
@@ -51,7 +48,7 @@
     (map? coll) "{"
     (vector? coll) "["
     (set? coll) "#{"
-    (cljc-array? coll) "["
+    (array? coll) "["
     :else "("))
 
 (defn ^:private close-delim
@@ -61,7 +58,7 @@
     (map? coll) "}"
     (vector? coll) "]"
     (set? coll) "}"
-    (cljc-array? coll) "]"
+    (array? coll) "]"
     :else ")"))
 
 (defprotocol CountKeepingWriter
@@ -294,7 +291,7 @@
 
      Object
      (-print [this writer opts]
-       (if (cljc-array? this)
+       (if (array? this)
          (-print-seq this writer opts)
          (print-method this writer)))))
 
@@ -581,7 +578,7 @@
 
      Object
      (-pprint [this writer opts]
-       (if (cljc-array? this)
+       (if (array? this)
          (-pprint-seq this writer opts)
          (write writer (print-linear this opts))))))
 

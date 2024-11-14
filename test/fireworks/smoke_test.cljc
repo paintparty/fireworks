@@ -1027,7 +1027,12 @@ basic-samples
    :clj
    (do
      #_(? (tag-map (fn [a] (inc a))))
-     (? "Universal Neutral" {:theme "Universal Neutral"} basic-samples-cljc-theme)
+
+     (? "Universal Neutral"
+      {:theme "Universal Neutral"
+       :when #(not= % 12)}
+      basic-samples-cljc-theme)
+     
      #_(? #{"abcdefghijklmnopqrstuvwxyzzz"
             3333333})
 
@@ -1101,7 +1106,7 @@ basic-samples
     ;;           (java.util.HashMap. {"a" 1 "b" 2 "c" 3})]
     ;;          #_{:max-width 20})
     ;;  (println "\n\n")
-
+     
 ;;     ;;  (? (tag (java.util.HashMap. {"a" 1
 ;;     ;;                               "b" 2})))
 ;;     ;;  (? (tag [1 2]))
