@@ -51,12 +51,15 @@
   the class of the object. For ClojureScript, gets either the `name` attribute
   or the protocol name if the `name` attribute doesn't exist."
   [x]
-  #?(:clj (.getName (class x))
-     :cljs (let [t (type x)
-                 n (.-name t)]
-             (if (empty? n)
-               (pr-str t)
-               n))))
+  #?(:clj 
+     ;; Todo confirm babashka won't trip on this
+     (.getName (class x))
+     :cljs
+     (let [t (type x)
+           n (.-name t)]
+       (if (empty? n)
+         (pr-str t)
+         n))))
 
 
 (declare rank)

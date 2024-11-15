@@ -114,16 +114,35 @@
                           ;; TODO - Add stacktrace preview in bling for cljs?
                           body
                           :clj
-                          (bling
-                           [:italic.subtle.bold "Message from Clojure:"]
-                           "\n"
-                           (string/replace (.getMessage err) #"\(" "\n(")
-                           "\n\n"
-                           (stack-trace-preview
-                            {:error err
-                             :regex #"^fireworks\.|^lasertag\."
-                             :depth 12})
-                           (some->> body (str "\n\n"))))
+                          (let [
+                                ;;  Leave this stack trace stuff out but maybe put it back in with
+                                ;;  a config option for showing full-stacktrace of fireworks errors
+                                ;;  maybe call it :fireworks-dev/full-stacktrace? or something.
+                                ;; strace (some->> (when #(instance? Exception err)
+                                ;;                   err)
+                                ;;                 .getStackTrace
+                                ;;                 (map str))
+                                ]
+                            (bling
+                             [:italic.subtle.bold "Message from Clojure:"]
+                             "\n"
+                             (string/replace (.getMessage err) #"\(" "\n(")
+                             "\n\n"
+                             (stack-trace-preview
+                              {:error err
+                               :regex #"^fireworks\.|^lasertag\."
+                               :depth 12})
+                             (some->> body (str "\n\n"))
+                             
+                            ;;  Leave this stack trace stuff out but maybe put it back in with
+                            ;;  a config option for showing full-stacktrace of fireworks errors
+                            ;;  maybe call it :fireworks-dev/full-stacktrace? or something.
+                            ;;  
+                            ;;  (when strace "\n\n")
+                            ;;  (when strace [:italic.subtle.bold "Full stacktrace:"])
+                            ;;  (when strace "\n")
+                            ;;  (with-out-str (some-> strace pprint))
+                             )))
                        body)})))))
 
 ;; TODO fix this for new callouts

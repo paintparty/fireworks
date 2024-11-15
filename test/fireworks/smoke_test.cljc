@@ -10,6 +10,7 @@
             [clojure.walk :as walk]
             [fireworks.util :as util]
             [lasertag.core :refer [tag-map tag]]
+            ;; [lambdaisland.ansi :as ansi]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
@@ -1022,17 +1023,47 @@ basic-samples
 
 ;; (pprint (? :data (volatile! record-sample)))
 ;; (pprint (? :data (atom record-sample)))
+
+;;  example viewer def -------------------------------
+(def myval
+  #{{:kind   :rook
+     :player :white
+     :pos    [5 1]}
+    {:kind   :pawn
+     :player :white
+     :pos    [5 3]}})
+;; -----------------------------------------------------------------------------
+
+
 #?(:cljs
    ()
    :clj
    (do
+
+
+;;  example viewer start -----------------------------
+
+;; (prn 
+;; (-> (? :data myval) :formatted+ :string))
+     
+;; (pprint
+;; (sequence ansi/apply-props
+;;           (ansi/token-stream (-> (? :data myval)
+;;                                  :formatted+
+;;                                  :string))))
+
+
+;; example viewer start end ----------------------------------
+
      #_(? (tag-map (fn [a] (inc a))))
 
-     (? "Universal Neutral"
-      {:theme "Universal Neutral"
-       :when #(not= % 12)}
-      basic-samples-cljc-theme)
-     
+     #_(? "Universal Neutral"
+          {:theme "Universal Neutral"
+           :when  #(not= % 12)}
+          basic-samples-cljc-theme)
+
+     (? (tag-map (into-array '(1 2 3))))
+
      #_(? #{"abcdefghijklmnopqrstuvwxyzzz"
             3333333})
 
@@ -1086,12 +1117,14 @@ basic-samples
 ;;     ;;  (? #{"a" 1 "b" 2})                        
      
 
+    (println "\n:Java HashSet")
+    (? (java.util.HashSet. #{"a" 1 "b" 2}))
      
-;;      (!? (tag (java.util.HashSet. #{"a" 1
-;;                                    "b" 2})))
-     
+    (println "\n:Java ArrayList")
+    (? (java.util.ArrayList. [1 2 3 4 5 6 7]))
 
-     
+    (println "\n:Java HashMap")
+    (? (java.util.HashMap. {"a" 1 "b" 2 "c" 3}))
 
     ;;  (? [1 2 3 4 5 6 7])
     ;;  (? :result 
