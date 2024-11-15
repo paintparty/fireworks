@@ -79,7 +79,7 @@
                                    :22222
                                    3333333}}})
 
-#_(defn test-suite []
+(defn test-suite []
   #?(:cljs
      (do
        #_(? #_{:label                      "my-label"
@@ -87,7 +87,7 @@
                :enable-terminal-italics?   true
                :bracket-contrast           "high"
                :theme                      "Alabaster Light"}
-            #js [1 2 3])
+          #js [1 2 3])
 
        #_(? [1 (new js/Int8Array #js[1 2 3])])
 
@@ -103,7 +103,7 @@
 
   (? {:theme "Alabaster Light"
       :label "basic-samples-cljc"}
-   basic-samples-cljc)
+     basic-samples-cljc)
 
   (? foo)
 
@@ -155,81 +155,6 @@
   (println "\n:single-line-coll-length-limit of 50")
   (? {:single-line-coll-length-limit 50} (range 20))
 
-  (? {:label                        "my-label"
-      :enable-terminal-truecolor?   true
-      :enable-terminal-italics?     true
-      :bracket-contrast             "high"
-      :theme                        fireworks.themes/alabaster-light
-      :custom-printers              {}
-      :coll-limit                   20
-      :non-coll-length-limit        (-> fireworks.config/options
-                                        :non-coll-length-limit
-                                        :default)
-      :display-namespaces?          (-> fireworks.config/options
-                                        :display-namespaces?
-                                        :default)
-      :metadata-position            (-> fireworks.config/options
-                                        :metadata-position
-                                        :default)
-      :metadata-print-level         (-> fireworks.config/options
-                                        :metadata-print-level
-                                        :default)
-      :non-coll-mapkey-length-limit (-> fireworks.config/options
-                                        :non-coll-mapkey-length-limit
-                                        :default)}
-     
-     (with-meta 
-       {:b 2}
-       {:a (with-meta (symbol "foo")
-             {:abc (symbol "bar")
-              :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
-     #_{:abcdefg {:string             "string"
-                  :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-                  :number             1234
-                  :symbol             (with-meta 'mysym {:foo :bar})
-                  :symbol2            (with-meta 'mysym
-                                        {:foo ["afasdfasf"
-                                               "afasdfasf"
-                                               {:a "foo"
-                                                :b [1 2 [1 2 3 4]]}
-                                               "afasdfasf"
-                                               "afasdfasf"]
-
-                                         :bar "fooz"})
-                  :boolean            true
-                  :lambda              #(inc %)
-                  :fn                 juxt
-                  :regex              #"^hi$"
-                  :record             record-sample
-                  :atom/record        (atom record-sample)
-                  :atom/number        (atom 1)
-                  :brackets           [[[[[[]]]]]]
-                  :map/nested-meta    (with-meta 
-                                        {(with-meta (symbol :a)
-                                           {:abc "bar"
-                                            :xyz "abc"}) (with-meta (symbol "foo")
-                                                           {:abc "bar"
-                                                            :xyz "abc"})
-                                         :b                                               2}
-                                        {:a (with-meta (symbol "foo")
-                                              {:abc (symbol "bar")
-                                               :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
-                  :map/single-line    {:a 1
-                                       :b 2
-                                       :c "three"}
-                  :map/multi-line     {:abc      "bar"
-                                       "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                                       [:a :b]   123444}
-                  :vector/single-line [1 :2 "three"]
-                  :vector/multi-line  ["abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                                       :22222
-                                       3333333]
-                  :set/single-line    #{1 :2 "three"}
-                  :set/multi-line     #{"abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                                        :22222
-                                        3333333}}}
-     )
-
   
   (println "\n:Volatile, record")
   (? {:label                      "my-label"
@@ -263,26 +188,22 @@
     (assoc! x :k 11))
 
   (println "\n:Transient Set")
-  #_(let [x (transient #{1 2 3 4 5 6 7 8 9 0})]
-    (? {:label "Transient Set" :coll-limit 7} x)
+  (let [x (transient #{1 2 3 4 5 6 7 8 9 0})]
+    (? {:label      "Transient Set"
+        :coll-limit 7} x)
     (conj! x 11))
 
-
-       #?(:cljs
-          (do 
-            (? :pp (into-array '(1 2 3)))
-            (pprint (into-array '(1 2 3))))
-          :clj
-          ())
+  (println "\n:Array, :pp mode")
+  (? :pp (into-array '(1 2 3)))
 
   nil)
 
 
 
 ;; For trying stuff out
-(defn test-suite []
+#_(defn test-suite []
 
-  (? :pp (into-array '(1 2 3)))
+  #_(? :pp (into-array '(1 2 3)))
   #_(? {:label                        "my-label"
       :enable-terminal-truecolor?   true
       :enable-terminal-italics?     true
