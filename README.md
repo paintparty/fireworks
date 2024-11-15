@@ -1075,7 +1075,7 @@ Debugging, tracing, observability:<br>
 [omni-trace](https://github.com/cyrik/omni-trace),
 [postmortem](https://github.com/athos/postmortem),
 [sayid](https://github.com/clojure-emacs/sayid),
-
+[scope-capture](https://github.com/vvvvalvalval/scope-capture)
 
 
 Printing and visualization:<br>

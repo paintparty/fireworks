@@ -1024,6 +1024,7 @@ basic-samples
 ;; (pprint (? :data (volatile! record-sample)))
 ;; (pprint (? :data (atom record-sample)))
 
+
 ;;  example viewer def -------------------------------
 (def myval
   #{{:kind   :rook
@@ -1035,10 +1036,6 @@ basic-samples
 ;; -----------------------------------------------------------------------------
 
 
-#?(:cljs
-   ()
-   :clj
-   (do
 
 
 ;;  example viewer start -----------------------------
@@ -1062,7 +1059,7 @@ basic-samples
            :when  #(not= % 12)}
           basic-samples-cljc-theme)
 
-     (? (tag-map (into-array '(1 2 3))))
+     #_(? (tag-map (into-array '(1 2 3))))
 
      #_(? #{"abcdefghijklmnopqrstuvwxyzzz"
             3333333})
@@ -1124,7 +1121,7 @@ basic-samples
     (? (java.util.ArrayList. [1 2 3 4 5 6 7]))
 
     (println "\n:Java HashMap")
-    (? (java.util.HashMap. {"a" 1 "b" 2 "c" 3}))
+    (println (? :data {:theme "Monokai Dark"} (java.util.HashMap. {"a" 1 "b" 2 "c" 3})))
 
     ;;  (? [1 2 3 4 5 6 7])
     ;;  (? :result 
@@ -1168,83 +1165,5 @@ basic-samples
 ;;      (!? (instance? java.util.ArrayList (java.util.ArrayList. [1 2 3])))
 ;;      (!? (instance? java.util.ArrayList [1 2 3]))
      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-     ))
-
-;; #?(:clj
-;;    )
-
 
 
