@@ -45,8 +45,6 @@
  :find                         nil}
 
 
-;; Formatting
-
 (deftype MyType [a b])
 (def my-data-type (->MyType 2 3))
 (defrecord MyRecordType [a b])
@@ -59,108 +57,124 @@
 (defn xyv ([x y] (+ x y)) ([x y v] (+ x y v)))
 (defn xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz [x y] (+ x y))
 
-#?(:cljs
-   (do
-     (do
-         (def my-date (new js/Date))
-         (def my-prom (js/Promise. (fn [x] x)))
-         (def prom-ref js/Promise)
 
-         (def cljs-datatypes
-           [my-data-type
-            my-record-type])
+(def my-date (new #?(:cljs js/Date :clj java.util.Date)))
 
-         (def cljs-functions
-           [MyType
-            MyRecordType
-            different-behavior
-            xy
-            xyv
-            xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz
-            #(inc %)
-            (fn [a] (inc a))
-            (fn incr [a] (inc a))
-            juxt
-            js/Date
-            js/Array])
+        ;;  (def my-prom (js/Promise. (fn [x] x)))
+        ;;  (def prom-ref js/Promise)
 
-         (def js-number-types
-           {##NaN      ##NaN
-            ##Inf      ##Inf
-            ##-Inf     ##-Inf
-            :js/BigInt (js/BigInt 171)
-            :int       1
-            :float     1.50})))
-   :clj
-   (do
-    (def my-date (java.util.Date.))
-     (def number-types
-       {:nan                  ##NaN
-        :inf                  ##Inf
-        :-Inf                 ##-Inf
-        1/3                   1/3
-        :byte                 (byte 0)
-        :short                (short 3)
-        :double               (double 23.44)
-        :decimal              1M
-        :int                  1
-        :float                (float 1.50)
-        :char                 (char 97)
-        :java.math.BigInteger (java.math.BigInteger. "171")})))
+(def number-types 
+  #?(:cljs
+     {##NaN      ##NaN
+      ##Inf      ##Inf
+      ##-Inf     ##-Inf
+      :js/BigInt (js/BigInt 171)
+      :int       1
+      :float     1.50}
+     :clj
+     {:not-a-number       ##NaN
+      :infinity           ##Inf
+      :negative-infinity  ##-Inf
+      :fraction           1/3
+      :byte               (byte 0)
+      :short              (short 3)
+      :double             (double 23.44)
+      :decimal            1M
+      :int                1
+      :float              (float 1.50)
+      :char               (char 97)
+      :BigInteger         (java.math.BigInteger. "171")}))
 
 (def everything
-  {:primitives   {:a                              9999
-                  :bbb                            "asdfasdfasdfjasdfasdfasdfasdfa"
-                  "really-long-string-abcdefghi"  "really-long-string-abcdefghi"  
-                  1                               2
-                  "string"                        "hello"
-                  :keyword                        :keyword
-                  true                            false
-                  nil                             nil
-                  'symbol                         'symbol
-                  #"^hi$"                         #"^hi$"
-                  #"really-long-string-abcdefghi" #"really-long-string-abcdefghi"}
-   :functions    {(symbol "(fn [])")   #()
-                  (symbol "#(+ % %2)") #(+ % %2) 
-                  +                    -
-                  MyType               MyType
-                  my-data-type         my-data-type
-                  MyRecordType         MyRecordType
-                  :really-long         xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz}
-   :collections  {:vector        [1 2 3]
-                  :set           #{1 2 3}
-                  :list          '(1 2 3)
-                  :seq           (range 10)
-                  :record        my-record-type
-                  ;; :truncation-candidate [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]
-                  :colls-as-keys {[1 2]    "afjasljfalsjdalsfk"
-                                  #{1 2 3} "afsdfasdfsdfasfas"}}
-   :abstractions {:atom (atom 1)
-                  :date my-date}
-   :with-meta    {:symbol  (with-meta (symbol (str "foo"))
-                             (into {}
-                                   (map (fn [x y] [x y])
-                                        (range 20)
-                                        (repeat :foo))))
-                  :vector  ^{:foo :bar} [:foo :bar :baz]
-                  :vector* ^{:foo :bar} [(with-meta (symbol (str "foo"))
-                                           {:bar :baz})
-                                         (with-meta (symbol (str "bar")) 
-                                           {:bar :baz})
-                                         (with-meta (symbol (str "baz"))
-                                           {:bar :baz})]
-                  :map     ^{:foo :bar} {:one :two}
-                  :map*    ^{:foo :bar} {(with-meta (symbol (str "foo"))
-                                           {:bar :baz})
-                                         (with-meta (symbol (str "bar"))
-                                           {:bar :baz})
+  (array-map
+   :primitives
+   {:string   "string"
+    :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+    :int      1234
+    :float    3.33
+    :fraction 1/3
+    :symbol   'mysym
+    :boolean  true
+    :keyword  :keyword
+    :nil      nil}
 
-                                         (with-meta (symbol (str "bang"))
-                                           {:bar :baz})
-                                         (with-meta (symbol (str "bop"))
-                                           {:bar :baz})}}
-   :number-types #?(:cljs js-number-types
-                    :clj nil)})
+   :number-types
+   number-types
+
+   :functions    
+   {:lambda            #()
+    :lambda-2-args     #(+ % %2) 
+    :core-fn           juxt 
+    :interop-date-fn   #?(:cljs
+                          js/Date
+                          :clj
+                          java.util.Date)
+    :datatype-constr   MyType
+    :recordtype-constr MyRecordType
+    :really-long-fn    xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz}
+
+   :collections  
+   {:vector    [1 2 3]
+    :set       #{1 2 3}
+    :list      '(1 2 3)
+    :lazy-seq  (range 10)
+    :record    my-record-type
+    :array-map (apply array-map
+                      (mapcat (fn [x y] [x y])
+                              (range 12)
+                              (range 12)))
+    ;; :truncation-candidate [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]
+    }
+
+   :map-keys   
+   {+                              "core function"
+    "really-long-string-abcdefghi" "really-long-string-abcdefghi"
+    [1 2]                          "vector"
+    #{1 2 3}                       "set"
+    'symbol                        "symbol"
+    (with-meta 'mysym
+      {:a "foo"
+       :b [1 2 [1 2 3 4]]})        "symbol with meta"
+    #"^hi$"                        "regex"
+    #"really-long-regex-abcdefghi" "long regex"
+    1                              "number" 
+    nil                            "nil" 
+                ;; MyType               MyType
+                ;; my-data-type         my-data-type
+                ;; MyRecordType         MyRecordType
+                ;; :really-long         xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz
+    }
+
+   :abstractions
+   {:atom      (atom 1)
+    :date      my-date
+    :volatile! (volatile! 1)
+    }
+
+   :with-meta
+   {:symbol  (with-meta (symbol (str "foo"))
+               (apply array-map
+                     (mapcat (fn [x y] [x y])
+                             (range 7)
+                             (repeat :foo))))
+    :vector  ^{:foo :bar} [:foo :bar :baz]
+    :vector* ^{:foo :bar} [(with-meta (symbol (str "foo"))
+                             {:bar :baz})
+                           (with-meta (symbol (str "bar")) 
+                             {:bar :baz})
+                           (with-meta (symbol (str "baz"))
+                             {:bar :baz})]
+    :map     ^{:foo :bar} {:one :two}
+    :map*    ^{:foo :bar} {(with-meta (symbol (str "foo"))
+                             {:bar :baz})  (with-meta (symbol (str "bar"))
+                                             {:bar :baz})
+
+                           (with-meta (symbol (str "bang"))
+                             {:bar :baz}) (with-meta (symbol (str "bop"))
+                                            {:bar :baz})}}
+))
+
+(? everything)
 
 (defrecord Foos [a b])
 
