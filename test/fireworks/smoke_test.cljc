@@ -1114,14 +1114,16 @@ basic-samples
 ;;     ;;  (? #{"a" 1 "b" 2})                        
      
 
-    (println "\n:Java HashSet")
-    (? (java.util.HashSet. #{"a" 1 "b" 2}))
-     
-    (println "\n:Java ArrayList")
-    (? (java.util.ArrayList. [1 2 3 4 5 6 7]))
 
-    (println "\n:Java HashMap")
-    (println (? :data {:theme "Monokai Dark"} (java.util.HashMap. {"a" 1 "b" 2 "c" 3})))
+    ;; (println "\n:Java HashSet")
+    ;; (? (java.util.HashSet. #{"a" 1 "b" 2}))
+     
+    ;; (println "\n:Java ArrayList")
+    ;; (? (java.util.ArrayList. [1 2 3 4 5 6 7]))
+
+    ;; (println "\n:Java HashMap")
+    ;; (println (? :data {:theme "Monokai Dark"} (java.util.HashMap. {"a" 1 "b" 2 "c" 3})))
+
 
     ;;  (? [1 2 3 4 5 6 7])
     ;;  (? :result 
