@@ -6,7 +6,8 @@
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
-   [fireworks.state :as state]
+   #?(:clj [fireworks.state :as state]
+      :cljs [fireworks.state :as state :refer [node?]])
    [fireworks.tag :as tag]
    #?(:cljs [fireworks.macros
              :refer-macros
@@ -302,11 +303,11 @@
         :file-info-str file-info*}
        form-meta
        {:formatted+ (merge {:string fmt+}
-                           #?(:cljs {:css-styles @state/styles}))
+                           #?(:cljs (when node? {:css-styles @state/styles})))
         :formatted  (merge {:string fmt}
-                           #?(:cljs {:css-styles (subvec
-                                                  @state/styles 
-                                                  css-count*)}))})
+                           #?(:cljs (when node? 
+                                      {:css-styles (subvec @state/styles 
+                                                           css-count*)})))})
 
       ;; Else if print-and-return fns, return printing opts
       {:fmt           fmt+
@@ -491,7 +492,6 @@
 ;  P::::::::P
 ;  PPPPPPPPPP
 
-
 (defn- print-formatted
   ([x]
    (print-formatted x nil))
@@ -508,7 +508,16 @@
                                     :column column
                                     :file   (or file ns-str)}))
      #?(:cljs
-        (f x)
+        (if (ff node?) 
+          (do 
+            ;; If it has been formatted by fireworks, it will print here.
+            (print (:margin-top x))
+            (some-> fmt print)
+
+            ;; Extra line based on :margin-bottom
+            ;; TODO - not print if fmt is nil or blank string?
+            ((if log? print println) (:margin-bottom x)))
+          (f x))
         :clj
         (do 
           ;; If it has been formatted by fireworks, it will print here.
@@ -524,8 +533,15 @@
   "Called internally."
   [{:keys [user-opts]} x]
   #?(:cljs
-     (do (pprint x)
+     (if node? 
+       (do
+         (print (margin-block-str user-opts :margin-top))
+         (pprint x)
+          ;; Extra line after pprint result
+         (print (margin-block-str user-opts :margin-bottom))
          x)
+       (do (pprint x)
+           x))
      :clj
      (do
        (print (margin-block-str user-opts :margin-top))
@@ -537,8 +553,15 @@
 (defn ^{:public true} _log 
   [{:keys [user-opts]} x]
   #?(:cljs
-     (do (js/console.log x)
+     (if node? 
+       (do
+         (print (margin-block-str user-opts :margin-top))
+         (pprint x)
+          ;; Extra line after pprint result
+         (print (margin-block-str user-opts :margin-bottom))
          x)
+       (do (js/console.log x)
+           x))
      :clj
      (do
        (print (margin-block-str user-opts :margin-top))
@@ -681,7 +704,8 @@
       (if (:p-data? opts) 
         printing-opts
         (do 
-          (print-formatted printing-opts #?(:cljs js-print))
+          (print-formatted printing-opts
+                           #?(:cljs (when-not node? js-print)))
 
           ;; Fireworks formatting and printing  does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
@@ -690,7 +714,9 @@
           
           (when (and (not (:fw/log? opts))
                      (:log? opts))
-            #?(:cljs (js/console.log x)
+            #?(:cljs (if node?
+                       (fireworks.core/pprint x)
+                       (js/console.log x))
                :clj (fireworks.core/pprint x)))
 
           (reset! state/formatting-form-to-be-evaled? false)
@@ -768,7 +794,9 @@
         (let [print? (if-let [user-when-fn (some-> opts :when (util/maybe fn?))] 
                        (boolean (apply user-when-fn [x]))
                        true)] 
-          (when print? (print-formatted printing-opts #?(:cljs js-print)))
+          (when print? (print-formatted printing-opts 
+                                        #?(:cljs (when-not node? 
+                                                   js-print))))
 
           ;; Fireworks formatting and printing of does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
@@ -778,7 +806,9 @@
           (when (and print?
                      (not (:fw/log? opts))
                      (:log? opts))
-            #?(:cljs (js/console.log x)
+            #?(:cljs (if node?
+                       (fireworks.core/pprint x)
+                       (js/console.log x))
                :clj (fireworks.core/pprint x)))
 
           (reset! state/formatting-form-to-be-evaled? false)
@@ -973,7 +1003,9 @@
               ~x)))
 
        :log-
-       `(do #?(:cljs (js/console.log ~x)
+       `(do #?(:cljs (if node?
+                       (fireworks.core/pprint ~x)
+                       (js/console.log ~x))
                :clj (fireworks.core/pprint ~x))
             ~x)
 
@@ -1034,7 +1066,10 @@
               ~x)))      
 
        :log-
-       `(do #?(:cljs (js/console.log ~x) :clj (fireworks.core/pprint ~x))
+       `(do #?(:cljs (if node?
+                       (fireworks.core/pprint ~x)
+                       (js/console.log ~x))
+               :clj (fireworks.core/pprint ~x))
             ~x)
 
        :pp-

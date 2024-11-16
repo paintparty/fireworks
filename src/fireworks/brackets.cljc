@@ -1,7 +1,8 @@
 (ns ^:dev/always fireworks.brackets
   (:require [clojure.string :as string]
             [fireworks.defs :as defs]
-            [fireworks.state :as state]
+            #?(:clj [fireworks.state :as state]
+               :cljs [fireworks.state :as state :refer [node?]])
             [fireworks.tag :as tag :refer [style-from-theme tag! tag-reset!]]
             [fireworks.util :refer [badge-type]]))
 
@@ -77,10 +78,16 @@
                              (get style-maps (state/metadata-token) nil)))))]
                   bgc)]
     #?(:cljs
-       (str "color:" color 
-            (when bgc (str ";background-color:" bgc))
-            ";"
-            (state/line-height-css))
+       (if node? 
+         (if (and bgc (vector? bgc))
+           (let [bgc-sgr (state/x->sgr bgc :bg)
+                 color   (string/replace color #"m$" (str ";" bgc-sgr "m"))]
+             color)
+           color)
+         (str "color:" color 
+              (when bgc (str ";background-color:" bgc))
+              ";"
+              (state/line-height-css)))
        :clj
        (if (and bgc (vector? bgc))
          (let [bgc-sgr (state/x->sgr bgc :bg)
@@ -120,7 +127,9 @@
                  (str ",  style is:   " (readable-sgr style))))
 
     #?(:cljs
-       (swap! state/styles conj style)
+       (if node? 
+         style
+         (swap! state/styles conj style))
        :clj
        style)))
 
@@ -140,14 +149,18 @@
     (when (state/debug-tagging?)
       (println "\nbracket!*  " s ",  t: " t))
 
-    #?(:cljs (if t 
-               (do (tag-bracket! m s)
+    #?(:cljs (if node? 
+               (if t 
+                 (str (tag-bracket! m s) s (tag-reset!))
+                 (str (tag-reset!) s (tag-reset!)))
+               (if t 
+                 (do (tag-bracket! m s)
+                     (tag-reset! reset-theme-token)
+                     (str "%c" s "%c"))
+                 (do
                    (tag-reset! reset-theme-token)
-                   (str "%c" s "%c"))
-               (do
-                 (tag-reset! reset-theme-token)
-                 (tag-reset! reset-theme-token)
-                 (str "%c" s "%c")))
+                   (tag-reset! reset-theme-token)
+                   (str "%c" s "%c"))))
        :clj (if t 
               (str (tag-bracket! m s) s (tag-reset!))
               (str (tag-reset!) s (tag-reset!))))))

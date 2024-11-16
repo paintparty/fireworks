@@ -1,6 +1,7 @@
 (ns ^:dev/always fireworks.tag
   (:require [clojure.string :as string]
-            [fireworks.state :as state]))
+            #?(:clj [fireworks.state :as state]
+               :cljs [fireworks.state :as state :refer [node?]])))
 
 
 
@@ -23,7 +24,10 @@
              (let [m (state/sanitize-style-map custom-badge-style)
                    m (state/with-line-height m)]
                #?(:cljs
-                  (string/join (map state/kv->css2 m))
+                  (if node?
+                    (let [m (state/map-vals state/hexa-or-sgr m)]
+                      (state/m->sgr m))
+                    (string/join (map state/kv->css2 m)) )
                   :clj
                   (let [m (state/map-vals state/hexa-or-sgr m)]
                     (state/m->sgr m))))
@@ -47,29 +51,33 @@
                                t)
                              bgc
                              custom-badge-style)]
-     #?(:cljs (let [s (cond
-                        (= t :type-label)
-                        (str s)
-                        ;; (= t :metadata)
-                        ;; (str s "")
-                        :else
-                        s)]
-                (swap! state/styles conj s)
-                "%c")
+     #?(:cljs (if node?
+                s
+                (let [s (cond
+                          (= t :type-label)
+                          (str s)
+                          ;; (= t :metadata)
+                          ;; (str s "")
+                          :else
+                          s)]
+                  (swap! state/styles conj s)
+                  "%c"))
         :clj s))))
 
 (defn tag-reset!
   ([]
    (tag-reset! :foreground))
   ([theme-token]
-   #?(:cljs (let [theme-token (or theme-token :foreground)]
-              (when (state/debug-tagging?)
-                (println "tag/tag-reset!  with  " theme-token))
-              (swap! state/styles
-                     conj
-                     (-> @state/merged-theme theme-token))
-              "%c")
-              :clj "\033[0m")))
+   #?(:cljs (if node?
+              "\033[0m"
+              (let [theme-token (or theme-token :foreground)]
+                (when (state/debug-tagging?)
+                  (println "tag/tag-reset!  with  " theme-token))
+                (swap! state/styles
+                       conj
+                       (-> @state/merged-theme theme-token))
+                "%c"))
+      :clj "\033[0m")))
 
 (defn tag-entity! 
   ([x t]

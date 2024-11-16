@@ -17,6 +17,44 @@
             [fireworks.themes :as themes]
             [fireworks.util :as util]))
 
+;; debugging
+#?(:cljs
+   (defonce node?
+     (boolean 
+      (some->> 
+       (?pp
+        (or (when (and (exists? js/window)
+                       (exists? js/window.document))
+              :browser)
+
+            (when (and (exists? js/process)
+                       (not (nil? (some-> js/process .-versions)))
+                       (not (nil? (some-> js/process .-versions .-node))))
+              :node)
+
+            (when (and (identical? "object" (js/goog.typeOf js/self))
+                       (.-constructor js/self)
+                       (= (some-> js/self .-constructor .-name)
+                          "DedicatedWorkerGlobalScope"))
+              :web-worker)
+
+            (when (or (exists? js/window)
+                      (and (exists? js/navigator)
+                           (when-let [nav (.-userAgent js/navigator)]
+                             (and (identical? "object" (js/goog.typeOf nav))
+                                  (or (.includes nav "Node.js")
+                                      (.includes nav "jsdom"))))))
+              :js-dom)
+
+            (when (and (exists? js/Deno)
+                       (exists? (.-version js/Deno))
+                       (exists? (some-> js/Deno .-version .-deno)))
+              :deno)))
+       (contains? #{:deno :node}))))
+   :clj
+   ())
+
+
 ;; Internal state atoms for development debugging ------------------------
 (def debug-config? false)
 (def print-config? false)
@@ -298,7 +336,9 @@
   (str header
        "\n\n"
        #?(:cljs
-          (str "%c" k " " "\"" v "\"%c")
+          (if node?
+            (str "\033[1;m" k " " "\"" v "\"\033[0;m")
+            (str "%c" k " " "\"" v "\"%c"))
           :clj
           (str "\033[1;m" k " " "\"" v "\"\033[0;m"))
        
@@ -410,9 +450,16 @@
                    (when debug? 
                      (println (str "(string? v) Value for " k " is " v)))
                    #?(:cljs
-                      (do 
-                        (when debug? (println (str "Returning " v)))
-                        v) 
+                      (if node? 
+                        (if (:enable-terminal-truecolor? @config) 
+                          (let [ret (color/hexa->rgba v)] 
+                            (when debug? (enable-truecolor-debug-message ret))
+                            ret)
+                          (let [ret (color/hexa->x256 v)]
+                            (when debug? (disable-truecolor-debug-message ret))
+                            ret))
+                        (do (when debug? (println (str "Returning " v)))
+                            v)) 
                       :clj
                       (if (:enable-terminal-truecolor? @config) 
                         (let [ret (color/hexa->rgba v)] 
@@ -449,7 +496,15 @@
 (defn sanitize-style-map [m]
   (let [ret (select-keys m defs/valid-stylemap-keys)]
     #?(:cljs
-       ret
+       (if node? 
+         (let [ret* (if (false? (:enable-terminal-italics? @config)) 
+                      (dissoc ret :font-style)
+                      ret)
+               ret  (if (false? (:enable-terminal-font-weights? @config))
+                      (dissoc ret* :font-weight)
+                      ret*)]
+           ret)
+         ret)
        :clj
        (let [ret* (if (false? (:enable-terminal-italics? @config)) 
                     (dissoc ret :font-style)
@@ -471,8 +526,11 @@
   (map-vals (fn [[k m]] 
               (let [m-with-k (assoc m :k k)
                     m        (sanitize-style-map m-with-k)] 
-                #?(:cljs (let [m (with-line-height m)]
-                           [k (string/join (map kv->css2 m))])
+                #?(:cljs (if node? 
+                           (do
+                             [k (m->sgr m-with-k)])
+                           (let [m (with-line-height m)]
+                             [k (string/join (map kv->css2 m))]))
                    :clj (do
                           [k (m->sgr m-with-k)]))))
             merged))
@@ -553,7 +611,7 @@
                      "high" :high
                      :high  :high
                      :low))
-        context  #?(:cljs :browser
+        context  #?(:cljs (if node? :x-term :browser)
                     :clj :x-term)
         ;; TODO - Figure out best way to pull rainbow brackets from theme?
         ret     (or (some->> theme :rainbow-brackets context rest (take-nth 2))
@@ -562,7 +620,7 @@
                          context
                          contrast
                          vals))
-        ret      #?(:cljs ret
+        ret      #?(:cljs (if node? (map xterm-id->sgr ret) ret)
                     :clj (map xterm-id->sgr ret))]
     ret))
 
@@ -677,13 +735,16 @@
 ;; -----------------------------------------------------------------------------
 
 (defn highlight-style* [{:keys [style pred]}]
+  ;; TODO - check is css-str always gonna be css?
   (let [css-str (if style 
                   (let [style (sanitize-style-map style)]
                     (when (seq style)
-                      #?(:cljs (str (->> style
-                                         (map kv->css2)
-                                         string/join)
-                                    (line-height-css))
+                      #?(:cljs (if node?
+                                 (m->sgr (map-vals hexa-or-sgr style))
+                                 (str (->> style
+                                           (map kv->css2)
+                                           string/join)
+                                      (line-height-css)))
                          :clj  (m->sgr (map-vals hexa-or-sgr style)))))
                   (:highlight @merged-theme))]
     (assoc {:pred pred}

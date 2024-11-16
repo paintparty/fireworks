@@ -699,7 +699,7 @@
 
 (defn- gap-spaces
   [{:keys [s k formatting-meta? theme-token-map]}]
-  #?(:cljs s
+  #?(:cljs s ;; TODO - do we need to handle node here?
      :clj  (if formatting-meta?
              (do (when (state/debug-tagging?)
                    (println (str "\ntagging "
