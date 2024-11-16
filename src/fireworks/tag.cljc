@@ -22,15 +22,11 @@
          m (or (f t) (f :foreground))
          m (if custom-badge-style
              (let [m (state/sanitize-style-map custom-badge-style)
-                   m (state/with-line-height m)]
-               #?(:cljs
-                  (if node?
-                    (let [m (state/map-vals state/hexa-or-sgr m)]
-                      (state/m->sgr m))
-                    (string/join (map state/kv->css2 m)) )
-                  :clj
-                  (let [m (state/map-vals state/hexa-or-sgr m)]
-                    (state/m->sgr m))))
+                   m (state/with-line-height m)
+                   f #(let [m (state/map-vals state/hexa-or-sgr m)]
+                        (state/m->sgr m))]
+               #?(:cljs (if node? (f) (string/join (map state/kv->css2 m)))
+                  :clj (f)))
              m)]
      (str m bgc))))
 
@@ -64,12 +60,14 @@
                   "%c"))
         :clj s))))
 
+(def sgr-opening-str "\033[0m")
+
 (defn tag-reset!
   ([]
    (tag-reset! :foreground))
   ([theme-token]
    #?(:cljs (if node?
-              "\033[0m"
+              sgr-opening-str
               (let [theme-token (or theme-token :foreground)]
                 (when (state/debug-tagging?)
                   (println "tag/tag-reset!  with  " theme-token))
@@ -77,7 +75,7 @@
                        conj
                        (-> @state/merged-theme theme-token))
                 "%c"))
-      :clj "\033[0m")))
+      :clj sgr-opening-str)))
 
 (defn tag-entity! 
   ([x t]

@@ -507,26 +507,23 @@
                                     :line   line
                                     :column column
                                     :file   (or file ns-str)}))
-     #?(:cljs
-        (if (ff node?) 
-          (do 
-            ;; If it has been formatted by fireworks, it will print here.
-            (print (:margin-top x))
-            (some-> fmt print)
+     (let [termf #(do 
+                    ;; If it has been formatted by fireworks, it will print here.
+                    (print (:margin-top %))
+                    (some-> fmt print)
+                    ;; Extra line based on :margin-bottom
+                    ;; TODO - not print if fmt is nil or blank string?
+                    ((if log? print println) (:margin-bottom x)))  ]
 
-            ;; Extra line based on :margin-bottom
-            ;; TODO - not print if fmt is nil or blank string?
-            ((if log? print println) (:margin-bottom x)))
-          (f x))
-        :clj
-        (do 
-          ;; If it has been formatted by fireworks, it will print here.
-          (print (:margin-top x))
-          (some-> fmt print)
+       #?(:cljs (if node? (termf x) (f x))
+          :clj (termf x))))))
 
-          ;; Extra line based on :margin-bottom
-          ;; TODO - not print if fmt is nil or blank string?
-          ((if log? print println) (:margin-bottom x)))))))
+(defn- _pp* [user-opts x]
+  (print (margin-block-str user-opts :margin-top))
+  (pprint x)
+  ;; Extra line after pprint result
+  (print (margin-block-str user-opts :margin-bottom))
+  x)
 
 (defn ^{:public true}
   _pp
@@ -534,41 +531,18 @@
   [{:keys [user-opts]} x]
   #?(:cljs
      (if node? 
-       (do
-         (print (margin-block-str user-opts :margin-top))
-         (pprint x)
-          ;; Extra line after pprint result
-         (print (margin-block-str user-opts :margin-bottom))
-         x)
-       (do (pprint x)
-           x))
+       (_pp* user-opts x)
+       (do (pprint x) x))
      :clj
-     (do
-       (print (margin-block-str user-opts :margin-top))
-       (pprint x)
-       ;; Extra line after pprint result
-       (print (margin-block-str user-opts :margin-bottom))
-       x)))
+     (_pp* user-opts x)))
 
 (defn ^{:public true} _log 
   [{:keys [user-opts]} x]
   #?(:cljs
      (if node? 
-       (do
-         (print (margin-block-str user-opts :margin-top))
-         (pprint x)
-          ;; Extra line after pprint result
-         (print (margin-block-str user-opts :margin-bottom))
-         x)
-       (do (js/console.log x)
-           x))
-     :clj
-     (do
-       (print (margin-block-str user-opts :margin-top))
-       (pprint x)
-       ;; Extra line after pprint result
-       (print (margin-block-str user-opts :margin-bottom))
-       x)))
+       (_pp* user-opts x)
+       (do (js/console.log x) x))
+     :clj (_pp* user-opts x)))
 
 
 (defn- fw-debug-report [config-before opts fname]

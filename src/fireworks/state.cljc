@@ -331,16 +331,17 @@
       m)))
 
 
+(defn- kv-pair-str [k v]
+  (str "\033[1;m" k " " "\"" v "\"\033[0;m"))
+
 (defn invalid-color-warning 
   [{:keys [header v k footer theme-token from-custom-badge-style?]}]
   (str header
        "\n\n"
-       #?(:cljs
-          (if node?
-            (str "\033[1;m" k " " "\"" v "\"\033[0;m")
-            (str "%c" k " " "\"" v "\"%c"))
-          :clj
-          (str "\033[1;m" k " " "\"" v "\"\033[0;m"))
+       #?(:cljs (if node?
+                  (kv-pair-str k v)
+                  (str "%c" k " " "\"" v "\"%c"))
+          :clj (kv-pair-str k v))
        
        (when from-custom-badge-style?
          (str "\n\n"
@@ -444,6 +445,13 @@
 (defn hexa-or-sgr
   [[k v]]
   (let [debug? false
+        f      #(if (:enable-terminal-truecolor? @config) 
+                  (let [ret (color/hexa->rgba v)] 
+                    (when debug? (enable-truecolor-debug-message ret))
+                    ret)
+                  (let [ret (color/hexa->x256 v)]
+                    (when debug? (disable-truecolor-debug-message ret))
+                    ret))
         x      (if (and (or (= k :color) (= k :background-color))
                         (string? v))
                  (do
@@ -451,23 +459,11 @@
                      (println (str "(string? v) Value for " k " is " v)))
                    #?(:cljs
                       (if node? 
-                        (if (:enable-terminal-truecolor? @config) 
-                          (let [ret (color/hexa->rgba v)] 
-                            (when debug? (enable-truecolor-debug-message ret))
-                            ret)
-                          (let [ret (color/hexa->x256 v)]
-                            (when debug? (disable-truecolor-debug-message ret))
-                            ret))
+                        (f)
                         (do (when debug? (println (str "Returning " v)))
                             v)) 
                       :clj
-                      (if (:enable-terminal-truecolor? @config) 
-                        (let [ret (color/hexa->rgba v)] 
-                          (when debug? (enable-truecolor-debug-message ret))
-                          ret)
-                        (let [ret (color/hexa->x256 v)]
-                          (when debug? (disable-truecolor-debug-message ret))
-                          ret))))
+                      (f)))
                  v)]
     [k x]))
 
@@ -494,25 +490,16 @@
 
 
 (defn sanitize-style-map [m]
-  (let [ret (select-keys m defs/valid-stylemap-keys)]
-    #?(:cljs
-       (if node? 
-         (let [ret* (if (false? (:enable-terminal-italics? @config)) 
-                      (dissoc ret :font-style)
-                      ret)
-               ret  (if (false? (:enable-terminal-font-weights? @config))
-                      (dissoc ret* :font-weight)
-                      ret*)]
-           ret)
-         ret)
-       :clj
-       (let [ret* (if (false? (:enable-terminal-italics? @config)) 
-                    (dissoc ret :font-style)
-                    ret)
-             ret (if (false? (:enable-terminal-font-weights? @config))
-                   (dissoc ret* :font-weight)
-                   ret*)]
-         ret))))
+  (let [ret (select-keys m defs/valid-stylemap-keys)
+        f #(let [ret* (if (false? (:enable-terminal-italics? @config)) 
+                        (dissoc ret :font-style)
+                        ret)
+                 ret  (if (false? (:enable-terminal-font-weights? @config))
+                        (dissoc ret* :font-weight)
+                        ret*)]
+             ret)]
+    #?(:cljs (if node? (f) ret)
+       :clj  (f))))
 
 
 (defn with-line-height [m]
@@ -527,12 +514,10 @@
               (let [m-with-k (assoc m :k k)
                     m        (sanitize-style-map m-with-k)] 
                 #?(:cljs (if node? 
-                           (do
-                             [k (m->sgr m-with-k)])
+                           [k (m->sgr m-with-k)]
                            (let [m (with-line-height m)]
                              [k (string/join (map kv->css2 m))]))
-                   :clj (do
-                          [k (m->sgr m-with-k)]))))
+                   :clj [k (m->sgr m-with-k)])))
             merged))
 
 

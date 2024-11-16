@@ -76,24 +76,21 @@
                              @state/merged-theme-with-unserialized-style-maps]
                          (or (get style-maps label-type nil)
                              (get style-maps (state/metadata-token) nil)))))]
-                  bgc)]
+                  bgc)
+        f #(if (and bgc (vector? bgc))
+             (let [bgc-sgr (state/x->sgr bgc :bg)
+                   color   (string/replace color #"m$" (str ";" bgc-sgr "m"))]
+               color)
+             color)]
     #?(:cljs
        (if node? 
-         (if (and bgc (vector? bgc))
-           (let [bgc-sgr (state/x->sgr bgc :bg)
-                 color   (string/replace color #"m$" (str ";" bgc-sgr "m"))]
-             color)
-           color)
+         (f)
          (str "color:" color 
               (when bgc (str ";background-color:" bgc))
               ";"
               (state/line-height-css)))
        :clj
-       (if (and bgc (vector? bgc))
-         (let [bgc-sgr (state/x->sgr bgc :bg)
-               color   (string/replace color #"m$" (str ";" bgc-sgr "m"))]
-           color)
-         color))
+       (f))
     ))
 
 (defn- tag-bracket!
@@ -126,12 +123,8 @@
                  theme-token
                  (str ",  style is:   " (readable-sgr style))))
 
-    #?(:cljs
-       (if node? 
-         style
-         (swap! state/styles conj style))
-       :clj
-       style)))
+    #?(:cljs (if node? style (swap! state/styles conj style))
+       :clj style)))
 
 (defn- bracket!*
   [{:keys [s t] :as m}]
@@ -144,15 +137,16 @@
                   :user-meta
                   :fw/hide-brackets?)
             " "
-            s)]
+            s)
+        f #(if t 
+             (str (tag-bracket! m s) s (tag-reset!))
+             (str (tag-reset!) s (tag-reset!)))]
 
     (when (state/debug-tagging?)
       (println "\nbracket!*  " s ",  t: " t))
 
     #?(:cljs (if node? 
-               (if t 
-                 (str (tag-bracket! m s) s (tag-reset!))
-                 (str (tag-reset!) s (tag-reset!)))
+               (f)
                (if t 
                  (do (tag-bracket! m s)
                      (tag-reset! reset-theme-token)
@@ -161,9 +155,7 @@
                    (tag-reset! reset-theme-token)
                    (tag-reset! reset-theme-token)
                    (str "%c" s "%c"))))
-       :clj (if t 
-              (str (tag-bracket! m s) s (tag-reset!))
-              (str (tag-reset!) s (tag-reset!))))))
+       :clj (f))))
 
 (defn- bracket!
   [m kw]
