@@ -7,7 +7,10 @@
                 ]
  :dependencies [[io.github.paintparty/lasertag "0.8.3"]
                 [io.github.paintparty/bling "0.2.0"]]
- :builds       {:test {:target    :karma
-                       :output-to "out/test.js"
-                       :ns-regexp "-test$"
-                       :autorun   true}}}
+ :builds       {:test        {:target    :karma
+                              :output-to "out/test.js"
+                              :ns-regexp "-test$"
+                              :autorun   true}
+                :node-script {:target    :node-script
+                              :main      fireworks.script-test/main
+                              :output-to "out/fireworks-in-node-demo-script.js"}}}

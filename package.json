@@ -4,7 +4,8 @@
   "description": "ClojureScript tests for fireworks",
   "main": "index.js",
   "scripts": {
-    "test": "shadow-cljs compile test && karma start --single-run"
+    "test": "shadow-cljs compile test && karma start --single-run",
+    "node-script": "shadow-cljs compile node-script"
   },
   "keywords": [],
   "author": "",
