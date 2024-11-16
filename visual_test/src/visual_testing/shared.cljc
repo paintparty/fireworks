@@ -3,6 +3,7 @@
   (:require [fireworks.config]
             [fireworks.themes]
             [lasertag.core]
+            [bling.sample]
             [fireworks.core :refer [? pprint]]))
 
 (defrecord Foo [a b])
@@ -79,7 +80,7 @@
                                    :22222
                                    3333333}}})
 
-(defn test-suite []
+#_(defn test-suite []
   #?(:cljs
      (do
        #_(? #_{:label                      "my-label"
@@ -201,7 +202,7 @@
 
 
 ;; For trying stuff out
-#_(defn test-suite []
+(defn test-suite []
 
   #_(? :pp (into-array '(1 2 3)))
   #_(? {:label                        "my-label"
@@ -323,6 +324,6 @@
 
   nil)
 
-
-
-
+;; For Bling
+#_(defn test-suite []
+ (bling.sample/sample))
