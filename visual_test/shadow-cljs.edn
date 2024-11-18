@@ -4,7 +4,7 @@
                 ;; Local Fireworks - uncomment if debugging Fireworks locally
                 "../src/"
                 ;; Local Lasertag - uncomment if debugging Lasertag locally
-                ;; "../../lasertag/src/"
+                "../../lasertag/src/"
                 ;; Local Bling - uncomment if debugging Bling locally
                 ;; "../../bling/src/"
                 ]

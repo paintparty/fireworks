@@ -9,6 +9,7 @@
             [clojure.pprint :refer [pprint]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
+            [fireworks.sample :as sample]
             [lasertag.core :refer [tag-map tag]]
             ;; [lambdaisland.ansi :as ansi]
             #?(:cljs [cljs.test :refer [deftest is]])
@@ -56,25 +57,75 @@
 (defn xy [x y] (+ x y))
 (defn xyv ([x y] (+ x y)) ([x y v] (+ x y v)))
 (defn xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz [x y] (+ x y))
-
-
 (def my-date (new #?(:cljs js/Date :clj java.util.Date)))
 
-        ;;  (def my-prom (js/Promise. (fn [x] x)))
-        ;;  (def prom-ref js/Promise)
+;;  (def my-prom (js/Promise. (fn [x] x)))
+;;  (def prom-ref js/Promise)
+
+
+;; For producing example :call field in metadata of examples
+(defrecord QuotedCall [qx x])
+
+#?(:clj
+   (do (defn tt*
+         [x
+          {:keys [show-extras?
+                  show-extras-as-meta?
+                  extras-keys]}]
+         (let [[x call] (if (instance? QuotedCall x)
+                          [(:x x) (:qx x)]
+                          [x nil])
+               extras   (when show-extras?
+                          (merge (tag-map x)
+                                 (when call {:call call})))
+               extras   (or (some->> extras-keys
+                                     seq
+                                     (select-keys extras))
+                            extras)
+               x        (if (and show-extras?
+                                 show-extras-as-meta?)
+                          (if (util/carries-meta? x)
+                            x
+                            (-> x str symbol))
+                          x)]
+           (cond (and show-extras?
+                      show-extras-as-meta?)
+                 (with-meta x extras)
+
+                 show-extras?
+                 [x extras]
+
+                 :else
+                 x)))
+       
+       (defmacro qc [coll]
+         `(do
+            (->QuotedCall (quote ~coll) ~coll))
+         )))
+
+(def interop-collection-types
+#?(:cljs
+   ()
+   :clj
+   (array-map 
+    :java.util.ArrayList (java.util.ArrayList. (range 6))
+    :java.util.HashMap (java.util.HashMap. {"a" 1
+                                            "b" 2})
+    :java.util.HashSet (java.util.HashSet. #{"a" 1 "b" 2})
+    :java.lang.String (java.lang.String. "welcome")
+    :array (to-array '(1 2 3 4 5)))))
 
 (def number-types 
   #?(:cljs
-     {##NaN      ##NaN
-      ##Inf      ##Inf
-      ##-Inf     ##-Inf
+     (array-map
+      :not-a-number      ##NaN
+      :infinity      ##Inf
+      :negative-infinity     ##-Inf
       :js/BigInt (js/BigInt 171)
       :int       1
-      :float     1.50}
+      :float     1.50)
      :clj
-     {:not-a-number       ##NaN
-      :infinity           ##Inf
-      :negative-infinity  ##-Inf
+     (array-map
       :fraction           1/3
       :byte               (byte 0)
       :short              (short 3)
@@ -83,149 +134,75 @@
       :int                1
       :float              (float 1.50)
       :char               (char 97)
-      :BigInteger         (java.math.BigInteger. "171")}))
+      :java/BigInteger         (java.math.BigInteger. "171"))))
 
-(def everything
-  (array-map
-   :primitives
-   {:string   "string"
-    :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-    :int      1234
-    :float    3.33
-    :fraction 1/3
-    :symbol   'mysym
-    :boolean  true
-    :keyword  :keyword
-    :nil      nil}
+(pprint (? :data "foo"))
 
-   :number-types
-   number-types
+(!? {:coll-limit 100
+    :theme      "Alabaster Light"
+    :label      "Clojure(Script) Values"
+    :find {:pred #(= :tag %)}}
+     sample/vec-of-everything-cljc-with-extras)
 
-   :functions    
-   {:lambda            #()
-    :lambda-2-args     #(+ % %2) 
-    :core-fn           juxt 
-    :interop-date-fn   #?(:cljs
-                          js/Date
-                          :clj
-                          java.util.Date)
-    :datatype-constr   MyType
-    :recordtype-constr MyRecordType
-    :really-long-fn    xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz}
-
-   :collections  
-   {:vector    [1 2 3]
-    :set       #{1 2 3}
-    :list      '(1 2 3)
-    :lazy-seq  (range 10)
-    :record    my-record-type
-    :array-map (apply array-map
-                      (mapcat (fn [x y] [x y])
-                              (range 12)
-                              (range 12)))
-    ;; :truncation-candidate [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]
-    }
-
-   :map-keys   
-   {+                              "core function"
-    "really-long-string-abcdefghi" "really-long-string-abcdefghi"
-    [1 2]                          "vector"
-    #{1 2 3}                       "set"
-    'symbol                        "symbol"
-    (with-meta 'mysym
-      {:a "foo"
-       :b [1 2 [1 2 3 4]]})        "symbol with meta"
-    #"^hi$"                        "regex"
-    #"really-long-regex-abcdefghi" "long regex"
-    1                              "number" 
-    nil                            "nil" 
-                ;; MyType               MyType
-                ;; my-data-type         my-data-type
-                ;; MyRecordType         MyRecordType
-                ;; :really-long         xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz
-    }
-
-   :abstractions
-   {:atom      (atom 1)
-    :date      my-date
-    :volatile! (volatile! 1)
-    }
-
-   :with-meta
-   {:symbol  (with-meta (symbol (str "foo"))
-               (apply array-map
-                     (mapcat (fn [x y] [x y])
-                             (range 7)
-                             (repeat :foo))))
-    :vector  ^{:foo :bar} [:foo :bar :baz]
-    :vector* ^{:foo :bar} [(with-meta (symbol (str "foo"))
-                             {:bar :baz})
-                           (with-meta (symbol (str "bar")) 
-                             {:bar :baz})
-                           (with-meta (symbol (str "baz"))
-                             {:bar :baz})]
-    :map     ^{:foo :bar} {:one :two}
-    :map*    ^{:foo :bar} {(with-meta (symbol (str "foo"))
-                             {:bar :baz})  (with-meta (symbol (str "bar"))
-                                             {:bar :baz})
-
-                           (with-meta (symbol (str "bang"))
-                             {:bar :baz}) (with-meta (symbol (str "bop"))
-                                            {:bar :baz})}}
-))
-
-(? everything)
-
-(defrecord Foos [a b])
-
-(def record-sample (->Foos 1 2))
+(!? {:coll-limit 100
+    :label      "JVM Clojure Values"}
+   sample/interop-collection-types
+   #_(sample/show-everything [:number-types
+                            :interop-collection-types] 
+                           {:as-vec?     false
+                            ;;  :show-extras?         true
+                            ;;  :show-extras-as-meta? true
+                            :extras-keys [#_:tag
+                                          #_:call
+                                          :all-tags]}))
 
 (def basic-samples-cljc 
-  {:abcdefg {:string             "string"
-             :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-             :number             1234
-             :symbol             (with-meta 'mysym {:foo :bar})
-             :symbol2            (with-meta 'mysym
-                                   {:foo ["afasdfasf"
-                                          "afasdfasf"
-                                          {:a "foo"
-                                           :b [1 2 [1 2 3 4]]}
-                                          "afasdfasf"
-                                          "afasdfasf"]
+  {:string             "string"
+   :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :number             1234
+   :symbol             (with-meta 'mysym {:foo :bar})
+   :symbol2            (with-meta 'mysym
+                         {:foo ["afasdfasf"
+                                "afasdfasf"
+                                {:a "foo"
+                                 :b [1 2 [1 2 3 4]]}
+                                "afasdfasf"
+                                "afasdfasf"]
+                          :bar "fooz"})
+   :boolean            true
+   :lambda              #(inc %)
+   :fn                 juxt
+   :regex              #"^hi$"
+   :record             my-record-type
+   :atom/record        (atom my-record-type)
+   :atom/number        (atom 1)
+   :brackets           [[[[[[]]]]]]
 
-                                    :bar "fooz"})
-             :boolean            true
-             :lambda              #(inc %)
-             :fn                 juxt
-             :regex              #"^hi$"
-             :record             record-sample
-             :atom/record        (atom record-sample)
-             :atom/number        (atom 1)
-             :brackets           [[[[[[]]]]]]
-             :map/nested-meta    (with-meta 
-                                   {(with-meta (symbol :a)
-                                      {:abc "bar"
-                                       :xyz "abc"}) (with-meta (symbol "foo")
-                                                      {:abc "bar"
-                                                       :xyz "abc"})
-                                    :b                                               2}
-                                   {:a (with-meta (symbol "foo")
-                                         {:abc (symbol "bar")
-                                          :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
-             :map/single-line    {:a 1
-                                  :b 2
-                                  :c "three"}
-             :map/multi-line     {:abc      "bar"
-                                  "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                                  [:a :b]   123444}
-             :vector/single-line [1 :2 "three"]
-             :vector/multi-line  ["abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                                  :22222
-                                  3333333]
-             :set/single-line    #{1 :2 "three"}
-             :set/multi-line     #{"abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                                   :22222
-                                   3333333}}})
+   :map/nested-meta    (with-meta 
+                         {(with-meta (symbol :a)
+                            {:abc "bar"
+                             :xyz "abc"}) (with-meta (symbol "foo")
+                                            {:abc "bar"
+                                             :xyz "abc"})
+                          :b                                        2}
+                         {:a (with-meta (symbol "foo")
+                               {:abc (symbol "bar")
+                                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
+   :map/single-line    {:a 1
+                        :b 2
+                        :c "three"}
+   :map/multi-line     {:abc      "bar"
+                        "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                        [:a :b]   123444}
+   :vector/single-line [1 :2 "three"]
+   :vector/multi-line  ["abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                        :22222
+                        3333333]
+   :set/single-line    #{1 :2 "three"}
+   :set/multi-line     #{"abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+                         :22222
+                         3333333}
+   })
 
 (def basic-samples-cljc-theme
   {:string        "string"
@@ -236,72 +213,24 @@
    :lambda        #(inc %)
    :fn            juxt
    :regex         #"^hi$"
-   :record        record-sample
+   :record        my-record-type
+   :datatype      my-data-type
    :atom/number   (atom 1)
    :brackets      [[[[[[]]]]]]
    :map/with-meta (with-meta {:a :foo
-                              :b :bar} {:k1 "abcdefghijklmnop"
-                                        :k2 "qrstuvwxyz"})
-  ;;  :map/nested-meta (with-meta {:a :foo
-  ;;                               :b 2}
-  ;;                     {:a (with-meta (symbol "foo")
-  ;;                           {:abc (symbol "bar")
-  ;;                            :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
-   })
+                              :b :bar}
+                    {:k1 "abcdefghijklmnop"
+                     :k2 "qrstuvwxyz"})})
 
 
-;; (?
-;;  "Nested metadata, on val"
-;;  ^{:a (with-meta (symbol "foo")
-;;         {:for  'foo
-;;          :desc "meta for foo"})
-;;    :b 'bar}
-;;  [1 2 3])
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; SMOKE TESTS WITH COMMENTARY START
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (?
-;;  "Nested metadata, on key"
-;;  ^{(with-meta (symbol "a")
-;;      {:for  'a
-;;       :desc "meta for a"})
-;;    'foo
-
-;;    :b
-;;    'bar}
-;;  [1 2 3])
-
-;; (?
-;;  "Nested metadata, on key and val"
-;;  ^{(with-meta (symbol "a")
-;;      {:for  'a
-;;       :desc "meta for a"})
-;;    (with-meta (symbol "foo")
-;;         {:for  'foo
-;;          :desc "meta for foo"})
-
-;;    :b
-;;    'bar}
-;;  [1 2 3])
-
-#_(with-meta 
-  {(with-meta (symbol :a)
-     {:abc "bar"
-      :xyz "abc"}) (with-meta (symbol "foo")
-                     {:abc "bar"
-                      :xyz "abc"})
-   :b                                               2}
-  {:a (with-meta (symbol "foo")
-        {:abc (symbol "bar")
-         :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
-
-;; (? record-sample)
-
-;; Testing :non-coll-mapkey-length-limit
-;; (? {:non-coll-mapkey-length-limit 40} {"12345678_112345678_212345678_312345678_4" :gold})
-;; Testing print level truncation syntax
-#_(? {:print-level 1} {:a {:b {:a 1 :b 2}
-                         :c #{1 2 3 4 5}}})
-
-;; (? basic-samples-cljc)
+;; TODO - Add more commentary and thorough examples
 
 (defn co [k commentary]
   (callout {:border-weight :medium
@@ -317,129 +246,163 @@
             :margin-bottom 0}
            (bling [:italic.subtle form])))
 
+(do
+  ;; good 
+  #_(do 
+    (co '? nil)
+    (? {:a "foo"})
+    (? "width custom label" {:a "foo"})
+    (? "Custom label line1\nCustom label line2" {:a "foo"})
+    (? {:label "Custom label from :label option"} (atom {:a "foo" :b 12}))
+    (? (def x1 "x1"))
+    (? "def with custom label" (def x2 "x2"))
+    (? {:label "def with label from options"} (def x3 "x3")))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; SMOKE TESTS WITH COMMENTARY START
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  #_(do 
+    (co :label "Only display label (or form), no file info.")
+    (? :label "my label" {:a "foo"})
+    (when (= {:a "foo"}
+             (? :label
+                {:margin-bottom 0}
+                {:a "foo"}))
+      (println "✓"))
+    (? :label "Line1\nLine2" {:a "foo"})
+    (? :label {:label "Label from options" } (atom {:a "foo" :b 12}))
+    (? :label (def x4 "x4"))
+    (? :label {:label "def with label from options"} (def x5 "x5"))))
 
-;; TODO - Add more commentary and thorough examples
 
+  #_(do
+    (co :file "Only display file-info, no label (or form).\nReturns result.")
+    (? :file
+       {:a "foo"})
+    (when (= {:a "foo"}
+             (? :file
+                {:label         "?i : Just the namespace info"
+                 :margin-bottom 0}
+                {:a "foo"}))
+      (println "✓"))
+    (? :file {:a "foo"})
+    (? :file {:theme "Neutral Light"} (atom {:a "foo"
+                                             :b 12}))
+    (? :file (def x6 "x6"))
+    (? :file {:label "This label should not be displayed"} (def x7 "x7")))
+
+
+    #_(do 
+      (co :result "Only display result.\nReturns result.")
+      (? :result {:a "foo"})
+      (? :result "? : Default" {:a "foo"})
+      (when (= (? :result {:margin-bottom 0} {:a "foo"})
+               {:a "foo"})
+        (println "✓"))
+      (? :result "Custom label should not be visible" {:a "foo"})
+      (? :result {:label "Custom label from opts should not be visible"} (atom {:a "foo" :b 12}))
+      (? :result (def x8 "x8"))
+      (? :result {:label "Custom label from opts should not be visible"} (def x9 "x9")))
+  
+  #_(do 
+      (co :comment "Only display comment and file.\nDoes NOT return result.")
+      (? :comment "my comment") 
+      (? :comment {:margin-bottom 0} "my comment")) 
+  
+    #_(do 
+      (co :log "Uses js/console.log or pprint.\nReturns result.")
+      (? :log "my label" {:a "foo" :abc "bar"})
+      (when (= (? :log {:margin-bottom 0} {:a "foo" :abc "bar"})
+               {:a "foo" :abc "bar"})
+        (println "✓"))
+
+      (? :log "Line1\nLine2" {:a "foo" :abc "bar"})
+      (? :log {:label "With label from options" } (atom {:a "foo" :abc "bar"}))
+      (? :log (def x10 "x10"))
+      (? :log {:label "def with label from options"} (def x11 "x11")))
+  
+   #_(do 
+      (co :pp "Uses pprint.\nReturns result.")
+      (? :pp "my label" {:a "foo" :abc "bar"})
+      (when (= (? :log {:margin-bottom 0} {:a "foo" :abc "bar"})
+               {:a "foo" :abc "bar"})
+        (println "✓"))
+      (? :pp "Line1\nLine2" {:a "foo" :abc "bar"})
+      (? :pp {:label "With label from options" } (atom {:a "foo" :abc "bar"}))
+      (? :pp (def x10 "x10"))
+      (? :pp {:label "def with label from options"} (def x11 "x11")))
+
+   #_(do 
+      (co :log- "Uses js/console.log or pprint.\nReturns result.")
+      (? :log- "my label" {:a "foo" :abc "bar"})
+      (when (= (? :log {:margin-bottom 0} {:a "foo" :abc "bar"})
+               {:a "foo" :abc "bar"})
+        (println "✓"))
+      (? :log- "Line1\nLine2" {:a "foo" :abc "bar"})
+      (? :log- {:label "With label from options" } (atom {:a "foo" :abc "bar"}))
+      (? :log- (def x10 "x10"))
+      (? :log- {:label "def with label from options"} (def x11 "x11")))
+
+   #_(do 
+      (co :pp- "Uses js/console.log or pprint.\nReturns result.")
+      (? :pp- "my label" {:a "foo" :abc "bar"})
+      (when (= (? :log {:margin-bottom 0} {:a "foo" :abc "bar"})
+               {:a "foo" :abc "bar"})
+        (println "✓"))
+      (? :pp- "Line1\nLine2" {:a "foo" :abc "bar"})
+      (? :pp- {:label "With label from options" } (atom {:a "foo" :abc "bar"}))
+      (? :pp- (def x10 "x10"))
+      (? :pp- {:label "def with label from options"} (def x11 "x11")))
+
+  #_(do 
+    (co :data "Prints a data representation of the format.\nDoes NOT returns result.")
+    (pprint (? :data {:a "foo"}))
+    (when (= (-> (? :data {:margin-bottom 0} {:a "foo"})
+                 :formatted
+                 :string)
+             "\033[38;5;241m{\033[0m\033[38;2;122;62;157m:a\033[0m \033[38;2;68;140;39m\"foo\"\033[0m\033[38;5;241m}\033[0m")
+      (println "✓")))
+  
+  ;; Tracing feature, leave off for now
+  #_(do 
+    (co :trace "Trace form.\nReturns result.")
+    (co2 "Default" '(? :trace (-> 1 (+ 3))))
+    (? :trace (-> 1 (+ 3)))
+
+
+    (co2 "With user label" '(? :trace "My label" (-> 1 (+ 3))))
+    (? :trace "My label" (-> 1 (+ 3)))
+
+    (co2 "With longer threading form"
+         '(? :trace
+             (-> 1 (+ 3) (repeat 5 5555555))))
+    (? :trace (-> 1 (+ 3) (cons (repeat 5 5555555))))
+
+    ;; Different let bindings  
+      )
+
+  ;; let-binding trace, leave off for now
 #_(do 
-  (co '? "Basic functionality for `?`")
-  (? "? : Default" {:a "foo"})
-  (? "? : Default:\nLine1\nLine2" {:a "foo"})
-  (? {:label "with options"} (atom {:a "foo"
-                                    :b 12}))
-  (? (def x1 "x1"))
-  (? {:label "def with label from options"} (def x2 "x2"))
+;; (? :let 
+;;  (let [[a & rest] ["a" "b" "c" "d" "e"]]
+;;    [a rest]))
 
 
-  (co :label "Only display label (or form), no file info.")
-  (? :label "my label" {:a "foo"})
-  (when (= {:a "foo"}
-           (? :label
-              {:margin-bottom 0}
-              {:a "foo"}))
-    (println "✓"))
-;; (? :l "?l : Default:\nLine1\nLine2" {:a "foo"})
-;; (? :l {:label "with options" } (atom {:a "foo" :b 12}))
-;; (? :l (def x3 "x3"))
-;; (? :l {:label "def with label from options"} (def x4 "x4"))
-  
-  (co :file "Only display file-info, no label (or form).\nReturns result.")
-  (? :file
-     {:a "foo"})
-  (when (= {:a "foo"}
-           (? :file
-              {:label         "?i : Just the namespace info"
-               :margin-bottom 0}
-              {:a "foo"}))
-    (println "✓"))
-;; (? :i {:a "foo"})
-;; (? :i {:theme "Neutral Light"} (atom {:a "foo" :b 12}))
-;; (? :i (def x5 "x5"))
-;; (? :i {:theme "Neutral Light"} (def x6 "x6"))
-  
-  (co :result "Only display result.\nReturns result.")
-  (? :result {:a "foo"})
-  (? :result "? : Default" {:a "foo"})
-  (when (= (? :result {:margin-bottom 0} {:a "foo"})
-           {:a "foo"})
-    (println "✓"))
-;; ;; (? :- "? : Default:\nLine1\nLine2" {:a "foo"})
-;; ;; (? :- {:label "with options"} (atom {:a "foo" :b 12}))
-;; ;; (? :- (def x1 "x1"))
-;; ;; (? :- {:label "def with label from options"} (def x2 "x2"))
-  
-  (co :comment "Only display comment and file.\nDoes NOT return result.")
-  (? :comment "my comment") 
-  (? :comment {:margin-bottom 0} "my comment") 
-  
+;; (? :let [[a c] ["4" 5]
+;;        b 2]
+;;       {:a a :b b :c c})
 
-  (co :log "Uses js/console.log or pprint.\nReturns result.")
-  (? :log "my label" {:a "foo"})
-  (when (= (? :log {:margin-bottom 0} {:a "foo"})
-           {:a "foo"})
-    (println "✓"))
+;; (? :let [[a & b] [1 2 3 4 5]]
+;;       {:a a :b b})
 
-  ;; ;; (? :log "?log : Default:\nLine1\nLine2" {:a "foo"})
-  ;; ;; (? :log {:label "with label from options" } (atom {:a "foo" :b 12}))
-  ;; ;; (? :log (def x7 "x7"))
-  ;; ;; (? :log {:label "def with label from options"} (def x8 "x8"))
-  
-
-  (co :pp "Uses pprint.\nReturns result.")
-  (? :pp "my label" {:a "foo"})
-  (when (= (? :pp {:margin-bottom 0} {:a "foo"})
-           {:a "foo"})
-    (println "✓"))
-
-  (co :log- "Just prints result, with js/console.log or pprint.\nReturns result.")
-  (? :log- "my label" {:a "foo"})
-  (when (= (? :log- {:margin-bottom 0} {:a "foo"})
-           {:a "foo"})
-    (println "✓"))
-  ;; (? :log- {:a "foo"})
-  ;; ;; (? :log- {:a "foo"})
-  ;; ;; (? :log- (atom {:a "foo" :b 12}))
-  ;; ;; (? :log- (def x10 "x9"))
-  
-  (co :pp- "Just prints result, with js/console.log or pprint.\nReturns result.")
-  (? :pp- "my label" {:a "foo"})
-  (when (= (? :pp- {:margin-bottom 0} {:a "foo"})
-           {:a "foo"})
-    (println "✓"))
-  
-  (co :data "Prints a data representation of the format.\nDoes NOT returns result.")
-  (pprint (? :data {:a "foo"}))
-  (when (= (? :data {:margin-bottom 0} {:a "foo"})
-           {:a "foo"})
-    (println "✓"))
-  
-  (co :trace "Trace form.\nReturns result.")
-  (co2 "Default" '(? :trace (-> 1 (+ 3))))
-
-  (? :trace
-     (-> 1 (+ 3)))
-
-
-  (co2 "With user label"
-       '(? :trace "My label" (-> 1 (+ 3))))
-  (? :trace
-     "My label"
-     (-> 1 (+ 3)))
-
-  (co2 "With longer threading form"
-       '(? :trace
-           (-> 1 (+ 3) (repeat 5 5555555))))
-  (? :trace
-     (-> 1 (+ 3) (cons (repeat 5 5555555))))
-)
-
+;; (? :let
+;;     [a                                       (take 5 (range))
+;;        {:keys [b c d]
+;;         :or   {d 10
+;;                b 20
+;;                c 30}}                          {:c 50
+;;                                                 :d 100}
+;;        [e f g &  h]                             ["a" "b" "c" "d" "e"]]
+;;       [a b c d e f g h])
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; SMOKE TESTS WITH COMMENTARY END
@@ -448,113 +411,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-
-
-;; (pprint (? :data {:label "my label from opts"} "foo"))
-;; (pprint (? :data "my-label" "foo"))
-;; (? :label "my-label" "foo")
-
-;; (? "my-label" "foo")
-
-  ;; (println (? :comment "dude")) 
-  ;; (println (? :comment {:margin-bottom 0} "dude")) 
-
-
-
-;; (? "hiasdfasdfafsadfasdfasdfasdf asdfasdfasdf asdfasdfasdfa fasdfasdfasf" (+ 1 1))
-
-
-
-;; (println)
-
-;; (? :trace
-;;  (-> 1 (+ 3)))
-
-;; (println (bling [:italic.magenta "with xtra arg"]))
-
-;; (? :trace
-;;  "my label"
-;;  (-> 1 (+ 3)))
-
-;; (callout {:border-weight :medium :type :magenta}
-;;          (bling [:bold.magenta :trace-error]))
-;; (?trace 
-;;  (let [[a & rest] ["a" "b" "c" "d" "e"]]
-;;    [a rest]))
-
-
-;; (?-- "Commentary")
-;; (?-- "Commentary, multiline:\nLine2\nLine3")
-
-
-;; (?let [[a c] ["4" 5]
-;;        b 2]
-;;       {:a a :b b :c c})
-
-;; (?let [[a & b] [1 2 3 4 5]]
-;;       {:a a :b b})
-
-;; (?let [a                                       (take 5 (range))
-;;        {:keys [b c d]
-;;         :or   {d 10
-;;                b 20
-;;                c 30}}                          {:c 50
-;;                                                 :d 100}
-;;        [e f g &  h]                             ["a" "b" "c" "d" "e"]]
-;;       [a b c d e f g h])
-
-
-;; #?(:clj
-;;    (? (java.util.ArrayList. (range 6)))
-;;    #_(? (some seq? [(int-array [4 5 6]) (java.util.ArrayList.) (java.util.HashMap.)])))
-
-
-;; (?trace 
-;;  (let [[a & rest] ["a" "b" "c" "d" "e"]]
-;;    [a rest]))
-
-;; (?trace 
-;;  (-> 1 (+ 3)))
-
-
-;; (?let [[a b c] ["a" "b" "c" "d" "e"]]
-;;       [a b c])
-
-;; #_(?let {:coll-limit 5}
-;;       [a (range 10)
-;;        b (range 33 200 4)])
-
-;; (? {:print-level ["foo"]} :HI)
-
-(def person
-  {:name     "Mark Volkmann"
-   :address  {:street "644 Glen Summit"
-              :city   "St. Charles"
-              :state  "Missouri"
-              :zip    63304}
-   :employer {:name    "Object Computing, Inc."
-              :address {:street "12140 Woodcrest Dr."
-                        :city   "Creve Coeur"
-                        :state  "Missouri"
-                        :zip    63141}}})
-
-#_(? (-> person 
-       ?
-       :employer
-       ?
-       :address
-       ?
-       :city
-       ?))
-
-;; (? (?some->> person :employer :address :city .toUpperCase))
-
-;; (?trace {:coll-limit 2} (some-> person :employer :address :city .toUpperCase))
-
-;; (?let [a {:a 12 :b 44 :c "asfdasdfasdfasdfasf" :d 55}
-;;        b {:a 12 :b 44 :c "asfdasdfasdfasdfasf" :x 55}]
-;;   a)
 
 
 #?(:clj
@@ -932,23 +788,6 @@
 ;;           :xyz              "bar" 
 ;;           "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"})))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 (def basic-samples 
   {:string   "string"
    :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
@@ -957,9 +796,9 @@
    :lambda    #(inc %)
    :fn       juxt
    :regex    #"^hi$"
-   :record   record-sample
+   :record   my-record-type
    :range    (range 40)
-   :atom2    (atom record-sample)
+   :atom2    (atom my-record-type)
    :atom1    (atom 1)
    :brackets [[[[[[]]]]]]})
 
@@ -972,214 +811,10 @@
    :lambda    #(inc %)
    :fn       juxt
    :regex    #"^hi$"
-   :record   record-sample
+   :record   my-record-type
    :range    (range 40)
-   :atom2    (atom record-sample)
+   :atom2    (atom my-record-type)
    :atom1    (atom 1)
    :brackets [[[[[[]]]]]] ))
 
 basic-samples
-
-;; (? (meta #'basic-samples))
-
-;; (map #(* % 33) (range 100))
-
-#_(?sgr (-> (? :data {:label                      "my-label-from-opts"
-                    :enable-terminal-truecolor? false
-                    :enable-terminal-italics?   false
-                    :theme                      theme}
-             "foo")
-          :formatted
-          :string))
-
-;; (def themez  "Monokai Light")
-;; (? #_{:theme themez} record-sample)
-;; (? #_{:theme "Monokai Light"} (with-meta 'foo {:a "a"}))
-;; (? "Fix italics" #_(select-keys (:abcdefg basic-samples-cljc) [:uuid :symbol :symbol2]))
-;; (? (remove true? [true]))
-;; (? :pp (select-keys {:a 1 :b 2} [:f :g :c]))
-
-;; (?  basic-samples-cljc)
-;; (!?  #_{} basic-samples-array-map)
-;; (!?  #_{} basic-samples-cljc)
-;; (!? {:coll-limit 5} (atom (with-meta (range 8) {:foo :bar})))
-
-
-#_(? :result (atom 1))
-#_(? :result (atom [1 2 3]))
-;; (? :result (atom {1 2 3 4}))
-;; (? (atom "a"))
-#_(? {:ababad [1
-             2
-             (with-meta (symbol "a") {:foo :bar :bang :baz :go :yeah})
-             #_(atom (with-meta (symbol "a") {:foo :bar :bang :baz :go :yeah}))
-             3]})
-;; (? :result [1 2 3 [(atom "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")]])
-;; (? :result (atom (range 35)))
-#_(? :result [1
-            2
-            [(atom xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz)]])
-
-#_(println "\n\n")
-;; (? :result (volatile! 1))
-;; (? :result (volatile! [1 2 3]))
-;; (? :result (volatile! {1 2 3 4}))
-;; (? :result (volatile! (range 35)))
-;; (? :result (volatile! ^{:foo :bar} [1 2 3]))
-
-;; (? (volatile! "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))
-;; (? (volatile! "a"))
-;; (? :result [1 2 3 [(volatile! "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")]])
-;; (? :result [1
-;;             2
-;;             [(volatile! xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz)]])
-
-
-;; (pprint (? :data (volatile! record-sample)))
-;; (pprint (? :data (atom record-sample)))
-
-
-;;  example viewer def -------------------------------
-(def myval
-  #{{:kind   :rook
-     :player :white
-     :pos    [5 1]}
-    {:kind   :pawn
-     :player :white
-     :pos    [5 3]}})
-;; -----------------------------------------------------------------------------
-
-
-
-
-;;  example viewer start -----------------------------
-
-;; (prn 
-;; (-> (? :data myval) :formatted+ :string))
-     
-;; (pprint
-;; (sequence ansi/apply-props
-;;           (ansi/token-stream (-> (? :data myval)
-;;                                  :formatted+
-;;                                  :string))))
-
-
-;; example viewer start end ----------------------------------
-
-     #_(? (tag-map (fn [a] (inc a))))
-
-     #_(? "Universal Neutral"
-          {:theme "Universal Neutral"
-           :when  #(not= % 12)}
-          basic-samples-cljc-theme)
-
-     #_(? (tag-map (into-array '(1 2 3))))
-
-     #_(? #{"abcdefghijklmnopqrstuvwxyzzz"
-            3333333})
-
-    ;;  (? {:non-coll-length-limit 50} (tag-map (transient [1 2 3 4])))
-     
-    ;;  (? (transient [1 2 3 4]))
-     
-    ;;  (let [x (transient #{:a 1})]
-    ;;    (? x)
-    ;;    (conj! x 11))
-     
-    ;;  (? (lasertag.core/tag-map 1))
-     
-    ;;  (? (transient (into [] (range 333))))
-     
-    ;;  (? (atom (into [] (range 33))))
-     
-     
-    ;;  (? (tag-map (transient [1 2 3 4])))
-    ;;  (? (transient (into #{} (range 100))))
-    ;;  (? (transient {1 2
-    ;;                 3 4}))
-     
-    ;;  (? (type (transient {1   2
-    ;;                       3   4
-    ;;                       5   6
-    ;;                       7   8
-    ;;                       9   10
-    ;;                       11  12
-    ;;                       13  14
-    ;;                       15  16
-    ;;                       17  18
-    ;;                       191 20
-    ;;                       21  22})))
-    ;;  (? (type (transient {1   2
-    ;;                       3   4
-    ;;                       5   6
-    ;;                       7   8
-    ;;                       9   10
-    ;;                       11  12
-    ;;                       13  14
-    ;;                       15  16
-    ;;                       17  18
-    ;;                       191 20
-    ;;                       21  22})))
-     
-;;      (!? (instance? java.util.AbstractCollection (java.util.HashMap. {"a" 1
-;;                                                                       "b" 2})))
-    ;;  (? (java.lang.String. "welcome"))
-;;     ;;  (? "welcome")
-;;     ;;  (? #{"a" 1 "b" 2})                        
-     
-
-
-    ;; (println "\n:Java HashSet")
-    ;; (? (java.util.HashSet. #{"a" 1 "b" 2}))
-     
-    ;; (println "\n:Java ArrayList")
-    ;; (? (java.util.ArrayList. [1 2 3 4 5 6 7]))
-
-    ;; (println "\n:Java HashMap")
-    ;; (println (? :data {:theme "Monokai Dark"} (java.util.HashMap. {"a" 1 "b" 2 "c" 3})))
-
-
-    ;;  (? [1 2 3 4 5 6 7])
-    ;;  (? :result 
-    ;;     [(to-array '(1 2 3 4 5))
-    ;;      (java.util.HashSet. #{"a" "b" "c" "d" "e"})
-    ;;      (java.util.ArrayList. [1 2 3 4 5 6 7])
-    ;;      (java.util.HashMap. {"a" 1 "b" 2 "c" 3})])
-    ;;  (println "\n\n")
-    ;;  (pprint [(to-array '(1 2 3 4 5))
-    ;;           (java.util.HashSet. #{"a" "b" "c" "d" "e"})
-    ;;           (java.util.ArrayList. [1 2 3 4 5])
-    ;;           (java.util.HashMap. {"a" 1 "b" 2 "c" 3})]
-    ;;          #_{:max-width 20})
-    ;;  (println "\n\n")
-     
-;;     ;;  (? (tag (java.util.HashMap. {"a" 1
-;;     ;;                               "b" 2})))
-;;     ;;  (? (tag [1 2]))
-;;     ;;  (? (tag (list 1 2)))
-;;     ;;  (? (tag '(1 2)))
-;;     ;;  (? (tag (range 3)))
-;;     ;;  (? (tag (map inc (range 3))))
-     
-;;     ;;  (? (tag (java.util.ArrayList. [1 2 3])))
-;;     ;;  (? (tag-map (java.util.ArrayList. [1 2 3])))
-;;     ;;  (? (.isArray (.getClass (java.util.ArrayList. [1 2 3]))))
-     
-      ;;  (? {:non-coll-length-limit 50} (tag-map (transient [1 2 3])))
-     
-;;     ;;  (!? (tag (to-array '(1 2 3 4))))
-     
-;;      (? (tag-map (to-array '(1 2 3 4))))
-     
-;;     ;;  (println (type (to-array '(1 2 3 4))))
-     
-;;     ;;  (!? (.isArray (.getClass (to-array '(1 2 3 4)))))
-     
-;;      (? (to-array '(1 2 3 4)))
-     
-
-;;      (!? (instance? java.util.ArrayList (java.util.ArrayList. [1 2 3])))
-;;      (!? (instance? java.util.ArrayList [1 2 3]))
-     
-
-

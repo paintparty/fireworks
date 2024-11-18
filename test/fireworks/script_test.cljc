@@ -4,4 +4,4 @@
 
 (defn main [& cli-args]
   (? "testing from node or deno script"
-     smoke-test/basic-samples-cljc-theme))
+     smoke-test/basic-samples-cljc))

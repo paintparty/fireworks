@@ -2,8 +2,7 @@
 {:source-paths ["src/" 
                 "test/"
                 ;; for local dev
-                ;; "../lasertag/src/"
-                ;; "../get-rich/src/"
+                "../lasertag/src/"
                 ]
  :dependencies [[io.github.paintparty/lasertag "0.8.3"]
                 [io.github.paintparty/bling "0.2.0"]]
