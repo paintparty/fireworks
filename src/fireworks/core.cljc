@@ -303,9 +303,9 @@
         :file-info-str file-info*}
        form-meta
        {:formatted+ (merge {:string fmt+}
-                           #?(:cljs (when node? {:css-styles @state/styles})))
+                           #?(:cljs (when-not node? {:css-styles @state/styles})))
         :formatted  (merge {:string fmt}
-                           #?(:cljs (when node? 
+                           #?(:cljs (when-not node? 
                                       {:css-styles (subvec @state/styles 
                                                            css-count*)})))})
 
