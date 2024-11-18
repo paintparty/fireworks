@@ -57,7 +57,7 @@
          (reduce
           (fn [acc [k v]]
             (assoc acc
-                   (symbol k)
+                   k
                    (apply array-map
                           (reduce (fn [acc [jsf {:keys [sym
                                                         demo
@@ -111,20 +111,20 @@
     :clj
     ())
 
-(def interop-collection-types
+(def interop-types
 #?(:cljs ;; we get these from lasertag.cljs-interop
    (cljs-interop-classes)
    :clj ;; TODO - maybe move these into a new cljc lasertag.interop ns
    (array-map 
 
-    "Java Collection Types"
+    "Java collection types"
     {:java.util.ArrayList (java.util.ArrayList. (range 6))
      :java.util.HashMap (java.util.HashMap. {"a" 1 "b" 2})
      :java.util.HashSet (java.util.HashSet. #{"a" 1 "b" 2})
      :java.lang.String (java.lang.String. "welcome")
      :array (to-array '(1 2 3 4 5))}
 
-    "Java Numbers"
+    "Java numbers"
     (array-map
       :ratio               1/3
       :byte                (byte 0)
@@ -143,27 +143,29 @@
 (def everything*
   (array-map
 
-   :primitives
+   "Primitives"
    (array-map
     :string   "string"
     :regex    #"myregex"
     :uuid     (qc #uuid "4fe5d828-6444-11e8-8222-720007e40350")
     :symbol   'mysym
+    :symbol+meta   (with-meta 'mysym {:foo "bar"})
     :boolean  true
     :keyword  :keyword
     :nil      nil
     :##Nan    ##NaN
     :##Inf    ##Inf
-    :##-Inf   ##-Inf)
+    :##-Inf   ##-Inf
+    )
 
 
-   :number-types
+   "Number types"
    (array-map
     :int      1234
     :float    3.33)
 
 
-   :functions    
+   "Functions"    
    (array-map
     :lambda            #()
     :lambda-2-args     #(+ % %2) 
@@ -176,31 +178,24 @@
     :recordtype-class MyRecordType
     :really-long-fn   xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz)
 
-   :collections  
+   "Collections"  
    (array-map
     :map
     {:a 1
      :b 2
      :c "three"}
 
-    :map/multi-line
-    {:abc      "bar"
-     "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-     [:a :b]   123444}
-
-    :array-map
-    (apply array-map
-           (mapcat (fn [x y] [x y])
-                   (range 12)
-                   ["a" "b" "c" "d" "e" "h" "i" "j" "k" "l" "m" "n"]))
+    :rainbow
+    [1 2 3]
 
     :vector    
     [1 2 3]
 
-    :vector/multi-line  
-    ["abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-     :22222
-     3333333]
+    :vector+meta
+    ^{:meta-on-coll "bar"}
+    ['foo
+     (with-meta 'bar {:meta-on-sym "bar"})
+     'baz]
 
     :set
     #{1 2 3}
@@ -218,21 +213,40 @@
     ;; :datatype
     ;; my-data-type
 
-    ;; :truncation-candidate
-    ;; [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]
-    
-    :set/single-line
-    #{1 :2 "three"}
+    :set
+    #{1 :2 "three"})
 
+
+   "Multi-line collections"
+   (array-map
+    :map/multi-line
+    {"asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+     [:a :b]   123444}
+
+    :array-map
+    (apply array-map
+           (mapcat (fn [x y] [x y])
+                   (range 12)
+                   ["a" "b" "c" "d" "e" "h" "i" "j" "k" "l" "m" "n"]))
+
+    :vector/multi-line  
+    ["abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
+     :22222
+     3333333]
+
+    :lazy-seq
+    (range 20)
+
+    :truncation-candidate
+    [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]
+    
     :set/multi-line
     #{"abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
       :22222
       3333333})
 
-   :interop-collection-types
-   interop-collection-types
 
-   :map-keys   
+   "Map keys"
    (array-map
     +                              "core function"
     "really-long-string-abcdefghi" "really-long-string-abcdefghi"
@@ -253,17 +267,18 @@
     )
 
 
-   :abstractions
+   "Abstractions"
    (array-map
     :atom             (qc (atom 1))
     :date             my-date
-    :volatile!        (volatile! 1) :transient-vector (transient [1 2 3 4])
+    :volatile!        (volatile! 1)
+    :transient-vector (transient [1 2 3 4])
     :transient-set    (transient #{:a 1})
     :transient-map    (transient {1 2 3 4})
     )
 
 
-   :with-meta
+   "With meta"
    (array-map
     :nested-meta/sym (with-meta (symbol (str "foo"))
                           (with-meta {:l1-k1 (with-meta 'a
@@ -343,7 +358,8 @@
 
 
 (defn show-everything 
-  [cats
+  [coll*
+   cats
    {:keys [as-vec? conj-to-vec-ks]
     :as   opts}]
   (let [opts (when as-vec? opts)
@@ -351,15 +367,15 @@
               (apply concat
                      (for [k cats]
                        (if as-vec?
-                         (-> everything* k vals)
-                         (-> everything* k))))
+                         (some-> (get coll* k nil) vals)
+                         (get coll* k nil))))
               opts)]
     (if as-vec?
       (if (seq conj-to-vec-ks)
         (apply conj
                coll
                (for [k conj-to-vec-ks]
-                 (-> everything* k)))
+                 (get coll* k nil)))
         (do coll))
       (apply array-map
              (reduce (fn [acc [k v]]
@@ -371,43 +387,81 @@
                      [] 
                      coll)))))
 
+
+;; TODO - finish making all these into callable functions
+;;      - version of one with categories as keys
 (def array-map-of-everything-cljc
-  (show-everything [:primitives
-                    :number-types
-                    :functions
-                    :collections
-                    :abstractions
-                    :with-meta] 
+  (show-everything everything*
+                   [
+                    "Primitives"
+                    "Number types"
+                    "Functions"
+                    "Collections"
+                    ;; "Multi-line collections"
+                    ;; "Map keys"
+                    "Abstractions"
+                    ;; "With meta"
+                    ] 
+                   ;; TODO - maybe blank map or no map?
                    {:as-vec?              false
-                    :conj-to-vec-ks       [:map-keys]
                     :show-extras?         false
                     :show-extras-as-meta? false
                     :extras-keys          [:tag :call]}))
 
+(def array-map-of-multiline-formatting-cljc
+  (show-everything everything*
+                   [
+                    "Multi-line collections"
+                    "With meta"
+                    ] 
+                   ;; TODO - maybe blank map or no map?
+                   {:as-vec?              false
+                    :show-extras?         false
+                    :show-extras-as-meta? false
+                    :extras-keys          [:tag :call]}))
+
+
 (def vec-of-everything-cljc
-  (show-everything [
-                    ;; :primitives
-                    ;; :number-types
-                    ;; :functions
-                    ;; :collections
-                    :abstractions
-                    ;; :with-meta
+  (show-everything everything*
+                   [
+                    "Primitives"
+                    "Number types"
+                    "Functions"
+                    "Collections"
+                    "Map keys"
+                    "Abstractions"
+                    "With metadata"
                     ]
                    {:as-vec?              true
                     ;; :conj-to-vec-ks       [:map-keys]
                     :show-extras?         false
                     :extras-keys          [:tag :call]}))
 
-(def vec-of-everything-cljc-with-extras
-  (show-everything [
-                    :primitives
-                    :number-types
-                    :functions
-                    :collections
-                    :abstractions
-                    :with-meta
+(defn vec-of-everything-cljc-with-extras []
+  (show-everything everything*
+                   [
+                    ;; "Primitives"
+                    ;; "Number types"
+                    ;; "Functions"
+                    ;; "Collections"
+                    ;; "Map keys"
+                    "Abstractions"
+                    ;; "With metadata"
                     ] 
                    {:as-vec?              true
                     :show-extras?         true
-                    :extras-keys          [:tag :call]}))
+                    :extras-keys          [:tag :call :all-tags]}))
 
+(def vec-of-interop-types-with-extras
+  (show-everything interop-types
+                   #?(:cljs
+                      []
+                      :clj
+                      [
+                      ;;  "Java collection types"
+                       "Java numbers"
+                       ])
+                    
+                   {:as-vec?              true
+                    :show-extras?         true
+                    :extras-keys          [:tag :call :all-tags]}))
