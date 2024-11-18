@@ -90,7 +90,7 @@
 
 Requires Clojure `1.10.3` or higher
 
-If using with Babashka, requires Babashka `v1.3.187` or higher
+If using with Babashka, requires Babashka `v1.12.196`(coming soon) or higher
 
 <br>
 
