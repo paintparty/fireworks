@@ -1,6 +1,7 @@
 (ns ^:dev/always fireworks.truncate
   (:require #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.macros :refer [keyed]])
+            [fireworks.pp :refer [?pp]]
             [clojure.string :as string]
             [fireworks.ellipsize :as ellipsize]
             [fireworks.order :refer [seq->sorted-map]]
@@ -197,11 +198,13 @@
         val-is-volatile? (volatile? x) 
         x                (if (or val-is-atom? val-is-volatile?) @x x)
         kv?              (boolean (when-not map-entry-in-non-map? (map-entry? x)))
-        tag-map          (when-not kv? (util/tag-map* x) )
+        tag-map          (when-not kv? (util/tag-map* x))
         x                (reify-if-transient x tag-map)
         too-deep?        (> depth (:print-level @state/config))
+
         sev?             (boolean (when-not kv?
                                     (not (:coll-type? tag-map))))]
+
     (merge m* ;; m* added for :key? and :map-value? entries
            (keyed [val-is-atom?
                    val-is-volatile?
@@ -223,6 +226,7 @@
   [{:keys [coll-type? kv? depth carries-meta?]
     :as m}
    x]
+  ;; (println "\n\nx in truncated-x*" x)
   (let [x (cond
             kv?        
             (let [[k v] x]
