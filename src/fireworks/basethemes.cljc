@@ -1,3 +1,5 @@
+;; TODO - Add :NaN, :infinity, and :-infinity
+
 ;; This is reqd by specs
 (ns fireworks.basethemes
   (:require

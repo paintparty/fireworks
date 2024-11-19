@@ -1,442 +1,59 @@
 (ns visual-testing.shared
   (:require [fireworks.config]
             [fireworks.themes]
-            [fireworks.sample :as sample :refer [show-everything]]
+            [fireworks.sample :as sample :refer []]
             [bling.sample]
-            [clojure.string :as string]
             [lasertag.core :refer [tag-map]]
-            [cljs.js]
             [fireworks.core :refer [? !? ?> !?> pprint]]))
 
-(defrecord Foo [a b])
-(def record-sample (->Foo 1 2))
-(deftype MyType [a b])
-(def my-data-type (->MyType 2 3))
-(defrecord MyRecordType [a b])
-(def my-record-type (->MyRecordType "a" "b"))
-(defmulti different-behavior (fn [x] (:x-type x)))
-(defmethod different-behavior :wolf
-  [x]
-  (str (:name x) " will have a specific behavior"))
-(defn xy [x y] (+ x y))
-(defn xyv ([x y] (+ x y)) ([x y v] (+ x y v)))
-(defn xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz [x y] (+ x y))
+(def everything sample/array-map-of-everything-cljc)
 
-(def foo
-  {:string        "string"
-   :uuid          #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number        1234
-  ;;  :symbol          (with-meta 'mysym {:foo :bar})
-   :symbol        {:foo :bar}
-   :boolean       true
-   :lambda         #(inc %)
-   :fn            juxt
-   :regex         #"^hi$"
-   :record        record-sample
-   :atom/number   (atom 1)
-   :brackets      [[[[[[]]]]]]
-   :map/with-meta (with-meta {:a :foo :b :bar}
-                    {:k1 "abcdefghijklmnop" 
-                     :k2 "qrstuvwxyz" })
-  ;;  :map/with-meta (with-meta {:a :foo
-  ;;                               :b 2}
-  ;;                     {:a (with-meta (symbol "foo")
-  ;;                           {:abc (symbol "foobarbaz")
-  ;;                            :xyz "abcdefghijklmnop"})})
-   })
-
-
-
-(def basic-samples-cljc 
-  (array-map
-   :string             "string"
-   :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number             1234
-   :symbol             (with-meta 'mysym {:foo :bar})
-   :boolean            true
-   :symbol2            (with-meta 'mysym
-                         {:foo ["afasdfasf"
-                                "afasdfasf"
-                                {:a "foo"
-                                 :b [1 2 [1 2 3 4]]}
-                                "afasdfasf"
-                                "afasdfasf"]
-
-                          :bar "fooz"})
-   :regex              #"^hi$"
-   :lambda              #(inc %)
-   :fn                 juxt
-   :fn-multi-arity     xyv
-   :fn-long-name       xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz
-   :multimethod        different-behavior
-   :record             record-sample
-   :datatype           my-data-type
-   :atom/record        (atom record-sample)
-   :atom/number        (atom 1)
-   :brackets           [[[[[[]]]]]]
-   :map/nested-meta    (with-meta 
-                         {(with-meta (symbol :a)
-                            {:abc "bar"
-                             :xyz "abc"}) (with-meta (symbol "foo")
-                                            {:abc "bar"
-                                             :xyz "abc"})
-                          :b                                               2}
-                         {:a (with-meta (symbol "foo")
-                               {:abc (symbol "bar")
-                                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
-   :map/single-line    {:a 1
-                        :b 2
-                        :c "three"}
-   :map/multi-line     {:abc      "bar"
-                        "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                        [:a :b]   123444}
-   :vector/single-line [1 :2 "three"]
-   :vector/multi-line  ["abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                        :22222
-                        3333333]
-   :list/single-line   '(1 :2 "three")
-   :list/multi-line    '("abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                         :22222
-                         3333333)
-   :set/single-line    #{1 :2 "three"}
-   :set/multi-line     #{"abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                         :22222
-                         3333333}))
-
-#_(defn test-suite []
-  #?(:cljs
-     (do
-       #_(? #_{:label                      "my-label"
-               :enable-terminal-truecolor? true
-               :enable-terminal-italics?   true
-               :bracket-contrast           "high"
-               :theme                      "Alabaster Light"}
-          #js [1 2 3])
-
-       #_(? [1 (new js/Int8Array #js[1 2 3])])
-
-       #_(? (lasertag.core/tag #js {:a 1
-                                    :b 2}))
-       #_(? [1 #js [1 2 3 4 5]])
-
-       #_(? [1 #js ["a" #js [1 2 3] "b"]])
-
-       #_(? [1 (new js/Set #js[1])])
-       #_(? [1 #js {:a 1
-                    :b 2}])))
-
-  (? {:theme "Alabaster Light"
-      :label "basic-samples-cljc"}
-     basic-samples-cljc)
-
-  (? foo)
-
-  (? :default foo)
-
-  (? {:theme "Alabaster Light"
-      :label "Alabaster Light"} foo)
-  (? {:theme "Monokai Light"
-      :label "Monokai Light"} foo)
-  (? {:theme "Alabaster Dark"
-      :label "Alabaster Dark"} foo)
-  (? {:theme "Monokai Dark"
-      :label "Monokai Dark"} foo)
-  (? {:theme "Universal Neutral"
-      :label "Universal Neutral"} foo)
-
-
-;; OFF-start
-;; (? {:theme "Zenburn Light" :label "Zenburn Light"} foo)
-;; (? {:theme "Solarized Light" :label "Solarized Light"} foo)
-;; (? {:theme "Degas Light" :label "Degas Light"} foo)
-;; (? {:theme "Neutral Light" :label "Neutral Light"} foo)
-  
-;; (? {:theme "Alabaster Dark" :label "Alabaster Dark"} foo)
-;; (? {:theme "Zenburn Dark" :label "Zenburn Dark"} foo)
-;; (? {:theme "Monokai Dark" :label "Monokai Dark"} foo)
-;; (? {:theme "Solarized Dark" :label "Solarized Dark"} foo)
-;; (? {:theme "Degas Dark" :label "Degas Dark"} foo)
-;; (? {:theme "Neutral Dark" :label "Neutral Dark"} foo)
-;; OFF-end
-  
-  (println "\n:label-length-limit of 10")
-  (? {:label-length-limit 10} (str "1234567890" "abcdefghijklmnopqrstuvwxyz"))
-
-  (println "\n:label-length-limit of 50")
-  (? {:label-length-limit 50} (str "1234567890"
-                                   "abcdefghijklmnopqrstuvwxyz"
-                                   "ABCDEFGHIJKLMNOP"))
-
-  (println "\n:single-line-coll-length-limit of 10")
-  (? {:single-line-coll-length-limit 10} (range 4))
-
-  (println "\n:single-line-coll-length-limit of 10")
-  (? {:single-line-coll-length-limit 10} (range 5))
-
-  (println "\n:single-line-coll-length-limit of 50")
-  (? {:single-line-coll-length-limit 50} (range 19))
-
-  (println "\n:single-line-coll-length-limit of 50")
-  (? {:single-line-coll-length-limit 50} (range 20))
-
-  
-  (println "\n:Volatile, record")
-  (? {:label                      "my-label"
-      :enable-terminal-truecolor? true
-      :enable-terminal-italics?   true
-      :bracket-contrast           "high"}
-     (volatile! record-sample))
-
-  (println "\n:Transient Array")
-  (let [x (transient [1 2 3 4 5 6 7 8 9 0])]
-    (? {:coll-limit                 7
-        :label                      "my-label"
-        :enable-terminal-truecolor? true
-        :enable-terminal-italics?   true
-        :bracket-contrast           "high"}
-       x)
-    (conj! x 5)) 
-
-  (println "\n:Transient Map")
-  (let [x (transient {:a 1
-                      :b 2
-                      :c 3
-                      :d 4
-                      :e 5
-                      :f 6
-                      :g 7
-                      :h 8
-                      :i 9
-                      :j 10 })]
-    (? {:coll-limit 7} x)
-    (assoc! x :k 11))
-
-  (println "\n:Transient Set")
-  (let [x (transient #{1 2 3 4 5 6 7 8 9 0})]
-    (? {:label      "Transient Set"
-        :coll-limit 7} x)
-    (conj! x 11))
-
-  (println "\n:Array, :pp mode")
-  (? :pp (into-array '(1 2 3)))
-
-  nil)
-
-
-
-;; For trying stuff out
 (defn test-suite []
   #?(:cljs
-     (!? {:coll-limit 200}
-         (let [ks (keys lasertag.cljs-interop/js-built-ins-by-category)]
-           (reduce
-            (fn [acc [k v]]
-              (assoc acc
-                     k
-                     (apply array-map
-                            (reduce (fn [acc [jsf {:keys [sym
-                                                          demo
-                                                          args
-                                                          not-a-constructor?]}]]
-                                      (conj acc
-                                            sym
-                                            (if (and (not not-a-constructor?)
-                                                     demo)
-                                              (let [res (volatile! nil)]
-                                                (cljs.js/eval-str
-                                                 (cljs.js/empty-state)
-                                                 demo
-                                                 nil
-                                                 {:eval       cljs.js/js-eval    
-                                                  :source-map true
-                                                  :context    :expr}
-                                                 (fn [x]
-                                                   (vreset! res (:value x))))
-                                                @res)
-                                              ::no-demo
-                                              )))
-                                    []
-                                    v))))
-            {}
-            lasertag.cljs-interop/js-built-ins-by-category
-            #_(do 
-                (select-keys
-                 lasertag.cljs-interop/js-built-ins-by-category
-                 [
-                ;; "Fundamental"
-                ;; "objects"
-                ;; "Numbers and dates"
-                ;; "Value properties"
-                ;; "Control abstraction objects"
-                ;; "Error objects"
-                ;; "Text processing"
-                ;; "Function properties"
-                ;; "Keyed collections" 
-                ;; "Indexed collections"
-                ;; "Structured data"
-                ;; "Internationalization"
-                  "Managing memory"
-                  "Reflection"
-                  ]))))
+     ;; Move this interop demo code into fireworks.sample
+     (do #_(? {:coll-limit 200
+             :label      "ClojureScript interop types"}
+            sample/interop-types)
+         
+         (? {:coll-limit 200
+             :label      "Clojure(Script) values"}
+            everything)
 
-         #_(doseq [[k v] lasertag.cljs-interop/js-built-in-objects-by-object-map]
-             (? :result k)
-             (? :result v)
-             ))
-     :clj
-     ())
+         (!? {:label      "Clojure(Script) multiline formatting"}
+            sample/array-map-of-multiline-formatting-cljc)))
+
+  #_(do 
+    (? {:theme "Alabaster Light"
+        :label "Alabaster Light"} everything)
+    (? {:theme "Monokai Light"
+        :label "Monokai Light"} everything)
+    (? {:theme "Alabaster Dark"
+        :label "Alabaster Dark"} everything)
+    (? {:theme "Monokai Dark"
+        :label "Monokai Dark"} everything)
+    (? {:theme "Universal Neutral"
+        :label "Universal Neutral"} everything))
   
+  #_(do 
+    (println "\n:label-length-limit of 10")
+    (? {:label-length-limit 10} (str "1234567890" "abcdefghijklmnopqrstuvwxyz"))
 
-  #_(? {:print-with prn} 
-       (-> (? :data {:a 1})
-           :formatted
-           :string))
+    (println "\n:label-length-limit of 50")
+    (? {:label-length-limit 50} (str "1234567890"
+                                     "abcdefghijklmnopqrstuvwxyz"
+                                     "ABCDEFGHIJKLMNOP"))
 
-  #_(? {:coll-limit 100
-        :theme      "Alabaster Light"
-        :label      "Clojure(Script) Values"}
-       sample/array-map-of-everything-cljc) 
+    (println "\n:single-line-coll-length-limit of 10")
+    (? {:single-line-coll-length-limit 10} (range 4))
 
-  #_(? {:coll-limit 100
-        :theme      "Alabaster Light"
-        :label      "Clojure(Script) Values"}
-       sample/vec-of-everything-cljc) 
+    (println "\n:single-line-coll-length-limit of 10")
+    (? {:single-line-coll-length-limit 10} (range 5))
 
-  #_(? {:coll-limit 100
-        :theme      "Alabaster Light"
-        :label      "Clojure(Script) Values"}
-       sample/vec-of-everything-cljc-with-extras) 
+    (println "\n:single-line-coll-length-limit of 50")
+    (? {:single-line-coll-length-limit 50} (range 19))
 
-  (println (? :data "foo"))
-  ;; (? "foo")
-
-  #_(? {:coll-limit 100
-        :label      #?(:cljs "ClojureScript Values" :clj "JVM Clojure Values")}
-       (show-everything [:number-types
-                         :interop-collection-types] 
-                        {:as-vec?     false
-                    ;;  :show-extras?         true
-                    ;;  :show-extras-as-meta? true
-                         :extras-keys [#_:tag
-                                       #_:call
-                                       :all-tags]}))
-  #_(? :pp (into-array '(1 2 3)))
-  #_(? {:label                        "my-label"
-        :enable-terminal-truecolor?   true
-        :enable-terminal-italics?     true
-        :bracket-contrast             "high"
-        :custom-printers              {}
-        :coll-limit                   20
-        :non-coll-length-limit        (-> fireworks.config/options
-                                          :non-coll-length-limit
-                                          :default)
-        :display-namespaces?          (-> fireworks.config/options
-                                          :display-namespaces?
-                                          :default)
-        :metadata-position            (-> fireworks.config/options
-                                          :metadata-position
-                                          :default)
-        :metadata-print-level         (-> fireworks.config/options
-                                          :metadata-print-level
-                                          :default)
-        :non-coll-mapkey-length-limit (-> fireworks.config/options
-                                          :non-coll-mapkey-length-limit
-                                          :default)} basic-samples-cljc)
-  ;; (println "v")
-  ;; (pprint (? :data (volatile! record-sample)))
-  
-  #_#?(:cljs
-       (do 
-      ;;  (println "atom")
-      ;;  (pprint (:formatted (? :data (atom record-sample))))
-      ;;  (? (atom record-sample))
-         
-      ;;  (println "\n\n")
-         
-      ;;  (println "Volatile")
-         (pprint (:formatted (? :data 
-                                {:label                      "my-label"
-                                 :enable-terminal-truecolor? true
-                                 :enable-terminal-italics?   true
-                                 :bracket-contrast           "high"}
-                                (volatile! record-sample))))
-      ;;  (? (volatile! record-sample))
-      ;;  (? (lasertag.core/js-object-instance (transient [1 2 3 4])))
-         #_(let [x (transient [1 2 3 4 5 6 7 8 9 0])]
-             (? {:coll-limit                 7
-                 :label                      "my-label"
-                 :enable-terminal-truecolor? true
-                 :enable-terminal-italics?   true
-                 :bracket-contrast           "high"}
-                x)
-             #_(pprint (? :data {:coll-limit                 7
-                                 :label                      "my-label"
-                                 :enable-terminal-truecolor? true
-                                 :enable-terminal-italics?   true
-                                 :bracket-contrast           "high"}
-                          x))
-             (conj! x 5))
-         
-      ;;  (let [x (transient #{1 2 3 4 5 6 7 8 9 0})]
-      ;;    (? "Transient set" {:coll-limit 7} x)
-      ;;    (conj! x 11))
-         
-         #_(? {})
-
-         #_(let [x (transient {:a 1
-                               :b 2
-                               :c 3
-                               :d 4
-                               :e 5
-                               :f 6
-                               :g 7
-                               :h 8
-                               :i 9
-                               :j 10 })]
-             (? {:coll-limit 7} x)
-             (assoc! x :k 11))
-         
-         #_(? (volatile! record-sample))
-
-         #_(let [x (transient #{:a 1
-                                :b 2
-                                :c 3
-                                :d 4
-                                :e 5
-                                :f 6
-                                :g 7
-                                :h 8
-                                :i 9
-                                :j 10 })]
-             (? {:coll-limit 7} x)
-             (conj! x 11))
-         
-         #_(? (transient {:a 1
-                          :b 2
-                          :c 3
-                          :d 4
-                          :e 5
-                          :f 6
-                          :g 7
-                          :h 8
-                          :i 9
-                          :j 10}))
-      ;;  (? (lasertag.core/tag-map 1))
-      ;;  (js/console.log lasertag.cljs-interop/js-built-in-objects-by-object-map)
-      ;;  (js/console.log lasertag.cljs-interop/js-built-ins-by-category)
-         
-      ;;  (? (lasertag.core/js-object-instance 1))
-         
-      ;;  (? (transient [1 2 3 4]))
-      ;;  (? (type (transient #{1 2 3 4})))
-      ;;  (? (type (transient {1 2 3 4})))
-      ;;  (? (type (transient {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 191 20 21 22})))
-      ;;  (? (type (transient {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 191 20 21 22})))
-         
-      ;;  (? (atom record-sample))
-         )
-       :clj
-       nil)
+    (println "\n:single-line-coll-length-limit of 50")
+    (? {:single-line-coll-length-limit 50} (range 20)))
 
   nil)
 

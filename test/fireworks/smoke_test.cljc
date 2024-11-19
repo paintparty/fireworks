@@ -15,12 +15,6 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
-(def theme themes/alabaster-light)
-
-;; testing label length
-;; (? (str "asdfasdfasdfasdfadsfasfasdf" "zzzzzzzzzzzzz" "xxxxxxx"))
-
-;; (array-map "one" 1 "two" 2 "three" 3 "four" 4 "five" 5 "six" 6 "seven" 7 "eight" 8 "nine" 9)
 
 ;; This is example config. If you want to run fireworks.core-test tests locally,
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
@@ -45,182 +39,38 @@
  :custom-printers              nil
  :find                         nil}
 
-
-(deftype MyType [a b])
-(def my-data-type (->MyType 2 3))
-(defrecord MyRecordType [a b])
-(def my-record-type (->MyRecordType "a" "b"))
-(defmulti different-behavior (fn [x] (:x-type x)))
-(defmethod different-behavior :wolf
-  [x]
-  (str (:name x) " will have a specific behavior"))
-(defn xy [x y] (+ x y))
-(defn xyv ([x y] (+ x y)) ([x y v] (+ x y v)))
-(defn xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz [x y] (+ x y))
-(def my-date (new #?(:cljs js/Date :clj java.util.Date)))
-
-;;  (def my-prom (js/Promise. (fn [x] x)))
-;;  (def prom-ref js/Promise)
+;; Todo - the slice samplings such as sample/array-map-of-everything-cljc
+;; fns so you can pass ks for get-in an narrowing 
+#_(pprint (tag-map 1/3))
 
 
-;; For producing example :call field in metadata of examples
-(defrecord QuotedCall [qx x])
 
-#?(:clj
-   (do (defn tt*
-         [x
-          {:keys [show-extras?
-                  show-extras-as-meta?
-                  extras-keys]}]
-         (let [[x call] (if (instance? QuotedCall x)
-                          [(:x x) (:qx x)]
-                          [x nil])
-               extras   (when show-extras?
-                          (merge (tag-map x)
-                                 (when call {:call call})))
-               extras   (or (some->> extras-keys
-                                     seq
-                                     (select-keys extras))
-                            extras)
-               x        (if (and show-extras?
-                                 show-extras-as-meta?)
-                          (if (util/carries-meta? x)
-                            x
-                            (-> x str symbol))
-                          x)]
-           (cond (and show-extras?
-                      show-extras-as-meta?)
-                 (with-meta x extras)
-
-                 show-extras?
-                 [x extras]
-
-                 :else
-                 x)))
-       
-       (defmacro qc [coll]
-         `(do
-            (->QuotedCall (quote ~coll) ~coll))
-         )))
-
-(def interop-collection-types
-#?(:cljs
-   ()
-   :clj
-   (array-map 
-    :java.util.ArrayList (java.util.ArrayList. (range 6))
-    :java.util.HashMap (java.util.HashMap. {"a" 1
-                                            "b" 2})
-    :java.util.HashSet (java.util.HashSet. #{"a" 1 "b" 2})
-    :java.lang.String (java.lang.String. "welcome")
-    :array (to-array '(1 2 3 4 5)))))
-
-(def number-types 
-  #?(:cljs
-     (array-map
-      :not-a-number      ##NaN
-      :infinity      ##Inf
-      :negative-infinity     ##-Inf
-      :js/BigInt (js/BigInt 171)
-      :int       1
-      :float     1.50)
-     :clj
-     (array-map
-      :fraction           1/3
-      :byte               (byte 0)
-      :short              (short 3)
-      :double             (double 23.44)
-      :decimal            1M
-      :int                1
-      :float              (float 1.50)
-      :char               (char 97)
-      :java/BigInteger         (java.math.BigInteger. "171"))))
-
-(pprint (? :data "foo"))
+(? {:coll-limit 100
+    :theme      "Alabaster Light"
+    :label      "Clojure(Script) Values"}
+   sample/array-map-of-everything-cljc)
 
 (!? {:coll-limit 100
     :theme      "Alabaster Light"
-    :label      "Clojure(Script) Values"
-    :find {:pred #(= :tag %)}}
-     sample/vec-of-everything-cljc-with-extras)
+    :label      "Clojure(Script) Values"}
+   sample/array-map-of-multiline-formatting-cljc)
 
 (!? {:coll-limit 100
-    :label      "JVM Clojure Values"}
-   sample/interop-collection-types
-   #_(sample/show-everything [:number-types
-                            :interop-collection-types] 
-                           {:as-vec?     false
-                            ;;  :show-extras?         true
-                            ;;  :show-extras-as-meta? true
-                            :extras-keys [#_:tag
-                                          #_:call
-                                          :all-tags]}))
+    :theme      "Alabaster Light"
+    :label      "Clojure(Script) Values, with extras"
+    :find {:pred #(= :tag %)}}
+     (sample/vec-of-everything-cljc-with-extras))
 
-(def basic-samples-cljc 
-  {:string             "string"
-   :uuid               #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number             1234
-   :symbol             (with-meta 'mysym {:foo :bar})
-   :symbol2            (with-meta 'mysym
-                         {:foo ["afasdfasf"
-                                "afasdfasf"
-                                {:a "foo"
-                                 :b [1 2 [1 2 3 4]]}
-                                "afasdfasf"
-                                "afasdfasf"]
-                          :bar "fooz"})
-   :boolean            true
-   :lambda              #(inc %)
-   :fn                 juxt
-   :regex              #"^hi$"
-   :record             my-record-type
-   :atom/record        (atom my-record-type)
-   :atom/number        (atom 1)
-   :brackets           [[[[[[]]]]]]
+(!? {:coll-limit 100
+     :label      "JVM Clojure Values"}
+    sample/interop-types)
 
-   :map/nested-meta    (with-meta 
-                         {(with-meta (symbol :a)
-                            {:abc "bar"
-                             :xyz "abc"}) (with-meta (symbol "foo")
-                                            {:abc "bar"
-                                             :xyz "abc"})
-                          :b                                        2}
-                         {:a (with-meta (symbol "foo")
-                               {:abc (symbol "bar")
-                                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})})
-   :map/single-line    {:a 1
-                        :b 2
-                        :c "three"}
-   :map/multi-line     {:abc      "bar"
-                        "asdfasdfa" "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                        [:a :b]   123444}
-   :vector/single-line [1 :2 "three"]
-   :vector/multi-line  ["abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                        :22222
-                        3333333]
-   :set/single-line    #{1 :2 "three"}
-   :set/multi-line     #{"abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                         :22222
-                         3333333}
-   })
+(!? {:coll-limit 100
+    :label      "JVM Clojure Values with extras"}
+    sample/vec-of-interop-types-with-extras)
 
-(def basic-samples-cljc-theme
-  {:string        "string"
-   :uuid          #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number        1234
-   :symbol-w-meta (with-meta 'mysym {:foo :bar})
-   :boolean       true
-   :lambda        #(inc %)
-   :fn            juxt
-   :regex         #"^hi$"
-   :record        my-record-type
-   :datatype      my-data-type
-   :atom/number   (atom 1)
-   :brackets      [[[[[[]]]]]]
-   :map/with-meta (with-meta {:a :foo
-                              :b :bar}
-                    {:k1 "abcdefghijklmnop"
-                     :k2 "qrstuvwxyz"})})
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -403,157 +253,11 @@
 ;;        [e f g &  h]                             ["a" "b" "c" "d" "e"]]
 ;;       [a b c d e f g h])
   )
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; SMOKE TESTS WITH COMMENTARY END
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-
-#?(:clj
-   (do 
-     #_(do
-         ;; DataTypes ------------------------------------------------------
-         (? "A def of deftype" (deftype MyType [a b]))
-         
-         (? "A deftype" MyType)
-         (def my-data-type (->MyType 2 3))
-         (? "Instance of deftype" my-data-type)
-
-
-         ;; RecordTypes ----------------------------------------------------
-         (defrecord MyRecordType [a b c d])
-         (? "A record type" MyRecordType)
-         (defrecord MySubRecordType [x y])
-         (def my-record-type (->MyRecordType 
-                              (->MySubRecordType "adfasdfasdfasdfasdf" "y")
-                              #_"asdfasdfasdfsafasdfadf"
-                              "xyxyxyxyxyxxyxxy"
-                              123456
-                              juxt))
-         (? "Instance of record type" MyRecordType)
-
-
-         ;; Multimethods ---------------------------------------------------
-         (defmulti different-behavior (fn [x] (:x-type x)))
-         (defmethod different-behavior :wtf
-           [x]
-           (str (:name x) " will have a specific behavior"))
-         (? "Multimethod" different-behavior)
-
-
-         ;; Dates ----------------------------------------------------------
-         (def my-date (java.util.Date.))
-         (? "A java date" my-date)
-
-
-         ;; Function -------------------------------------------------------
-         (defn xy [x y] (+ x y))
-         (? "2-arity function" xy)
-
-         (defn xy-variadic [x y & args] (+ x y))
-         (? "variadic function" xy-variadic)
-
-
-         ;; Collections ----------------------------------------------------
-         (? "anonymous function" (fn xy-variadic []))
-         (? "anonymous function sugared" #(inc %))
-         (? "vector"               [1 2 3])
-         (? "set"                  #{1 2 3})
-         (? "list"                 '(1 2 3))
-         (? "seq"                  (range 10))
-         (? "record"               my-record-type)
-         (? {:coll-limit 5 :label "truncation"} [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23])
-         (let [o {:coll-limit 5 :label "truncation with opts var"}]
-           (? o [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]))
-         (? "colls-as-keys"        {[1 2]    "afjasljfalsjdalsfk" #{1 2 3} "afsdfasdfsdfasfas"})
-
-
-         ;; Abstractions ----------------------------------------------------
-         (? "Atom" {:atom (atom 1)})
-
-
-         ;; Java Number Types -----------------------------------------------
-         (? "##NaN" ##NaN)
-         (? "##Inf" ##Inf)
-         (? "##-Inf" ##-Inf)
-         (? "1/3" 1/3)
-         (? "byte" (byte 0))
-         (? "short" (short 3))
-         (? "double" (double 23.44))
-         (? "decimal" 1M)
-         (? "int" 1)
-         (? "float" (float 1.50))
-         (? "char" (char 97))
-         (? "java.math.BigInteger" (java.math.BigInteger. "171"))
-         (? {:label      "Basic samples"
-             :coll-limit 15
-            ;;  :theme      "Alabaster Light"
-             :theme      themes/alabaster-light
-             :find       {:pred #(= 1234 %)}}
-            basic-samples-cljc)
-
-
-
-
-         ;; Custom printing -- ! Leave this off until feature re-implemented
-        
-        ;;  (? {:custom-printers {:vector {:pred        (fn [x] (= x [765 233 444 21]))
-        ;;                                 :f           (fn [x] (into #{} x))
-        ;;                                 :badge-text  " Set💩 "
-        ;;                                 :badge-style {:color            "#000"
-        ;;                                               :background-color "lime"
-        ;;                                               :border-radius    "999px"
-        ;;                                               :text-shadow      "none"
-        ;;                                               :font-style       "normal"}}}
-        ;;      }
-        ;;     [765 233 444 21])
-
-         ;; Metadata
-         (?
-            {:label             "Nested metadata, :block positioning"
-              :metadata-position :block}
-            (with-meta 
-                    {(with-meta (symbol :a)
-                        {:abc "bar"
-                        :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-                      (with-meta (symbol "foo")
-                        {:abc "bar"
-                        :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-                      :b {:foo 'bar}}
-                    {:a                (with-meta (symbol "foo")
-                                          {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
-                                          :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                                          ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-                                          })
-                      ;; :xyz              "bar" 
-                      ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-                      }))
-
-         
-         (?
-          "Nested metadata, :inline positioning"
-          (with-meta 
-            {(with-meta (symbol :a)
-               {:abc "bar"
-                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-             (with-meta (symbol "foo")
-               {:abc "bar"
-                :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-             :b {:foo 'bar}}
-            {:a                (with-meta (symbol "foo")
-                                 {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
-                                  :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-                                          ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-                                  })
-                      ;; :xyz              "bar" 
-                      ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-             }))
-         )))
-  
+ ;; -------------------------------------------------------------
+ ;; TODO - Use the co fn to add some commentary to samples below.
+ ;; -------------------------------------------------------------
 
  ;; Testing all the stock themes cljc
  #_(do
@@ -659,162 +363,15 @@
                        :printer {:function-args {:color "#bb8f44"}}}}}
    {:string "string"})
 
-  (? {:label "Alabaster Dark"
-      :theme "Alabaster Dark"}
-     {:string "string"})
 
-  (? {:theme "Alabaster Light"}
-     {:string "string"})
-
-  #?(:clj
-     (? {:label "java.util.ArrayList" :coll-limit 10} (java.util.ArrayList. [1 2 3 4 5 6 7 8 9 10 11 12 13]))))  
+  )  
 
 
-;; Random js data structure tests
-
-;; (let [
-;;         ;; itInt8Array  (new js/Int8Array
-;;         ;;                   #js[1 2 3 4 5 6 7 8 9])
-;;         ;; jsarray  #js[1 2 3 4 5 6 7 8 9]
-;;         itmap (new js/Map
-;;                    #js[#js["a", 1],
-;;                        #js["b", 2]
-;;                        #js["c", 3]
-;;                        #js["d", 4]])
-;;         ;; it #_[1 2 3 [1 2 3 [1 2 3]]]
-;;         ;; {:a           [1 3 8 7 5 9 3 99 88]
-;;         ;;  :bee         {:a 'foo
-;;         ;;                :b {:a 'foo
-;;         ;;                    :b [:wtf]}}
-;;         ;;  :b           "hello, world"
-;;         ;;  :c           (new js/Date) 
-;;         ;;  :d           #js {:a "bar"
-;;         ;;                    :b "bar"}
-;;         ;;  :jsmap       (new js/Map
-;;         ;;                    #js[#js["a", 1],
-;;         ;;                        #js["b", 2]
-;;         ;;                        #js["c", 3]
-;;         ;;                        #js["d", 4]])
-;;         ;;  :itInt8Array (new js/Int8Array
-;;         ;;                    #js[1 2 3 4 5 6 7 8 9])
-;;         ;;  :e           #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-;;         ;;  }
-;;         ;; pw (truncate 0 it)
-;;         ts (with-meta
-;;              {"asfasdfasdfasdfasdfasdfasdfasdfasfadf"                          12
-;;               :foo                                                           (with-meta #{:a 1}
-;;                                                                                {:foo  "on a sev blah blah"
-;;                                                                                 :ffoo "adfadsfadsfasfdasdfasdfassasfsdfasd"
-;;                                                                                 :baz  "adfadsfadsfasfdasdfasdfassasdfadsfasdf"}) 
-;;               #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc" itmap
-;;               ;; :itmap itmap
-;;               }
-;;              {:foo  "adfadsfadsfasfdasdfasdfas"
-;;               :ffoo "adfadsfadsfasfdasdfasdfas"
-;;               :baz  [123 9898 8989898 89898989 988989]})
-;;         ;; tss {:foo "bar"}
-;;         ]
-
-;;     (? basic-samples-cljc)
-
-;;     #_(? {:theme monokai-light}
-;;      {:a (with-meta (symbol "foo")
-;;            {:abc "bar"
-;;             :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-;;       :b 1})
-
-;;     #_(? {:theme degas-light} (with-meta 
-;;                                 {(with-meta (symbol :a)
-;;                                    {:abc "bar"
-;;                                     :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"}) (with-meta (symbol "foo")
-;;                                                                                              {:abc "bar"
-;;                                                                                               :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-;;                                  :b                                                                                         2}
-;;                                 {:a (with-meta (symbol "foo")
-;;                                       {:abc (with-meta (symbol "bar") {:a   (with-meta (symbol "a")
-;;                                                                               {:abc (with-meta (symbol "a")
-;;                                                                                       {:abc (with-meta (symbol "a")
-;;                                                                                               {:abc "abc"
-;;                                                                                                :xyz "xyz"})
-;;                                                                                        :xyz "xyz"})
-;;                                                                                :xyz "xyz"})
-;;                                                                        :xyz "abcdefghijklmnopqrstuv"})
-;;                                        :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})}))
-
-;;     ;; (? {[1 2] "afjasljfalsjdalsfk" #{1 2 3} "afsdfasdfsdfasfas"})
-
-;;     #_(? {:a         1234
-;;         :abc       3333
-;;         :goldenrod "97bda55b-6175-4c39-9e04-7c0205c709dc"})
-
-;;     #_(? {:theme alabaster-lightx}
-;;        {:a                 "foo"
-;;         :xyz               {:a         1234
-;;                             :abc       3333
-;;                             :goldenrod "97bda55b-6175-4c39-9e04-7c0205c709dc"}
-;;         2222               :wtf
-;;         :hi-there-everyone #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"})
-
-;;     #_(? {:theme             alabaster-lightx
-;;         :metadata-position :inline}
-;;        (with-meta 
-;;          {(with-meta (symbol :a)
-;;             {:abc "bar"
-;;              :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-;;           (with-meta (symbol "foo")
-;;             {:abc "bar"
-;;              :xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"})
-;;           :b "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-;;           :122222 5555555}
-;;          {:a                (with-meta (symbol "foo")
-;;                               {:abc  (with-meta (symbol "bar") {:a 1 #_(with-meta (symbol "foo") {:a 1})})
-;;                                :xyz  "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"
-;;                                ;;  "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-;;                                })
-;;           ;; :xyz              "bar" 
-;;           ;; "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"
-;;           }))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; SMOKE TESTS WITH COMMENTARY END
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;     #_(?-- (with-meta [] #_(symbol "foo")
-;;          {:xyz "abcdefghijklmnopqrstuvwxyzzzzzzz"}
-;;          #_{:xyz "abcdefghijklmnopqrstuvwxyzzzzzzzzzzzzzzzzzzzz"}
-;;          ))
-;;     #_(? {:theme             alabaster-lightx
-;;         :metadata-position :inline}
-;;        (with-meta
-;;          [:b]
-;;          {:a                "foo"
-;;           :xyz              "bar" 
-;;           "hi there everyone" #uuid "97bda55b-6175-4c39-9e04-7c0205c709dc"})))
-
-(def basic-samples 
-  {:string   "string"
-   :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number   1234
-   :boolean  true
-   :lambda    #(inc %)
-   :fn       juxt
-   :regex    #"^hi$"
-   :record   my-record-type
-   :range    (range 40)
-   :atom2    (atom my-record-type)
-   :atom1    (atom 1)
-   :brackets [[[[[[]]]]]]})
-
-(def basic-samples-array-map
-  (array-map
-   :string   "string"
-   :uuid     #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-   :number   1234
-   :boolean  true
-   :lambda    #(inc %)
-   :fn       juxt
-   :regex    #"^hi$"
-   :record   my-record-type
-   :range    (range 40)
-   :atom2    (atom my-record-type)
-   :atom1    (atom 1)
-   :brackets [[[[[[]]]]]] ))
-
-basic-samples
