@@ -7,9 +7,10 @@
                 ;; "../../lasertag/src/"
                 ;; Local Bling - uncomment if debugging Bling locally
                 ;; "../../bling/src/"
+                ;; "../../bling/test/"
                 ]
  :dependencies [[io.github.paintparty/fireworks "0.10.4-SNAPSHOT"]
-                [io.github.paintparty/bling "0.4.0-SNAPSHOT"]
+                [io.github.paintparty/bling "0.4.2"]
                 [binaryage/devtools "1.0.6"]]
  :dev-http     {8020 "public"}
  :builds       {:app  {:target           :browser

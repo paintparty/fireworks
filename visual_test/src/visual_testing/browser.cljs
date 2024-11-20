@@ -2,7 +2,7 @@
   (:require
    [fireworks.core :refer [? !? ?> !?>]]
    [visual-testing.macros :refer-macros [test-clj]]
-   [visual-testing.shared :refer [foo test-suite]]))
+   [visual-testing.shared :refer [test-suite]]))
 
 ;; start is called by init and after code reloading finishes
 (defn ^:dev/after-load start []
@@ -55,16 +55,20 @@
   ;;      :coll/vector [:a :b :c [1 2 [:x :y]]]
   ;;      :coll/set    #{:a :b :c}
   ;;      :coll/record (->Foo "a" "b")})
-
+  
   ;; TESTING CODE FOR THEMES & FEATURES
-
+  
   (js/console.clear)
+
+  ;; (println (test-clj))
 
   ;; This will run test suite of cljc calls to fireworks.core/? in browser dev-console 
   (test-suite)
 
+
   ;; This will run same visual test suite in terminal where shadow is running
-  (println (test-clj)))
+  ;; Disable for now
+  #_(test-clj))
 
 
 

@@ -14,16 +14,14 @@
 ;; TODO revist how your doing this, maybe there should be a :classname entry
 ;; returned from lasertag
 (def badges-by-lasertag
-  {:js/Set         "js/Set"
-   :js/Promise     "js/Promise"
-   :js/Iterator    defs/js-literal-badge
-   :js/Object      defs/js-literal-badge
-   :js/Array       defs/js-literal-badge
-   :lambda         defs/lambda-symbol
-   :transient      defs/transient-label
-   :uuid           defs/uuid-badge
-   :js/Date        defs/inst-badge
-   :java.util.Date defs/inst-badge})
+  {:js/Set      "js/Set"
+   :js/Promise  "js/Promise"
+   :js/Iterator defs/js-literal-badge
+   :js/Object   defs/js-literal-badge
+   :js/Array    defs/js-literal-badge
+   :lambda      defs/lambda-symbol
+   :transient   defs/transient-label
+   :uuid        defs/uuid-badge})
 
 
 ;; Understand and doc how this works for custom types
@@ -57,6 +55,9 @@
                  ;; Maybe this could be exposed in an option 
                  #_(or java-util-class? java-lang-class?)
                  #_classname
+
+                 (= t :inst)
+                 defs/inst-badge
 
                  (or java-util-class?
                      (and coll-type? java-lang-class?))

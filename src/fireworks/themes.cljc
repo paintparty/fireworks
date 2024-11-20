@@ -72,20 +72,18 @@
                                    :font-style :italic}
                       :metadata   {:color            "#be55bb"
                                    :text-shadow      "0 0 2px #ffffff"
-                                   :background-color "#fae8fd"}
+                                   :background-color "#fcf0ff"}
                       :metadata2  {:color            "#9f60be"
                                    :text-shadow      "0 0 2px #ffffff"
-                                   :background-color "#e9e5ff"}
-                      :label      {:color            "#398962"
-                                   :background-color "#eefbee"
-                                   :text-shadow      "0 0 2px #ffffff"
+                                   :background-color "#ebedff"}
+                      :label      {:color            "#c76823"
+                                   :background-color "#fff9f5"
                                    :font-style       :italic}
-                      :eval-label {:color            "#4d6dba"
+                      :eval-label {:color            "#3764cd"
                                    :background-color "#edf2fc"
-                                   :text-shadow      "0 0 2px #ffffff"
                                    :font-style       :italic}}
             :syntax  {:js-object-key {:color "#888888"}}
-            :printer {:file-info     {:color                "#4d6dba"
+            :printer {:file-info     {:color                "#3764cd"
                                       :font-style           :italic
                                       :padding-inline-start :0ch}
                       :eval-form     :eval-label

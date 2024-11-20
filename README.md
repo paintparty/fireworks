@@ -90,7 +90,7 @@
 
 Requires Clojure `1.10.3` or higher
 
-If using with Babashka, requires Babashka `v1.3.187` or higher
+If using with Babashka, requires Babashka `v1.12.196`(coming soon) or higher
 
 <br>
 
@@ -812,6 +812,12 @@ Fireworks can only color the foreground and background of "spans" of text. If yo
 If you are using Firefox, ignore this section and follow [the instructions in the following section](#setting-the-background-color-and-font-in-firefox-developer-tools).
 
 First, you will need to set the general appearance of your Chrome browser's DevTools UI to "Light" or "Dark", depending on whether you are using a light or dark Fireworks theme. This can be done by opening DevTools on any page, clicking the **Settings** gear icon button, and then **Preferences** > **Appearance** > **Theme**. Official instructions <a href="https://developer.chrome.com/docs/devtools/settings" target="_blank">here</a>.
+
+
+
+> [!WARNING]
+>
+> As of November 18, 2024, The DevTools Console Customizer described below has stopped working in Chrome, most likely [due to changes made in Chrome version 130](https://github.com/paintparty/devtools-console-customizer/issues/1). Hopefully this can be fixed soon.
 
 
 
