@@ -14,12 +14,12 @@
      (do #_(? {:coll-limit 200
              :label      "ClojureScript interop types"}
             sample/interop-types)
-         
+
          (? {:coll-limit 200
              :label      "Clojure(Script) values"}
             everything)
 
-         (!? {:label      "Clojure(Script) multiline formatting"}
+         (? {:label      "Clojure(Script) multiline formatting"}
             sample/array-map-of-multiline-formatting-cljc)))
 
   #_(do 
@@ -56,5 +56,5 @@
     (? {:single-line-coll-length-limit 50} (range 20)))
 
   ;; Test bling
-  (bling.sample/sample)
+  #_(bling.sample/sample)
   nil)
