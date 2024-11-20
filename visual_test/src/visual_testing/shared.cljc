@@ -55,8 +55,6 @@
     (println "\n:single-line-coll-length-limit of 50")
     (? {:single-line-coll-length-limit 50} (range 20)))
 
+  ;; Test bling
+  (bling.sample/sample)
   nil)
-
-;; For Bling
-#_(defn test-suite []
- (bling.sample/sample))

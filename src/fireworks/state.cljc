@@ -17,8 +17,8 @@
             [fireworks.themes :as themes]
             [fireworks.util :as util]))
 
-;; debugging
 #?(:cljs
+   ;; In cljs, detect if env is node/deno vs browser
    (defonce node?
      (boolean 
       (some->> 
@@ -49,9 +49,7 @@
                       (exists? (.-version js/Deno))
                       (exists? (some-> js/Deno .-version .-deno)))
              :deno))
-       (contains? #{:deno :node}))))
-   :clj
-   ())
+       (contains? #{:deno :node})))))
 
 
 ;; Internal state atoms for development debugging ------------------------

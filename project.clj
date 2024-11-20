@@ -5,15 +5,15 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :source-paths ["src"
                  ;; for local dev bling and fireworks deps
-                 "../bling/src"
-                 "../lasertag/src"
+                ;;  "../bling/src"
+                 ;; "../lasertag/src"
                  ]
   :dependencies [[org.clojure/clojure "1.10.3"]
                  [expound "0.9.0"]
                  ;; for testing
                  ;; [com.taoensso/tufte "2.6.3"]
-                 [io.github.paintparty/bling "0.2.0"]
-                 [io.github.paintparty/lasertag "0.8.3"]]
+                 [io.github.paintparty/bling "0.4.2"]
+                 [io.github.paintparty/lasertag "0.8.4"]]
   :repl-options {:init-ns fireworks.core}
   :deploy-repositories [["clojars" {:url           "https://clojars.org/repo"
                                     :sign-releases false}]])

@@ -4,6 +4,7 @@
   (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
             [bling.core :refer [callout bling ?sgr]]
+            [bling.sample]
             [clojure.string :as string]
             [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint]]
@@ -69,6 +70,7 @@
     :label      "JVM Clojure Values with extras"}
     sample/vec-of-interop-types-with-extras)
 
+(bling.sample/sample)
 
 
 
