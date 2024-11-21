@@ -48,11 +48,6 @@
 <br>
 <br>
 
-## Intro
-**Fireworks is a themeable tapping library for Clojure, ClojureScript, and Babashka.** It is designed to make your workflow easier, faster, and more enjoyable. If you like the idea of printing with formatting and syntax coloring that matches the source code in your editor, this tool may be of interest. 
-
-<br>
-
 ## Features
 
 - Prints values without altering the execution of your program.
