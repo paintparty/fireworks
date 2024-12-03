@@ -4,8 +4,8 @@
                 ;; for local dev
                 ;; "../lasertag/src/"
                 ]
- :dependencies [[io.github.paintparty/lasertag "0.8.3"]
-                [io.github.paintparty/bling "0.2.0"]]
+ :dependencies [[io.github.paintparty/lasertag "0.10.0"]
+                [io.github.paintparty/bling "0.4.2"]]
  :builds       {:test        {:target    :karma
                               :output-to "out/test.js"
                               :ns-regexp "-test$"
