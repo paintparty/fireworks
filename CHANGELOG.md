@@ -7,10 +7,28 @@ For a list of breaking changes, check [here](#breaking-changes)
 ## Unreleased
 
 #### Added
-- Add formatted key and value printing to body of `fireworks.messaging/bad-option-value-warning`
+
+#### Fixed
+
+<br>
+<br>
+
+## 0.10.4
+2024-11-20
+
+
+#### Added
+- Support for non-browser environments such as node, deno, etc. Closes #47
+
+- Formatted key and value printing to body of `fireworks.messaging/bad-option-value-warning`.
+
+- `fireworks.sample` namespace as single source of truth for examples and data for testing.
 
 #### Fixed
 - Java array printing in `:pp` mode via incorporation of upstream patch from `me.flowthing.pp 2024-11-13.77` into `fireworks.pp`
+
+#### Changed
+- Bumps Lasertag and Bling deps.
 
 <br>
 <br>
