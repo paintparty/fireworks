@@ -44,12 +44,58 @@
 ;; fns so you can pass ks for get-in an narrowing 
 #_(pprint (tag-map 1/3))
 
+(def sample-map
+  (array-map
+   :string
+   "string"
+   :regex
+   #"myregex"
+   :uuid    
+   #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+   :symbol  
+   'mysym
+   :symbol+meta
+   (with-meta 'mysym {:foo "bar"})
+   :boolean
+   true
+   :keyword
+   :keyword
+   :nil
+   nil
+   :##Nan
+   ##NaN
+   :##Inf
+   ##Inf
+   :##-Inf
+   ##-Inf
+   :map
+   {:a 1
+    :b 2
+    :c "three"}
+   :vector
+   [1 2 3]
+   :vector+meta
+   ^{:meta-on-coll 1}
+   ['foo
+    (with-meta 'bar {:meta-on-sym 2})
+    'baz]
+   :list
+   '(1 2 3)
+   :lazy-seq
+   (range 10)
+   :rainbow
+   [[[[[[]]]]]]
+   :set
+   #{1 :2 "three"}))
 
 
-(? {:coll-limit 100
-    :theme      "Alabaster Light"
-    :label      "Clojure(Script) Values"}
-   sample/array-map-of-everything-cljc)
+(println
+ (-> (? :data
+        {:theme "Universal Neutral"}
+        sample-map)
+     :formatted
+     :string))
+
 
 (!? {:coll-limit 100
     :theme      "Alabaster Light"
