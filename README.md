@@ -509,7 +509,7 @@ Whether or not to print out fully qualified namespaces for functions and classes
 
 Defaults to `false`<br>
 
-If set to `true` (default value), Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If you will be printing with Fireworks in a terminal, and your terminal emulator does not supports 24-bit color, it is highly recommended to set this to `true`. The majority of modern terminal emulators offer support for truecolor. You can test whether or not your terminal supports truecolor by pasting the following in your terminal:
+If set to `true`, Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If you will be printing with Fireworks in a terminal, and your terminal emulator does not supports 24-bit color, it is highly recommended to set this to `true`. The majority of modern terminal emulators offer support for truecolor. You can test whether or not your terminal supports truecolor by pasting the following in your terminal:
 
 ```
 echo -e "\033[1;38;2;255;0;0mRED\033[0m \033[1;38;2;0;255;0mGREEN\033[0m \033[1;38;2;0;0;255mBLUE\033[0m \033[1;38;2;255;255;0mYELLOW\033[0m"
