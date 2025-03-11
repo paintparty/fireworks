@@ -786,6 +786,7 @@
         (profile+ob coll indent)
 
         untokenized
+        ;; TODO - perf use mapv
         (map (fn [[k v]]
                (let [key-props (meta k)
                      val-props (meta v)]
@@ -794,6 +795,7 @@
 
         max-keylen
         (or (some->> untokenized
+                     ;; TODO - perf use mapv
                      (map #(-> % first :ellipsized-char-count))
                      seq
                      (apply max))

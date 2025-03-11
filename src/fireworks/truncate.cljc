@@ -19,7 +19,10 @@
        [v]
        (as-> v $
          (string/split $ #";")
-         (map #(let [kv    (-> % string/trim (string/split #":") )
+         ;; TODO - perf - should this be a reduce?
+         (map #(let [
+                     ;; TODO - perf - should this be a transducer or reduce?
+                     kv    (-> % string/trim (string/split #":") )
                      [k v] (map string/trim kv)]
                  [k v]) 
               $)
@@ -164,6 +167,7 @@
              (when (= t :SyntheticBaseEvent) (prune-synthetic-base-event x))
              (->> m 
                   js-obj->array-map
+                  ;; TODO - perf - should this be a reduce?
                   (map (partial truncate {:depth (inc depth)}))
                   (into {}))))))
      :clj

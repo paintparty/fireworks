@@ -25,8 +25,11 @@
                    m (state/with-line-height m)
                    f #(let [m (state/map-vals state/hexa-or-sgr m)]
                         (state/m->sgr m))]
-               #?(:cljs (if node? (f) (string/join (map state/kv->css2 m)))
-                  :clj (f)))
+               #?(:cljs
+                  ;; TODO - perf - use a reduce or at least mapv
+                  (if node? (f) (string/join (map state/kv->css2 m)))
+                  :clj
+                  (f)))
              m)]
      (str m bgc))))
 
