@@ -7,12 +7,18 @@
 ;; start is called by init and after code reloading finishes
 (defn ^:dev/after-load start []
 
+  (js/console.clear)
+
+  ;; This will run test suite of cljc calls to fireworks.core/? in browser dev-console 
+  (test-suite)
+
+
 ;; To test readfile warnings in fireworks.macros
 ;; 1) ENV VAR value of:
-;;    FIREWORKS_CONFIG="wtf"
+;;    FIREWORKS_CONFIG="wtf" ; <- wtf is just an arbitrary "bad" example value
 ;;    This should give a "must be edn file warning"
 ;; 2) ENV VAR value of:
-;;    FIREWORKS_CONFIG="wtf.edn"
+;;    FIREWORKS_CONFIG="wtf.edn" 
 ;;    Where wtf.edn is not a valid file path, or is unparsable as an edn file, 
 ;;    This should give a "file cannot be read", or "file cannot be parsed" warning.
   
@@ -41,7 +47,7 @@
   
 ;; Arbitrary error that will happen in fireworks.core/formatted
 ;; Make sure to uncomment the bad form in fireworks.core/formatted first
-;; (? "force error")
+;; (? :_fireworks-dev/force-error_)
   ;;  (? {:theme "Neutral Light"}
   ;;     {:boolean     true
   ;;      :function    cycle
@@ -58,12 +64,8 @@
   
   ;; TESTING CODE FOR THEMES & FEATURES
   
-  (js/console.clear)
 
   ;; (println (test-clj))
-
-  ;; This will run test suite of cljc calls to fireworks.core/? in browser dev-console 
-  (test-suite)
 
 
   ;; This will run same visual test suite in terminal where shadow is running
