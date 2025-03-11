@@ -597,7 +597,7 @@
                     :clj :x-term)
         ;; TODO - Figure out best way to pull rainbow brackets from theme?
         ret     (or (some->> theme :rainbow-brackets context rest (take-nth 2))
-                    (->> basethemes/bracket-colors
+                    (->> basethemes/rainbow-brackets-colorscale
                          mood
                          context
                          contrast

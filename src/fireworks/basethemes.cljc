@@ -9,7 +9,7 @@
 
 ;; Cheat sheet for ansi colors -- https://www.ditig.com/256-colors-cheat-sheet 
 
-(def bracket-colors
+(def rainbow-brackets-colorscale
   {:light {:x-term  {:high (apply array-map 
                                   [:neutral 241
                                    :blue    32
