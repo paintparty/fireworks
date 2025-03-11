@@ -21,41 +21,45 @@
 (defn bad-option-value-warning
   [{:keys [k v spec default header body line column file form]}]
   (callout {:type           :warning
+            :label-theme    :marquee
             :padding-top    1
             :padding-bottom 0
-            :label          nil}
+            :label          "WARNING: Invalid value"}
            (point-of-interest
             (merge {:type   :warning
                     :form   (or form
                                 (let [str? (string? v)]
-                                 (symbol (str k
-                                              " "
-                                              (when str? "\"")
-                                              v
-                                              (when str? "\"")))))          
+                                  (symbol (str k
+                                               " "
+                                               (when str? "\"")
+                                               v
+                                               (when str? "\"")))))          
                     :line   line
                     :column column
                     :file   file
                     :header (or header "Invalid option value:")
-                    :body   (str (when (and form k v)
-                                   (bling "\n"
-                                          "Bad value:\n"
-                                          [:bold k] " " [:bold v]
-                                          (str "\n"
-                                               (string/join (repeat (count (str k)) " "))
-                                               " "
-                                               )
-                                          [:bold.warning (string/join (repeat (count (str v)) "^"))]
-                                          "\n\n\n"))
-                                 (expound/expound-str spec
-                                                      v
-                                                      {:print-specs? false})
-                                 (when default
-                                   (str "\n\n"
-                                        "The default value of `"
-                                        default
-                                        "` will be applied."))
-                                 (when body (str "\n\n" body)))}))))
+                    :body   (apply bling 
+                                   (concat
+                                    (when (and form k v)
+                                      ["\n"
+                                       "Bad value:\n\n"
+                                       [:bold k]
+                                       " "
+                                       [:bold v]
+                                       (str "\n"
+                                            (string/join (repeat (count (str k)) " "))
+                                            " ")
+                                       [:bold.warning (string/join (repeat (count (str v)) "^"))]
+                                       "\n\n\n"])
+                                    [(expound/expound-str spec
+                                                          v
+                                                          {:print-specs? false})
+                                     (when default
+                                       (str "\n\n"
+                                            "The default value of `"
+                                            default
+                                            "` will be applied."))
+                                     (when body (str "\n\n" body))]))}))))
 
 
 (defn unable-to-trace [opts]

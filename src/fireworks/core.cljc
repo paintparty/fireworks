@@ -255,11 +255,11 @@
     :as   opts}] 
 
   ;; Test error messaging
-  ;; (when (= "force error" qf)
-  ;;   #?(:cljs
-  ;;      (throw (js/Error. "Forced error from fireworks.core/formatted"))
-  ;;      :clj
-  ;;      (+ 1 true)))
+  (when (= :_fireworks-dev/force-error_ qf)
+    #?(:cljs
+       (throw (js/Error. "Forced error from fireworks.core/formatted"))
+       :clj
+       (+ 1 true)))
 
   (let [user-print-fn
         (:print-with user-opts)
@@ -1077,6 +1077,13 @@
                  (if ~defd (cast-var ~defd ~cfg-opts) ~x)))
               (fireworks.core/_p2 cfg-opts# ret#))))))))
 
+(defmacro ^{:public true} ?- [& args]
+  (let [args (nth args 0)]
+       `(fireworks.core/? :result ~args)))
+
+(defmacro ^{:public true} ?-- [& args]
+  (let [args (nth args 0)]
+       `(fireworks.core/? :result {:print-with clojure.core/print} ~args)))
 
 ;; TODO - Add to docs/readme
 (defmacro ^{:public true} ?flop

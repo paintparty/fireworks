@@ -129,7 +129,8 @@
                     :k      "FIREWORKS_CONFIG="
                     :spec   ::config/edn-file-path
                     :header (str "[fireworks.core/_p] Invalid value"
-                                 " for environmental variable.")}]
+                                 " for environmental variable:")
+                    :body   "The default fireworks config values will be applied."}]
 
           (messaging/bad-option-value-warning opts)
 
