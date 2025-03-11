@@ -2,15 +2,15 @@
 ;; shadow-cljs configuration
 {:source-paths ["src/"
                 ;; Local Fireworks - uncomment if debugging Fireworks locally
-                ;; "../src/"
+                "../src/"
                 ;; Local Lasertag - uncomment if debugging Lasertag locally
                 ;; "../../lasertag/src/"
                 ;; Local Bling - uncomment if debugging Bling locally
                 ;; "../../bling/src/"
                 ;; "../../bling/test/"
                 ]
- :dependencies [[io.github.paintparty/fireworks "0.10.4-SNAPSHOT"]
-                [io.github.paintparty/bling "0.4.2"]
+ :dependencies [[io.github.paintparty/fireworks "0.10.4"]
+                [io.github.paintparty/bling "0.5.1"]
                 [binaryage/devtools "1.0.6"]]
  :dev-http     {8020 "public"}
  :builds       {:app  {:target           :browser
