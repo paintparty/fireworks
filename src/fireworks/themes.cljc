@@ -513,10 +513,9 @@
                                 :atom-wrapper :label}}})
 
 (def universal-neutral
-  {:name   "Universal Neutral"
-   :desc   (str "A neutral syntax theme for Clojure data that works on both light and dark backgrounds."
-                "The eval label is printed in blue, metadata is printed in purple, and object labels are printed in green.")
-   :mood   "dark"
+  {:name             "Universal Neutral"
+   :desc             (str "A neutral syntax theme for Clojure data that works on both light and dark backgrounds."
+                          "The eval label is printed in blue, metadata is printed in purple, and object labels are printed in green.")
    :rainbow-brackets {:browser [:neutral "#9e9e9e"
                                 :blue    "#00afff"
                                 :orange  "#ff8700"
@@ -527,21 +526,18 @@
                                 :orange  208 
                                 :green   40
                                 :purple  201]}
-   :tokens {:classes {:foreground {:color "#9e9e9e"}
-                      :metadata   {:color "#af87ff"}      ;; purple
-                      :metadata2  {:color "#87af00"}      ;; yellow
-                      :label      {:color       "#ff8700" ;; yellow
-                                   :font-style  :italic}
-                      :eval-label {:color      "#00afff"
-                                   :font-style :italic}}
-            :syntax  {:js-object-key {:color "#ff00ff"}}
+   :tokens           {:classes {:foreground {:color "#9e9e9e"}
+                                :metadata   {:font-style :italic}
+                                :metadata2  {:font-style :italic}
+                                :label      {:font-style :italic}
+                                :eval-label {:font-style :italic}}
+                      :syntax  {:js-object-key {:color "#ff00ff"}}
 
-            :printer {:file-info     {:color      "#9e9e9e" ;; gray
-                                      :font-style :italic }
-                      :eval-form     :eval-label
-                      :eval-label    :eval-label
-                      :comment       {:font-style :italic}
-                      :function-args {:color "#9e9e9e"}}}})
+                      :printer {:file-info     {:font-style :italic }
+                                :eval-form     :eval-label
+                                :eval-label    :eval-label
+                                :comment       {:font-style :italic}
+                                :function-args {:color "#9e9e9e"}}}})
 
 (def universal
   {:name   "Universal"
