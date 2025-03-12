@@ -856,34 +856,49 @@
   [defd {:keys [ns-str]}]
   (symbol (str "#'" ns-str "/" defd)))
 
+(def modes #{
+             :comment
+             :data
+             :log
+             :log-
+             :pp
+             :pp-
+
+             ;; deprecated in favor of alias :no-label, :no-file, etc.
+             :label
+             :file
+             :result
+
+             ;; unsupported / experimental
+             :trace
+             })
+
+(def alias-modes 
+  {
+   ;; sugar for consuming this the formatted string
+   :string       :data
+
+   ;; sugar for changing what extra stuff is displayed
+   :no-label     :file
+   :no-file      :label
+   :-            :result 
+   :log/-        :log-
+   :pp/-         :pp-
+   :log/no-label :log
+   :log/no-file  :log
+   :pp/no-label  :pp
+   :pp/no-file   :pp 
+   })
+
 (defn- mode+template [a]
   (let [alias-mode
-        (if (contains? #{:no-label :no-file :- :string} a)
-          a
-          nil)
+        (if (contains? alias-modes a) a nil)
         
         a
-        (case a
-         :no-label :file
-         :no-file  :label
-         :-        :result
-         :string   :data
-         a)
+        (get alias-modes a a)
 
         mode
-        (if (contains? #{:label
-                         :file
-                         :result
-                         :comment
-                         :data
-                         :log
-                         :log-
-                         :pp
-                         :pp-
-                         :trace}
-                       a)
-          a
-          nil)
+        (if (contains? modes a) a nil)
 
         template
         (get 
