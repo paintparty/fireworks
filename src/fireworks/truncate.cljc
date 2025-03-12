@@ -1,7 +1,7 @@
 (ns ^:dev/always fireworks.truncate
   (:require #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.macros :refer [keyed]])
-            [fireworks.pp :refer [?pp]]
+            ;; [fireworks.pp :refer [?pp]]
             [clojure.string :as string]
             [fireworks.ellipsize :as ellipsize]
             [fireworks.order :refer [seq->sorted-map]]
@@ -227,7 +227,7 @@
 
 
 (defn- truncated-x*
-  [{:keys [coll-type? kv? depth carries-meta?]
+  [{:keys [coll-type? kv? depth carries-meta? classname]
     :as m}
    x]
   ;; (println "\n\nx in truncated-x*" x)
@@ -239,6 +239,9 @@
 
             coll-type?
             (truncated-coll m x)
+
+            (= classname "java.math.BigDecimal")
+            (symbol (str x "M"))
 
             :else      
             x)]
