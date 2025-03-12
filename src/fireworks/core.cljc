@@ -854,7 +854,14 @@
   (symbol (str "#'" ns-str "/" defd)))
 
 (defn- mode+template [a]
-  (let [mode
+  (let [a
+        (case a
+         :no-label :file
+         :no-file  :label
+         :-        :result
+         a)
+
+        mode
         (if (contains? #{:label
                          :file
                          :result
