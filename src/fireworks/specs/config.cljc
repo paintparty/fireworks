@@ -125,7 +125,7 @@
         :vector
         (s/coll-of ::find-for-highlighting-map :kind? vector?)))
 
-(s/def ::when fn?)
+(s/def ::when any?)
 
 (s/def ::fireworks-user-config
   (s/and map?

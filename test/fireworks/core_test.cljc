@@ -8,7 +8,8 @@
    [fireworks.themes :as themes] 
    [fireworks.sample :as sample] 
    #?(:cljs [cljs.test :refer [deftest is]])
-   #?(:clj [clojure.test :refer :all])))
+   #?(:clj [clojure.test :refer :all])
+   [clojure.spec.alpha :as s]))
 
 ;; These tests will break if your local ~/.fireworks/config.edn is different from fireworks.smoke-test/example-config.
 ;; Change it to that temporarily if you want to run these tests locally. This will be fixed in the near future.
@@ -464,3 +465,19 @@
 
 ;; Add :use-default-config option which bypasses config.edn and just always uses
 ;; "Universal Default" theme, as well as default config options.
+
+;; This is borked
+(def myval :foo)
+(? {:when true} myval)
+
+;; ;; This works
+;; (? {:when #(and true %)} myval)
+
+;; ;;This is borked
+;; (? {:when #(and true)} myval)
+
+;; ;; ;; This works
+;; (? {:when (fn [_] true)} myval)
+
+;; ;; ;; This is borked
+;; (? {:when (fn [] true)} myval)

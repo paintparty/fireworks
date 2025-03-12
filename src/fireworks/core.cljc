@@ -765,9 +765,7 @@
       ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
         printing-opts
-        (let [print? (if-let [user-when-fn (some-> opts :when (util/maybe fn?))] 
-                       (boolean (apply user-when-fn [x]))
-                       true)] 
+        (let [print? (if (contains? opts :when) (:when opts) true)]
           (when print? (print-formatted printing-opts 
                                         #?(:cljs (when-not node? 
                                                    js-print))))
@@ -787,7 +785,6 @@
 
           (reset! state/formatting-form-to-be-evaled? false)
           (when return-result? x))))))
-
 
 
 (defn- cfg-opts

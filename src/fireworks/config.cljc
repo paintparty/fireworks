@@ -66,12 +66,12 @@
                                    :default nil}
    :when                          {:spec    ::config/when
                                    :default nil}
-
    })
 
 ;; Option keys
 (def option-keys
   (->> options keys (into #{})))
+
 ;; Option keys that update theme
 (def option-keys-that-update-theme
   (->> options
