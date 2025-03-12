@@ -154,12 +154,11 @@
 ;;   [coll]
 ;;   (apply (partial sorted-set-by rank) coll))
 
-
 (defn seq->sorted-map
   "Only map-like colls should get sent here."
   [coll array-map?]
-  (if (and (< 8 (count coll))
-           (not array-map?))
+  ;; First check if the og value would have been persistant hash-map
+  (if (and (< 8 (count coll)) (not array-map?))
     (seq->array-map (sort rank coll))
     (if (map? coll)
       coll
