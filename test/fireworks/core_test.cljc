@@ -17,6 +17,33 @@
 ;; By design, all cljs tests that test fireworks.core/p-data in this namespace will break if the line number that they are on changes!
 
 
+
+(? :pp
+   (? :string
+      (with-meta {1M :foo
+                  1 :bar}
+        {:foo 1
+         :bar 2})))
+
+;; (? :result
+;;    (with-meta {1M :foo
+;;                1 :bar}
+;;      {:foo 1
+;;       :bar 2}))
+
+;; (? :no-file)
+;; (? :no-label)
+
+;; ;; instead of :result
+;; (? :- )
+
+
+;; ;; remove :comment option
+
+;; (? :log- (with-meta {1M :foo
+;;                1 :bar}
+;;      {:foo 1 :bar 2}))
+
 (def theme themes/alabaster-light-legacy)
 (declare escape-sgr)
 
@@ -402,7 +429,7 @@
     ret))
 
 ;; Basic print-and-return tests, cljc
-(do
+#_(do
   ;; (deftest ?-par-result
   ;;   (is (= (? :result "par?") "par?")))
   ;; (deftest ?-par
@@ -469,5 +496,3 @@
 
 ;; TODO - this should not print multiline, it is b/c label is being counted in string length
 
-(? {1M :foo
-    1 :bar})

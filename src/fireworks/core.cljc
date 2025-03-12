@@ -248,13 +248,14 @@
     :else
     (string/join (repeat (get @state/config k 0) "\n")))
 
-  #_(ff k (get @state/config k 0))
-  #_(string/join (repeat (get @state/config k 0) "\n"))
-  #_(if-let [mb (ff (k user-opts))]
-      (if (or (zero? mb) (pos-int? mb))
-        (string/join (repeat mb "\n"))
-        "\n")
-      ""))
+  ;; (ff k (get @state/config k 0))
+  ;; (string/join (repeat (get @state/config k 0) "\n"))
+  ;; (if-let [mb (ff (k user-opts))]
+  ;;     (if (or (zero? mb) (pos-int? mb))
+  ;;       (string/join (repeat mb "\n"))
+  ;;       "\n")
+  ;;     "")
+  )
 
 
 
@@ -784,7 +785,9 @@
 
       ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
-        printing-opts
+        (if (= :string (:alias-mode opts))
+          (-> printing-opts :formatted :string)
+          printing-opts)
         (let [print? (if (contains? opts :when) (:when opts) true)]
           (when print? (print-formatted printing-opts 
                                         #?(:cljs (when-not node? 
@@ -854,11 +857,17 @@
   (symbol (str "#'" ns-str "/" defd)))
 
 (defn- mode+template [a]
-  (let [a
+  (let [alias-mode
+        (if (contains? #{:no-label :no-file :- :string} a)
+          a
+          nil)
+        
+        a
         (case a
          :no-label :file
          :no-file  :label
          :-        :result
+         :string   :data
          a)
 
         mode
@@ -895,11 +904,12 @@
          mode
          [:form-or-label :file-info :result])]
     {:mode     mode
+     :alias-mode alias-mode
      :template template}))
 
 #?(:clj
    (defn- ?2-helper
-     [{:keys [cfg-opts* mode template label &form x]}]
+     [{:keys [cfg-opts* alias-mode mode template label &form x]}]
     ;;  (ff '?-helper2 (get-user-config-edn-dynamic))
      (let [defd           (defd x)
 
@@ -919,6 +929,7 @@
 
            cfg-opts       (merge (dissoc (or cfg-opts* {}) :label)
                                  {:mode           mode
+                                  :alias-mode     alias-mode
                                   :label          label
                                   :template       template
                                   :ns-str         (some-> *ns* ns-name str)
@@ -976,7 +987,7 @@
         (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                            (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
   ([a x]
-   (let [{:keys [mode template]}
+   (let [{:keys [mode alias-mode template]}
          (mode+template a)]
      (case mode
        :trace
@@ -1021,7 +1032,7 @@
                        :else             (when-not cfg-opts* a)))
 
              {:keys [log?* defd qf-nil? cfg-opts]}
-             (?2-helper (keyed [mode template cfg-opts* label &form x]))]
+             (?2-helper (keyed [mode alias-mode template cfg-opts* label &form x]))]
 
         ;;  #_(ff "?, 2-arity, cfg-opts" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
