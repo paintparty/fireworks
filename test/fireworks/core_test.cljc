@@ -4,45 +4,16 @@
    [fireworks.core :refer [? !? ?> !?>]]
    [fireworks.config]
    [fireworks.pp :as pp :refer [?pp !?pp]]
-   [lasertag.core :refer [tag-map]]
    [fireworks.demo]
    [fireworks.themes :as themes] 
    [fireworks.sample :as sample] 
+   [fireworks.smoke-test] 
    #?(:cljs [cljs.test :refer [deftest is]])
-   #?(:clj [clojure.test :refer :all])
-   [clojure.spec.alpha :as s]))
+   #?(:clj [clojure.test :refer :all])))
 
 ;; These tests will break if your local ~/.fireworks/config.edn is different from fireworks.smoke-test/example-config.
 ;; Change it to that temporarily if you want to run these tests locally. This will be fixed in the near future.
 ;; By design, all cljs tests that test fireworks.core/p-data in this namespace will break if the line number that they are on changes!
-
-
-
-(? :pp
-   (? :string
-      (with-meta {1M :foo
-                  1 :bar}
-        {:foo 1
-         :bar 2})))
-
-;; (? :result
-;;    (with-meta {1M :foo
-;;                1 :bar}
-;;      {:foo 1
-;;       :bar 2}))
-
-;; (? :no-file)
-;; (? :no-label)
-
-;; ;; instead of :result
-;; (? :- )
-
-
-;; ;; remove :comment option
-
-;; (? :log- (with-meta {1M :foo
-;;                1 :bar}
-;;      {:foo 1 :bar 2}))
 
 (def theme themes/alabaster-light-legacy)
 (declare escape-sgr)
@@ -50,7 +21,7 @@
 #?(:cljs
    (deftest p-data-basic 
      (is (=
-          (let [ret (? :data {:theme theme} "foo")] (?pp 'p-data-basic ret))
+          (let [ret (? :data {:theme theme} "foo")] (!?pp 'p-data-basic ret))
           {:quoted-form   "foo",
            :formatted     {:string     "%c\"foo\"%c",
                            :css-styles ["color:#448C27;line-height:1.45;"
@@ -74,7 +45,7 @@
 #?(:cljs
    (deftest p-data-with-label
      (is (= 
-          (let [ret (? :data "my-label" "foo")] (?pp 'p-data-with-label ret))
+          (let [ret (? :data "my-label" "foo")] (!?pp 'p-data-with-label ret))
           {:quoted-form   "foo",
            :formatted     {:string     "%c\"foo\"%c",
                            :css-styles ["color:#448C27;line-height:1.45;"
@@ -429,7 +400,7 @@
     ret))
 
 ;; Basic print-and-return tests, cljc
-#_(do
+(do
   ;; (deftest ?-par-result
   ;;   (is (= (? :result "par?") "par?")))
   ;; (deftest ?-par
@@ -477,7 +448,7 @@
                 #?(:clj (do (!?pp 'p-data-basic-samples formatted-string))
                    :cljs (do (!?pp 'p-data-basic-samples formatted-string))))
               #?(:clj
-                 "〠38;5;241〠{〠0〠〠38;2;122;62;157〠:string〠0〠           〠38;2;68;140;39〠\"string\"〠0〠\n 〠38;2;122;62;157〠:regex〠0〠            〠38;2;68;140;39〠#\"myregex\"〠0〠\n 〠38;2;122;62;157〠:uuid〠0〠             〠3;38;2;57;137;98;48;2;238;251;238〠#uuid 〠0〠〠38;2;68;140;39〠\"4fe5d828-6444-11e8-8222\"〠3;38;2;140;140;140〠...〠0〠〠0〠\n 〠38;2;122;62;157〠:symbol〠0〠           〠38;2;77;109;186〠mysym〠0〠\n 〠38;2;122;62;157〠:symbol+meta〠0〠      〠38;2;77;109;186〠mysym〠0〠 〠38;2;190;85;187;48;2;250;232;253〠    〠0〠〠38;2;190;85;187;48;2;250;232;253〠^{〠0〠〠38;2;190;85;187;48;2;250;232;253〠:foo〠0〠〠38;2;190;85;187;48;2;250;232;253〠 〠0〠〠38;2;190;85;187;48;2;250;232;253〠\"bar\"〠0〠〠38;2;190;85;187;48;2;250;232;253〠}〠0〠\n 〠38;2;122;62;157〠:boolean〠0〠          〠38;2;122;62;157〠true〠0〠\n 〠38;2;122;62;157〠:keyword〠0〠          〠38;2;122;62;157〠:keyword〠0〠\n 〠38;2;122;62;157〠:nil〠0〠              〠38;2;122;62;157〠nil〠0〠\n 〠38;2;122;62;157〠:##Nan〠0〠            〠38;2;88;88;88〠NaN〠0〠\n 〠38;2;122;62;157〠:##Inf〠0〠            〠38;2;88;88;88〠Infinity〠0〠\n 〠38;2;122;62;157〠:##-Inf〠0〠           〠38;2;88;88;88〠-Infinity〠0〠\n 〠38;2;122;62;157〠:int〠0〠              〠38;2;122;62;157〠1234〠0〠\n 〠38;2;122;62;157〠:float〠0〠            〠38;2;122;62;157〠3.33〠0〠\n 〠38;2;122;62;157〠:lambda〠0〠           〠3;38;2;57;137;98;48;2;238;251;238〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:lambda-2-args〠0〠    〠3;38;2;57;137;98;48;2;238;251;238〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:core-fn〠0〠          〠38;2;77;109;186〠clojure.core/juxt〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:date-fn〠0〠          〠38;2;77;109;186〠java.util/Date〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:datatype-class〠0〠   〠38;2;77;109;186〠fireworks.sample/MyType〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:recordtype-class〠0〠 〠38;2;77;109;186〠fireworks.sample/MyRecordType〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:really-long-fn〠0〠   〠38;2;77;109;186〠xyasldfasldkfaslkjfzzzzzzzzzz〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠3;38;2;140;140;140〠\n ...               ...+14〠0〠〠38;5;241〠}〠0〠"
+                 "〠38;5;241〠{〠0〠〠38;2;122;62;157〠:string〠0〠           〠38;2;68;140;39〠\"string\"〠0〠\n 〠38;2;122;62;157〠:regex〠0〠            〠38;2;68;140;39〠#\"myregex\"〠0〠\n 〠38;2;122;62;157〠:uuid〠0〠             〠3;38;2;57;137;98;48;2;238;251;238〠#uuid 〠0〠〠38;2;68;140;39〠\"4fe5d828-6444-11e8-8222\"〠3;38;2;140;140;140〠...〠0〠〠0〠\n 〠38;2;122;62;157〠:symbol〠0〠           〠38;2;77;109;186〠mysym〠0〠\n 〠38;2;122;62;157〠:symbol+meta〠0〠      〠38;2;77;109;186〠mysym〠0〠 〠38;2;190;85;187;48;2;250;232;253〠    〠0〠〠38;2;190;85;187;48;2;250;232;253〠^{〠0〠〠38;2;190;85;187;48;2;250;232;253〠:foo〠0〠〠38;2;190;85;187;48;2;250;232;253〠 〠0〠〠38;2;190;85;187;48;2;250;232;253〠\"bar\"〠0〠〠38;2;190;85;187;48;2;250;232;253〠}〠0〠\n 〠38;2;122;62;157〠:boolean〠0〠          〠38;2;122;62;157〠true〠0〠\n 〠38;2;122;62;157〠:keyword〠0〠          〠38;2;122;62;157〠:keyword〠0〠\n 〠38;2;122;62;157〠:nil〠0〠              〠38;2;122;62;157〠nil〠0〠\n 〠38;2;122;62;157〠:##Nan〠0〠            〠38;2;122;62;157〠NaN〠0〠\n 〠38;2;122;62;157〠:##Inf〠0〠            〠38;2;122;62;157〠Infinity〠0〠\n 〠38;2;122;62;157〠:##-Inf〠0〠           〠38;2;122;62;157〠-Infinity〠0〠\n 〠38;2;122;62;157〠:int〠0〠              〠38;2;122;62;157〠1234〠0〠\n 〠38;2;122;62;157〠:float〠0〠            〠38;2;122;62;157〠3.33〠0〠\n 〠38;2;122;62;157〠:lambda〠0〠           〠3;38;2;57;137;98;48;2;238;251;238〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:lambda-2-args〠0〠    〠3;38;2;57;137;98;48;2;238;251;238〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:core-fn〠0〠          〠38;2;77;109;186〠clojure.core/juxt〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:date-fn〠0〠          〠38;2;77;109;186〠java.util/Date〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:datatype-class〠0〠   〠38;2;77;109;186〠fireworks.sample/MyType〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:recordtype-class〠0〠 〠38;2;77;109;186〠fireworks.sample/MyRecordType〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:really-long-fn〠0〠   〠38;2;77;109;186〠xyasldfasldkfaslkjfzzzzzzzzzz〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠3;38;2;140;140;140〠\n ...               ...+14〠0〠〠38;5;241〠}〠0〠"
                  :cljs
                  "%c{%c%c:string%c           %c\"string\"%c\n %c:regex%c            %c#\"myregex\"%c\n %c:uuid%c             %c#uuid %c%c\"4fe5d828-6444-11e8-8222\"%c...%c%c\n %c:symbol%c           %cmysym%c\n %c:symbol+meta%c      %cmysym%c %c    %c%c^{%c%c:foo%c %c\"bar\"%c%c}%c\n %c:boolean%c          %ctrue%c\n %c:keyword%c          %c:keyword%c\n %c:nil%c              %cnil%c\n %c:##Nan%c            %cNaN%c\n %c:##Inf%c            %cInfinity%c\n %c:##-Inf%c           %c-Infinity%c\n %c:int%c              %c1234%c\n %c:float%c            %c3.33%c\n %c:lambda%c           %cλ%c%c%c%c[]%c\n %c:lambda-2-args%c    %cλ%c%c%c%c[%1 %2]%c\n %c:core-fn%c          %ccljs.core/juxt%c%c[var_args]%c\n %c:date-fn%c          %cjs/Date%c%c[]%c\n %c:datatype-class%c   %cfireworks.sample/MyType%c%c[a b]%c\n %c:recordtype-class%c %cfireworks.sample/MyRecordType%c%c[a b]%c\n %c:really-long-fn%c   %cxyasldfasldkfaslkjfzzzzzzz%c...%c%c%c[x y]%c%c\n ...               ...+14%c%c}%c")))))
 
