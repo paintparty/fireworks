@@ -10,12 +10,13 @@
 
 <div align="center">
 
-**[Features]**  &nbsp;•&nbsp; **[Setup]**  &nbsp;•&nbsp;  **[Usage]** &nbsp;•&nbsp;  **[Options]** &nbsp;•&nbsp; **[Theming]** &nbsp;•&nbsp; **[Interop]** &nbsp;•&nbsp;  **[Contributing]**
+**[Features]**  &nbsp;•&nbsp; **[Setup]**  &nbsp;•&nbsp;  **[Usage]** &nbsp;•&nbsp; **[Modes]** &nbsp;•&nbsp;  **[Options]** &nbsp;•&nbsp; **[Theming]** &nbsp;•&nbsp; **[Interop]** &nbsp;•&nbsp;  **[Contributing]**
 </div>
 
 [Features]: #features
 [Setup]: #setup
 [Usage]: #usage
+[Modes]: #tap-driven-development
 [Options]: #options
 [Theming]: #theming
 [Interop]: #printing-conventions
@@ -214,8 +215,7 @@ The first argument can also be a specific flag, in the form of a keyword,
 which dictates a mode of functionality (See the table in the following section for more details):
 
 ```Clojure
-(? :result 
-   x)
+(? :- x)
 ```
 
 <br>
@@ -227,7 +227,7 @@ If you want to use a specific mode and also supply a custom label and/or overrid
 ;; Prints with custom label of "My label", the file info, and returns the result.
 (? :log "My label" x)
 
-;; Passing the `:result` flag as the first argument will print only the value.
+;; Passing the `:-` flag as the first argument will print only the value.
 ;; Omits form (or custom label) and the file info.
 ;; Options map override default config options.
 ;; Returns the result
@@ -262,15 +262,38 @@ The `?` macro also provides a bevy of functionality that can be controlled an op
 
 All the available alternate printing modes for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing an optional leading keyword flag. Unless noted otherwise, **`fireworks.core/?`** will always return the value passed to it.
 
-Some annotated examples:
+<br>
+
+| Mode        | Prints with       | Prints label? | Prints file info? | Returns |
+| :---        | :---              | :---          | :---              | :--     |
+|  none       | Fireworks         | ✓             | ✓                 | value   |
+| `:-`        | Fireworks         | ×             | ×                 | value   |
+| `:no-label` | Fireworks         | ×             | ✓                 | value   |
+| `:no-file`  | Fireworks         | ×             | ✓                 | value   |
+| `:log`      | `js/console.log`* | ✓             | ✓                 | value   |
+| `:log-`     | `js/console.log`* | ×             | ×                 | value   |
+| `:pp`       | `pp/pprint`       | ✓             | ✓                 | value   |
+| `:pp-`      | `pp/pprint`       | ×             | ×                 | value   |
+| `:data`     | N/A               | ×             | ×                 | map     |
+| `:comment`  | N/A               | ✓             | ✓                 | nil     |
+
+
+<!--TODO put this back in once problems fixed>
+<!-- | `:trace`   | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`.                                              | -->
+
+<span>*</span> `:log` and `:log-` will dispatch to `pp/pprint` in a JVM context.
+
+<br>
+
+Some annotated examples using modes outlined in the above table:
 
 ```Clojure
 
 ;; Prints just the result. Omits the label and file info.
-(? :result (+ 1 1))
+(? :- (+ 1 1))
 
 ;; Prints the file info and the result. Omits the label.
-(? :file (+ 1 1))
+(? :no-label (+ 1 1))
 
 ;; Prints the label, file info, and the result. Uses pprint instead of fireworks. 
 (? :pp (+ 1 1))
@@ -279,28 +302,7 @@ Some annotated examples:
 (? :pp "My label" (+ 1 1))
 ```
 
-<br>
 
-| Mode       | Prints with       | Prints label? | Prints file info? | Notes                                                                                |
-| :---       | :---              | :---          | :---              | :--                                                                                  |
-|  none      | Fireworks         | ✓             | ✓                 |                                                                                      |
-| `:result`  | Fireworks         | ×             | ×                 | Omits both label and file info.                                                      |
-| `:file`    | Fireworks         | ×             | ✓                 | Omits label.                                                                         |
-| `:log`     | `js/console.log`* | ✓             | ✓                 |                                                                                      |
-| `:log-`    | `js/console.log`* | ×             | ×                 | Omits both label and file info.                                                     |
-| `:pp`      | `pp/pprint`       | ✓             | ✓                 |                                                                                      |
-| `:pp-`     | `pp/pprint`       | ×             | ×                 | Omits both label and file info.                                                     |
-| `:data`    | N/A               | ×             | ×                 | Returns a map describing the formatting used by `?`.            |
-| `:comment` | N/A               | ✓             | ✓                 | Does not print a value.<br>Does not return a value.<br>Intended for user commentary. |
-
-
-<!--TODO put this back in once problems fixed>
-<!-- | `:trace`   | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`.                                              | -->
-
-<span>*</span> `:log` and `:log-` will dispatch to `pp/pprint` in a JVM context.
-
-
-<br>
 
 
 ### Getting the formatted string & other data
@@ -408,6 +410,7 @@ This must be one of the following 3 types of values:
 `"Zenburn Dark"`<br>
 `"Monokai Light"`<br>
 `"Monokai Dark"`<br>
+`"Universal Default"`<br>
 
 - A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/<your-home-folder>/.fireworks/my-theme.edn"`<br>
 This will not work:
@@ -801,37 +804,6 @@ For a theme token's `:color` or `:background-color`, the value must be a string 
 ## Aligning your console background color and foreground color
 Fireworks can only color the foreground and background of "spans" of text. If you want to perfectly match the themed experience of your source code editor, you will need to manually set the font-family and background color of your terminal emulator and/or browser dev console.
 
-<br>
-
-### Setting the background color and font in Chrome DevTools (ClojureScript) 
-If you are using Firefox, ignore this section and follow [the instructions in the following section](#setting-the-background-color-and-font-in-firefox-developer-tools).
-
-First, you will need to set the general appearance of your Chrome browser's DevTools UI to "Light" or "Dark", depending on whether you are using a light or dark Fireworks theme. This can be done by opening DevTools on any page, clicking the **Settings** gear icon button, and then **Preferences** > **Appearance** > **Theme**. Official instructions <a href="https://developer.chrome.com/docs/devtools/settings" target="_blank">here</a>.
-
-
-
-> [!WARNING]
->
-> As of November 18, 2024, The DevTools Console Customizer described below has stopped working in Chrome, most likely [due to changes made in Chrome version 130](https://github.com/paintparty/devtools-console-customizer/issues/1). Hopefully this can be fixed soon.
-
-
-
-Chrome does not offer direct options in the UI to set the exact background color or font-family of the console in dev tools. To make this simple, I created an extension called <a href="https://chromewebstore.google.com/detail/kjkmaoifmppnclfacnmbimcckfgekmod" target="_blank">DevTools Console Customizer</a>, available via <a href="https://chromewebstore.google.com/detail/kjkmaoifmppnclfacnmbimcckfgekmod" target="_blank">The Chrome Web Store</a>. The project page is <a href="https://github.com/paintparty/devtools-console-customizer" target="_blank">here</a>.
-
-After making a change with this extension, you will need to close and reopen DevTools. If you are switching from a light to dark theme or vice-versa, remember to also reset the general appearance of DevTools in **Settings** > **Preferences** > **Appearance** > **Theme**, as described above.
-
-
-![](./resources/devtools-console-customizer-screen-recording.gif)
-
-<br>
-
-### Setting the background color and font in Firefox Developer Tools (ClojureScript)
-In Firefox, this can be done by opening Firefox Developer Tools on any page, just right-click and select **Inspect**. Then click on the *`•••`* button in the top right of this panel and select **Settings** to get to the Settings panel. You should see a **Themes** section which will let you select `Light` or `Dark`.
-
-
-You can customize the font-family and background color of the dev console in **Firefox**, although this has to be done manually. Fireworks provides <a href="" target="_blank">a starter **`userContent.css`** file</a> to make this easy. You will need to place this file in the correct directory on your computer so that Firefox can read it when it launches. Follow the <a href="https://www.userchrome.org/how-create-userchrome-css.html" target="_blank">instructions outlined here</a> to locate this directory. Please note that file, which is necessary file for customizing the Developer Tools console in FireFox, is called `userContent.css`,  ***NOT*** `userChrome.css` (as mentioned in the linked tutorial).  You can put this in the proper directory as explained in the <a href="https://www.userchrome.org/how-create-userchrome-css.html" target="_blank">linked tutorial</a> and change it as needed to align with your chosen theme. Remember to quit and restart Firefox if you make any changes or updates to this `userContent.css` file.
-
-
 
 <br>
 
@@ -874,6 +846,37 @@ For theming parity between your editor and terminal emulator, this is probably n
 "Monokai Light"   #585858
 "Monokai Dark"    #cecece
 ```
+
+<br>
+
+### Setting the background color and font in Chrome DevTools (ClojureScript) 
+If you are using Firefox, ignore this section and follow [the instructions in the following section](#setting-the-background-color-and-font-in-firefox-developer-tools).
+
+First, you will need to set the general appearance of your Chrome browser's DevTools UI to "Light" or "Dark", depending on whether you are using a light or dark Fireworks theme. This can be done by opening DevTools on any page, clicking the **Settings** gear icon button, and then **Preferences** > **Appearance** > **Theme**. Official instructions <a href="https://developer.chrome.com/docs/devtools/settings" target="_blank">here</a>.
+
+
+
+> [!WARNING]
+>
+> As of November 18, 2024, The DevTools Console Customizer described below has stopped working in Chrome, most likely [due to changes made in Chrome version 130](https://github.com/paintparty/devtools-console-customizer/issues/1). Hopefully this can be fixed soon.
+
+
+
+Chrome does not offer direct options in the UI to set the exact background color or font-family of the console in dev tools. To make this simple, I created an extension called <a href="https://chromewebstore.google.com/detail/kjkmaoifmppnclfacnmbimcckfgekmod" target="_blank">DevTools Console Customizer</a>, available via <a href="https://chromewebstore.google.com/detail/kjkmaoifmppnclfacnmbimcckfgekmod" target="_blank">The Chrome Web Store</a>. The project page is <a href="https://github.com/paintparty/devtools-console-customizer" target="_blank">here</a>.
+
+After making a change with this extension, you will need to close and reopen DevTools. If you are switching from a light to dark theme or vice-versa, remember to also reset the general appearance of DevTools in **Settings** > **Preferences** > **Appearance** > **Theme**, as described above.
+
+
+![](./resources/devtools-console-customizer-screen-recording.gif)
+
+<br>
+
+### Setting the background color and font in Firefox Developer Tools (ClojureScript)
+In Firefox, this can be done by opening Firefox Developer Tools on any page, just right-click and select **Inspect**. Then click on the *`•••`* button in the top right of this panel and select **Settings** to get to the Settings panel. You should see a **Themes** section which will let you select `Light` or `Dark`.
+
+
+You can customize the font-family and background color of the dev console in **Firefox**, although this has to be done manually. Fireworks provides <a href="" target="_blank">a starter **`userContent.css`** file</a> to make this easy. You will need to place this file in the correct directory on your computer so that Firefox can read it when it launches. Follow the <a href="https://www.userchrome.org/how-create-userchrome-css.html" target="_blank">instructions outlined here</a> to locate this directory. Please note that file, which is necessary file for customizing the Developer Tools console in FireFox, is called `userContent.css`,  ***NOT*** `userChrome.css` (as mentioned in the linked tutorial).  You can put this in the proper directory as explained in the <a href="https://www.userchrome.org/how-create-userchrome-css.html" target="_blank">linked tutorial</a> and change it as needed to align with your chosen theme. Remember to quit and restart Firefox if you make any changes or updates to this `userContent.css` file.
+
 
 <br>
 <br>
@@ -1088,7 +1091,7 @@ Printing and visualization:<br>
 
 ## License
 
-Copyright © 2024 Jeremiah Coyle
+Copyright © 2024-2025 Jeremiah Coyle
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at
