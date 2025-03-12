@@ -88,20 +88,32 @@
   ;; Any single keywords (as vals) in all the maps below refer
   ;; to the values defined in the :classes entry 
   {:classes          (merge defs/base-classes
-                            {:foreground    {:color "#585858"}
-                             :bracket    {:color "#888888"}
-                             :comment    :annotation
-                             :annotation {:color      "#9f9f9f"
-                                          :font-style :italic}
-                             :highlight  {:background-color "#ffee00"}
+                            {:foreground     {:color "#585858"}
+                             :bracket        {:color "#888888"}
+                             :comment        :annotation
+                             :annotation     {:color      "#9f9f9f"
+                                              :font-style :italic}
+                             :highlight      {:background-color "#ffee00"}
                              ;; TODO - change this to badge?
-                             :label      {:color            "#808080"
-                                          :background-color "#ededed"
-                                          :text-shadow      "0 0 2px #ffffff"
-                                          :font-style       :italic}
-                             :metadata   {:color            "#808080"
-                                          :text-shadow      "0 0 2px #ffffff"
-                                          :background-color "#e6fafa"}})
+                             :label          {:color            "#808080"
+                                              :background-color "#ededed"
+                                              :text-shadow      "0 0 2px #ffffff"
+                                              :font-style       :italic}
+                             :eval-label-red {:color            "#af5a5a"
+                                              :background-color "#fdf2f2"
+                                              :text-shadow      "0 0 2px #ffffff"
+                                              :font-style       :italic}
+                             :eval-label-green {:color            "#309738"
+                                              :background-color "#f2fdf2"
+                                              :text-shadow      "0 0 2px #ffffff"
+                                              :font-style       :italic}
+                             :eval-label-blue {:color            "#309738"
+                                               :background-color "#f2fdf2"
+                                               :text-shadow      "0 0 2px #ffffff"
+                                               :font-style       :italic}
+                             :metadata       {:color            "#808080"
+                                              :text-shadow      "0 0 2px #ffffff"
+                                              :background-color "#e6fafa"}})
 
    ;; TODO - I don't think these currently merge if we were to use maps
    :syntax           defs/base-syntax-tokens

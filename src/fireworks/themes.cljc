@@ -24,9 +24,13 @@
                                    :text-shadow      "0 0 2px #ffffff"
                                    :background-color "#f0fbfe"
                                    :font-style       :italic}}
-            :printer {:file-info {:color                "#3e76a8"
-                                  :font-style           :italic
-                                  :padding-inline-start :0ch}}}})
+            :printer {:file-info        {:color                "#3e76a8"
+                                         :font-style           :italic
+                                         :padding-inline-start :0ch}
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
+                      }}})
                         
 (def neutral-dark
   {:name   "Neutral Dark"
@@ -83,17 +87,24 @@
                                    :background-color "#edf2fc"
                                    :font-style       :italic}}
             :syntax  {:js-object-key {:color "#888888"}}
-            :printer {:file-info     {:color                "#3764cd"
-                                      :font-style           :italic
-                                      :padding-inline-start :0ch}
-                      :eval-form     :eval-label
-                      :comment       {:color            "#2e6666"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :background-color "#e5f1fa"
-                                      :outline          "2px solid #e5f1fa"
-                                      :font-style       :italic}
-                      :function-args {:color "#999999"}
-                      :atom-wrapper  :label}}})
+            :printer {:file-info        {:color                "#3764cd"
+                                         :font-style           :italic
+                                         :padding-inline-start :0ch}
+                      :eval-label       :eval-label
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
+                      :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
+                      :comment          {:color            "#2e6666"
+                                         :text-shadow      "0 0 2px #ffffff"
+                                         :background-color "#e5f1fa"
+                                         :outline          "2px solid #e5f1fa"
+                                         :font-style       :italic}
+                      :function-args    {:color "#999999"}
+                      :atom-wrapper     :label}}})
 
 
 (def alabaster-dark 
@@ -169,18 +180,24 @@
                                      :font-style        :italic}}
            :syntax  {:number {:color "#737373"}
                      :js-object-key {:color "#888888"}}
-           :printer {:file-info     {:color                "#4f7878" 
-                                     :font-style           :italic
-                                     :padding-inline-start :0ch}
-                     :eval-form     :eval-label
-                     :eval-label    :eval-label
-                     :comment       {:color             "#4d6f6f"
-                                     :text-shadow       "0 0 2px #ffffff"
-                                     :background-color  "#e5f1fa"
-                                     :outline           "2px solid #e5f1fa"
-                                     :font-style        :italic}
-                     :function-args {:color "#999999"}
-                     :atom-wrapper  :label }}})
+           :printer {:file-info        {:color                "#4f7878" 
+                                        :font-style           :italic
+                                        :padding-inline-start :0ch}
+                      :eval-label       :eval-label
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
+                      :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
+                     :comment          {:color            "#4d6f6f"
+                                        :text-shadow      "0 0 2px #ffffff"
+                                        :background-color "#e5f1fa"
+                                        :outline          "2px solid #e5f1fa"
+                                        :font-style       :italic}
+                     :function-args    {:color "#999999"}
+                     :atom-wrapper     :label }}})
 
 
 (def degas-dark
@@ -256,18 +273,24 @@
                                                 :background-color "#e8f3fd"}}
                       :syntax  {:number        {:color "#3d7a99"}
                                 :js-object-key {:color "#888888"}}
-                      :printer {:file-info     {:color                "#618d98"
-                                                :font-style           :italic
-                                                :padding-inline-start :0ch}
-                                :eval-label    :eval-label
-                                :eval-form     :eval-label
-                                :comment       {:color             "#00ffff"
-                                                :text-shadow       "0 0 2px #ffffff"
-                                                :background-color  "#e5f1fa"
-                                                :outline           "2px solid #e5f1fa"
-                                                :font-style        :italic}
-                                :function-args {:color "#9e9e9e"}
-                                :atom-wrapper  :label}}})
+                      :printer {:file-info        {:color                "#618d98"
+                                                   :font-style           :italic
+                                                   :padding-inline-start :0ch}
+                                :eval-label       :eval-label
+                                :eval-label-red   :eval-label-red
+                                :eval-label-green :eval-label-green
+                                :eval-label-blue  :eval-label-blue
+                                :eval-form        :eval-label
+                                :eval-form-red    :eval-label-red
+                                :eval-form-green  :eval-label-green
+                                :eval-form-blue   :eval-label-blue
+                                :comment          {:color            "#00ffff"
+                                                   :text-shadow      "0 0 2px #ffffff"
+                                                   :background-color "#e5f1fa"
+                                                   :outline          "2px solid #e5f1fa"
+                                                   :font-style       :italic}
+                                :function-args    {:color "#9e9e9e"}
+                                :atom-wrapper     :label}}})
 
 
 (def zenburn-dark 
@@ -346,8 +369,14 @@
                       :printer {:file-info     {:color                "#6c71c4"
                                                 :font-style           :italic
                                                 :padding-inline-start :0ch}
-                                :eval-form     :eval-label
-                                :eval-label    :eval-label
+                                :eval-label       :eval-label
+                                :eval-label-red   :eval-label-red
+                                :eval-label-green :eval-label-green
+                                :eval-label-blue  :eval-label-blue
+                                :eval-form        :eval-label
+                                :eval-form-red    :eval-label-red
+                                :eval-form-green  :eval-label-green
+                                :eval-form-blue   :eval-label-blue
                                 :comment       {:color             "#00ffff"
                                                 :text-shadow       "0 0 2px #ffffff"
                                                 :background-color  "#e5f1fa"
@@ -427,19 +456,24 @@
                                               :background-color "#defcfc"}}
                        :syntax  {:number        {:color "#cc3d9c"}
                                  :js-object-key {:color "#888888"}}
-                       :printer {
-                                 :file-info     {:color                "#316363"
-                                                 :font-style           :italic
-                                                 :padding-inline-start :0ch}
-                                 :eval-form     :eval-label
-                                 :eval-label    :eval-label
-                                 :comment       {:color             "#2e6666"
-                                                 :text-shadow       "0 0 2px #ffffff"
-                                                 :background-color  "#e5f1fa"
-                                                 :outline           "2px solid #e5f1fa"
-                                                 :font-style        :italic}
-                                 :function-args {:color "#999999"}
-                                 :atom-wrapper  :label} }})
+                       :printer {:file-info        {:color                "#316363"
+                                                    :font-style           :italic
+                                                    :padding-inline-start :0ch}
+                                 :eval-label       :eval-label
+                                 :eval-label-red   :eval-label-red
+                                 :eval-label-green :eval-label-green
+                                 :eval-label-blue  :eval-label-blue
+                                 :eval-form        :eval-label
+                                 :eval-form-red    :eval-label-red
+                                 :eval-form-green  :eval-label-green
+                                 :eval-form-blue   :eval-label-blue
+                                 :comment          {:color            "#2e6666"
+                                                    :text-shadow      "0 0 2px #ffffff"
+                                                    :background-color "#e5f1fa"
+                                                    :outline          "2px solid #e5f1fa"
+                                                    :font-style       :italic}
+                                 :function-args    {:color "#999999"}
+                                 :atom-wrapper     :label} }})
 
 
 (def monokai-dark 
@@ -536,12 +570,18 @@
             :syntax  {:number        {:color "#ff8700"} ;; orange 
                       :js-object-key {:color "#ff00ff"}}
 
-            :printer {:file-info     {:color      "#9e9e9e"
-                                      :font-style :italic}
-                      :eval-form     :eval-label
-                      :eval-label    :eval-label
-                      :comment       {:font-style :italic}
-                      :function-args {:color "#9e9e9e"}}}})
+            :printer {:file-info        {:color      "#9e9e9e"
+                                         :font-style :italic}
+                      :eval-label       :eval-label
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
+                      :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
+                      :comment          {:font-style :italic}
+                      :function-args    {:color "#9e9e9e"}}}})
 
 (def alabaster-light-legacy
   {:name   "Alabaster Light"

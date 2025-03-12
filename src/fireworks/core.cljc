@@ -71,20 +71,30 @@
                  [:form-or-label :file-info]}
                template)
           (when label
-            (let [label
+            (let [label-entity-tag
+                  (case (some-> opts :label-color util/as-str)
+                    "green"
+                    :eval-label-green
+                    "blue"
+                    :eval-label-blue
+                    "red"
+                    :eval-label-red
+                    :eval-label)
+                  label
                   (if mll?
                     (string/join
                      "\n"
                      (map
                       #(str (tag/tag-entity!
                              (str indent-spaces %)
-                             :eval-label)
+                             label-entity-tag)
                             (tag/tag-reset!))
                       (string/split label #"\n")))
+
                     (tag/tag-entity!
                      (util/shortened label
                                      (resolve-label-length label-length-limit))
-                     :eval-label))]
+                     label-entity-tag))]
               (str indent-spaces label))))
 
         form
@@ -92,11 +102,21 @@
           (when qf
             ;; TODO - Confirm that toggling this state doesn't matter, remove it
             (reset! state/formatting-form-to-be-evaled? true)
-            (let [shortened
+            (let [form-entity-tag
+                  (case (some-> opts :label-color util/as-str)
+                    "green"
+                    :eval-form-green
+                    "blue"
+                    :eval-form-blue
+                    "red"
+                    :eval-form-red
+                    :eval-form)
+                  
+                  shortened
                   (tag/tag-entity! 
                    (util/shortened qf
                                    (resolve-label-length label-length-limit))
-                   :eval-form) 
+                   form-entity-tag) 
                   ret       shortened]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it
               (reset! state/formatting-form-to-be-evaled? false)

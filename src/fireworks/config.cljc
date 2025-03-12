@@ -55,7 +55,7 @@
                                    :default        1.45
                                    :updates-theme? true}
    :label-length-limit            {:spec    ::config/label-length-limit
-                                   :default 25}
+                                   :default 44}
    :margin-bottom                 {:spec    ::config/margin-bottom
                                    :default 1}
    :margin-top                    {:spec    ::config/margin-top
