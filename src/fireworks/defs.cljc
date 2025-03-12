@@ -44,7 +44,11 @@
           :multimethod   :definition
           :uuid          :string
           :inst          :string
-          :js-object-key :foreground}
+          :js-object-key :foreground
+          :nan           :constant
+          :infinity      :constant
+          :-infinity     :constant
+          }
          
           ;;  Experimental, not working yet 
           {
