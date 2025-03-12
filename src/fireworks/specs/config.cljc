@@ -55,9 +55,6 @@
 (s/def ::coll-limit
   ::fw-coll-limit)
 
-(s/def ::evaled-form-coll-limit
-  ::fw-coll-limit)
-
 (s/def ::non-coll-extended-length-limit
   (s/and int? #(<= 10 % 1000)))
 
@@ -146,7 +143,6 @@
                           ::metadata-print-level 
                           ::mood 
                           ::coll-limit 
-                          ::evaled-form-coll-limit 
                           ::display-metadata? 
                           ::metadata-position 
                           ::bracket-contrast

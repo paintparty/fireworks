@@ -3,6 +3,7 @@
    [fireworks.specs.config :as config]
    [fireworks.specs.theme :as theme]))
 
+;; TODO add desc field to each entry, use for docs and potenitaly validation
 (def options
   {:theme                         {:spec           ::config/theme
                                    :default        "Alabaster Light"
@@ -65,10 +66,6 @@
                                    :default nil}
    :when                          {:spec    ::config/when
                                    :default nil}
-   
-   ;; Remove?
-   :evaled-form-coll-limit        {:spec    ::config/evaled-form-coll-limit
-                                   :default 7}
 
    })
 
