@@ -112,7 +112,7 @@
         ;; The next set of bindings mutate state/styles.
         ;; They must happen in the following order:
         
-        ;; user-meta-block (displays user-meta above value), optional
+        ;; user-metadata-map-block (displays user-meta above value), optional
         ;; atom-opening,  optional
         ;; annotation (badge), optional
         ;; value tag
@@ -121,9 +121,9 @@
         ;; fn-args-tag, optional
         ;; fn-args-tag reset, optional
         ;; atom-closing, optional
-        ;; user-meta-block (displays user-meta inline, after value), optional
+        ;; user-metadata-map-block (displays user-meta inline, after value), optional
         
-        user-meta-block-tagged
+        user-metadata-map-block-tagged
         (when (sev-user-meta-position-match? user-meta :block)
           (swap! state/*formatting-meta-level inc)
           (let [ret (formatted* user-meta {:indent     indent
@@ -131,8 +131,8 @@
             (swap! state/*formatting-meta-level dec)
             ret))
         
-        user-meta-block-tagged-separator
-        (when (and user-meta-block-tagged
+        user-metadata-map-block-tagged-separator
+        (when (and user-metadata-map-block-tagged
                    multi-line?)
           (tagged (str separator
                        (some-> max-keylen
@@ -200,7 +200,7 @@
         (some->> mutable-tagging-opts 
                  (tagged defs/encapsulation-closing-bracket))
 
-        user-meta-inline-tagged
+        user-metadata-map-inline-tagged
         (when (sev-user-meta-position-match? user-meta :inline)
           (swap! state/*formatting-meta-level inc)
           (let [offset        defs/metadata-position-inline-offset
@@ -228,10 +228,10 @@
          ;; Optional, conditional metadata of coll element
          ;; positioned block-level, above element
          ;; :metadata-postition must be set to :block (in user config)
-         user-meta-block-tagged
+         user-metadata-map-block-tagged
 
-         ;; Only when user-meta-block-tagged is present
-         user-meta-block-tagged-separator
+         ;; Only when user-metadata-map-block-tagged is present
+         user-metadata-map-block-tagged-separator
          
          ;; Conditional `Atom`, positioned inline, to left of value 
          atom-tagged
@@ -258,7 +258,7 @@
          ;; Default position.
          ;; Will not display if :metadata-postition is set
          ;; explicitly to :block (in user config).
-         user-meta-inline-tagged)
+         user-metadata-map-inline-tagged)
 
         ret                  
         (keyed [ellipsized-char-count
@@ -396,12 +396,13 @@
                 single-column-map-layout?
                 :fw/custom-badge-style
                 str-len-with-badge
-                :fw/user-meta-map?
+                :fw/user-meta-map? ; <- maybe this is redundant? also exists as unq kw user-meta in this map. Maybe change unq key to user-metadata-map?, or val-is-user-metadata-map?
                 val-is-volatile?
-                :fw/user-meta
+                :fw/user-meta ; <- maybe this is redundant? also exists as unq kw in this map. Maybe change unq key to user-metadata-map
                 js-map-like?         
                 val-is-atom?
                 num-dropped
+                user-meta?
                 too-deep?
                 set-like?
                 record?
@@ -434,8 +435,12 @@
         (boolean (and user-meta
                       (contains? #{:block "block"}
                                  metadata-position)))
+        ;; _ (?pp meta-map)
         multi-line?  
         (or (and user-meta
+                 (contains? #{:inline "inline"} 
+                            metadata-position))
+            (and user-meta?
                  (contains? #{:inline "inline"} 
                             metadata-position))
             some-elements-carry-user-metadata?
@@ -522,7 +527,7 @@
       ret))
 
 
-(defn- user-meta-block
+(defn- user-metadata-map-block
   [indent*
    metadata-position
    {:keys [badge user-meta] :as m}]
@@ -534,7 +539,7 @@
       (swap! state/*formatting-meta-level dec)
       ret)))
 
-(defn- user-meta-inline
+(defn- user-metadata-map-inline
   [{:keys [user-meta
            metadata-position
            mutable-opening-encapsulation
@@ -601,20 +606,20 @@
         (:metadata-position @state/config)
 
         ;; Move up?
-        user-meta-block
-        (user-meta-block indent* metadata-position m)
+        user-metadata-map-block
+        (user-metadata-map-block indent* metadata-position m)
 
         ob* 
         (str mutable-opening-encapsulation
              badge
-             (some-> user-meta-block (str (when badge " ")))
+             (some-> user-metadata-map-block (str (when badge " ")))
              annotation-newline
              (opening-bracket! (keyed [coll record? let-bindings?]))
              (when (-> coll meta :too-deep?)
                (tagged "#" {:theme-token :max-print-level-label})))
         
-        user-meta-inline
-        (user-meta-inline (keyed [mutable-opening-encapsulation
+        user-metadata-map-inline
+        (user-metadata-map-inline (keyed [mutable-opening-encapsulation
                                   metadata-position
                                   user-meta
                                   indent*
@@ -622,7 +627,7 @@
                                   coll]))
 
         ob
-        (str ob* (some-> user-meta-inline
+        (str ob* (some-> user-metadata-map-inline
                          (str (tagged separator
                                       {:theme-token :foreground}))))]
     (assoc m :ob ob :record? record?)))

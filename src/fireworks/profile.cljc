@@ -1,7 +1,7 @@
 (ns ^:dev/always fireworks.profile
   (:require
    [fireworks.defs :as defs]
-  ;;  [fireworks.pp :refer (?pp)]
+   [fireworks.pp :refer (?pp)]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
    [fireworks.util :as util]
@@ -352,7 +352,7 @@
 
                           {:some-elements-carry-user-metadata? 
                            (some-elements-carry-user-metadata? x)}))]
-        (when (coll? x) #_(?pp ret))
+        (when (coll? x) ret)
         ret))))
 
 
