@@ -2,6 +2,7 @@
   (:require
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
+   [fireworks.pp :refer [?pp]]
    [fireworks.truncate :as truncate]
    [fireworks.brackets
     :as brackets
@@ -387,6 +388,11 @@
 (defn- reduce-coll-profile
   [coll indent*]
   (let [{:keys [some-elements-carry-user-metadata?  
+                ;; str-len-with-badge-ellipsized
+                ;; str-len-val-ellipsized
+                ;; str-len-with-badge
+                val-str-len
+                ;; badge-str-len
                 single-column-map-layout?
                 :fw/custom-badge-style
                 str-len-with-badge
@@ -415,6 +421,19 @@
         (:metadata-position @state/config)
 
         ;; This is where multi-line for collections is determined
+        ;; _ (?pp (select-keys meta-map [:str-len-with-badge-ellipsized
+        ;;                               :str-len-val-ellipsized
+        ;;                               :str-len-with-badge
+        ;;                               :val-str-len
+        ;;                               :badge-str-len]))
+        
+        badge-above?
+        (some->> badge (contains? defs/inline-badges) not)
+
+        user-meta-above?
+        (boolean (and user-meta
+                      (contains? #{:block "block"}
+                                 metadata-position)))
         multi-line?  
         (or (and user-meta
                  (contains? #{:inline "inline"} 
@@ -425,7 +444,11 @@
              (when (< 1 coll-count)
                (or single-column-map-layout?
                    (< (:single-line-coll-length-limit @state/config)
-                      (or str-len-with-badge 0))))))
+                      (or (if badge-above?
+                            val-str-len        ;; <- should this be str-len-val-ellipsized?
+                            str-len-with-badge ;; <- should this be str-len-with-val-ellipsized?
+                            )
+                          0))))))
 
         ;; This is where indenting for multi-line collections is determined
         num-indent-spaces-for-t
@@ -435,13 +458,6 @@
         (+ (or indent* 0)
            num-indent-spaces-for-t)
 
-        badge-above?
-        (some->> badge (contains? defs/inline-badges) not)
-
-        user-meta-above?
-        (boolean (and user-meta
-                      (contains? #{:block "block"}
-                                 metadata-position)))
 
         indent       
         (or (when-not (or badge-above?
