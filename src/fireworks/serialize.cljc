@@ -47,7 +47,8 @@
     (let [theme-tag (if (pos? (state/formatting-meta-level))
                       (state/metadata-token)
                       :ellipsis)
-          ;; TODO/perf - replace collection-type? with (:coll-type? m)
+          ;; TODO/perf - replace collection-type? with (some-> m :all-tags :coll-type)
+          ;; Or Determine if colls ever reach this fn and just eliminate 
           s         (if (collection-type? t)
                       (str "+" num-chars-dropped)
                       defs/ellipsis)]
@@ -807,8 +808,7 @@
         (profile+ob coll indent)
 
         untokenized
-        ;; TODO - perf use mapv
-        (map (fn [[k v]]
+        (mapv (fn [[k v]]
                (let [key-props (meta k)
                      val-props (meta v)]
                  [key-props val-props]))
@@ -816,8 +816,7 @@
 
         max-keylen
         (or (some->> untokenized
-                     ;; TODO - perf use mapv
-                     (map #(-> % first :ellipsized-char-count))
+                     (mapv #(-> % first :ellipsized-char-count))
                      seq
                      (apply max))
             0)
