@@ -17,10 +17,11 @@
    [clojure.string :as string]
    [fireworks.config :as config]
    [clojure.spec.alpha :as s]
-   [fireworks.util :as util]
+   [fireworks.util :as util :refer [maybe]]
    [bling.core :refer [bling callout]])
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
+
 
 (declare pprint)
 
@@ -961,6 +962,92 @@
        (keyed [defd x qf-nil? cfg-opts log?*]))))
 
                                                                
+
+
+;; ____________________________________________________________________________
+;; these options should work
+;; modes are combos of :template and :print-with
+
+(def x :foo)
+;; (?)
+;; (? x)
+;; (? "label" x)
+;; (? :pp x)
+;; (? {:mode :pp :label "hi"} x)
+
+(defn resolve-template [k]
+  (cond 
+    (or (not (keyword? k))
+        (contains? #{nil :log :pp} k))
+    [:label-or-form :file-info :result]
+
+    (contains? #{:label :no-file :pp/no-file :log/no-file} k)
+    [:label-or-form :result]
+
+    (contains? #{:file :no-label :pp/no-label :log/no-label} k)
+    [:file-info :result]
+
+    :else
+    [:label-or-form :file-info :result]))
+
+(def valid-printing-fns 
+  #{pr pr-str prn prn-str print println pprint})
+
+(def print-with-log
+  #{:log :log- :log/- :log/no-label :log/no-file})
+
+(def print-with-pprint
+  #{:pp :pp- :pp/- :pp/no-label :pp/no-file})
+
+(def printing-templates
+  #{[:label-or-form :file-info :result]
+    [:file-info :label-or-form :result]
+    [:file-info :result]
+    [:label-or-form :result]
+    [:result]})
+
+(defn resolve-print-with [user-opts mode]
+  (or (some-> user-opts
+              :print-with
+              (maybe printing-templates))
+      (cond
+        (= mode :fw)
+        _p2
+
+        (contains? print-with-log mode)
+        #?(:cljs
+           (if node? js/console.log fireworks.pp/pprint)
+           :clj
+           fireworks.pp/pprint)
+
+        (contains? print-with-pprint mode)
+        #?(:cljs
+           fireworks.pp/pprint
+           :clj
+           fireworks.pp/pprint)
+
+        :else
+        _p2)))
+
+(defn wtf [a x]
+  (let [user-opts  (maybe a map?)
+        user-label (or (maybe a string?)
+                       (:label user-opts))
+        mode       (or (some-> user-opts :mode)
+                       (maybe a keyword?)
+                       :fw)
+        template   (or (:template user-opts)
+                       (resolve-template mode))
+        print-with (resolve-print-with user-opts mode)]
+    ))
+
+
+
+;;; ____________________________________________________________________________
+
+
+
+
                                                                
 ;                  AAA               PPPPPPPPPPPPPPPPP   IIIIIIIIII
 ;                 A:::A              P::::::::::::::::P  I::::::::I
@@ -1004,6 +1091,26 @@
   ([a x]
    (let [{:keys [mode alias-mode template]}
          (mode+template a)]
+
+     ;; for internal debugging
+     (some->> a :_fw/dbg (vector :italic.magenta) bling println)
+
+     (let [user-opts  (-> a (maybe map?) (dissoc :_fw/dbg))
+           user-label (or (maybe a string?)
+                          (:label user-opts))
+           mode       (or (some-> user-opts :mode)
+                          (maybe a keyword?)
+                          :fw)
+           template   (or (:template user-opts)
+                          (resolve-template mode))
+           print-with (resolve-print-with user-opts mode)]
+
+       (ff (keyed [user-opts  
+                   user-label 
+                   mode       
+                   template   
+                   print-with])))
+
      (case mode
        :trace
        (let [form-meta (meta &form)]

@@ -1,9 +1,10 @@
 (ns fireworks.core-test
   (:require 
    [clojure.string :as string]
+   [bling.core :refer [bling callout]]
    [fireworks.core :refer [? !? ?> !?>]]
    [fireworks.config]
-   [fireworks.pp :as pp :refer [?pp !?pp]]
+   [fireworks.pp :as pp :refer [?pp !?pp pprint]]
    [fireworks.demo]
    [fireworks.themes :as themes] 
    [fireworks.sample :as sample] 
@@ -466,3 +467,146 @@
 ;; "Universal Default" theme, as well as default config options.
 
 ;; TODO - this should not print multiline, it is b/c label is being counted in string length
+
+
+#_(defn resolve-template [k]
+  (cond 
+    (or (not (keyword? k))
+        (contains? #{nil :log :pp} k))
+    [:label-or-form :file-info :result]
+
+    (contains? #{:label :no-file :pp/no-file :log/no-file} k)
+    [:label-or-form :result]
+
+    (contains? #{:file :no-label :pp/no-label :log/no-label} k)
+    [:file-info :result]
+
+    :else
+    [:label-or-form :file-info :result]))
+
+(def valid-printing-fns 
+  #{pr pr-str prn prn-str print println pprint})
+
+(def print-with-log
+  #{:log :log- :log/- :log/no-label :log/no-file})
+
+(def print-with-pprint
+  #{:pp :pp- :pp/- :pp/no-label :pp/no-file})
+
+(def printing-templates
+  #{[:label-or-form :file-info :result]
+    [:file-info :label-or-form :result]
+    [:file-info :result]
+    [:label-or-form :result]
+    [:result]})
+
+(defn co [s]
+  (callout {:label         s
+            :theme         :sideline-bold
+            :colorway      :magenta
+            :margin-bottom 1}))
+
+(co "user-opts:templates")
+(? {:template [:label-or-form :file-info :result] :_fw/dbg [:label-or-form :file-info :result]} :foo)
+(? {:template [:file-info :label-or-form :result] :_fw/dbg [:file-info :label-or-form :result]} :foo)
+(? {:template [:file-info :result] :_fw/dbg [:file-info :result]} :foo)
+(? {:template [:label-or-form :result] :_fw/dbg [:label-or-form :result]} :foo)
+(? {:template [:result] :_fw/dbg [:result]} :foo)
+
+#_(do 
+  (co "user-opts:mode")
+  (? {:mode :fireworks :_fw/dbg :fireworks} :foo)
+  (? {:mode :- :_fw/dbg :-} :foo)
+  (? {:mode :no-label :_fw/dbg :no-label} :foo)
+  (? {:mode :no-file :_fw/dbg :no-file} :foo)
+  (? {:mode :log :_fw/dbg :log} :foo)
+  (? {:mode :log- :_fw/dbg :log-} :foo)
+  (? {:mode :log/- :_fw/dbg :log/-} :foo)
+  (? {:mode :log/no-label :_fw/dbg :log/no-label} :foo)
+  (? {:mode :log/no-file :_fw/dbg :log/no-file} :foo)
+  (? {:mode :pp :_fw/dbg :pp} :foo)
+  (? {:mode :pp- :_fw/dbg :pp-} :foo)
+  (? {:mode :pp/- :_fw/dbg :pp/-} :foo)
+  (? {:mode :pp/no-label :_fw/dbg :pp/no-label} :foo)
+  (? {:mode :pp/no-file :_fw/dbg :pp/no-file} :foo))
+
+#_(do (co "user-opts:print-with")
+      (? {:print-with pr} :foo)
+      (? {:print-with pr-str} :foo)
+      (? {:print-with prn} :foo)
+      (? {:print-with prn-str} :foo)
+      (? {:print-with print} :foo)
+      (? {:print-with println} :foo)
+      (? {:print-with pprint} :foo))
+
+[:label-or-form :file-info :result]
+;; nil
+{:template   [:label-or-form :file-info :result] ;; could become [:file-info :label-or-form :result], if label is multiline
+ :print-with '_p2}
+
+;; :label or :no-file
+{:template   [:label-or-form :result]
+ :print-with '_p2}
+
+;; :file or :no-label
+{:template   [:file-info :result]
+ :print-with '_p2}
+
+;; :result or :-
+{:template   [:result]
+ :print-with '_p2}
+
+;; :log
+{:template   [:label-or-form :file-info :result]
+ :print-with #?(:cljs
+                js/console.log
+                :clj
+                fireworks.pp/pprint)}
+;; :log- or :log/-
+{:template   [:result]
+ :print-with #?(:cljs
+                js/console.log
+                :clj
+                fireworks.pp/pprint)}
+
+;; :log/no-label
+{:template   [:file-info :result]
+ :print-with #?(:cljs
+                js/console.log
+                :clj
+                fireworks.pp/pprint)}
+
+;; :log/no-file
+{:template   [:label :result]
+ :print-with #?(:cljs
+                js/console.log
+                :clj
+                fireworks.pp/pprint)}
+
+;; :pp
+{:template   [:label-or-form :file-info :result]
+ :print-with #?(:cljs
+                fireworks.pp/pprint
+                :clj
+                fireworks.pp/pprint)}
+
+;; :pp- or :pp/-
+{:template   [:result]
+ :print-with #?(:cljs
+                js/console.pp
+                :clj
+                fireworks.pp/pprint)}
+
+;; :pp/no-label
+{:template   [:file-info :result]
+ :print-with #?(:cljs
+                js/console.pp
+                :clj
+                fireworks.pp/pprint)}
+
+;; :pp/no-file
+{:template   [:label :result]
+ :print-with #?(:cljs
+                js/console.pp
+                :clj
+                fireworks.pp/pprint)}
