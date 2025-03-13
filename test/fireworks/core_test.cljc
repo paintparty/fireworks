@@ -466,6 +466,3 @@
 ;; "Universal Default" theme, as well as default config options.
 
 ;; TODO - this should not print multiline, it is b/c label is being counted in string length
-
-(? :log/- {:a   'foo
-           :boo 'boo})
