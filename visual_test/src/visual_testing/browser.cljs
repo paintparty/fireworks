@@ -1,14 +1,30 @@
+
+
 (ns visual-testing.browser
   (:require
+   [reagent.dom :as rdom]
    [fireworks.core :refer [? !? ?> !?>]]
    [visual-testing.macros :refer-macros [test-clj]]
    [visual-testing.shared :refer [test-suite]]))
 
+(defn main-view []
+   [:div {:id    "foo"
+          :style {:color            :red
+                  :background-color "blue"}}
+    "Hello"
+    ])
+
+(defn ^:dev/after-load mount-root []
+  (let [root-el (.getElementById js/document "app")]
+    (rdom/render [main-view] root-el)
+    (js/setTimeout 
+     (fn [] (? [(js/document.getElementById "foo")]))
+     1000)))
+
 ;; start is called by init and after code reloading finishes
 (defn ^:dev/after-load start []
-
+  (mount-root)
   (js/console.clear)
-
   ;; This will run test suite of cljc calls to fireworks.core/? in browser dev-console 
   (test-suite)
 
