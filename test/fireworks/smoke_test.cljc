@@ -130,9 +130,9 @@
 ;; TODO - Add more commentary and thorough examples
 
 (defn co [k commentary]
-  (callout {:border-weight :medium
-            :type          :magenta
-            :label         k
+  (callout {:colorway      :magenta
+            :theme         :sideline-bold
+            :label         (bling [:italic.magenta (str " " k " ")])
             :margin-bottom 1}
            commentary))
 
@@ -143,31 +143,242 @@
             :margin-bottom 0}
            (bling [:italic.subtle form])))
 
+#_(defn co [s]
+  (callout {:label         s
+            :theme         :sideline-bold
+            :colorway      :magenta
+            :margin-bottom 1}))
+
+(defn lbl [s]
+  (println (bling [:bold s] " " [:green.bold "=>"])))
+
+(defn squid []
+  (println "🦑"))
+
+(defn ghost []
+  (println "👻"))
+
 (do
-  ;; good 
+  ;; TODO - get these working with new refactors
   #_(do 
     (co '? nil)
-    (? {:a "foo"})
-    (? "width custom label" {:a "foo"})
-    (? "Custom label line1\nCustom label line2" {:a "foo"})
-    (? {:label "Custom label from :label option"} (atom {:a "foo" :b 12}))
+    (lbl "(? {:a 1})")
+    (? {:a 1})
+
+    (lbl "(? \"My label\" {:a 1})")
+    (? "My label" {:a 1})
+
+    (lbl "(? \"My label\\nMy lable line 2\" {:a 1})")
+    (? "My label\nMy lable line 2" {:a 1})
+
+    (lbl "(def x1 \"x1\")")
     (? (def x1 "x1"))
+
+    (lbl "(? \"def with custom label\" (def x2 \"x2\"))")
     (? "def with custom label" (def x2 "x2"))
+
+    (lbl "(? {:label \"def with label from options\"} (def x3 \"x3\"))")
     (? {:label "def with label from options"} (def x3 "x3")))
 
-
   #_(do 
-    (co :label "Only display label (or form), no file info.")
-    (? :label "my label" {:a "foo"})
-    (when (= {:a "foo"}
-             (? :label
-                {:margin-bottom 0}
-                {:a "foo"}))
-      (println "✓"))
-    (? :label "Line1\nLine2" {:a "foo"})
-    (? :label {:label "Label from options" } (atom {:a "foo" :b 12}))
+    (co "Only display label (or form), no file info." nil)
+
+    (lbl "(? :no-file {:a 1})")
+    (? :no-file {:a 1})
+
+    (ghost)
+    (lbl "(? :label {:a 1})")
+    (? :label {:a 1})
+
+    (squid)
+    (lbl "(? {:label \"My label\" :mode :no-file} {:a 1})")
+    (? {:label "My label" :mode :no-file} {:a 1})
+
+    (squid)
+    (lbl "(? {:label \"My label\" :mode :label} {:a 1})")
+    (? {:label "My label" :mode :label} {:a 1})
+
+    (squid)
+    (lbl "(? {:label \"My label\" :mode :label} {:a 1})")
+    (? {:label "My label" :template [:label-or-form :result]} {:a 1})
+
+    (lbl "(? :no-file (def x4 \"x4\"))")
+    (? :no-file (def x4 "x4"))
+
+    (ghost)
+    (lbl "(? :label (def x4 \"x4\"))")
     (? :label (def x4 "x4"))
-    (? :label {:label "def with label from options"} (def x5 "x5"))))
+
+    (squid)
+    (lbl "(? {:label \"My label\"} (def x5 \"x5\"))")
+    (? {:label "My label" :mode :no-file} (def x5 "x5")))
+    
+  #_(do 
+    (co "Only display file-info, no label." nil)
+
+    (lbl "(? :no-label {:a 1})")
+    (? :no-label {:a 1})
+
+    (ghost)
+    (lbl "(? :file {:a 1})")
+    (? :file {:a 1})
+
+    (squid)
+    (lbl "(? {:label \"My label\" :mode :no-label} {:a 1})")
+    (? {:label "My label" :mode  :no-label} {:a 1})
+
+    (squid)
+    (lbl "(? {:label \"My label\" :mode :label} {:a 1})")
+    (? {:label "My label" :mode  :file} {:a 1})
+
+    (squid)
+    (lbl "(? {:label \"My label\" :template [:file-info :result]} {:a 1})")
+    (? {:label "My label" :template [:file-info :result]} {:a 1})
+
+    (lbl "(? :no-file (def x4 \"x4\"))")
+    (? :no-file (def x4 "x4"))
+
+    (ghost)
+    (lbl "(? :label (def x4 \"x4\"))")
+    (? :label (def x4 "x4"))
+
+    (squid)
+    (lbl "(? {:label \"My label\"} (def x5 \"x5\"))")
+    (? {:label "My label" :mode :no-file} (def x5 "x5")))
+
+
+   #_(do 
+    (co "print with log" nil)
+
+    (lbl "(? :log {:a 1})")
+    (? :log {:a 1})
+
+    (squid)
+    (lbl "(? {:a 1 :mode :log})")
+    (? {:a 1 :mode :log})
+
+    (lbl "(? :log- {:a 1})")
+    (? :log- {:a 1})
+
+    (squid)
+    (lbl "(? :log/no-label {:a 1})")
+    (? :log/no-label {:a 1})
+
+    (squid)
+    (lbl "(? :log/no-file {:a 1})")
+    (? :log/no-file {:a 1})
+
+    (lbl "(? {:mode :log-} {:a 1})")
+    (? {:mode :log-} {:a 1})
+
+    (squid)
+    (lbl "(? {:mode :log/no-label} {:a 1})")
+    (? {:mode :log/no-label} {:a 1})
+
+    (squid)
+    (lbl "(? :log/no-file {:a 1})")
+    (? {:mode :log/no-file} {:a 1})
+
+    )
+
+   #_(do 
+    (co "print with pp/pprint" nil)
+
+    (lbl "(? :pp {:a 1})")
+    (? :pp {:a 1})
+
+    (squid)
+    (lbl "(? {:a 1 :mode :pp})")
+    (? {:a 1 :mode :pp})
+
+    (lbl "(? :pp- {:a 1})")
+    (? :pp- {:a 1})
+
+    (squid)
+    (lbl "(? :pp/no-label {:a 1})")
+    (? :pp/no-label {:a 1})
+
+    (squid)
+    (lbl "(? :pp/no-file {:a 1})")
+    (? :pp/no-file {:a 1})
+
+    (lbl "(? {:mode :pp-} {:a 1})")
+    (? {:mode :pp-} {:a 1})
+
+    (squid)
+    (lbl "(? {:mode :pp/no-label} {:a 1})")
+    (? {:mode :pp/no-label} {:a 1})
+
+    (squid)
+    (lbl "(? :pp/no-file {:a 1})")
+    (? {:mode :pp/no-file} {:a 1}))
+
+   #_(do 
+    (co "All the templates" nil)
+
+    (squid)
+    (lbl "(? {:a 1})")
+    (? {:a 1})
+
+    (squid)
+    (lbl "(? {:a 1})")
+    (? {:a 1})
+
+    (squid)
+    (lbl "(? {:a 1})")
+    (? {:a 1})
+
+    (squid)
+    (lbl "(? {:a 1})")
+    (? {:a 1})
+
+    (squid)
+    (lbl "(? {:a 1})")
+    (? {:a 1}))
+
+   #_(do 
+    (co "All the :print-with options" nil)
+
+    (lbl "(? {:print-with pr} {:a \"foo\\nyeah\" :bar 1})")
+    (? {:print-with pr} {:a "foo\nyeah" :bar 1})
+
+    (lbl "(? {:print-with prn} {:a \"foo\\nyeah\" :bar 1})")
+    (? {:print-with prn} {:a "foo\nyeah" :bar 1})
+
+    (squid)
+    (lbl "(? {:print-with prn-str} {:a \"foo\\nyeah\" :bar 1})")
+    (? {:print-with prn-str} {:a "foo\nyeah" :bar 1})
+
+    (squid)
+    (lbl "(? {:print-with print} {:a \"foo\\nyeah\" :bar 1})")
+    (? {:print-with print} {:a "foo\nyeah" :bar 1})
+
+    (squid)
+    (lbl "(? {:print-with println} {:a \"foo\\nyeah\" :bar 1})")
+    (? {:print-with println} {:a "foo\nyeah" :bar 1})
+
+    (squid)
+    (lbl "(? {:print-with pprint} {:a \"foo\\nyeah\" :bar 1})")
+    (? {:print-with pprint} {:a "foo\nyeah" :bar 1})
+
+    #?(:cljs
+       (do 
+
+         (squid)
+         (lbl "(? {:print-with js/console.log} {:a \"foo\\nyeah\" :bar 1})")
+         (? {:print-with js/console.log} {:a 1 :bar 1})
+
+         (squid)
+         (lbl "(? {:print-with js/console.warn} {:a \"foo\\nyeah\" :bar 1})")
+         (? {:print-with js/console.warn} {:a 1 :bar 1}))
+       )
+    )
+)
+  
+
+
+
+
 
 
   #_(do

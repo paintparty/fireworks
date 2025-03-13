@@ -73,7 +73,8 @@
    nil
 
    :clj
-   (do 
+   nil
+   #_(do 
      #_(deftest  p-data-with-label-from-opts ;; line+column dependant
          (is (= 
               (let [ret              (? :data {:label                      "my-label"
@@ -401,7 +402,7 @@
     ret))
 
 ;; Basic print-and-return tests, cljc
-(do
+#_(do
   ;; (deftest ?-par-result
   ;;   (is (= (? :result "par?") "par?")))
   ;; (deftest ?-par
@@ -469,36 +470,9 @@
 ;; TODO - this should not print multiline, it is b/c label is being counted in string length
 
 
-#_(defn resolve-template [k]
-  (cond 
-    (or (not (keyword? k))
-        (contains? #{nil :log :pp} k))
-    [:label-or-form :file-info :result]
+;; TODO 
+;; Add all the permutations from the test file, then do refactoring
 
-    (contains? #{:label :no-file :pp/no-file :log/no-file} k)
-    [:label-or-form :result]
-
-    (contains? #{:file :no-label :pp/no-label :log/no-label} k)
-    [:file-info :result]
-
-    :else
-    [:label-or-form :file-info :result]))
-
-(def valid-printing-fns 
-  #{pr pr-str prn prn-str print println pprint})
-
-(def print-with-log
-  #{:log :log- :log/- :log/no-label :log/no-file})
-
-(def print-with-pprint
-  #{:pp :pp- :pp/- :pp/no-label :pp/no-file})
-
-(def printing-templates
-  #{[:label-or-form :file-info :result]
-    [:file-info :label-or-form :result]
-    [:file-info :result]
-    [:label-or-form :result]
-    [:result]})
 
 (defn co [s]
   (callout {:label         s
@@ -506,12 +480,18 @@
             :colorway      :magenta
             :margin-bottom 1}))
 
-(co "user-opts:templates")
-(? {:template [:label-or-form :file-info :result] :_fw/dbg [:label-or-form :file-info :result]} :foo)
-(? {:template [:file-info :label-or-form :result] :_fw/dbg [:file-info :label-or-form :result]} :foo)
-(? {:template [:file-info :result] :_fw/dbg [:file-info :result]} :foo)
-(? {:template [:label-or-form :result] :_fw/dbg [:label-or-form :result]} :foo)
-(? {:template [:result] :_fw/dbg [:result]} :foo)
+;; (? "my-label" :foo)
+;; (? {:mode  :pp
+;;     :label "hey"}
+;;    :foo)
+
+#_(do 
+  (co "user-opts:templates")
+  (? {:template [:label-or-form :file-info :result] :_fw/dbg [:label-or-form :file-info :result]} :foo)
+  (? {:template [:file-info :label-or-form :result] :_fw/dbg [:file-info :label-or-form :result]} :foo)
+  (? {:template [:file-info :result] :_fw/dbg [:file-info :result]} :foo)
+  (? {:template [:label-or-form :result] :_fw/dbg [:label-or-form :result]} :foo)
+  (? {:template [:result] :_fw/dbg [:result]} :foo))
 
 #_(do 
   (co "user-opts:mode")
@@ -538,6 +518,8 @@
       (? {:print-with print} :foo)
       (? {:print-with println} :foo)
       (? {:print-with pprint} :foo))
+
+(pprint (? {:mode :data} {:a 1}))
 
 [:label-or-form :file-info :result]
 ;; nil
