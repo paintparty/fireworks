@@ -28,7 +28,6 @@
  :non-coll-length-limit        33
  :non-coll-mapkey-length-limit 20
  :coll-limit                   15
- :evaled-form-coll-limit       7
  :display-namespaces?          true
  :metadata-print-level         7
  :display-metadata?            true
@@ -89,11 +88,11 @@
    #{1 :2 "three"}))
 
 
-(println
+#_(println
  (-> (? :data
         {:theme "Universal Neutral"}
         sample-map)
-     :formatted
+     :formatted+
      :string))
 
 
@@ -348,9 +347,6 @@
   ;; :non-coll-mapkey-length-limit
   (? {:label :non-coll-mapkey-length-limit :non-coll-mapkey-length-limit         20}
      {"abcdefghijklmnopqrstuvwxyz" [1 2 3] })
-
-  (? {:evaled-form-coll-limit     7}
-     [:evaled-form-coll-limit 1 2 3 4 5 6 7 8 9 10])
 
   (? {:label :display-namespaces? :display-namespaces?        true}
      [juxt my-record-type])

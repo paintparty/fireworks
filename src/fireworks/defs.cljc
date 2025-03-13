@@ -44,7 +44,11 @@
           :multimethod   :definition
           :uuid          :string
           :inst          :string
-          :js-object-key :foreground}
+          :js-object-key :foreground
+          :nan           :constant
+          :infinity      :constant
+          :-infinity     :constant
+          }
          
           ;;  Experimental, not working yet 
           {
@@ -91,7 +95,13 @@
    :line-number           :annotation
    :column-number         :annotation
    :eval-label            :eval-label
+   :eval-label-red        :eval-label
+   :eval-label-green      :eval-label
+   :eval-label-blue       :eval-label
    :eval-form             :eval-label
+   :eval-form-red         :eval-label
+   :eval-form-green       :eval-label
+   :eval-form-blue        :eval-label
    :result-header         {:color            nil
                            :margin-block-end :0.5em}
    :seq-bracket           :bracket

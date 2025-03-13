@@ -13,6 +13,26 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.11.0
+2025-3-12
+
+#### Added
+- Support `:string` mode for outputting formatted string. Closes #55.
+- Add mode aliases for `:result` `:file` and `:label` Closes #56.
+
+#### Fixed
+- Print inline metadata maps multiline. Fixes #32
+- Fix multi-line formatting of collections with badge-above. Fixes #35
+
+#### Changed
+- Remove all color from `"Universal Neutral"` theme.
+- Add :`nan`, `:infinity`, and `:-infinity` to base syntax tokens
+- Bumps Lasertag and Bling deps.
+
+<br>
+<br>
+
+
 ## 0.10.4
 2024-11-20
 

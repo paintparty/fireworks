@@ -97,12 +97,12 @@
          :as   opts}]
    (callout (merge opts
                    {:type        :error
-                    :label       #?(:cljs
-                                    "ERROR: (Caught)"
-                                    :clj
-                                    (str "ERROR: "
-                                         (string/replace (type err) #"^class " "" )
-                                         " (Caught)"))
+                    :label       (str "ERROR(Caught): "
+                                      #?(:clj
+                                         (string/replace (type err)
+                                                         #"^class "
+                                                         "")
+                                         :cljs nil))
                     :padding-top 1})
             (point-of-interest
              (merge opts

@@ -1,7 +1,7 @@
 (ns ^:dev/always fireworks.truncate
   (:require #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.macros :refer [keyed]])
-            [fireworks.pp :refer [?pp]]
+            ;; [fireworks.pp :refer [?pp]]
             [clojure.string :as string]
             [fireworks.ellipsize :as ellipsize]
             [fireworks.order :refer [seq->sorted-map]]
@@ -19,12 +19,10 @@
        [v]
        (as-> v $
          (string/split $ #";")
-         ;; TODO - perf - should this be a reduce?
-         (map #(let [
-                     ;; TODO - perf - should this be a transducer or reduce?
-                     kv    (-> % string/trim (string/split #":") )
-                     [k v] (map string/trim kv)]
-                 [k v]) 
+         (mapv #(reduce (fn [acc x]
+                         (conj acc (string/trim x)))
+                       []
+                       (-> % string/trim (string/split #":"))) 
               $)
          (into {} $)))
 
@@ -64,7 +62,7 @@
 
 ;; Potential performance gains:
 ;; Maybe declare truncate new above this and incorporate into kv
-;; Mabye use reduce-kv or transducer to speed this up
+;; Maybe use reduce-kv or transducer to speed this up
 #?(:cljs 
    (defn- js-obj->array-map 
      [{:keys [x coll-limit depth uid-entry?]}]
@@ -167,8 +165,7 @@
              (when (= t :SyntheticBaseEvent) (prune-synthetic-base-event x))
              (->> m 
                   js-obj->array-map
-                  ;; TODO - perf - should this be a reduce?
-                  (map (partial truncate {:depth (inc depth)}))
+                  (mapv (partial truncate {:depth (inc depth)}))
                   (into {}))))))
      :clj
      (truncate-iterable m x)))
@@ -227,7 +224,7 @@
 
 
 (defn- truncated-x*
-  [{:keys [coll-type? kv? depth carries-meta?]
+  [{:keys [coll-type? kv? depth carries-meta? classname]
     :as m}
    x]
   ;; (println "\n\nx in truncated-x*" x)
@@ -239,6 +236,9 @@
 
             coll-type?
             (truncated-coll m x)
+
+            (= classname "java.math.BigDecimal")
+            (symbol (str x "M"))
 
             :else      
             x)]

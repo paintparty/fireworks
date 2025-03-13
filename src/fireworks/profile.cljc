@@ -1,6 +1,7 @@
 (ns ^:dev/always fireworks.profile
   (:require
    [fireworks.defs :as defs]
+   [fireworks.pp :refer (?pp)]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
    [fireworks.util :as util]
@@ -123,10 +124,10 @@
 ;; To determine if coll should be printed multi-line?
 (defn- str-len-with-badge
   [badge val-is-atom? x]
-  (let [badge-len
+  (let [badge-str-len
         (or (some-> badge :badge count) 0)
 
-        val-len
+        val-str-len
         (or (-> x str count) 0)
 
         ;; This currently only checks encapsulation-closing-bracket-len,
@@ -134,21 +135,28 @@
         encapsulation-closing-bracket-len
         (or (when val-is-atom? 
               (count defs/encapsulation-closing-bracket))
-            0)]
+            0)
 
-    ;; (when-not @state/formatting-form-to-be-evaled?
-    ;;   (?pp
-    ;;    (keyed [badge-len
-    ;;            x
-    ;;            val-len
-    ;;            encapsulation-closing-bracket-len
-    ;;            extra-str-from-custom-badges-len ])))
+        str-len-with-badge
+        (+ badge-str-len
+           val-str-len
+           ;; Not currenlty supporting custom-badges, so leave commented
+           #_(or (extra-str-from-custom-badges x) 0)
+           encapsulation-closing-bracket-len)]
 
-    (+ badge-len
-       val-len
-       ;; Not currenlty supporting custom-badges, so leave commented
-       #_(or (extra-str-from-custom-badges x) 0)
-       encapsulation-closing-bracket-len)))
+    #_(when-not (not (coll? x)) #_@state/formatting-form-to-be-evaled?
+      (?pp
+       (keyed [str-len-with-badge
+               val-str-len
+               badge-str-len
+               x
+               encapsulation-closing-bracket-len
+               ])))
+
+    (keyed [str-len-with-badge
+            badge-str-len
+            val-str-len
+            encapsulation-closing-bracket-len])))
 
 (defn- mutable-wrapper-count
   [{:keys [val-is-atom? val-is-volatile?]}]
@@ -164,10 +172,10 @@
 
    Wraps atoms and volatiles.
 
-   Adds :strlen-with-badge2 entry to meta, to be used for formatting in
-   fireworks.serialize/serialized."
+   Adds :strlen-with-badge-ellipsized entry to meta, to potentially be used for
+   formatting in fireworks.serialize/serialized."
    
-  [{:keys [coll-type? ellipsized x t meta-map] :as m}]
+  [{:keys [coll-type? ellipsized x t meta-map]}]
   (let [ret* (cond 
                coll-type?
                x
@@ -193,34 +201,40 @@
         ret (if (or (= t :clojure.lang.MapEntry)
                     (= t :cljs.core.MapEntry))
               ret* 
-              (let [badge-count
-                    (or (some-> meta-map :badge count) 0)
-
-                    ellipsized-char-count
-                    (or (some-> ellipsized :ellipsized-char-count) 0)
+              (let [ellipsized-char-count
+                    (some-> ellipsized :ellipsized-char-count)
 
                     ellipsis-char-count
-                    (or (when (:exceeds? ellipsized) defs/ellipsis-count) 0)
+                    (when (:exceeds? ellipsized) defs/ellipsis-count)
 
-                    ;; TODO - Do we still need str-len-with-badge2
-                    str-len-with-badge2
-                    (+ badge-count
+                    str-len-val-ellipsized
+                    (+ (or ellipsized-char-count
+                           (:val-str-len meta-map)
+                           0)
+                       (or ellipsis-char-count 0))
+
+
+                    ;; TODO - Do we still need str-len-with-badge-ellipsized
+                    str-len-with-badge-ellipsized
+                    (+ (:badge-str-len meta-map)
                        (mutable-wrapper-count meta-map)
-                       ellipsized-char-count
-                       ellipsis-char-count)
+                       str-len-val-ellipsized)
 
                     ;; _ (when-not @state/formatting-form-to-be-evaled?
                     ;;     (?pp x)
                     ;;     (?pp (keyed [m
-                    ;;                  badge-count
+                    ;;                  badge-str-len
                     ;;                  atom-wrap-count
                     ;;                  ellipsized-char-count
-                    ;;                  str-len-with-badge2])))
+                    ;;                  str-len-with-badge-ellipsized])))
                     
                     meta-map            
                     (assoc meta-map
-                           :str-len-with-badge2
-                           str-len-with-badge2)]
+                           :str-len-val-ellipsized
+                           str-len-val-ellipsized
+                           :str-len-with-badge-ellipsized
+                           str-len-with-badge-ellipsized)
+                    ]
                 (with-meta ret* meta-map)))]
     ret))
 
@@ -330,17 +344,15 @@
                           ;; TODO - Currently, str-len-with-badge is only used
                           ;; in fireworks.serialize/reduce-coll-profile to
                           ;; determine if collection should be multiline.
-
+                          
                           ;; Maybe it can be left out here and just called
                           ;; inline at fireworks.serialize/reduce-coll-profile,
                           ;; only if needed.
+                          (str-len-with-badge badge val-is-atom? x)
 
-                          {:str-len-with-badge            
-                           (str-len-with-badge badge val-is-atom? x)
-                           
-                           :some-elements-carry-user-metadata?
+                          {:some-elements-carry-user-metadata? 
                            (some-elements-carry-user-metadata? x)}))]
-
+        (when (coll? x) ret)
         ret))))
 
 
@@ -362,7 +374,7 @@
 
 ;; TODO - Address the following:
 ;; - Is one of :user-meta and :fw/user-meta redundant?
-;; - Is :str-len-with-badge2 redundant?
+;; - Is :str-len-with-badge-ellipsized redundant?
 ;; - Maybe use :tag instead of :t globally?
 
 (defn profile
@@ -370,7 +382,7 @@
    adding additional entries to such as:
 
    :some-colls-as-keys?                 
-   :str-len-with-badge2                 
+   :str-len-with-badge-ellipsized                 
    :single-column-map-layout?           
    :some-syms-carrying-metadata-as-keys?
    :str-len-with-badge                  
@@ -389,7 +401,7 @@
 
    ^{:og-x                                 '(0 1 2 3 4 5 6 7),
      :some-colls-as-keys?                  false,
-     :str-len-with-badge2                  0,
+     :str-len-with-badge-ellipsized                  0,
      :coll-type?                           true,
      :carries-meta?                        true,
      :array-map?                           false,

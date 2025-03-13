@@ -26,8 +26,7 @@
                    f #(let [m (state/map-vals state/hexa-or-sgr m)]
                         (state/m->sgr m))]
                #?(:cljs
-                  ;; TODO - perf - use a reduce or at least mapv
-                  (if node? (f) (string/join (map state/kv->css2 m)))
+                  (if node? (f) (string/join (mapv state/kv->css2 m)))
                   :clj
                   (f)))
              m)]

@@ -71,20 +71,30 @@
                  [:form-or-label :file-info]}
                template)
           (when label
-            (let [label
+            (let [label-entity-tag
+                  (case (some-> opts :label-color util/as-str)
+                    "green"
+                    :eval-label-green
+                    "blue"
+                    :eval-label-blue
+                    "red"
+                    :eval-label-red
+                    :eval-label)
+                  label
                   (if mll?
                     (string/join
                      "\n"
                      (map
                       #(str (tag/tag-entity!
                              (str indent-spaces %)
-                             :eval-label)
+                             label-entity-tag)
                             (tag/tag-reset!))
                       (string/split label #"\n")))
+
                     (tag/tag-entity!
                      (util/shortened label
                                      (resolve-label-length label-length-limit))
-                     :eval-label))]
+                     label-entity-tag))]
               (str indent-spaces label))))
 
         form
@@ -92,11 +102,21 @@
           (when qf
             ;; TODO - Confirm that toggling this state doesn't matter, remove it
             (reset! state/formatting-form-to-be-evaled? true)
-            (let [shortened
+            (let [form-entity-tag
+                  (case (some-> opts :label-color util/as-str)
+                    "green"
+                    :eval-form-green
+                    "blue"
+                    :eval-form-blue
+                    "red"
+                    :eval-form-red
+                    :eval-form)
+                  
+                  shortened
                   (tag/tag-entity! 
                    (util/shortened qf
                                    (resolve-label-length label-length-limit))
-                   :eval-form) 
+                   form-entity-tag) 
                   ret       shortened]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it
               (reset! state/formatting-form-to-be-evaled? false)
@@ -228,13 +248,14 @@
     :else
     (string/join (repeat (get @state/config k 0) "\n")))
 
-  #_(ff k (get @state/config k 0))
-  #_(string/join (repeat (get @state/config k 0) "\n"))
-  #_(if-let [mb (ff (k user-opts))]
-      (if (or (zero? mb) (pos-int? mb))
-        (string/join (repeat mb "\n"))
-        "\n")
-      ""))
+  ;; (ff k (get @state/config k 0))
+  ;; (string/join (repeat (get @state/config k 0) "\n"))
+  ;; (if-let [mb (ff (k user-opts))]
+  ;;     (if (or (zero? mb) (pos-int? mb))
+  ;;       (string/join (repeat mb "\n"))
+  ;;       "\n")
+  ;;     "")
+  )
 
 
 
@@ -764,10 +785,10 @@
 
       ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
-        printing-opts
-        (let [print? (if-let [user-when-fn (some-> opts :when (util/maybe fn?))] 
-                       (boolean (apply user-when-fn [x]))
-                       true)] 
+        (if (= :string (:alias-mode opts))
+          (-> printing-opts :formatted :string)
+          printing-opts)
+        (let [print? (if (contains? opts :when) (:when opts) true)]
           (when print? (print-formatted printing-opts 
                                         #?(:cljs (when-not node? 
                                                    js-print))))
@@ -787,7 +808,6 @@
 
           (reset! state/formatting-form-to-be-evaled? false)
           (when return-result? x))))))
-
 
 
 (defn- cfg-opts
@@ -836,21 +856,49 @@
   [defd {:keys [ns-str]}]
   (symbol (str "#'" ns-str "/" defd)))
 
+(def modes #{
+             :comment
+             :data
+             :log
+             :log-
+             :pp
+             :pp-
+
+             ;; deprecated in favor of alias :no-label, :no-file, etc.
+             :label
+             :file
+             :result
+
+             ;; unsupported / experimental
+             :trace
+             })
+
+(def alias-modes 
+  {
+   ;; sugar for consuming this the formatted string
+   :string       :data
+
+   ;; sugar for changing what extra stuff is displayed
+   :no-label     :file
+   :no-file      :label
+   :-            :result 
+   :log/-        :log-
+   :pp/-         :pp-
+   :log/no-label :log
+   :log/no-file  :log
+   :pp/no-label  :pp
+   :pp/no-file   :pp 
+   })
+
 (defn- mode+template [a]
-  (let [mode
-        (if (contains? #{:label
-                         :file
-                         :result
-                         :comment
-                         :data
-                         :log
-                         :log-
-                         :pp
-                         :pp-
-                         :trace}
-                       a)
-          a
-          nil)
+  (let [alias-mode
+        (if (contains? alias-modes a) a nil)
+        
+        a
+        (get alias-modes a a)
+
+        mode
+        (if (contains? modes a) a nil)
 
         template
         (get 
@@ -871,11 +919,12 @@
          mode
          [:form-or-label :file-info :result])]
     {:mode     mode
+     :alias-mode alias-mode
      :template template}))
 
 #?(:clj
    (defn- ?2-helper
-     [{:keys [cfg-opts* mode template label &form x]}]
+     [{:keys [cfg-opts* alias-mode mode template label &form x]}]
     ;;  (ff '?-helper2 (get-user-config-edn-dynamic))
      (let [defd           (defd x)
 
@@ -895,6 +944,7 @@
 
            cfg-opts       (merge (dissoc (or cfg-opts* {}) :label)
                                  {:mode           mode
+                                  :alias-mode     alias-mode
                                   :label          label
                                   :template       template
                                   :ns-str         (some-> *ns* ns-name str)
@@ -952,7 +1002,7 @@
         (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                            (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
   ([a x]
-   (let [{:keys [mode template]}
+   (let [{:keys [mode alias-mode template]}
          (mode+template a)]
      (case mode
        :trace
@@ -997,7 +1047,7 @@
                        :else             (when-not cfg-opts* a)))
 
              {:keys [log?* defd qf-nil? cfg-opts]}
-             (?2-helper (keyed [mode template cfg-opts* label &form x]))]
+             (?2-helper (keyed [mode alias-mode template cfg-opts* label &form x]))]
 
         ;;  #_(ff "?, 2-arity, cfg-opts" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))

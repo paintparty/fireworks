@@ -3,6 +3,7 @@
    [fireworks.specs.config :as config]
    [fireworks.specs.theme :as theme]))
 
+;; TODO add desc field to each entry, use for docs and potenitaly validation
 (def options
   {:theme                         {:spec           ::config/theme
                                    :default        "Alabaster Light"
@@ -54,7 +55,7 @@
                                    :default        1.45
                                    :updates-theme? true}
    :label-length-limit            {:spec    ::config/label-length-limit
-                                   :default 25}
+                                   :default 44}
    :margin-bottom                 {:spec    ::config/margin-bottom
                                    :default 1}
    :margin-top                    {:spec    ::config/margin-top
@@ -65,16 +66,12 @@
                                    :default nil}
    :when                          {:spec    ::config/when
                                    :default nil}
-   
-   ;; Remove?
-   :evaled-form-coll-limit        {:spec    ::config/evaled-form-coll-limit
-                                   :default 7}
-
    })
 
 ;; Option keys
 (def option-keys
   (->> options keys (into #{})))
+
 ;; Option keys that update theme
 (def option-keys-that-update-theme
   (->> options

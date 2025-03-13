@@ -692,7 +692,7 @@
         (println
          (str ~ns-str
               "\n"
-              ~label
+              (with-out-str (fireworks.pp/pprint ~label))
               "\n"
               (with-out-str (fireworks.pp/pprint ~x))))
         ~x))))
