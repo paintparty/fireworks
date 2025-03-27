@@ -13,13 +13,13 @@
 **[Features]**  &nbsp;•&nbsp; **[Setup]**  &nbsp;•&nbsp;  **[Usage]** &nbsp;•&nbsp; **[Modes]** &nbsp;•&nbsp;  **[Options]** &nbsp;•&nbsp; **[Theming]** &nbsp;•&nbsp; **[Interop]** &nbsp;•&nbsp;  **[Contributing]**
 </div>
 
-[Features]: #features
-[Setup]: #setup
-[Usage]: #usage
-[Modes]: #tap-driven-development
-[Options]: #options
-[Theming]: #theming
-[Interop]: #printing-conventions
+[Features]:     #features
+[Setup]:        #setup
+[Usage]:        #usage
+[Modes]:        #tap-driven-development
+[Options]:      #options
+[Theming]:      #theming
+[Interop]:      #printing-conventions
 [Contributing]: #contributing
 
 
