@@ -1,4 +1,4 @@
-(defproject io.github.paintparty/fireworks "0.11.0-SNAPSHOT"
+(defproject io.github.paintparty/fireworks "0.11.0"
   :description "Themeable print debugging library for Clojure, ClojureScript, and Babashka"
   :url "https://github.com/paintparty/fireworks"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
@@ -13,7 +13,7 @@
                  ;; for testing
                  ;; [com.taoensso/tufte "2.6.3"]
                  [io.github.paintparty/bling "0.6.0"]
-                 [io.github.paintparty/lasertag "0.10.1"]]
+                 [io.github.paintparty/lasertag "0.11.1"]]
   :repl-options {:init-ns fireworks.core}
   :deploy-repositories [["clojars" {:url           "https://clojars.org/repo"
                                     :sign-releases false}]])
