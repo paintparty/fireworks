@@ -6,9 +6,9 @@
 
 
 (def tagtype->theme-key
-  {:fn-args         :function-args
-   :defmulti        :function
-   :java.lang.Class :function})
+  {:fn-args  :function-args
+   :defmulti :function
+   :class    :function})
 
 (defn style-from-theme
   ([t bgc]

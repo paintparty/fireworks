@@ -261,7 +261,7 @@
     
     (if (:ellipsized-char-count m)
       x
-      (if (contains? #{:function :defmulti :java.lang.Class} t)
+      (if (contains? #{:function :defmulti :class} t)
         (let [ret (pre-truncate-function-name limit m)]
           ret)
         (let [stringified           (stringified x t m)

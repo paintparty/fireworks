@@ -180,9 +180,8 @@
                                       (atom sample/my-record-type))
                   formatted-string (-> ret :formatted :string)
                   escaped          (string/join (escape-sgr formatted-string))]
-              #_(?pp 'p-data-record-sample-in-atom escaped)
-              escaped)
-            "〠3;38;2;57;137;98;48;2;238;251;238〠Atom<〠0〠〠3;38;2;57;137;98;48;2;238;251;238〠MyRecordType〠0〠\n〠38;5;241;48;2;238;251;238〠{〠0〠〠38;2;122;62;157〠:a〠0〠 〠38;2;68;140;39〠\"a\"〠0〠 〠38;2;122;62;157〠:b〠0〠 〠38;2;68;140;39〠\"b\"〠0〠〠38;5;241;48;2;238;251;238〠}〠0〠〠3;38;2;57;137;98;48;2;238;251;238〠>〠0〠")))
+              (!?pp 'p-data-record-sample-in-atom escaped))
+            "〠3;38;2;57;137;98;48;2;238;251;238〠Atom<〠0〠〠3;38;2;57;137;98;48;2;238;251;238〠fireworks.sample.MyRecordType〠0〠\n〠38;5;241;48;2;238;251;238〠{〠0〠〠38;2;122;62;157〠:a〠0〠 〠38;2;68;140;39〠\"a\"〠0〠 〠38;2;122;62;157〠:b〠0〠 〠38;2;68;140;39〠\"b\"〠0〠〠38;5;241;48;2;238;251;238〠}〠0〠〠3;38;2;57;137;98;48;2;238;251;238〠>〠0〠")))
 
      (deftest p-data-record-sample
        (is (= 
@@ -196,7 +195,7 @@
                   escaped          (string/join (escape-sgr formatted-string))]
               #_(?pp 'p-data-record-sample escaped)
               escaped)
-            "〠3;38;2;57;137;98;48;2;238;251;238〠MyRecordType〠0〠\n〠38;5;241;48;2;238;251;238〠{〠0〠〠38;2;122;62;157〠:a〠0〠 〠38;2;68;140;39〠\"a\"〠0〠 〠38;2;122;62;157〠:b〠0〠 〠38;2;68;140;39〠\"b\"〠0〠〠38;5;241;48;2;238;251;238〠}〠0〠")))
+            "〠3;38;2;57;137;98;48;2;238;251;238〠fireworks.sample.MyRecordType〠0〠\n〠38;5;241;48;2;238;251;238〠{〠0〠〠38;2;122;62;157〠:a〠0〠 〠38;2;68;140;39〠\"a\"〠0〠 〠38;2;122;62;157〠:b〠0〠 〠38;2;68;140;39〠\"b\"〠0〠〠38;5;241;48;2;238;251;238〠}〠0〠")))
 
      (deftest p-data-symbol-with-meta
        (is (= 
@@ -453,6 +452,9 @@
                  "%c{%c%c:string%c           %c\"string\"%c\n %c:regex%c            %c#\"myregex\"%c\n %c:uuid%c             %c#uuid %c%c\"4fe5d828-6444-11e8-8222\"%c...%c%c\n %c:symbol%c           %cmysym%c\n %c:symbol+meta%c      %cmysym%c %c    %c%c^{%c%c:foo%c %c\"bar\"%c%c}%c\n %c:boolean%c          %ctrue%c\n %c:keyword%c          %c:keyword%c\n %c:nil%c              %cnil%c\n %c:##Nan%c            %cNaN%c\n %c:##Inf%c            %cInfinity%c\n %c:##-Inf%c           %c-Infinity%c\n %c:int%c              %c1234%c\n %c:float%c            %c3.33%c\n %c:lambda%c           %cλ%c%c%c%c[]%c\n %c:lambda-2-args%c    %cλ%c%c%c%c[%1 %2]%c\n %c:core-fn%c          %ccljs.core/juxt%c%c[var_args]%c\n %c:date-fn%c          %cjs/Date%c%c[]%c\n %c:datatype-class%c   %cfireworks.sample/MyType%c%c[a b]%c\n %c:recordtype-class%c %cfireworks.sample/MyRecordType%c%c[a b]%c\n %c:really-long-fn%c   %cxyasldfasldkfaslkjfzzzzzzz%c...%c%c%c[x y]%c%c\n ...               ...+14%c%c}%c")))))
 
 
+
+
+
 ;; TODO - Add tests for:
 ;; :when pred option for selective printing
 ;; correct margins when using margin options
@@ -466,3 +468,4 @@
 ;; "Universal Default" theme, as well as default config options.
 
 ;; TODO - this should not print multiline, it is b/c label is being counted in string length
+

@@ -49,7 +49,7 @@
          b (or custom-badge-text
                (cond
                  (contains? all-tags :record)
-                 (name t)
+                 (:classname m)
 
                  ;; Interesting visualization in JVM Clojure
                  ;; Labels everything, including primitives
@@ -84,8 +84,7 @@
          b #?(:cljs b
               :clj (if (= t :defmulti) "Multimethod" b))]
 
-    ;; If you want to signal React -> (str "⚛ " b)
-     
+     ;; If you want to signal React -> (str "⚛ " b)
      (when b {:badge b}))))
                          
 
@@ -180,7 +179,7 @@
                coll-type?
                x
 
-               (contains? #{:function :defmulti :java.lang.Class} t)
+               (contains? #{:function :defmulti :class} t)
                (let [{:keys [fn-display-name
                              truncate-fn-name?]} ellipsized]
                  (if fn-display-name
