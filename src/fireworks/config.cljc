@@ -27,6 +27,7 @@
                                    :default 7}
    :metadata-print-level          {:spec    ::config/metadata-print-level
                                    :default 7}
+   ;; TODO - should this be :display-fn-namespaces?
    :display-namespaces?           {:spec    ::config/display-namespaces?
                                    :default true}
    :display-metadata?             {:spec    ::config/display-metadata?
