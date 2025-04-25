@@ -3,6 +3,7 @@
                 "test/"
                 ;; for local dev
                 ;; "../lasertag/src/"
+                ;; "../bling/src/"
                 ]
  :dependencies [[io.github.paintparty/lasertag "0.10.0"]
                 [io.github.paintparty/bling "0.4.2"]]
