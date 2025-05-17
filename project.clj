@@ -5,7 +5,7 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :source-paths ["src"
                  ;; for local dev bling and fireworks deps
-                ;;  "../bling/src"
+                 "../bling/src"
                 ;;  "../lasertag/src"
                  ]
   :dependencies [[org.clojure/clojure "1.10.3"]
@@ -13,7 +13,14 @@
                  ;; for testing
                  ;; [com.taoensso/tufte "2.6.3"]
                  [io.github.paintparty/bling "0.6.0"]
-                 [io.github.paintparty/lasertag "0.11.1"]]
+                 [io.github.paintparty/lasertag "0.11.1"]
+                 [doric "0.9.0"]]
+
+  ;; :profiles     {:1.12-storm
+  ;;                {:dependencies [[com.github.flow-storm/clojure "1.12.0-9"]
+  ;;                                [com.github.flow-storm/flow-storm-dbg "4.4.0"]]
+  ;;                 :exclusions   [org.clojure/clojure]}}
+
   :repl-options {:init-ns fireworks.core}
   :deploy-repositories [["clojars" {:url           "https://clojars.org/repo"
                                     :sign-releases false}]])

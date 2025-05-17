@@ -110,11 +110,12 @@
 
                       :else
                       :rainbow-brackets)
-        style (if (= theme-token :rainbow-brackets) 
-                (if (:enable-rainbow-brackets? @state/config)
-                  (rainbow-bracket-mixin mm)
-                  (style-from-theme :bracket nil))
-                (get @state/merged-theme theme-token nil))]
+        style (when-not (:highlighting mm) ;; <- if collection is to be highlighted, we just leave it alone.
+                (if (= theme-token :rainbow-brackets) 
+                  (if (:enable-rainbow-brackets? @state/config)
+                    (rainbow-bracket-mixin mm)
+                    (style-from-theme :bracket nil))
+                  (get @state/merged-theme theme-token nil)))]
 
     #_(when (state/debug-tagging?)
         (println "tag-bracket! "

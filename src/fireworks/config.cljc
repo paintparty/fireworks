@@ -8,9 +8,6 @@
   {:theme                         {:spec           ::config/theme
                                    :default        "Alabaster Light"
                                    :updates-theme? true}
-   :mood                          {:spec           ::theme/mood
-                                   :default        "light"
-                                   :updates-theme? true}
    :coll-limit                    {:spec    ::config/coll-limit
                                    :default 33}
    :single-line-coll-length-limit {:spec    ::config/single-line-coll-length-limit

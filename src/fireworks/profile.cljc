@@ -87,22 +87,42 @@
      ;; If you want to signal React -> (str "⚛ " b)
      (when b {:badge b}))))
                          
+(defn target-path-is-ancestor-coll?
+  [tp vp tp-list]
+  ;; (?pp (keyed [tp vp tp-list]))
+  (boolean
+   (when (< (count tp) 
+            (count vp))
+     (and (= tp-list
+             (take (count tp) vp))
+          (not= (into [] (take-last 2 vp))
+                [(first tp) :fireworks.truncate/map-key])
+          #_(not (-> vp last (= :fireworks.truncate/map-key))
+               (take-last 2 vp)
+               )))))
 
 (defn- highlighting*
-  [x m]
-  (let [{:keys [pred style]} m]
-    (when (pred x)
-      {:highlighting style})))
+  [x
+   value-path
+   {:keys       [pred style]
+    target-path :path
+    :as         m}]
+  (when (or (and pred (pred x))
+            (and target-path (= target-path value-path))
+            (target-path-is-ancestor-coll? target-path
+                                           value-path
+                                           (apply list target-path)))
+    {:highlighting style}))
 
 
 (defn- highlighting
-  [x]
+  [x path]
   (when-let [hl @state/highlight]
     (cond 
       (map? hl)
-      (highlighting* x hl)
+      (highlighting* x path hl)
       (vector? hl)
-      (some (partial highlighting* x) hl))))
+      (some (partial highlighting* x path) hl))))
 
 
 (defn- extra-str-from-custom-badges [x]
@@ -301,7 +321,7 @@
                   {:x    (or (:x fw-truncated-meta) x)
                    :og-x og-x}
 
-                  (highlighting og-x)
+                  (highlighting og-x (:path fw-truncated-meta))
 
                   ;; TODO - need this mapkey map?
                   mapkey

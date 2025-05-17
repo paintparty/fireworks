@@ -3,11 +3,16 @@
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
-            [bling.core :refer [callout bling ?sgr]]
-            ;; [bling.sample]
+            [doric.core :refer [table]]
+            [bling.core :refer [callout bling bling! ?sgr]]
+            [bling.sample]
+            [bling.banner]
+            [bling.fonts]
+            [bling.fontlib]
+            
             [clojure.string :as string]
             [fireworks.pp :as pp]
-            [clojure.pprint :refer [pprint]]
+            [clojure.pprint :refer [pprint print-table]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
             [fireworks.sample :as sample]
@@ -17,12 +22,391 @@
             #?(:clj [clojure.test :refer :all])))
 
 
+(def sample
+  ["\"hi\""
+   "hi"	
+
+   :hi	
+   :hi	
+
+   "^hi$"
+   "^hi$"	
+
+   true
+   true	 
+
+   'mysym
+   'mysym	 
+
+   [1 2 3]
+   [1 2 3]
+
+   #{1 3 2}
+   #{1 3 2}
+
+   {:a 2
+    :b 3}
+   {:a 2
+    :b 3}
+
+   '(map inc (range 3))
+   (map inc (range 3))
+
+   '(range 3)
+   (range 3)
+
+   '(:a :b :c)
+   (:a :b :c)
+
+   '##Inf
+      ##Inf
+
+        '##-Inf
+           ##-Inf
+
+             '##NaN
+                ##NaN
+
+                  1/3
+                 1/3
+
+               '(byte 0)
+            (byte 0)
+
+          '(short 3)
+       (short 3)
+
+     '(double 23.44)
+   (double 23.44)
+
+   '1M
+   1M
+
+   1 
+   1
+
+   '(float 1.5)
+   (float 1.5)
+
+   '(char 92)
+   (char 92)
+
+   '(java.math.BigInteger. "171")
+    (java.math.BigInteger. "171")
+
+   '(java.util.Date.)
+    (java.util.Date.)
+   ])
+
+(def lasertag-sample
+  #?(:cljs
+     ()
+     :clj
+      (reduce
+       (fn [acc [sym v]]
+         (conj acc
+               {'form              sym
+                'lasertag.core/tag (tag v)
+                'clojure.core/type (type v)}))
+       []
+       (partition 2 sample))))
+
+
+
+;; (? (color-rows gr 9))
+
+#_(println (table [{:name 'form :title "form" }
+                 {:name 'lasertag.core/tag :title "lasertag.core/tag"}
+                 {:name 'clojure.core/type :title "clojure.core/type"}]
+                lasertag-sample))
+
+;; (? (bling.fonts/banner-font-array-map "Big Money-nw"))
+;; (? bling.fonts/ascii-chars-by-index-map)
+;; (? bling.fonts/ascii-indices-by-chars)
+                                                                             
+;; Do a grid generator thing
+#_(doseq [grd #_[
+            ;;  "to top, green, blue"
+               "to bottom, green, blue"
+              ;;  "to right, green, blue"
+            ;;  "to top, red, magenta"
+               "to bottom, red, magenta"
+              ;;  "to right, red, magenta"
+            ;;  "to top, orange, purple"
+               "to bottom, orange, purple"
+              ;;  "to right, orange, purple"
+            ;;  "to top, yellow, purple"
+              ;;  "to bottom, dark-yellow, dark-purple"
+              ;;  "to right, dark-yellow, dark-purple"
+               "to right, yellow, purple"
+              ;;  "to right, yellow, purple"
+              ;;  "to bottom, light-yellow, light-purple"
+              ;;  "to right, light-yellow, light-purple"
+               ]
+        [
+         "to top, red, magenta"
+        ;;  "to top, green, blue"
+         ]
+        ]
+  (let [opts {
+              ;; :font           "Big Money-nw"
+              ;; :font           "Drippy"
+              :font            "Big"
+              ;; :font           "Miniwi"
+              ;; :font        "ANSI Shadow"
+              ;; :dev/print-font! true
+              :font-weight     :bold
+              :text            "go\ngo"#_(? (->> bling.fonts/ascii-chars
+                                       (partition 16)
+                                       (map string/join)
+                                       (take 10)
+                                       (string/join "\n")
+                                   ))
+              :letter-spacing  0
+              :margin-top      1
+              :margin-left     0
+              :margin-bottom   1
+              :gradient        grd
+              ;; :contrast       :medium
+              }]
+
+    (? :-
+       {:margin-top 1}
+       (dissoc opts :margin-right :margin-top :margin-left :margin-bottom))
+
+    (bling! (bling.banner/banner opts))))
+
+#_(bling! (bling.banner/banner 
+             {
+              :dev/display-missing-chars? true
+              :font                       "Drippy"
+              :font-weight                :bold
+              :text                       "(+ a b)"
+              :gradient                   "to bottom, green, blue"
+              ;; :contrast       :medium
+              }))
+
+;; (? (nth ["3" "4" "5"] 2))
+
+#_(doseq 
+ ;; for realease
+ [font [
+        ;; bling.fonts/miniwi
+        bling.fonts/ansi-shadow
+        ;; bling.fonts/drippy
+        ;; bling.fonts/big
+        ;; bling.fonts/big-money
+        ;; bling.fonts/rounded
+        ;; bling.fonts/isometric-1
+        ]]
+
+ ;; for dev, creating fonts dynamically from maps in bling.fontlib, with raw
+ ;; figlet strings.
+ #_[font [(get bling.fontlib/fonts-by-sym 'miniwi)
+        (get bling.fontlib/fonts-by-sym 'ansi-shadow)
+        (get bling.fontlib/fonts-by-sym 'drippy)
+        (get bling.fontlib/fonts-by-sym 'big)
+        (get bling.fontlib/fonts-by-sym 'big-money)
+        (get bling.fontlib/fonts-by-sym 'rounded)
+        (get bling.fontlib/fonts-by-sym 'isometric-1)]]
+
+ (doseq [gradient ["to top, green, blue"
+                   "to right, warm, cool"]]
+   (bling!
+    "\n"
+    "\n"
+    (:font-name font)
+    "\n"
+    (bling.banner/banner 
+     {:font            font
+      :font-weight     :bold
+      :text            "Bling"
+      :gradient        gradient 
+      :margin-top      1
+      :dev/print-font! true
+   ;; :contrast       :medium
+   ;; :display-missing-chars? true
+      })))
+#_(bling!
+ "\n"
+ "\n"
+ (:font-name font)
+ "\n"
+ (bling.banner/banner 
+  {:font            font
+   :font-weight     :bold
+   :text            "Bling"
+   :gradient        "to left, red, magenta"
+   :margin-top      1
+   :dev/print-font! true
+   ;; :contrast       :medium
+   ;; :display-missing-chars? true
+   }))
+
+  #_(doseq [ln (->> bling.fonts/ascii-chars
+                  (partition 16)
+                  ;; (take 1)
+                  (map string/join)
+                  (take 10))]
+    (bling! (bling.banner/banner 
+             {:font        font
+              :font-weight :bold
+              :text        ln 
+              :gradient    "to bottom, green, blue"
+              ;; :contrast       :medium
+              ;; :display-missing-chars? true
+              }))))
+
+
+;; (? (count ascii-chars-partitioned-6-rows-str))
+
+
+#_(doseq [font [
+              (get bling.fontlib/fonts-by-sym 'miniwi)
+              (get bling.fontlib/fonts-by-sym 'ansi-shadow)
+              (get bling.fontlib/fonts-by-sym 'drippy)
+              (get bling.fontlib/fonts-by-sym 'big)
+              (get bling.fontlib/fonts-by-sym 'big-money)
+              (get bling.fontlib/fonts-by-sym 'rounded)
+              (get bling.fontlib/fonts-by-sym 'isometric-1)
+              ]
+        :let [gs 3
+              ;; fw "normal"
+              fw "bold"]]
+  (doseq [row ascii-chars-partitioned-6-rows-str
+          :let [t row]]
+    (bling! 
+     (bling.banner/banner 
+      {
+       :font           font
+       :text           t
+       :font-weight    fw
+       :gradient       "to right, cool, warm"
+       :gradient-shift gs
+   ;; :contrast       :medium
+   ;; :display-missing-chars? true
+       })
+     "\n"
+     (bling.banner/banner 
+        {
+         :font           font
+         :text           t
+         :font-weight    fw
+         :gradient       "to bottom, cool, warm"
+         :gradient-shift gs
+   ;; :contrast       :medium
+   ;; :display-missing-chars? true
+         }))))
+
+#_(doseq [grd
+        (flatten
+         (concat (mapv (fn [[[c1 c2]]]
+                         (mapv #(string/join ", " [(str "to " %) c1 c2])
+                               ["right" "left" "top" "bottom"]))
+                       bling.banner/gradient-ranges)
+                 (mapv (fn [[[c1 c2]]]
+                         (mapv #(string/join ", " [(str "to " %) c1 c2])
+                               ["right" "left" "top" "bottom"]))
+                       bling.banner/gradient-ranges-cool-warm)))]
+  (bling! (bling.banner/banner 
+             {:font        bling.fonts/miniwi
+              :font-weight :bold
+              :text        "ABCDEFG"
+              :gradient    "to bottom, green, blue"
+              ;; :contrast       :medium
+              ;; :display-missing-chars? true
+              })))
+
+
+;; Dark and light variants
+;; (print (bling [:bold.red "gogogogo"]))
+;; (print (bling [{:color 124 :font-weight :bold} "gogogogo"]))
+;; (println (bling [{:color 203 :font-weight :bold} "gogogogo"]))
+
+;; (print (bling [:bold.orange "gogogogo"]))
+;; (print (bling [{:color 166 :font-weight :bold} "gogogogo"]))
+;; (println (bling [{:color 214 :font-weight :bold} "gogogogo"]))
+
+;; (print (bling [:bold.yellow "gogogogo"]))
+;; (print (bling [{:color 136 :font-weight :bold} "gogogogo"]))
+;; (println (bling [{:color 220 :font-weight :bold} "gogogogo"]))
+
+;; (print (bling [:bold.olive "gogogogo"]))
+;; (print (bling [{:color 100 :font-weight :bold} "gogogogo"]))
+;; (println (bling [{:color 143 :font-weight :bold} "gogogogo"]))
+
+;; (print (bling [:bold.green "gogogogo"]))
+;; (print (bling [{:color 28 :font-weight :bold} "gogogogo"]))
+;; (println (bling [{:color 82 :font-weight :bold} "gogogogo"]))
+
+;; (print (bling [:bold.blue "gogogogo"]))
+;; (print (bling [{:color 26 :font-weight :bold} "gogogogo"]))
+;; (println (bling [{:color 81 :font-weight :bold} "gogogogo"]))
+
+;; (print (bling [:bold.purple "gogogogo"]))
+;; (print (bling [{:color 129 :font-weight :bold} "gogogogo"]))
+;; (println (bling [{:color 147 :font-weight :bold} "gogogogo"]))
+
+;; (print (bling [:bold.magenta "gogogogo"]))
+;; (print (bling [{:color 163 :font-weight :bold} "gogogogo"]))
+;; (println (bling [{:color 213 :font-weight :bold} "gogogogo"]))
+
+;; (println (bling [:bold.magenta "gogogogosss"]))
+;; (print (bling [:bold.dark-magenta "gogogogo"]))
+;; (println (bling [:bold.light-magenta "gogogogo"]))
+
+;; (println (bling [:bold.magenta.magenta-bg "gogogogo"]))
+;; (println (bling [{:color :magenta :background-color :magenta :font-weight :bold} "gogogogo"]))
+ 
+;; (bling.sample/all-the-colors)
+;; (println)
+
+;; (bling! [:white.bold.red-bg "goo"])
+
+
+;; (bling.sample/all-the-colors {:variant "dark" :label "dark variants"})
+;; (bling.sample/all-the-colors {:variant "medium" :label "medium variants"})
+;; (bling.sample/all-the-colors {:variant "light" :label "light variants"})
+;; (bling.sample/all-the-colors {:label (str "with user theme\n"
+;;                                           "user env var: BLING_THEME=\"" bling.core/BLING_THEME "\"\n"
+;;                                           "bling.core/bling-theme resolves to: \"" bling.core/bling-theme "\""
+;;                                           )})
+
+;; (bling! [:dark-red "must have changed"])
+;; (bling! [:light-red "must have changed"])
+;; (bling! [:medium-red "must have changed"])
+;; (bling! [:red "must have changed"])
+
+;; (prn bling.fonts/ansi-shadow-str)
+
+
+;; (println (?sgr (bling [:bold.medium-orange "^^^^"])))
+
+;; (callout 1)
+
+;; (println)
+
+
+;; (println (bling [{:background-color :red :color :white :font-weight :bold} "gogogogo"]))
+
+;; (bling.sample/sample)
+
+;; (bling.sample/example-custom-callout-foo)
+
+;; (println (bling [{:background-color :green :font-weight :bold} "gogogogo"]))
+;; (println (bling [{:background-color :green :font-weight :bold} "gogogogo"]))
+
+;; (bling! [:light-red "light-red"])
+;; (bling! [:medium-red "cool"])
+
+;; (println (?sgr (bling [:subtle.italic "cool"])))
+;; (println (?sgr (bling [:subtle "cool"])))
+
 ;; This is example config. If you want to run fireworks.core-test tests locally,
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
 ;; If you don't do this, the tests will break.
 ;; TODO - Fix the above situation.
 {:theme                        "Alabaster Light"
- :mood                         :light
  :line-height                  1.45
  :print-level                  7
  :non-coll-length-limit        33
@@ -306,28 +690,8 @@
  ;; TODO - Use the co fn to add some commentary to samples below.
  ;; -------------------------------------------------------------
 
- ;; Testing all the stock themes cljc
- #_(do
-   (doseq [mood ["Light" #_"Dark"]]
-     (doseq [theme ["Neutral"
-                    "Alabaster"
-                    "Zenburn"
-                    "Degas"
-                    "Solarized"
-                    "Monokai"]]
-      (let [x (str theme " " mood)]
-        (? {:label x :theme x}
-           basic-samples-cljc-theme)))))
-
-
  ;; Testing all the options cljc
  #_(do 
-
-  ;; :mood
-  (? {:label :mood :mood "light" :theme nil}
-     (with-meta ["Light"] {:mood :light}))
-  (? {:label :mood :mood "dark" :theme nil}
-     (with-meta ["Dark"] {:mood :dark}))
 
   ;; :print-level
   (? {:label :print-level :print-level                7}
@@ -359,26 +723,26 @@
      (with-meta [(with-meta (symbol "foo") {:my :meta})
                  (with-meta (symbol "foo") {:my :meta})
                  (with-meta (symbol "foo") {:my :meta})]
-       {:mood [1 [2 [3 [4 [5]]]]]})) 
+       {:moo [1 [2 [3 [4 [5]]]]]})) 
 
   
 
   (? {:label                :metadata-print-level
       :metadata-print-level 3
       :metadata-position    "inline"}
-     (with-meta [] {:mood [1 [2 [3 [4 [5]]]]]}))
+     (with-meta [] {:moo [1 [2 [3 [4 [5]]]]]}))
 
   ;; :display-metadata?
   (? {:label             ":display-metadata? false"
       :display-metadata? false
       :metadata-position "inline"}
-     (with-meta [(with-meta (symbol "foo") {:my :meta})] {:mood [1 [2 [3 [4 [5]]]]]}))
+     (with-meta [(with-meta (symbol "foo") {:my :meta})] {:moo [1 [2 [3 [4 [5]]]]]}))
 
   ;; :display-metadata?
   (? {:label             :display-metadata?
       :display-metadata? true
       :metadata-position "inline"}
-     (with-meta [(with-meta (symbol "foo") {:my :meta})] {:mood [1 [2 [3 [4 [5]]]]]}))
+     (with-meta [(with-meta (symbol "foo") {:my :meta})] {:moo [1 [2 [3 [4 [5]]]]]}))
 
   (? {:label ":enable-rainbow-brackets? false" :enable-rainbow-brackets?   false}
      [[[[[[]]]]]])
@@ -400,7 +764,6 @@
 
   (? {:label "Custom theme"
       :theme {:name   "MyCustomTheme Dark" 
-              :mood   "dark"     
               :tokens {:classes {:string {:color "#ff0000"}
                                  :comment {:color "#ff00cc"}}
                        :syntax  {:js-object-key {:color "#888888"}}

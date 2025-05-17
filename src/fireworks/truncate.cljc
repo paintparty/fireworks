@@ -1,7 +1,7 @@
 (ns ^:dev/always fireworks.truncate
   (:require #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.macros :refer [keyed]])
-            ;; [fireworks.pp :refer [?pp]]
+            [fireworks.pp :refer [?pp]]
             [clojure.string :as string]
             [fireworks.ellipsize :as ellipsize]
             [fireworks.order :refer [seq->sorted-map]]
@@ -88,7 +88,8 @@
            array-map?
            depth
            coll-size
-           transient?]}
+           transient?
+           path]}
    x]
   (let [
         ;; First we need to check if collection is both not map-like and 
@@ -105,12 +106,28 @@
                       (every? #(-> % map-entry?))))     
 
         ret
-        (->> x
+        (let [taken (->> x (take coll-limit) (into []))
+              x-is-set? (set? x)]
+          (mapv (fn [i]
+                  (let [nth-taken (nth taken i nil)]
+                    (truncate {:depth                 (inc depth)
+                               :path                  (if (not map-like?)
+                                                        (conj path (if x-is-set? 
+                                                                     nth-taken
+                                                                     i))
+                                                        path)
+                               :map-entry-in-non-map? all-map-entries?}
+                              nth-taken)))
+                (range (count taken))))
+        #_(->> x
              (take coll-limit)
              (into [])
+             ;; truncate call
              (mapv (partial truncate
                             {:depth                 (inc depth)
-                             :map-entry-in-non-map? all-map-entries?})))]
+                             :path                  path
+                             :map-entry-in-non-map? all-map-entries?}))
+             (into []))]
     (if map-like?
       (if (or (zero? coll-size)
               transient?)  ; treat transient maps as empty map
@@ -144,6 +161,7 @@
        (let [{:keys [t
                      all-tags
                      dom-node-type
+                     path
                      depth
                      js-array?
                      coll-size
@@ -151,12 +169,15 @@
              m]
          (cond
            dom-node-type
-           (truncate {:depth (inc depth)} (dom-el-attrs-map x))
+           (truncate {:depth (inc depth) :path path}
+                     (dom-el-attrs-map x))
 
            (or js-array? (contains? all-tags :js/TypedArray))
            (mapv 
              (fn [i]
-               (truncate {:depth (inc depth)}
+               ;; truncate call
+               (truncate {:depth (inc depth)
+                          :path path}
                          (aget x i)))
              (range (min coll-limit coll-size)))
 
@@ -165,7 +186,8 @@
              (when (= t :SyntheticBaseEvent) (prune-synthetic-base-event x))
              (->> m 
                   js-obj->array-map
-                  (mapv (partial truncate {:depth (inc depth)}))
+                  ;; truncate call
+                  (mapv (partial truncate {:depth (inc depth) :path path}))
                   (into {}))))))
      :clj
      (truncate-iterable m x)))
@@ -192,7 +214,7 @@
 
 
 (defn- truncation-profile
-  [{:keys [depth map-entry-in-non-map?]
+  [{:keys [path depth map-entry-in-non-map?]
     :as   m*}
    x]
   (let [val-is-atom?     (cljc-atom? x)
@@ -211,6 +233,7 @@
                    val-is-volatile?
                    too-deep?
                    depth
+                   path
                    sev?
                    kv?
                    x])
@@ -224,15 +247,25 @@
 
 
 (defn- truncated-x*
-  [{:keys [coll-type? kv? depth carries-meta? classname]
+  [{:keys [coll-type? kv? depth carries-meta? classname path]
     :as m}
    x]
   ;; (println "\n\nx in truncated-x*" x)
   (let [x (cond
             kv?        
-            (let [[k v] x]
-              [(truncate {:depth depth :key? true} k)
-               (truncate {:depth depth :map-value? true} v)])
+            (let [[k v] x
+                  ;; path (conj path k)
+                  ]
+              ;; truncate call
+              [(truncate {:depth depth 
+                          :key?  true 
+                          :path  (conj path k :fireworks.truncate/map-key)}
+                         k)
+               ;; truncate call
+               (truncate {:depth      depth
+                          :map-value? true
+                          :path       (conj path k)} v)])
+
 
             coll-type?
             (truncated-coll m x)
