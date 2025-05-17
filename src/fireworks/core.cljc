@@ -989,6 +989,7 @@
 (declare thread-helper)
 (declare threading-sym)
 
+
 (defmacro ?
   ([])
   ([x]
@@ -1009,9 +1010,7 @@
        (let [form-meta (meta &form)]
          (if-let [[thread-sym forms] (threading-sym x)]
            (let [[cfg-opts call]
-                 (thread-helper (assoc (keyed [forms
-                                               form-meta
-                                               thread-sym])
+                 (thread-helper (assoc (keyed [forms form-meta thread-sym])
                                        :&form
                                        &form))]
              `(do (fireworks.core/print-thread ~cfg-opts
