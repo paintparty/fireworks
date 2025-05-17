@@ -204,8 +204,8 @@
                           :font-style :italic}
              :metadata   {:color       "#999999"
                           :text-shadow "0 0 2px #003538"}
-             :highlight  {:color                 "#ffffff"
-                          :background-color      "#0101f9"
+             :highlight  {:color                 "#eae5ff"
+                          :background-color      "#0000b3"
                           ;; :background-color "#8a8a8a"
                           :font-weight           :bold
                           :text-decoration-line  :underline
