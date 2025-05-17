@@ -3,6 +3,8 @@
 (ns ^:dev/always fireworks.state
   (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs keyed]]
                :clj  [fireworks.macros :refer        [get-user-configs keyed]])
+            [clojure.pprint :refer [pprint]]
+            [bling.core :refer [bling-colors*]]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [fireworks.basethemes :as basethemes]
@@ -122,11 +124,14 @@
 ;; TODO - figure out how to get filename, line, and column.
 (defn validate-option-from-user-config-edn
   [k v {:keys [spec default]}]
+  
   (let [undefined? (or (when (string? v) (string/blank? v))
                        (nil? v))
         valid?     (when-not undefined? (if spec (s/valid? spec v) v))
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
+      #_(do (println :invalid "::" 'validate-option-from-user-config-edn "\n")
+          (?pp [k #_v]))
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
               :header (str (some-> user-config-edn*
@@ -144,6 +149,15 @@
         valid?     (when-not undefined? (if spec (s/valid? spec v) v))
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
+      #_(do (println :invalid "::" 'validate-option-from-user-config-edn-dynamic "\n")
+          ;; (?pp [k v])
+          (println "The spec")
+          (pprint spec)
+          (println "\n\n")
+          ;; (pprint user-config-edn*)
+          (pprint (s/explain-data spec v))
+          (println "\n\n")
+          )
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
               :header (str (some-> user-config-edn*
@@ -254,10 +268,7 @@
         ret (if (not (nil? opt))
               opt
               (if (= k :theme)
-                ;; maybe nix cos theme should already be there
-                (if (dark? (:mood user-config-edn))
-                  "Alabaster Dark"
-                  "Alabaster Light")
+                "Universal Neutral"
                 (k default-config)))]
     #_(println k opt ret)
     ret))
@@ -366,6 +377,27 @@
                  (with-removed-or-resolved-color :background-color opts))]
     ret))
 
+(def underline-style-codes-by-style
+  {"straight" 1 
+   "double"   2 
+   "wavy"    3 
+   "dotted"   4 
+   "dashed"   5})  
+
+(defn- sgr-text-decoration [m]
+  (when-not (:disable-text-decoration? m)
+    (cond
+      (or (contains? #{"underline" :underline} (:text-decoration m))
+          (contains? #{"underline" :underline} (:text-decoration-line m)))
+      (if-let [n (some->> m
+                          :text-decoration-style
+                          util/as-str
+                          (get underline-style-codes-by-style))] 
+        (str "4:" n)
+        "4")
+      (contains? #{"line-through" :strikethrough}
+                 (:text-decoration m))
+      "9")))
 
 (defn x->sgr [x k]
   (when x
@@ -382,24 +414,28 @@
     font-style  :font-style
     font-weight :font-weight
     :as         m}]
+
   (let [debug? false
         fgc    (x->sgr fgc* :fg)
-        bgc    (do #_(when bgc* (println "m->sgr:bgc* " bgc*))
-                (x->sgr bgc* :bg))
+        bgc    (x->sgr bgc* :bg)
         italic (when (and (:enable-terminal-italics? @config)
                           (contains? #{"italic" :italic} font-style))
-                 "3;")
+                 "3")
         weight (when (and (:enable-terminal-font-weights? @config)
                           (contains? #{"bold" :bold} font-weight))
-                 ";1")
-        ret    (str "\033[" 
-                    italic
-                    fgc
-                    weight
-                    (when (or (and fgc bgc)
-                              (and weight bgc))
-                      ";")
-                    bgc
+                 "1")
+
+        text-decoration
+        (sgr-text-decoration m)
+
+        ret    (str "\033["
+                    (string/join ";"
+                                 (remove nil?
+                                         [italic
+                                          fgc
+                                          weight
+                                          bgc
+                                          text-decoration]))
                     "m")]
     (when debug?
       (?pp "\nCombining the fg and bg into a single sgr..." m)
@@ -486,7 +522,8 @@
   (str (name k) ":" (if (number? v) v (some-> v name)) ";"))
 
 
-(defn sanitize-style-map [m]
+(defn sanitize-style-map
+  [m]
   (let [ret (select-keys m defs/valid-stylemap-keys)
         f #(let [ret* (if (false? (:enable-terminal-italics? @config)) 
                         (dissoc ret :font-style)
@@ -514,7 +551,7 @@
                            [k (m->sgr m-with-k)]
                            (let [m (with-line-height m)]
                              [k (string/join (map kv->css2 m))]))
-                   :clj [k (m->sgr m-with-k)])))
+                   :clj [k (m->sgr  m-with-k)])))
             merged))
 
 
@@ -606,25 +643,6 @@
                     :clj (map xterm-id->sgr ret))]
     ret))
 
-;; TODO v0.5.0
-;; (defn metadata-bgcs
-;;   [mood
-;;    theme
-;;    base-theme]
-;;   (let [printer-metadata (some-> theme
-;;                                  :printer
-;;                                  :metadata)
-;;         bgc              (when (map? printer-metadata)
-;;                            (:background-color printer-metadata))
-;;         bgc              (or bgc
-;;                              (-> base-theme
-;;                                  :classes
-;;                                  :metadata
-;;                                  :background-color))
-;;         ;; rgb              ()
-;;         ]
-;;     (?pp :bgc bgc)))
-
 (defn valid-user-theme [theme*]
   (when (map? theme*) 
     (if (s/valid? ::theme/theme theme*)
@@ -653,19 +671,23 @@
                             user-theme
                             :else
                             fallback-theme)
-         mood             (if (dark? (:mood theme))
+         theme-suffix     (some-> theme :name (string/split #" ") last)
+         mood             (case theme-suffix
+                            "Light"
+                            :light
+                            "Dark"
                             :dark
-                            :light)     
-         base-theme       (if (= mood :dark)
+                            :universal)
+         base-theme       (case mood
+                            :dark
                             basethemes/base-theme-dark*
-                            basethemes/base-theme-light*)
+                            :light
+                            basethemes/base-theme-light*
+                            basethemes/base-theme-universal*)
          rainbow-brackets (rainbow-brackets mood theme)
-        ;;  metadata-bgcs    (metadata-bgcs mood theme base-theme)
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
          ret              (merge-theme+ base-theme theme)]
-     ;; TODO - Add observability for theme
      ret)))
-
 
 
 
@@ -716,9 +738,31 @@
 ;; Helpers for highlighting
 ;; -----------------------------------------------------------------------------
 
-(defn highlight-style* [{:keys [style pred]}]
+(defn- with-bling-color->sgr [m k v]
+  (if-let [sgr (some->> v util/as-str (get bling-colors*) :sgr)]
+    (assoc m k sgr)
+    (assoc m k v)))
+
+(defn- with-bling-colors->sgr [m]
+  (some->>
+   m
+   :style
+   (reduce-kv
+    (fn [m k v]
+      (case (name k)
+        "background-color"
+        (with-bling-color->sgr m k v)
+        "color"
+        (with-bling-color->sgr m k v)
+        m))
+    {})))
+
+(defn highlight-style* [{:keys [style pred path] :as m}]
   ;; TODO - check is css-str always gonna be css?
-  (let [css-str (if style 
+  (let [style
+        (with-bling-colors->sgr m)
+        
+        css-str (if style 
                   (let [style (sanitize-style-map style)]
                     (when (seq style)
                       #?(:cljs (if node?
@@ -729,7 +773,9 @@
                                       (line-height-css)))
                          :clj  (m->sgr (map-vals hexa-or-sgr style)))))
                   (:highlight @merged-theme))]
-    (assoc {:pred pred}
+    (assoc (merge {} 
+                  (when pred {:pred pred})
+                  (when path {:path path}))
            :style
            css-str)))
 
