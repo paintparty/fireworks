@@ -162,9 +162,9 @@
                              :annotation     {:color      "#9f9f9f"
                                               :font-style :italic}
                              :highlight      {
-                                              :background-color      "#ffebeb"
-                                              :color                 "#9e0000"
-                                              ;; :font-weight           :bold
+                                              :background-color      "#ffdbdb"
+                                              :color                 "#660000"
+                                              :font-weight           :bold
                                               :text-decoration-line  :underline
                                               :text-decoration-style :wavy}
                              ;; TODO - change this to badge?
