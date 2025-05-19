@@ -89,10 +89,11 @@
                          
 (defn target-path-is-ancestor-coll?
   [tp vp tp-list]
-  ;; (?pp (keyed [tp vp tp-list]))
+  (?pp (keyed [tp vp tp-list]))
   (boolean
-   (when (< (count tp) 
-            (count vp))
+   (when (and tp
+              (< (count tp) 
+                 (count vp)))
      (and (= tp-list
              (take (count tp) vp))
           (not= (into [] (take-last 2 vp))
@@ -102,6 +103,7 @@
                )))))
 
 (defn- highlighting*
+  "Determines whether value receives highlighting"
   [x
    value-path
    {:keys       [pred style]
