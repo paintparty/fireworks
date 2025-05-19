@@ -89,7 +89,7 @@
                          
 (defn target-path-is-ancestor-coll?
   [tp vp tp-list]
-  (?pp (keyed [tp vp tp-list]))
+  ;; (?pp (keyed [tp vp tp-list]))
   (boolean
    (when (and tp
               (< (count tp) 
