@@ -18,6 +18,7 @@
    [fireworks.config :as config]
    [clojure.spec.alpha :as s]
    [fireworks.util :as util]
+   [fireworks.defs :as defs]
    [bling.core :refer [bling callout]])
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
@@ -206,6 +207,8 @@
                    (contains? #{pr pr-str prn prn-str print println} 
                               user-print-fn))
             (with-out-str (user-print-fn source))
+
+            ;; This is where you feed the source to the formatting engine
             (serialize/formatted* source)))
 
         label-or-form
@@ -612,20 +615,35 @@
     (doseq [[label v k] reports]
       (messaging/fw-debug-report-template label v k))))
 
+;; TODO does this get surfaced in cljs-browser?
+;; Use generic callout here?
+
 (defn- fw-config-report []
-  (callout {:label       "fireworks.state/config"
-            :padding-top 1
-            :type        :info}
-           (str 
-            (bling [:italic (str
-                             "Result of merging options from user's"
-                             "\n"
-                             "config.edn file with defaults, and then"
-                             "\n"
-                             "merging optional call-site overrides.")])
-            "\n"
-            "\n"
-            (with-out-str (pprint @state/config)))) )
+  (println
+   (str defs/gray-tag-open
+        "\n"
+        "══ "
+        defs/sgr-tag-close
+        defs/bold-tag-open
+        "fireworks.state/config "
+        defs/sgr-tag-close
+        defs/gray-tag-open
+        " ════════════════════════════"
+        defs/sgr-tag-close
+        "\n"
+        "\n"
+        "Result of merging options from user's"
+        "\n"
+        "config.edn file with defaults, and then"
+        "\n"
+        "merging optional call-site overrides:"
+        "\n"
+        "\n"
+        (with-out-str (pprint @state/config))
+        "\n"
+        defs/gray-tag-open
+        "──────────────────────────────────────────────────────"
+        defs/sgr-tag-close)))
 
 (defn- native-logging*
   [x]
@@ -743,6 +761,7 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
+  ;; (ff opts)
   (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
         config-before (when debug-config? @state/config)]
@@ -988,6 +1007,11 @@
 (declare print-thread)
 (declare thread-helper)
 (declare threading-sym)
+
+
+
+
+
 
 
 (defmacro ?
