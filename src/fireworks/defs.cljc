@@ -210,3 +210,13 @@
 
 (def inline-badges
   #{js-literal-badge inst-badge uuid-badge lambda-symbol})
+
+;; For printing messages and warnings
+(def italic-tag-open "\033[3m")
+(def gray-tag-open "\033[38;5;244m")
+(def bold-gray-tag-open "\033[38;5;244;1m")
+(def italic-gray-tag-open "\033[3;38;5;244m")
+(def bold-italic-gray-tag-open "\033[3;38;5;244;1m")
+(def orange-tag-open "\033[38;5;208;1m")
+(def bold-tag-open "\033[1m")
+(def sgr-tag-close "\033[0;m")
