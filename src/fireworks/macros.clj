@@ -4,7 +4,7 @@
   [fireworks.specs.config :as config]
   [fireworks.specs.theme :as theme]
   [fireworks.basethemes :as basethemes]
-  [bling.core :refer [bling]]
+  [fireworks.defs :as defs]
   [clojure.pprint :refer [pprint]]
   [clojure.string :as string]
   [clojure.edn :as edn]
@@ -146,9 +146,9 @@
       (let [opts (merge 
                   (load-edn-exception-opts opts)
                   {:label  "java.io.IOException (CAUGHT)"
-                   :header (bling "Caused by bad value in "
-                                     [:italic file]
-                                     "\n\nCould not open file:")})]
+                   :header (str "Caused by bad value in "
+                                defs/italic-tag-open file defs/sgr-tag-close
+                                "\n\nCould not open file:")})]
         (swap! messaging/warnings-and-errors
                conj
                [:messaging/read-file-warning opts])
@@ -158,9 +158,9 @@
       (let [opts (merge 
                   (load-edn-exception-opts opts)
                   {:label  "RuntimeException (CAUGHT)"
-                   :header (bling "Caused by bad value in "
-                                     [:italic file]
-                                     "\n\nCould not parse file:")})]
+                   :header (str "Caused by bad value in "
+                                defs/italic-tag-open file defs/sgr-tag-close
+                                "\n\nCould not parse file:")})]
         (swap! messaging/warnings-and-errors
                conj
                [:messaging/read-file-warning opts])
@@ -260,9 +260,11 @@
                             :spec   ::config/theme
                             :header (str "[fireworks.core/_p] Invalid value "
                                          "for :theme entry.")
-                            :body   (bling "The default theme "
-                                           [:italic "\"Universal Neutral\" "]
-                                           "will be used instead.")}]
+                            :body   (str "The default theme "
+                                         defs/italic-tag-open
+                                         "\"Universal Neutral\" "
+                                         defs/sgr-tag-close
+                                         "will be used instead.")}]
 
                   #_(println :invalid "::" 'get-user-configs)
                   (messaging/bad-option-value-warning opts)
@@ -361,9 +363,11 @@
                             :spec   ::config/theme
                             :header (str "[fireworks.core/_p] Invalid value "
                                          "for :theme entry.")
-                            :body   (bling "The default theme "
-                                           [:italic "\"Universal Neutral\" "]
-                                           "will be used instead.")}]
+                            :body   (str "The default theme "
+                                         defs/italic-tag-open
+                                         "\"Universal Neutral\" "
+                                         defs/sgr-tag-close
+                                         "will be used instead.")}]
 
                   #_(println :invalid "::" 'get-user-config-edn-dynamic)
                   (messaging/bad-option-value-warning opts)

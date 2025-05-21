@@ -18,8 +18,7 @@
    [fireworks.config :as config]
    [clojure.spec.alpha :as s]
    [fireworks.util :as util]
-   [fireworks.defs :as defs]
-   [bling.core :refer [bling callout]])
+   [fireworks.defs :as defs])
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
 
@@ -620,30 +619,17 @@
 
 (defn- fw-config-report []
   (println
-   (str defs/gray-tag-open
-        "\n"
-        "══ "
-        defs/sgr-tag-close
-        defs/bold-tag-open
-        "fireworks.state/config "
-        defs/sgr-tag-close
-        defs/gray-tag-open
-        " ════════════════════════════"
-        defs/sgr-tag-close
-        "\n"
-        "\n"
-        "Result of merging options from user's"
-        "\n"
-        "config.edn file with defaults, and then"
-        "\n"
-        "merging optional call-site overrides:"
-        "\n"
-        "\n"
-        (with-out-str (pprint @state/config))
-        "\n"
-        defs/gray-tag-open
-        "──────────────────────────────────────────────────────"
-        defs/sgr-tag-close)))
+   (messaging/block 
+    {:header-str "fireworks.state/config "
+     :block-type :info
+     :body       (str "Result of merging options from user's"
+                      "\n"
+                      "config.edn file with defaults, and then"
+                      "\n"
+                      "merging optional call-site overrides:"
+                      "\n"
+                      "\n"
+                      (with-out-str (pprint @state/config)))})))
 
 (defn- native-logging*
   [x]

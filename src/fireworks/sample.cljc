@@ -1,7 +1,6 @@
 (ns fireworks.sample
   (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
-            [bling.core :refer [callout bling ?sgr]]
             [clojure.string :as string]
             [fireworks.pp :as pp :refer [?pp]]
             [clojure.pprint :refer [pprint]]

@@ -4,7 +4,6 @@
   (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs keyed]]
                :clj  [fireworks.macros :refer        [get-user-configs keyed]])
             [clojure.pprint :refer [pprint]]
-            [bling.core :refer [bling-colors*]]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [fireworks.basethemes :as basethemes]
@@ -739,7 +738,7 @@
 ;; -----------------------------------------------------------------------------
 
 (defn- with-bling-color->sgr [m k v]
-  (if-let [sgr (some->> v util/as-str (get bling-colors*) :sgr)]
+  (if-let [sgr (some->> v util/as-str (get defs/bling-colors*) :sgr)]
     (assoc m k sgr)
     (assoc m k v)))
 

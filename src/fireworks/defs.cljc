@@ -218,5 +218,27 @@
 (def italic-gray-tag-open "\033[3;38;5;244m")
 (def bold-italic-gray-tag-open "\033[3;38;5;244;1m")
 (def orange-tag-open "\033[38;5;208;1m")
+(def red-tag-open "\033[38;5;196;1m")
 (def bold-tag-open "\033[1m")
 (def sgr-tag-close "\033[0;m")
+
+
+(def bling-colors*
+  (apply
+   array-map
+   ["red"        {:sgr      196
+                  :semantic "negative"}
+    "orange"     {:sgr      208
+                  :semantic "warning"}
+    "yellow"     {:sgr 178}
+    "olive"      {:sgr 106}
+    "green"      {:sgr      40
+                  :semantic "positive"}
+    "blue"       {:sgr      39
+                  :semantic "accent"}
+    "purple"     {:sgr 141}
+    "magenta"    {:sgr 201}
+    "gray"       {:sgr      245
+                  :semantic "subtle"}
+    "black"      {:sgr 16}
+    "white"      {:sgr 231}]))

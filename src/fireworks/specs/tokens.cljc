@@ -1,13 +1,12 @@
 (ns fireworks.specs.tokens
   (:require 
-   [bling.core]
    [clojure.string :as string]
    [expound.alpha :as expound]  
    [fireworks.defs :as defs]
    [clojure.spec.alpha :as s]))
 
 (def bling-color-names-set
-  (let [ks (keys bling.core/bling-colors*)]
+  (let [ks (keys defs/bling-colors*)]
     (into #{} 
           (concat ks
                   (mapv keyword ks)))))
