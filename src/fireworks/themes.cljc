@@ -511,7 +511,7 @@
    :desc             (str "A neutral syntax theme for Clojure data that works on both light and dark backgrounds."
                           "The eval label is printed in blue, metadata is printed in purple, and object labels are printed in green.")
    :mood             "universal"
-   :tokens           {:syntax  {:js-object-key 2 #_{:color "#ff00ff"}}
+   :tokens           {:syntax  {:js-object-key {:color "#ff00ff"}}
                       :printer {:file-info     {:font-style :italic }
                                 ;; TODO maybe these values should be :classes/eval-label
                                 :eval-form     :eval-label

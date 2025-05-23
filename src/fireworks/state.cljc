@@ -1,8 +1,8 @@
 ;; TODO - what is difference between @config and user-config-edn
 
 (ns ^:dev/always fireworks.state
-  (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs keyed]]
-               :clj  [fireworks.macros :refer        [get-user-configs keyed]])
+  (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs get-user-color-env-vars keyed]]
+               :clj  [fireworks.macros :refer        [get-user-configs get-user-color-env-vars keyed]])
             [clojure.pprint :refer [pprint]]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
@@ -55,6 +55,7 @@
 
 ;; Internal state atoms for development debugging ------------------------
 (def debug-config? false)
+(def debug-theme? #_true false)
 (def print-config? false)
 
 ;; Temp for debugging tagging 
@@ -107,13 +108,23 @@
         (messaging/fw-debug-report-template
          "def fireworks.state/user-config-edn* (with :path-to-user-config)"
          (get-user-configs)))
+      (when debug-theme?
+        (messaging/fw-debug-report-template
+         "debugging-theme :: deffing fireworks.state/user-config-edn* (with :path-to-user-config)"
+         (str
+          (some-> (get-user-configs) :theme :name))))
       (get-user-configs)))
 
 (defn user-config-edn*-dynamic []
   (do (when debug-config?
         (messaging/fw-debug-report-template
-         "def fireworks.state/user-config-edn* (with :path-to-user-config)"
+         "def fireworks.state/user-config-edn*-dynamic (with :path-to-user-config)"
          (get-user-configs)))
+      (when debug-theme?
+        (messaging/fw-debug-report-template
+         "debugging-theme :: deffing fireworks.state/user-config-edn*-dynamic (with :path-to-user-config)"
+         (str
+          (some-> (get-user-configs) :theme :name))))
       (get-user-configs)))
 
 ;; -----------------------------------------------------------------------------
@@ -175,37 +186,41 @@
                   [k v]))
               m2)))
 
-(def user-config-edn
-  (try 
-    (let [ret
-          (into {}
-                (map (fn [[k v]]
-                       (let [m         
-                             (k config/options)
+;; Is this not ever used??
+#_(def user-config-edn
+  (do #_(println "user-config-edn")
+      (try 
+        (let [ret
+              (into {}
+                    (map (fn [[k v]]
+                           (let [m         (k config/options)
 
-                             validated
-                             (validate-option-from-user-config-edn k v m)]
-                         [k validated]))
-                     user-config-edn*))]
-      (when debug-config?
-        (messaging/fw-debug-report-template
-         "Invalid options from user-config-edn*"
-         (config-diffs user-config-edn* ret)))
-      (when debug-config?
-        (messaging/fw-debug-report-template
-         "def fireworks.state/user-cofig-edn (validated)"
-         ret))
-      ret)
+                                 validated (validate-option-from-user-config-edn k v m)]
+                             [k validated]))
+                         user-config-edn*))]
+          (when debug-config?
+            (messaging/fw-debug-report-template
+             "Invalid options from user-config-edn*"
+             (config-diffs user-config-edn* ret)))
+          (when debug-config?
+            (messaging/fw-debug-report-template
+             "def fireworks.state/user-cofig-edn (validated)"
+             ret))
+          (when debug-theme?
+            (messaging/fw-debug-report-template
+             "debugging theme :: deffing fireworks.state/user-cofig-edn (validated)"
+             (some-> ret :theme :name)))
+          ret)
 
-    ;; TODO - check if this actually catches anything?
-    (catch #?(:cljs js/Object
-              :clj Exception)
-           e
-      (messaging/caught-exception e {})
-      (swap! messaging/warnings-and-errors
-             conj
-             [:messaging/print-error e])
-      {})))
+        ;; TODO - check if this actually catches anything?
+        (catch #?(:cljs js/Object
+                  :clj Exception)
+               e
+          (messaging/caught-exception e {})
+          (swap! messaging/warnings-and-errors
+                 conj
+                 [:messaging/print-error e])
+          {}))))
 
 (defn user-config-edn-dynamic []
   (try 
@@ -234,6 +249,10 @@
         (messaging/fw-debug-report-template
          "def fireworks.state/user-cofig-edn (validated)"
          ret))
+      (when debug-theme?
+            (messaging/fw-debug-report-template
+             "debugging theme :: deffing fireworks.state/user-cofig-edn-dynamic (validated)"
+             (some-> ret :theme :name)))
       ret)
 
     ;; TODO - check if this actually catches anything?
@@ -257,8 +276,7 @@
 (defn- dark? [x]
   (contains? #{:dark "dark"} x))
 
-
-(defn- user-opt-val [user-config-edn k]
+(defn- user-opt-val [user-config-edn k bling-mood]
   (let [opt (k user-config-edn)
         ;; todo - why the string check?
         opt (when-not (and (string? opt)
@@ -267,29 +285,57 @@
         ret (if (not (nil? opt))
               opt
               (if (= k :theme)
-                "Universal Neutral"
-                (k default-config)))]
+
+                ;; This is where theme gets set to default light or dark if 
+                ;; User only has BLING_MOOD set and no other fireworks config.edn or bling config.edn
+                (case bling-mood
+                  "light" "Alabaster Light"
+                  "dark"  "Alabaster Dark"
+                  "Universal Neutral")
+
+                (k default-config)))
+
+        ]
     #_(println k opt ret)
     ret))
 
+;; THIS IS WHERE COLOR ENV VARS GET MERGED INTO CONFIG
 (defn merged-config []
-  (let [user-config-edn (user-config-edn-dynamic)]
-   (into {}
-         (map (fn [[k _]]
-                [k (user-opt-val user-config-edn k)])
-              config/options))))
+  (let [user-config-edn
+        (user-config-edn-dynamic)
+
+        {:keys [:env-var/no-color? :env-var/force-color? :env-var/bling-mood]
+         :as   color-env-vars}  
+        (get-user-color-env-vars)
+
+        ret
+        (into (or color-env-vars {})
+              (map (fn [[k _]]
+                     [k (user-opt-val user-config-edn k bling-mood)])
+                   config/options))
+
+        maybe-rainbow-brackets
+        (when (and no-color? (not force-color?))
+          {:enable-rainbow-brackets? false})]
+    (merge ret maybe-rainbow-brackets)))
 
 (def config
-  (do 
+  (let [mc (merged-config)] 
     (when debug-config?
       (messaging/fw-debug-report-template
        "Options from user-config-edn that will override defaults"
        (config-diffs default-config user-config-edn*)))
     (when debug-config?
       (messaging/fw-debug-report-template
-       "def config, initial value of atom"
-       (merged-config)))
-    (atom (merged-config))))
+       "def fireworks.state/config, initial value of atom"
+       mc))
+    (when debug-theme?
+      (messaging/fw-debug-report-template
+       "def fireworks.state/config, initial value of atom"
+       (if (some-> mc :theme map?)
+         (assoc mc :theme {:name (some-> mc :theme :name) '... '...})
+         mc)))
+    (atom mc)))
 
 
 ;; -----------------------------------------------------------------------------
@@ -656,20 +702,61 @@
                               (:name theme*)
                               "\":")}))))))
 
+
+;; FALLBACK THEMES
+(def fallback-theme
+  {:neutral themes/universal-neutral
+   :light   themes/alabaster-light
+   :dark    themes/alabaster-dark})
+
+
+(defn- resolve-theme [config user-theme]
+  (let [theme*                                             (:theme config)
+        {:keys [:env-var/no-color? :env-var/force-color?]} config
+        ;; no-color?                                          true
+        fallback-theme                                     themes/universal-neutral]
+    (when debug-theme?
+      (pprint (merge
+               (when (string? theme*) {"theme* from config" theme*})
+               {"theme* from config is string?"     (string? theme*)
+                "theme* from config name"           (some-> theme* :name)
+                "fallback theme name"               (some-> fallback-theme :name)
+                "valid user theme?"                 (when user-theme true)
+                "NO_COLOR env var is non-empty?"    no-color?
+                "FORCE_COLOR env var is non-empty?" force-color?}))
+      (println))
+    (cond
+      (and no-color? (not force-color?))
+      (do (when debug-theme?
+            (println (str "NO_COLOR env var is not empty, so falling back to "
+                          (some-> fallback-theme :name)))) 
+          fallback-theme)
+      
+
+      (string? theme*)
+      (do (when debug-theme?
+            (println (str "Theme from user-config is string: " theme*)))
+          (get basethemes/stock-themes theme*))
+
+      user-theme
+      (do (when debug-theme?
+            (if user-theme
+              (println (str "User theme is valid!" ))
+              (println (str "User theme is not valid!"))))
+          user-theme)
+
+      :else
+      (do (when debug-theme?
+            (println "Falling back to " (some-> fallback-theme :name))) 
+          fallback-theme))))
+
 (defn merged-theme*
   ([]
    (merged-theme* nil))
   ([reset]
    (let [theme*           (:theme @config) ;; TODO - should this be user-config?
-         fallback-theme   themes/universal-neutral
          user-theme       (valid-user-theme theme*)
-         theme            (cond
-                            (string? theme*)
-                            (get basethemes/stock-themes theme*)
-                            user-theme
-                            user-theme
-                            :else
-                            fallback-theme)
+         theme            (resolve-theme @config user-theme)
          theme-suffix     (some-> theme :name (string/split #" ") last)
          mood             (case theme-suffix
                             "Light"
@@ -686,6 +773,16 @@
          rainbow-brackets (rainbow-brackets mood theme)
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
          ret              (merge-theme+ base-theme theme)]
+
+     (when debug-theme?
+       (println)
+       (pprint {
+                "resolved theme name"   (some-> theme :name)
+                "resolved theme suffix" theme-suffix
+                "theme mood"            mood
+                ;; "rainbow-brackets"      rainbow-brackets
+                }))
+     #_(?pp (keyed [theme* fallback-theme user-theme theme theme-suffix mood]))
      ret)))
 
 

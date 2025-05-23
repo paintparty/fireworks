@@ -1,8 +1,9 @@
 (ns fireworks.core
   (:require
-   [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
    [clojure.set :as set]
    [clojure.data :as data]
+   [clojure.spec.alpha :as s]
+   [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
@@ -16,9 +17,7 @@
    #?(:clj [fireworks.macros :refer [keyed get-user-config-edn-dynamic]])
    [clojure.string :as string]
    [fireworks.config :as config]
-   [clojure.spec.alpha :as s]
-   [fireworks.util :as util]
-   [fireworks.defs :as defs])
+   [fireworks.util :as util])
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
 

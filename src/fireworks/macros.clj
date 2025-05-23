@@ -171,6 +171,20 @@
   (let [ret @messaging/warnings-and-errors]
     `~ret))
 
+(defn- env-var-color-non-empty? [s]
+  (boolean (when-let [v (System/getenv s)]
+             (not (string/blank? v)))))
+
+(def bling-mood-names-set #{"light" "dark" "medium"})
+
+(defmacro get-user-color-env-vars [] 
+  {:env-var/no-color?    (env-var-color-non-empty? "NO_COLOR")
+   :env-var/force-color? (env-var-color-non-empty? "FORCE_COLOR")
+   :env-var/bling-mood?  (let [s (System/getenv "BLING_MOOD")]
+                           (if (contains? bling-mood-names-set s)
+                             s
+                             "medium"))})
+
 (defmacro get-user-configs
   "This gets the path to user config from sys env var, then returns a map of
    user config with resolved :theme entry.
@@ -191,96 +205,104 @@
    If the config map is successfully loaded from edn file, and the :theme entry
    is a valid `.edn` path, but this path points to a non-existant `.edn` file,
    or a file that is not parseable by `clojure.edn/read`, a warning is issued
-   via fireworks.macros/load-edn.
+   via `fireworks.macros/load-edn`.
 
-   If a valid :theme map is resolved, it will be assoc'd to the user's config
-   map, and returned. Otherwised, just the config map is returned. 
+   If a valid `:theme` map is resolved, it will be assoc'd to the user's config
+   map, and returned. Otherwise, just the config map is returned. 
    "
   []
   (use 'clojure.java.io)
   (reset! messaging/warnings-and-errors [])
-  (if-let [path-to-user-config (System/getenv "FIREWORKS_CONFIG")]
-    (let [form-meta   (meta &form)
-          valid-path? (s/valid?
-                       ::config/edn-file-path 
-                       path-to-user-config)]
+  (let [bling-config (System/getenv "BLING_CONFIG")]
+    (if-let [path-to-user-config (or bling-config 
+                                     (System/getenv "FIREWORKS_CONFIG"))]
+      (let [form-meta   (meta &form)
+            valid-path? (s/valid?
+                         ::config/edn-file-path 
+                         path-to-user-config)]
 
-      (if-not valid-path?  
-        (let [opts {:v      path-to-user-config
-                    :k      "FIREWORKS_CONFIG="
-                    :spec   ::config/edn-file-path
-                    :header (str "[fireworks.core/_p] Invalid value"
-                                 " for environmental variable:")
-                    :body   "The default fireworks config values will be applied."}]
+        (if-not valid-path?  
+          (let [opts {:v      path-to-user-config
+                      :k      (if bling-config 
+                                "BLING_CONFIG="
+                                "FIREWORKS_CONFIG=")
+                      :spec   ::config/edn-file-path
+                      :header (str "[fireworks.core/_p] Invalid value"
+                                   " for environmental variable:")
+                      :body   (str "The default "
+                                   (if bling-config "config" "fireworks")
+                                   " config values will be applied.")}]
 
-          (messaging/bad-option-value-warning opts)
+            (messaging/bad-option-value-warning opts)
 
-          (swap! messaging/warnings-and-errors
-                 conj
-                 [:messaging/bad-option-value-warning opts]))
+            (swap! messaging/warnings-and-errors
+                   conj
+                   [:messaging/bad-option-value-warning opts]))
 
-        (when-let [config (load-edn {:source path-to-user-config})]
-          (let [config (assoc config :path-to-user-config path-to-user-config)]
-            (if-let [theme* (:theme config)]
-              (if-let [user-theme*
-                       (when-let [x 
-                                  (cond
-                                    (s/valid? ::config/edn-file-path theme*)
-                                    (load-edn {:source theme*
-                                               :file   path-to-user-config
-                                               :key    :theme})
+          (when-let [config (load-edn {:source path-to-user-config})]
+            (let [config (assoc config :path-to-user-config path-to-user-config)]
+              (if-let [theme* (:theme config)]
+                (if-let [user-theme*
+                         (when-let [x 
+                                    (cond
+                                      (s/valid? ::config/edn-file-path theme*)
+                                      (load-edn {:source theme*
+                                                 :file   path-to-user-config
+                                                 :key    :theme})
 
-                                    (map? theme*)
-                                    theme*
+                                      (map? theme*)
+                                      theme*
 
-                                    (string? theme*)
-                                    (get basethemes/stock-themes theme* nil))]
+                                      (string? theme*)
+                                      (get basethemes/stock-themes theme* nil))]
 
-                         ;; To debug theme problems
-                         #_(? theme* (->> (s/explain-data ::theme/theme x)
-                                 :clojure.spec.alpha/problems
-                                 (take 2)))
+                           ;; To debug theme problems
+                           #_(? theme* (->> (s/explain-data ::theme/theme x)
+                                            :clojure.spec.alpha/problems
+                                            (take 2)))
 
-                         (when (s/valid? ::theme/theme x)
-                           x))]
+                           (when (s/valid? ::theme/theme x)
+                             x))]
 
-                ;; :theme entry resolves to a map, so assoc it to user config
-                (let [config (assoc config :theme user-theme*)]
-                  `~config)
+                  ;; :theme entry resolves to a map, so assoc it to user config
+                  (let [config (assoc config :theme user-theme*)]
+                    `~config)
 
-                ;; :theme entry exists, but doesn't resolve to a map
-                ;; dissoc :theme entry and issue warning for user
-                (let [config (assoc config 
-                                    :theme
-                                    (get basethemes/stock-themes
-                                         "Universal Neutral"
-                                         nil))
-                      opts {:v      theme*
-                            :k      ":theme"
-                            :spec   ::config/theme
-                            :header (str "[fireworks.core/_p] Invalid value "
-                                         "for :theme entry.")
-                            :body   (str "The default theme "
-                                         defs/italic-tag-open
-                                         "\"Universal Neutral\" "
-                                         defs/sgr-tag-close
-                                         "will be used instead.")}]
+                  ;; :theme entry exists, but doesn't resolve to a map
+                  ;; dissoc :theme entry and issue warning for user
+                  (let [config (assoc config 
+                                      :theme
+                                      (get basethemes/stock-themes
+                                           "Universal Neutral"
+                                           nil))
+                        opts   {:v      theme*
+                                :k      ":theme"
+                                :spec   ::config/theme
+                                :header (str "[fireworks.core/_p] Invalid value "
+                                             "for :theme entry.")
+                                :body   (str "The default theme "
+                                             defs/italic-tag-open
+                                             "\"Universal Neutral\" "
+                                             defs/sgr-tag-close
+                                             "will be used instead.")}]
 
-                  #_(println :invalid "::" 'get-user-configs)
-                  (messaging/bad-option-value-warning opts)
+                    #_(println :invalid "::" 'get-user-configs)
+                    (messaging/bad-option-value-warning opts)
 
-                  (swap! messaging/warnings-and-errors
-                         conj
-                         [:messaging/bad-option-value-warning opts])                 
+                    (swap! messaging/warnings-and-errors
+                           conj
+                           [:messaging/bad-option-value-warning opts])                 
 
-                  `~config))
+                    `~config))
 
-              ;; :theme entry is nil or non-existant, just return user config map
-              `~config)))))
+                ;; :theme entry is nil or non-existant, just return user config map
+                `~config)))))
 
-    ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, we set theme to
+    ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, or
+    ;; (System/getenv "BLING_CONFIG") resolves to nil, we set theme to
     ;; default \"Universal Neutral\"" stock theme.
-    {:theme "Universal Neutral"}))
+      {:theme "Universal Neutral"})))
+
 
 (defn get-user-config-edn-dynamic
   "This gets the path to user config from sys env var, then returns a map of
