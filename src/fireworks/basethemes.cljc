@@ -117,35 +117,46 @@
   ;; Any single keywords (as vals) in all the maps below refer
   ;; to the values defined in the :classes entry 
   {:classes          (merge defs/base-classes
-                            {:comment    :annotation
-                             :annotation {:color      "#9f9f9f"
-                                          :font-style :italic}
-                             :highlight  {:background-color      "#8a8a8a"
-                                          :color                 "#ffffff"
-                                          :font-weight           :bold
-                                          :text-decoration-line  :underline
-                                          :text-decoration-style :wavy}
+                            {:comment                      :annotation
+                             :annotation                   {:color      "#9f9f9f"
+                                                            :font-style :italic}
+                             :highlight                    {:background-color "#8a8a8a"
+                                                            :color            "#ffffff"
+                                                            :font-weight      :bold}
+                             :highlight-underlined         {:background-color      "#8a8a8a"
+                                                            :color                 "#ffffff"
+                                                            :font-weight           :bold
+                                                            :text-decoration-line  :underline
+                                                            :text-decoration-style :wavy}
+                             :highlight-error              :highlight 
+                             :highlight-warning            :highlight
+                             :highlight-info               :highlight
+                             :highlight-error-underlined   :highlight-underlined
+                             :highlight-warning-underlined :highlight-underlined
+                             :highlight-info-underlined    :highlight-underlined
+
                              ;; TODO - change this to badge?
-                            ;;  :label            {:color            "#808080"
-                            ;;                     :background-color "#ededed"
-                            ;;                     :text-shadow      "0 0 2px #ffffff"
-                            ;;                     :font-style       :italic}
-                            ;;  :eval-label-red   {:color            "#af5a5a"
-                            ;;                     :background-color "#fdf2f2"
-                            ;;                     :text-shadow      "0 0 2px #ffffff"
-                            ;;                     :font-style       :italic}
-                            ;;  :eval-label-green {:color            "#309738"
-                            ;;                     :background-color "#f2fdf2"
-                            ;;                     :text-shadow      "0 0 2px #ffffff"
-                            ;;                     :font-style       :italic}
-                            ;;  :eval-label-blue  {:color            "#309738"
-                            ;;                     :background-color "#f2fdf2"
-                            ;;                     :text-shadow      "0 0 2px #ffffff"
-                            ;;                     :font-style       :italic}
-                             :metadata   {:font-style :italic}
-                             :metadata2  {:font-style :italic}
-                             :label      {:font-style :italic}
-                             :eval-label {:font-style :italic}})
+                             ;;  :label            {:color            "#808080"
+                             ;;                     :background-color "#ededed"
+                             ;;                     :text-shadow      "0 0 2px #ffffff"
+                             ;;                     :font-style       :italic}
+                             ;;  :eval-label-red   {:color            "#af5a5a"
+                             ;;                     :background-color "#fdf2f2"
+                             ;;                     :text-shadow      "0 0 2px #ffffff"
+                             ;;                     :font-style       :italic}
+                             ;;  :eval-label-green {:color            "#309738"
+                             ;;                     :background-color "#f2fdf2"
+                             ;;                     :text-shadow      "0 0 2px #ffffff"
+                             ;;                     :font-style       :italic}
+                             ;;  :eval-label-blue  {:color            "#309738"
+                             ;;                     :background-color "#f2fdf2"
+                             ;;                     :text-shadow      "0 0 2px #ffffff"
+                             ;;                     :font-style       :italic}
+                             
+                             :metadata                     {:font-style :italic}
+                             :metadata2                    {:font-style :italic}
+                             :label                        {:font-style :italic}
+                             :eval-label                   {:font-style :italic}})
 
    ;; TODO - I don't think these currently merge if we were to use maps
    :syntax           defs/base-syntax-tokens
@@ -157,36 +168,95 @@
   {:classes          (merge defs/base-classes
                             {
                             ;;d :foreground     {:color "#585858"}
-                             :bracket        {:color "#888888"}
-                             :comment        :annotation
-                             :annotation     {:color      "#9f9f9f"
-                                              :font-style :italic}
-                             :highlight      {
-                                              :background-color      "#ffdbdb"
-                                              :color                 "#660000"
-                                              :font-weight           :bold
-                                              :text-decoration-line  :underline
-                                              :text-decoration-style :wavy}
+                             :bracket                      {:color "#888888"}
+
+                             :comment                      :annotation
+
+                             :annotation                   {
+                                                            :color      "#9f9f9f"
+                                                            :font-style :italic
+                                                            }
+
+                             :highlight                    {
+                                                            :background-color "#ffdbdb"
+                                                            :color            "#660000"
+                                                            :font-weight      :bold
+                                                            }
+
+                             :highlight-underlined         {
+                                                            :background-color      "#ffdbdb"
+                                                            :color                 "#660000"
+                                                            :font-weight           :bold
+                                                            :text-decoration-line  :underline
+                                                            :text-decoration-style :wavy
+                                                            }
+
+                             :highlight-error              {
+                                                            :background-color      "#ffdbdb"
+                                                            :color                 "#660000"
+                                                            :font-weight           :bold
+                                                            } 
+
+                             :highlight-warning            {
+                                                            :background-color      "#ffdea8"
+                                                            :color                 "#754800"
+                                                            :font-weight           :bold
+                                                            }
+
+                             :highlight-info               {
+                                                            :background-color      "#d6efff"
+                                                            :color                 "#003c5c"
+                                                            :font-weight           :bold
+                                                            }
+
+                             :highlight-error-underlined   {
+                                                            :background-color      "#ffdbdb"
+                                                            :color                 "#660000"
+                                                            :font-weight           :bold
+                                                            :text-decoration-line  :underline
+                                                            :text-decoration-style :wavy
+                                                            }
+
+                             :highlight-warning-underlined {
+                                                            :background-color      "#ffdea8"
+                                                            :color                 "#754800"
+                                                            :font-weight           :bold
+                                                            :text-decoration-line  :underline
+                                                            :text-decoration-style :wavy
+                                                            }
+
+                             :highlight-info-underlined    {
+                                                            :background-color      "#d6efff"
+                                                            :color                 "#003c5c"
+                                                            :font-weight           :bold
+                                                            :text-decoration-line  :underline
+                                                            :text-decoration-style :wavy
+                                                            }
+
                              ;; TODO - change this to badge?
-                             :label          {:color            "#808080"
-                                              :background-color "#ededed"
-                                              :text-shadow      "0 0 2px #ffffff"
-                                              :font-style       :italic}
-                             :eval-label-red {:color            "#af5a5a"
-                                              :background-color "#fdf2f2"
-                                              :text-shadow      "0 0 2px #ffffff"
-                                              :font-style       :italic}
-                             :eval-label-green {:color            "#309738"
-                                              :background-color "#f2fdf2"
-                                              :text-shadow      "0 0 2px #ffffff"
-                                              :font-style       :italic}
-                             :eval-label-blue {:color            "#309738"
-                                               :background-color "#f2fdf2"
-                                               :text-shadow      "0 0 2px #ffffff"
-                                               :font-style       :italic}
-                             :metadata       {:color            "#808080"
-                                              :text-shadow      "0 0 2px #ffffff"
-                                              :background-color "#e6fafa"}})
+                             :label                        {:color            "#808080"
+                                                            :background-color "#ededed"
+                                                            :text-shadow      "0 0 2px #ffffff"
+                                                            :font-style       :italic}
+
+                             :eval-label-red               {:color            "#af5a5a"
+                                                            :background-color "#fdf2f2"
+                                                            :text-shadow      "0 0 2px #ffffff"
+                                                            :font-style       :italic}
+
+                             :eval-label-green             {:color            "#309738"
+                                                            :background-color "#f2fdf2"
+                                                            :text-shadow      "0 0 2px #ffffff"
+                                                            :font-style       :italic}
+
+                             :eval-label-blue              {:color            "#309738"
+                                                            :background-color "#f2fdf2"
+                                                            :text-shadow      "0 0 2px #ffffff"
+                                                            :font-style       :italic}
+
+                             :metadata                     {:color            "#808080"
+                                                            :text-shadow      "0 0 2px #ffffff"
+                                                            :background-color "#e6fafa"}})
 
    ;; TODO - I don't think these currently merge if we were to use maps
    :syntax           defs/base-syntax-tokens
@@ -199,22 +269,70 @@
   {:classes {
             ;;  :foreground    {:color "#cecece"}
             ;;  :bracket    {:color "#b2b2b2"}
-             :comment    :annotation
-             :annotation {:color      "#a8a8a8"
-                          :font-style :italic}
-             :metadata   {:color       "#999999"
-                          :text-shadow "0 0 2px #003538"}
-             :highlight  {:color                 "#eae5ff"
-                          :background-color      "#0000b3"
-                          ;; :background-color "#8a8a8a"
-                          :font-weight           :bold
-                          :text-decoration-line  :underline
-                          :text-decoration-style :wavy
-                          }
-             :label      {:color            "#a3a3a3"
-                          :background-color "#333333"
-                          :text-shadow      "0 0 2px #000000"
-                          :font-style       :italic}}
+             :comment                      :annotation
+             :annotation                   {:color      "#a8a8a8"
+                                            :font-style :italic}
+             :metadata                     {:color       "#999999"
+                                            :text-shadow "0 0 2px #003538"}
+             :highlight                    {
+                                            :color            "#eae5ff"
+                                            :background-color "#0000e0"
+                                            :font-weight      :bold
+                                            }
+             
+             :highlight-underlined         {
+                                            :color                 "#eae5ff"
+                                            :background-color      "#0000e0"
+                                            :font-weight           :bold
+                                            :text-decoration-line  :underline
+                                            :text-decoration-style :wavy}
+
+             :highlight-error              {
+                                            :background-color "#8f006b"
+                                            :color            "#ffe0e0"
+                                            :font-weight      :bold
+                                            }
+
+             :highlight-warning            {
+                                            :background-color "#6b4200"
+                                            :color            "#ffe4b8"
+                                            :font-weight      :bold
+                                            }
+
+             :highlight-info               {
+                                            :color            "#eae5ff"
+                                            :background-color "#0000e0"
+                                            :font-weight      :bold
+                                            }
+
+             :highlight-error-underlined   {
+                                            :background-color      "#8f006b"
+                                            :color                 "#ffe0e0"
+                                            :font-weight           :bold
+                                            :text-decoration-line  :underline
+                                            :text-decoration-style :wavy
+                                            }
+
+             :highlight-warning-underlined {
+                                            :background-color      "#6b4200"
+                                            :color                 "#ffe4b8"
+                                            :font-weight           :bold
+                                            :text-decoration-line  :underline
+                                            :text-decoration-style :wavy
+                                            }
+
+             :highlight-info-underlined    {
+                                            :color                 "#eae5ff"
+                                            :background-color      "#0000e0"
+                                            :font-weight           :bold
+                                            :text-decoration-line  :underline
+                                            :text-decoration-style :wavy
+                                            }
+
+             :label                        {:color            "#a3a3a3"
+                                            :background-color "#333333"
+                                            :text-shadow      "0 0 2px #000000"
+                                            :font-style       :italic}}
    :syntax  defs/base-syntax-tokens
    :printer defs/base-printer-tokens})
 

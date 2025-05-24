@@ -5,24 +5,36 @@
 ;; Style props also need to be registered in valid-stylemap-keys
 
 (def base-classes
-  {:foreground       nil ;; -> foreground
-   :background       nil 
-   :bracket          :foreground
-   :string           :foreground
-   :comment          :foreground
-   :constant         :foreground ;; numbers, symbols, keywords, boolean values
-   :definition       :foreground ;; global definitions
-   :annotation       :foreground ;; ns/file info, user-label, num-dropped 
-   :metadata         :foreground
-   :metadata2        :foreground
-   :highlight        :foreground ;; default bg-color, inherited by [:printer :find]
-   :label            :foreground ;; literal labels, type labels, atom wrappers, etc.
-   :eval-label       :foreground ;; literal labels, type labels, atom wrappers, etc.
+  {:foreground                   nil ;; -> foreground
+   :background                   nil 
+   :bracket                      :foreground
+   :string                       :foreground
+   :comment                      :foreground
+   :constant                     :foreground ;; numbers, symbols, keywords, boolean values
+   :definition                   :foreground ;; global definitions
+   :annotation                   :foreground ;; ns/file info, user-label, num-dropped 
+   :metadata                     :foreground
+   :metadata2                    :foreground
 
+   :highlight                    :foreground ;; default bg-color, inherited by [:printer :find]
+   
+   :highlight-error              :foreground ;; default bg-color, inherited by [:printer :hightlight-errror]
+   :highlight-warning            :foreground
+   :highlight-info               :foreground
+
+   :highlight-underlined         :foreground
+   :highlight-underlined-error   :foreground
+   :highlight-underlined-warning :foreground
+   :highlight-underlined-info    :foreground
+
+
+   :label                        :foreground ;; literal labels, type labels, atom wrappers, etc.
+   :eval-label                   :foreground ;; literal labels, type labels, atom wrappers, etc.
+   
    ;; This is hack, fix it
-   :eval-label-red   :foreground ;; literal labels, type labels, atom wrappers, etc.
-   :eval-label-green :foreground ;; literal labels, type labels, atom wrappers, etc.
-   :eval-label-blue  :foreground ;; literal labels, type labels, atom wrappers, etc.
+   :eval-label-red               :foreground ;; literal labels, type labels, atom wrappers, etc.
+   :eval-label-green             :foreground ;; literal labels, type labels, atom wrappers, etc.
+   :eval-label-blue              :foreground ;; literal labels, type labels, atom wrappers, etc.
    
   ;; Experimental, not working yet
   ;;  :modifier   :foreground ;; earmuffs, deref, unused-arg, whitespace
@@ -95,7 +107,19 @@
    :ellipsis              :annotation
    :coll-trunction        :annotation
    :user-annotation       :annotation
+
+   ;; Should this be find in output? or just :highlight?
    :find-in-output        :highlight
+
+   :highlight-error              :highlight-error ;; default bg-color, inherited by [:printer :hightlight-errror]
+   :highlight-warning            :highlight-warning
+   :highlight-info               :highlight-info
+
+   :highlight-underlined         :highlight-underlined
+   :highlight-underlined-error   :highlight-underlined-error
+   :highlight-underlined-warning :highlight-underlined-warning
+   :highlight-underlined-info    :highlight-underlined-info
+
    :file-info             :annotation
    :line-number           :annotation
    :column-number         :annotation

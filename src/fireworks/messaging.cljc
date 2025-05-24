@@ -145,6 +145,7 @@
                 defs/sgr-tag-close
                 "  " #_defs/bold-tag-open header #_defs/sgr-tag-close
                 "\n\n\n"))
+
          (when (and line column file)
            (str defs/italic-tag-open
                 "source:\n" 
@@ -152,8 +153,10 @@
                 #_defs/bold-tag-open
                 "  " file ":" line ":" column "\n\n\n"
                 #_defs/sgr-tag-close))
+
          (when line 
            (str defs/gray-tag-open line+sep defs/sgr-tag-close))
+
          defs/bold-tag-open
          (let [bad-form (with-out-str 
                           (pprint (or (some-> form (util/shortened 33) symbol)
@@ -188,9 +191,7 @@
                (string/join (repeat (count (str v)) "^"))
                defs/sgr-tag-close
                "\n\n\n"]))
-          [(expound/expound-str spec
-                                v
-                                {:print-specs? false})
+          [(expound/expound-str spec v {:print-specs? false})
            (when default
              (str "\n\n"
                   "The default value of `"

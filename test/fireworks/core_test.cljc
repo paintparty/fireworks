@@ -479,7 +479,33 @@
                  "%c{%c%c:string%c           %c\"string\"%c\n %c:regex%c            %c#\"myregex\"%c\n %c:uuid%c             %c#uuid %c%c\"4fe5d828-6444-11e8-8222\"%c...%c%c\n %c:symbol%c           %cmysym%c\n %c:symbol+meta%c      %cmysym%c %c    %c%c^{%c%c:foo%c %c\"bar\"%c%c}%c\n %c:boolean%c          %ctrue%c\n %c:keyword%c          %c:keyword%c\n %c:nil%c              %cnil%c\n %c:##Nan%c            %cNaN%c\n %c:##Inf%c            %cInfinity%c\n %c:##-Inf%c           %c-Infinity%c\n %c:int%c              %c1234%c\n %c:float%c            %c3.33%c\n %c:lambda%c           %cλ%c%c%c%c[]%c\n %c:lambda-2-args%c    %cλ%c%c%c%c[%1 %2]%c\n %c:core-fn%c          %ccljs.core/juxt%c%c[var_args]%c\n %c:date-fn%c          %cjs/Date%c%c[]%c\n %c:datatype-class%c   %cfireworks.sample/MyType%c%c[a b]%c\n %c:recordtype-class%c %cfireworks.sample/MyRecordType%c%c[a b]%c\n %c:really-long-fn%c   %cxyasldfasldkfaslkjfzzzzzzz%c...%c%c%c[x y]%c%c\n ...               ...+14%c%c}%c")))))
 
 
-#_(? {:theme "Alabaster Light"}
+(? {
+    :theme "Universal Neutral"
+    :find  [
+            {:path [:rainbow]}
+
+            {:path  [:vector]
+             :class :highlight-underlined}
+
+            {:path  [:int]
+             :class :highlight-error}
+
+            {:path  [:keyword]
+             :class :highlight-warning}
+
+            {:path  [:nil]
+             :class :highlight-info}
+
+            {:path  [:float]
+             :class :highlight-error-underlined}
+
+            {:path  [:boolean]
+             :class :highlight-warning-underlined}
+
+            {:path  [:##Nan]
+             :class :highlight-info-underlined}
+
+            ]}
    sample/array-map-of-everything-cljc)
 
 

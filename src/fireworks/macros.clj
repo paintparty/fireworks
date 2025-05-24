@@ -142,7 +142,7 @@
   (try
     (with-open [r (clojure.java.io/reader source)]
       (edn/read (java.io.PushbackReader. r)))
-    (catch java.io.IOException e
+    (catch java.io.IOException err
       (let [opts (merge 
                   (load-edn-exception-opts opts)
                   {:label  "java.io.IOException (CAUGHT)"
@@ -152,9 +152,9 @@
         (swap! messaging/warnings-and-errors
                conj
                [:messaging/read-file-warning opts])
-        (messaging/caught-exception opts)))
+        (messaging/caught-exception err opts)))
 
-    (catch RuntimeException e
+    (catch RuntimeException err
       (let [opts (merge 
                   (load-edn-exception-opts opts)
                   {:label  "RuntimeException (CAUGHT)"
@@ -164,7 +164,7 @@
         (swap! messaging/warnings-and-errors
                conj
                [:messaging/read-file-warning opts])
-        (messaging/caught-exception opts)))))
+        (messaging/caught-exception err opts)))))
 
 
 (defmacro compile-time-warnings-and-errors []

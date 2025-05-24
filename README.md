@@ -115,7 +115,7 @@ Import into your namespace:
 
 ### Step 3:
 
-Add a [system-wide config file](#system-wide-config) at `/Users/<your-home-folder>/.fireworks/config.edn` (suggested path). You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. There are a [bunch of options](#all-the-options), but at minimum you'll probably want to specify a light or dark stock theme:
+Add a [system-wide config file](#system-wide-config) at `/Users/<your-home-folder>/.bling/config.edn` (suggested path). You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. There are a [bunch of options](#all-the-options), but at minimum you'll probably want to specify a light or dark stock theme:
 
 ```Clojure
  {:theme "Alabaster Light"
@@ -152,7 +152,7 @@ If the words in the resulting output are not colored red, green, blue, and yello
 Add a [system-wide environmental variable](#system-wide-config) in the right place (in your `.zshrc` or similar), to let Fireworks know where to find your config:
 
 ```Clojure
-export FIREWORKS_CONFIG="/Users/<your-home-folder>/.fireworks/config.edn"
+export BLING_CONFIG="/Users/<your-home-folder>/.bling/config.edn"
 ```
 <br>
 
@@ -373,16 +373,20 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
 
 ### System-wide config
 
-Fireworks is designed to pick up your preferred theming and formatting options from a system-wide `.edn` config file that lives in a globally accessible place outside of any projects. In order to make this work, you will need to set the environment variable `FIREWORKS_CONFIG` to the path of this file.
-This `.edn` config file can live anywhere on your computer, but by convention should be `~/.fireworks/config.edn`. If you were to set the environment variable in your `.zshrc` (or similar), it would look like this:
+Fireworks is designed to pick up your preferred theming and formatting options from a system-wide `.edn` config file that lives in a globally accessible place outside of any projects. In order to make this work, you will need to set the environment variable `BLING_CONFIG` to the path of this file.
+
+This naming convention comes from the syntax coloring libary (Bling)[https://github.com/paintparty/bling], which depends on fireworks for automatic syntax coloring of data structures to be printed.
+
+This `.edn` config file can live anywhere on your computer, but by convention should be `~/.bling/config.edn`. If you were to set the environment variable in your `.zshrc` (or similar), it would look like this: 
 
 ```
-export FIREWORKS_CONFIG="/Users/<your-home-folder>/.fireworks/config.edn"
+export BLING_CONFIG="/Users/<your-home-folder>/.bling/config.edn"
 ```
 
-You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `FIREWORKS_CONFIG` env var will be accessible in your dev environment.
+You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `BLING_CONFIG` env var will be accessible in your dev environment.
 
 For the actual `config.edn` file, you can use the above example map (at the beginning of this section) as a starting point. Prior to doing this you can experiment with the various configuration options ala-carte via passing a leading options map to `fireworks.core/?`:
+
 
 <br>
 
@@ -412,9 +416,9 @@ This must be one of the following 3 types of values:
 `"Monokai Dark"`<br>
 `"Universal Default"`<br>
 
-- A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/<your-home-folder>/.fireworks/my-theme.edn"`<br>
+- A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/<your-home-folder>/.bling/my-theme.edn"`<br>
 This will not work:
-`"~/.fireworks/my-theme.edn"`
+`"~/.bling/my-theme.edn"`
 <br>If the map in this `.edn` file fails to satisfy the `fireworks.specs.theme/theme` spec it will issue a warning and fall back to the default light or dark theme (depending on the value of `:mood`). 
 
 - A valid Fireworks theme, which is a map that satisfies the `fireworks.specs.theme/theme` spec. Typically, its structure will at minimum resemble the first example found in the [theming section ](#theming) of this document.

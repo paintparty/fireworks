@@ -629,13 +629,12 @@
 (defn merge-theme+
   "Merges a theme (light or dark) with base theme (light or dark).
 
-   Hydrates style-maps into maps that are computationally easier
-   for interop. This step removes the font-weight and font-style
-   options for the terminal context, as they are not reliably supported
-   across emulators.
+   Hydrates style-maps into maps that are computationally easier for interop.
+   This step removes the font-weight and font-style options for the terminal
+   context, as they are not reliably supported across emulators.
 
-   This :constant example would be under [:tokens :classes],
-   in a typical fireworks theme.
+   This :constant example would be under [:tokens :classes], in a typical
+   fireworks theme.
    {...
        {:constant {:color       \"#949494\"
                    :font-weight :bold
@@ -657,6 +656,8 @@
     ;; (?pp 'base (-> base :classes :label))
     ;; (?pp 'theme (-> theme))
     ;; (?pp classes)
+    ;; (?pp (select-keys classes [:highlight :highlight-underlined]))
+    ;; (?pp (select-keys merged [:highlight :highlight-underlined]))
     {:with-style-maps            merged
      :with-serialized-style-maps (assoc
                                   merged2
@@ -853,7 +854,32 @@
         m))
     {})))
 
-(defn highlight-style* [{:keys [style pred path] :as m}]
+(defn ^:public ?sgr
+  "For debugging of sgr code printing.
+
+   Prints the value with escaped sgr codes so you can read them in terminal
+   emulators (otherwise text would just get colored).
+
+   Returns the value."
+  [s]
+  ;; TODO - try to figure out way you can preserve the color in the output,
+  ;; which would help even more for debugging.
+  (some-> s 
+          (string/replace #"\u001b\[([0-9;]*)[mK]"
+                          (str "\033[38;5;231;48;5;247m"
+                               "\\\\033["
+                               "$1"
+                               "m"
+                               "\033[0;m"))
+          println)
+  s)
+
+
+(defn highlight-style*
+  [{:keys [style pred path class] :as m}]
+  ;; (?pp m)
+  ;; (?pp (keys @merged-theme))
+  ;; (?pp (:highlight-underlined @merged-theme))
   ;; TODO - check is css-str always gonna be css?
   (let [style
         (with-bling-colors->sgr m)
@@ -863,14 +889,23 @@
                     (when (seq style)
                       #?(:cljs (if node?
                                  (m->sgr (map-vals hexa-or-sgr style))
-                                 (str (->> style
-                                           (map kv->css2)
-                                           string/join)
+                                 (str (->> style (map kv->css2) string/join)
                                       (line-height-css)))
                          :clj  (m->sgr (map-vals hexa-or-sgr style)))))
-                  (:highlight @merged-theme))]
+                  (let [highlight-class-sgr (some->> class (get @merged-theme))
+                        highlight-sgr (:highlight @merged-theme)]
+
+                    #_(do 
+                      (println 'highlight-sgr)
+                      (?sgr highlight-sgr)
+                      (println 'highlight-class-sgr)
+                      (?sgr highlight-class-sgr)
+                      (println))
+
+                    (or highlight-class-sgr highlight-sgr)))]
     (assoc (merge {} 
                   (when pred {:pred pred})
+                  (when class {:class class})
                   (when path {:path path}))
            :style
            css-str)))
