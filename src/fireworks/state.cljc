@@ -59,7 +59,7 @@
 (def print-config? false)
 
 ;; Temp for debugging tagging 
-(def *debug-tagging? (atom false))
+(def *debug-tagging? (atom true))
 
 (defn debug-tagging? []
   @*debug-tagging?)
@@ -854,6 +854,16 @@
         m))
     {})))
 
+
+(defn ^:public ?sgr-str [s]
+  (string/replace s
+                  #"\u001b\[([0-9;]*)[mK]"
+                  (str "\033[38;5;231;48;5;247m"
+                       "\\\\033["
+                       "$1"
+                       "m"
+                       "\033[0;m")))
+
 (defn ^:public ?sgr
   "For debugging of sgr code printing.
 
@@ -865,12 +875,7 @@
   ;; TODO - try to figure out way you can preserve the color in the output,
   ;; which would help even more for debugging.
   (some-> s 
-          (string/replace #"\u001b\[([0-9;]*)[mK]"
-                          (str "\033[38;5;231;48;5;247m"
-                               "\\\\033["
-                               "$1"
-                               "m"
-                               "\033[0;m"))
+          ?sgr-str
           println)
   s)
 
