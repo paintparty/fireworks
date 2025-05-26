@@ -152,6 +152,8 @@
             :background-color
             :width
             :text-shadow
+            :text-decoration-line
+            :text-decoration-style
             :font-style 
             :font-size
             :font-weight
