@@ -191,14 +191,14 @@
    
    First, the path set by the user via \"FIREWORKS_CONFIG\" env var is
    validated. If it is a non-blank string that does not point to .edn file,
-   issue a bad-option-value-warning. Also update messaging/warning-and-errors
+   issue a bad-option-value-warning. Also update messaging/warnings-and-errors
    atom, which will surface the warning if the user is in cljs land, and maybe
    not looking at the build process in their terminal.
 
    If the path set by the user via \"FIREWORKS_CONFIG\" env var points to a
    non-existant `.edn` file, or a file that is not parseable by
    `clojure.edn/read`, a warning is issued via fireworks.macros/load-edn.
-   Also update the `messaging/warning-and-errors` atom, which will surface the
+   Also update the `messaging/warnings-and-errors` atom, which will surface the
    warning if the user is in cljs land, and maybe not looking at the build
    process in their terminal.
    
@@ -310,14 +310,14 @@
    
    First, the path set by the user via \"FIREWORKS_CONFIG\" env var is
    validated. If it is a non-blank string that does not point to .edn file,
-   issue a bad-option-value-warning. Also update messaging/warning-and-errors
+   issue a bad-option-value-warning. Also update messaging/warnings-and-errors
    atom, which will surface the warning if the user is in cljs land, and maybe
    not looking at the build process in their terminal.
 
    If the path set by the user via \"FIREWORKS_CONFIG\" env var points to a
    non-existant `.edn` file, or a file that is not parseable by
    `clojure.edn/read`, a warning is issued via fireworks.macros/load-edn.
-   Also update the `messaging/warning-and-errors` atom, which will surface the
+   Also update the `messaging/warnings-and-errors` atom, which will surface the
    warning if the user is in cljs land, and maybe not looking at the build
    process in their terminal.
    

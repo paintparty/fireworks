@@ -178,35 +178,33 @@
                                                             }
 
                              :highlight                    {
-                                                            :background-color "#ffdbdb"
-                                                            :color            "#660000"
+                                                            :background-color "#ffee00"
                                                             :font-weight      :bold
                                                             }
 
                              :highlight-underlined         {
-                                                            :background-color      "#ffdbdb"
-                                                            :color                 "#660000"
+                                                            :background-color      "#ffee00"
                                                             :font-weight           :bold
                                                             :text-decoration-line  :underline
                                                             :text-decoration-style :wavy
                                                             }
 
                              :highlight-error              {
-                                                            :background-color      "#ffdbdb"
-                                                            :color                 "#660000"
-                                                            :font-weight           :bold
-                                                            } 
+                                                            :background-color "#ffdbdb"
+                                                            :color            "#660000"
+                                                            :font-weight      :bold
+                                                            }
 
                              :highlight-warning            {
-                                                            :background-color      "#ffdea8"
-                                                            :color                 "#754800"
-                                                            :font-weight           :bold
+                                                            :background-color "#ffdea8"
+                                                            :color            "#754800"
+                                                            :font-weight      :bold
                                                             }
 
                              :highlight-info               {
-                                                            :background-color      "#d6efff"
-                                                            :color                 "#003c5c"
-                                                            :font-weight           :bold
+                                                            :background-color "#d6efff"
+                                                            :color            "#003c5c"
+                                                            :font-weight      :bold
                                                             }
 
                              :highlight-error-underlined   {
@@ -275,8 +273,8 @@
              :metadata                     {:color       "#999999"
                                             :text-shadow "0 0 2px #003538"}
              :highlight                    {
-                                            :color            "#eae5ff"
-                                            :background-color "#0000e0"
+                                            :color            "#ffffff"
+                                            :background-color "#5f5fff"
                                             :font-weight      :bold
                                             }
              

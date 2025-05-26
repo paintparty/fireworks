@@ -922,9 +922,9 @@
           :trace   [:form-or-label :file-info :result]}
          mode
          [:form-or-label :file-info :result])]
-    {:mode     mode
+    {:mode       mode
      :alias-mode alias-mode
-     :template template}))
+     :template   template}))
 
 #?(:clj
    (defn- ?2-helper
