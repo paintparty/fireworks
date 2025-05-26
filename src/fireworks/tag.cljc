@@ -1,8 +1,10 @@
 (ns ^:dev/always fireworks.tag
   (:require [clojure.string :as string]
-            #?(:clj [fireworks.state :as state]
+            [fireworks.macros :refer [keyed]]
+            [fireworks.pp :refer [?pp pprint]]
+            #?(:cljs [fireworks.macros :refer-macros [keyed]])
+            #?(:clj [fireworks.state :as state :refer [?sgr]]
                :cljs [fireworks.state :as state :refer [node?]])))
-
 
 
 (def tagtype->theme-key
@@ -14,23 +16,58 @@
   ([t bgc]
    (style-from-theme t bgc nil))
   ([t bgc custom-badge-style]
-   (let [f #(let [k (get tagtype->theme-key % %)]
-              (k (if custom-badge-style
-                   @state/merged-theme-with-unserialized-style-maps
-                   @state/merged-theme)))
+   (let [debug? (state/debug-tagging?)]
+     #_(when debug?
+       (pprint (reduce-kv
+                (fn [m k v]
+                  (assoc m k (if (string? v) (state/?sgr-str v) v)))
+                {}
+                (keyed [t bgc custom-badge-style]))))
 
-         m (or (f t) (f :foreground))
-         m (if custom-badge-style
-             (let [m (state/sanitize-style-map custom-badge-style)
-                   m (state/with-line-height m)
-                   f #(let [m (state/map-vals state/hexa-or-sgr m)]
-                        (state/m->sgr m))]
-               #?(:cljs
-                  (if node? (f) (string/join (mapv state/kv->css2 m)))
-                  :clj
-                  (f)))
-             m)]
-     (str m bgc))))
+     (let [f #(let [k
+                    (get tagtype->theme-key % %)
+
+                    merged-theme-map
+                    (if custom-badge-style
+                      @state/merged-theme-with-unserialized-style-maps
+                      @state/merged-theme)
+
+                    ret
+                    (k merged-theme-map)
+
+                    ret-alt
+                    (k @state/merged-theme-with-unserialized-style-maps)]
+                #_(when debug?
+                  (println "\n")
+                  (println (list 'get 'tagtype->theme-key % %) '=> k)
+                  (println (str "\nValue for " k " (" % ") from merged theme: "))
+                  (pprint (if (string? ret)
+                            (state/?sgr-str ret)
+                            ret))
+
+                  (println "\n")
+
+                  (pprint (if (string? ret-alt)
+                            (state/?sgr-str ret-alt)
+                            ret-alt))
+
+                  (println "\n"))
+                ret)
+
+           m (or (f t) (f :foreground))
+
+           m (if custom-badge-style
+               (let [m (state/sanitize-style-map custom-badge-style)
+                     m (state/with-line-height m)
+                     f #(let [m (state/map-vals state/hexa-or-sgr m)]
+                          (state/m->sgr m))]
+                 #?(:cljs
+                    (if node? (f) (string/join (mapv state/kv->css2 m)))
+                    :clj
+                    (f)))
+               m)]
+       
+       (str m bgc)))))
 
 (defn tag!
   ([t]
@@ -49,6 +86,24 @@
                                t)
                              bgc
                              custom-badge-style)]
+
+     (when (state/debug-tagging?)
+       #?(
+          ;; :cljs (if node?
+          ;;         s
+          ;;         (let [s (cond
+          ;;                   (= t :type-label)
+          ;;                   (str s)
+          ;;                 ;; (= t :metadata)
+          ;;                 ;; (str s "")
+          ;;                   :else
+          ;;                   s)]
+          ;;           (swap! state/styles conj s)
+          ;;           "%c"))
+          :clj (do (println "style from theme" )
+                   (?sgr s))
+          ))
+
      #?(:cljs (if node?
                 s
                 (let [s (cond
@@ -62,14 +117,16 @@
                   "%c"))
         :clj s))))
 
-(def sgr-opening-str "\033[0m")
+(def sgr-closing-tag-str "\033[0m")
 
 (defn tag-reset!
   ([]
    (tag-reset! :foreground))
   ([theme-token]
    #?(:cljs (if node?
-              sgr-opening-str
+              (do (when (state/debug-tagging?)
+                    (println "tag/tag-reset!  with  \\\033[0m"))
+                  sgr-closing-tag-str)
               (let [theme-token (or theme-token :foreground)]
                 (when (state/debug-tagging?)
                   (println "tag/tag-reset!  with  " theme-token))
@@ -77,7 +134,11 @@
                        conj
                        (-> @state/merged-theme theme-token))
                 "%c"))
-      :clj sgr-opening-str)))
+      :clj 
+      (do (when (state/debug-tagging?)
+            (println "tag/tag-reset!  with  \\033[0m"))
+          sgr-closing-tag-str)
+      )))
 
 (defn tag-entity! 
   ([x t]
@@ -95,6 +156,11 @@
              custom-badge-style]
       :or   {display?    true
              theme-token :foreground}}]
+
+   (pprint (keyed [theme-token
+                   display? 
+                   highlighting
+                   custom-badge-style]))
 
     ;; s is always a string or vector (in the case of fn-args)
     (when (and (or (string? s)
