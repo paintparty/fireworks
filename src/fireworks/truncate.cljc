@@ -259,7 +259,7 @@
               ;; truncate call
               [(truncate {:depth depth 
                           :key?  true 
-                          :path  (conj path k :fireworks.truncate/map-key)}
+                          :path  (conj path k :fireworks.highlight/map-key)}
                          k)
                ;; truncate call
                (truncate {:depth      depth
