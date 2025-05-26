@@ -744,8 +744,8 @@
     ret))
 
 (defn- gap-spaces
-  [{:keys [s k formatting-meta? theme-token-map]}]
-  #?(:cljs s ;; TODO - do we need to handle node here?
+  [{:keys [s k formatting-meta? theme-token-map highlighting]}]
+  #?(:cljs (tagged s (keyed [highlighting])) ;; TODO - do we need to handle node here?
      :clj  (if formatting-meta?
              (do (when (state/debug-tagging?)
                    (println (str "\ntagging "
@@ -755,7 +755,7 @@
                          (assoc theme-token-map
                                 (keyword (str (name k) "?"))
                                 true)))
-             s)))
+             (tagged s (keyed [highlighting])))))
 
 (defn- reduce-map*
   [{:keys [indent
@@ -792,12 +792,12 @@
               s         (when (some-> num-extra pos?) 
                           (spaces num-extra))
               k         :spaces-after-key]
-          (gap-spaces (keyed [s k formatting-meta? theme-token-map])))
+          (gap-spaces (keyed [s k formatting-meta? theme-token-map highlighting])))
 
         kv-gap-spaces
         (let [s (spaces defs/kv-gap)
               k :kv-gap-spaces]
-          (gap-spaces (keyed [s k formatting-meta? theme-token-map])))
+          (gap-spaces (keyed [s k formatting-meta? theme-token-map highlighting])))
 
         tagged-val          
         (tagged-val (keyed [v
@@ -817,7 +817,6 @@
 
         ret                  
         (str escaped-key
-             (tag! {} highlighting)
              spaces-after-key
              kv-gap-spaces
              tagged-val
