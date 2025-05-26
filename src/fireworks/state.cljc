@@ -59,7 +59,7 @@
 (def print-config? false)
 
 ;; Temp for debugging tagging 
-(def *debug-tagging? (atom true))
+(def *debug-tagging? (atom false))
 
 (defn debug-tagging? []
   @*debug-tagging?)

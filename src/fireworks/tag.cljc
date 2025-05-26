@@ -12,80 +12,81 @@
    :defmulti :function
    :class    :function})
 
+(defn convert-map-values-to-readable-sgr [m]
+  (reduce-kv
+   (fn [m k v]
+     (assoc m k (if (string? v) (state/?sgr-str v) v)))
+   {}
+   m))
+
 (defn style-from-theme
-  ([t bgc]
-   (style-from-theme t bgc nil))
-  ([t bgc custom-badge-style]
+  ([t]
+   (style-from-theme t nil))
+  ([t highlighting]
    (let [debug? (state/debug-tagging?)]
      #_(when debug?
-       (pprint (reduce-kv
-                (fn [m k v]
-                  (assoc m k (if (string? v) (state/?sgr-str v) v)))
-                {}
-                (keyed [t bgc custom-badge-style]))))
+         (pprint (convert-map-values-to-readable-sgr
+                  (keyed [t highlighting]))))
 
-     (let [f #(let [k
-                    (get tagtype->theme-key % %)
+     (let [highlighting-is-a-map? false
+           f #(let [k                (get tagtype->theme-key % %)
 
-                    merged-theme-map
-                    (if custom-badge-style
-                      @state/merged-theme-with-unserialized-style-maps
-                      @state/merged-theme)
+                    merged-theme-map (if highlighting-is-a-map?
+                                       @state/merged-theme-with-unserialized-style-maps
+                                       @state/merged-theme)
 
-                    ret
-                    (k merged-theme-map)
+                    ret              (k merged-theme-map)
 
-                    ret-alt
-                    (k @state/merged-theme-with-unserialized-style-maps)]
+                  ;;  ret-alt          (k @state/merged-theme-with-unserialized-style-maps)
+                    ]
                 #_(when debug?
-                  (println "\n")
-                  (println (list 'get 'tagtype->theme-key % %) '=> k)
-                  (println (str "\nValue for " k " (" % ") from merged theme: "))
-                  (pprint (if (string? ret)
-                            (state/?sgr-str ret)
-                            ret))
+                    (println "\n")
+                    (println (list 'get 'tagtype->theme-key % %) '=> k)
+                    (println (str "\nValue for " k " (" % ") from merged theme: "))
+                    (pprint (if (string? ret)
+                              (state/?sgr-str ret)
+                              ret))
 
-                  (println "\n")
+                    (println "\n")
 
-                  (pprint (if (string? ret-alt)
-                            (state/?sgr-str ret-alt)
-                            ret-alt))
+                    (pprint (if (string? ret-alt)
+                              (state/?sgr-str ret-alt)
+                              ret-alt))
 
-                  (println "\n"))
+                    (println "\n"))
                 ret)
 
            m (or (f t) (f :foreground))
 
-           m (if custom-badge-style
-               (let [m (state/sanitize-style-map custom-badge-style)
-                     m (state/with-line-height m)
-                     f #(let [m (state/map-vals state/hexa-or-sgr m)]
-                          (state/m->sgr m))]
-                 #?(:cljs
-                    (if node? (f) (string/join (mapv state/kv->css2 m)))
-                    :clj
-                    (f)))
-               m)]
+           result (if highlighting-is-a-map?
+                    (let [m (state/sanitize-style-map highlighting)
+                          m (state/with-line-height m)
+                          f #(let [m (state/map-vals state/hexa-or-sgr m)]
+                               (state/m->sgr m))]
+                      #?(:cljs
+                         (if node? (f) (string/join (mapv state/kv->css2 m)))
+                         :clj
+                         (f)))
+                    (or highlighting m))]
        
-       (str m bgc)))))
+       (str result)))))
 
 (defn tag!
   ([t]
-   (tag! t nil nil))
-  ([t bgc]
-   (tag! t bgc nil))
-  ([t bgc custom-badge-style]
-   (let [s (style-from-theme (cond
-                               (contains? #{:metadata :metadata-key} t)
-                               t
+   (tag! t nil))
+  ([t highlighting]
+   (let [metadata-*? (contains? #{:metadata :metadata-key} t)
+         s           (style-from-theme (cond
+                                         metadata-*?
+                                         t
 
-                               (= t :type-label-inline)
-                               :type-label
+                                         (= t :type-label-inline)
+                                         :type-label
 
-                               :else
-                               t)
-                             bgc
-                             custom-badge-style)]
+                                         :else
+                                         t)
+                                       ;; Don't highlight value if in metadata
+                                       (when-not metadata-*? highlighting))]
 
      (when (state/debug-tagging?)
        #?(
@@ -108,11 +109,13 @@
                 s
                 (let [s (cond
                           (= t :type-label)
-                          (str s)
+                          s
                           ;; (= t :metadata)
                           ;; (str s "")
                           :else
                           s)]
+                  (when (state/debug-tagging?)
+                    (println "tag/tag!  with  " s))
                   (swap! state/styles conj s)
                   "%c"))
         :clj s))))
@@ -143,7 +146,7 @@
 (defn tag-entity! 
   ([x t]
    (tag-entity! x t nil))
-  ([x t bgc]
+  ([x t highlighting]
    (str (tag! t) x (tag-reset!))))
 
 (defn tagged
@@ -152,15 +155,15 @@
    ([s
      {:keys [theme-token
              display? 
-             highlighting
-             custom-badge-style]
+             highlighting]
       :or   {display?    true
-             theme-token :foreground}}]
+             theme-token :foreground}
+      :as m}]
 
-   (pprint (keyed [theme-token
-                   display? 
-                   highlighting
-                   custom-badge-style]))
+  ;;  #?(:cljs (pprint m))
+
+   #_(when highlighting
+     (println "has highlighting: " s))
 
     ;; s is always a string or vector (in the case of fn-args)
     (when (and (or (string? s)
@@ -168,7 +171,7 @@
                    (vector? s))
                display?)
 
-      (let [opening-tag (tag! theme-token highlighting custom-badge-style)
+      (let [opening-tag (tag! theme-token highlighting)
             closing-tag (tag-reset!)
             ret         (str opening-tag s closing-tag)]
 

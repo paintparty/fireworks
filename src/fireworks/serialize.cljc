@@ -12,11 +12,12 @@
             brackets-by-type]]
    [clojure.string :as string]
    [fireworks.defs :as defs]
-   [fireworks.state :as state]
    [fireworks.tag :as tag :refer [tag! tag-reset! tagged]]
    [fireworks.util :refer [spaces badge-type]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
+   #?(:cljs [fireworks.state :as state :refer [node?]]
+      :clj [fireworks.state :as state])
    [fireworks.util :as util]))
 
 (declare tagged-val)
@@ -178,7 +179,7 @@
 
         _ 
         (when (state/debug-tagging?)
-            (println "\nsev!   tagging " s " with " theme-tag))
+          (println "\nsev!   tagging " s " with " theme-tag))
 
         main-entity-tag                  
         (tag! theme-tag highlighting)
@@ -377,7 +378,8 @@
   [{:keys [ob ret num-dropped let-bindings? highlighting] :as m}]
   (let [extra (when (some-> num-dropped pos?)
                 (num-dropped-annotation! m))
-        cb    (if highlighting
+        cb    (closing-bracket! m)
+              #_(if highlighting
                 (str (tag! {} highlighting) (closing-bracket! m) (tag-reset!))
                 (closing-bracket! m))
         cb2   (closing-angle-bracket! m)
@@ -513,10 +515,7 @@
           (str maybe-comma
                "\n"
                (spaces indent))
-          (if highlighting
-            (str (tag! {} highlighting) " " (tag-reset!))
-            (str maybe-comma " ")
-            ))
+          (str maybe-comma " "))
 
         let-bindings?
         (and (zero? depth)
@@ -632,11 +631,12 @@
              badge
              (some-> user-metadata-map-block (str (when badge " ")))
              annotation-newline
-             (if highlighting
+             (opening-bracket! (keyed [coll record? let-bindings? highlighting]))
+             #_(if highlighting
                ;; Change this - move logic down in to opening bracket!
-               (str (tag! {} highlighting)
+               (str #_(tag! {} highlighting)
                     (opening-bracket! (keyed [coll record? let-bindings?]))
-                    (tag-reset!))
+                    #_(tag-reset!))
                (opening-bracket! (keyed [coll record? let-bindings?])))
              (when (-> coll meta :too-deep?)
                (tagged "#" {:theme-token :max-print-level-label})))
@@ -686,6 +686,9 @@
          :as profile+ob}
         (profile+ob coll indent*)
 
+        formatting-meta?
+        (pos? (state/formatting-meta-level))
+
         ret                 
         (string/join
          (map-indexed
@@ -721,7 +724,10 @@
                        (if (pos? (state/formatting-meta-level))
                          (tagged separator
                                  {:theme-token (state/metadata-token)})
-                         separator))))]
+                         (tagged separator 
+                                 (merge {:theme-token  :foreground}
+                                        (when-not formatting-meta?
+                                          {:highlighting highlighting})))))))]
               ret))
           coll))
         
@@ -743,19 +749,26 @@
                  ob]))]
     ret))
 
+(defn- gap-spaces-impl [{:keys [s k formatting-meta? theme-token-map highlighting]}]
+  (if formatting-meta?
+    (do (when (state/debug-tagging?)
+          (println (str "\ntagging "
+                        (name k)
+                        " in metadata map")))
+        (tagged s
+                (assoc theme-token-map
+                       (keyword (str (name k) "?"))
+                       true)))
+    (tagged s (keyed [highlighting]))))
+
 (defn- gap-spaces
-  [{:keys [s k formatting-meta? theme-token-map highlighting]}]
-  #?(:cljs (tagged s (keyed [highlighting])) ;; TODO - do we need to handle node here?
-     :clj  (if formatting-meta?
-             (do (when (state/debug-tagging?)
-                   (println (str "\ntagging "
-                                 (name k)
-                                 " in metadata map")))
-                 (tagged s
-                         (assoc theme-token-map
-                                (keyword (str (name k) "?"))
-                                true)))
-             (tagged s (keyed [highlighting])))))
+  [{:keys [s k formatting-meta? theme-token-map highlighting] :as m}]
+  #?(:cljs (if node?
+             (gap-spaces-impl m)
+             (tagged s (if formatting-meta?
+                         theme-token-map
+                         (keyed [highlighting]))))
+     :clj  (gap-spaces-impl m)))
 
 (defn- reduce-map*
   [{:keys [indent
@@ -785,6 +798,9 @@
         formatting-meta?
         (pos? (state/formatting-meta-level))
 
+        gap-spaces-opts
+        (keyed [formatting-meta? theme-token-map highlighting])
+
         spaces-after-key
         (let [num-extra (if multi-line?
                           (- (or max-keylen 0) (or key-char-count 0))
@@ -792,12 +808,12 @@
               s         (when (some-> num-extra pos?) 
                           (spaces num-extra))
               k         :spaces-after-key]
-          (gap-spaces (keyed [s k formatting-meta? theme-token-map highlighting])))
+          (gap-spaces (assoc gap-spaces-opts :s s :k k)))
 
         kv-gap-spaces
         (let [s (spaces defs/kv-gap)
               k :kv-gap-spaces]
-          (gap-spaces (keyed [s k formatting-meta? theme-token-map highlighting])))
+          (gap-spaces (assoc gap-spaces-opts :s s :k k)))
 
         tagged-val          
         (tagged-val (keyed [v
@@ -810,10 +826,8 @@
         sep 
         (when-not (= coll-count (inc idx))
           (if formatting-meta?
-            (tagged separator
-                    (when-not multi-line?
-                      theme-token-map))
-            separator))
+            (tagged separator (when-not multi-line? theme-token-map))
+            (tagged separator (when-not multi-line? (keyed [highlighting])))))
 
         ret                  
         (str escaped-key
