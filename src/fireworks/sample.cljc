@@ -226,8 +226,13 @@
      :b 2
      :c "three"}
 
+    :multiline-map
+    {:a     "abcdefghijklmnopqrstuv"
+     :ab    "abcdefghijklmnopqrstuv12345"
+     :abcde "xyz"}
+
     :rainbow
-    [1 2 3]
+    [[[[[]]]]]
 
     :vector    
     [1 2 3]
@@ -253,7 +258,7 @@
     ;; Leave off until you fix this
     ;; :datatype
     ;; my-data-type
-
+    
     :set
     #{1 :2 "three"})
 
