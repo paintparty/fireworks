@@ -49,6 +49,9 @@
 (s/def ::margin-top
   (s/and int? #(<= 0 % 100)))
 
+(s/def ::margin-inline-start
+  (s/and int? #(<= 0 % 100)))
+
 (s/def ::single-line-coll-length-limit
   (s/and int? #(<= 2 % 200)))
 
