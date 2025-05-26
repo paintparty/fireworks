@@ -5,6 +5,7 @@
    [fireworks.config]
    [fireworks.pp :as pp :refer [?pp !?pp]]
    [fireworks.demo]
+   [fireworks.state :refer [?sgr]]
    [fireworks.themes :as themes] 
    [fireworks.sample :as sample] 
    [fireworks.smoke-test] 
@@ -17,6 +18,7 @@
 
 (def theme themes/alabaster-light-legacy)
 (declare escape-sgr)
+
 
 #?(:cljs
    (deftest p-data-basic 
@@ -42,6 +44,8 @@
                                         "color:#585858;line-height:1.45;"
                                         "color:#448C27;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"]}}))))
+
+
 #?(:cljs
    (deftest p-data-with-label
      (is (= 
@@ -66,7 +70,6 @@
                                         "color:#585858;line-height:1.45;"
                                         "color:#448C27;line-height:1.45;"
                                         "color:#585858;line-height:1.45;"]}}))))
-
 
 #?(:cljs
    nil
@@ -472,41 +475,60 @@
                        :clj
                        (string/join (escape-sgr (-> ret :formatted :string))))]
                 #?(:clj (do (!?pp 'p-data-basic-samples formatted-string))
-                   :cljs (do (!?pp 'p-data-basic-samples formatted-string))))
+                   :cljs (do (?pp 'p-data-basic-samples formatted-string))))
               #?(:clj
                  "〠38;5;241〠{〠0〠〠38;2;122;62;157〠:string〠0〠〠〠           〠38;2;68;140;39〠\"string\"〠0〠\n 〠38;2;122;62;157〠:regex〠0〠〠〠            〠38;2;68;140;39〠#\"myregex\"〠0〠\n 〠38;2;122;62;157〠:uuid〠0〠〠〠             〠3;38;2;57;137;98;48;2;238;251;238〠#uuid 〠0〠〠38;2;68;140;39〠\"4fe5d828-6444-11e8-8222\"〠3;38;2;140;140;140〠...〠0〠〠0〠\n 〠38;2;122;62;157〠:symbol〠0〠〠〠           〠38;2;77;109;186〠mysym〠0〠\n 〠38;2;122;62;157〠:symbol+meta〠0〠〠〠      〠38;2;77;109;186〠mysym〠0〠 〠38;2;190;85;187;48;2;250;232;253〠    〠0〠〠38;2;190;85;187;48;2;250;232;253〠^{〠0〠〠38;2;190;85;187;48;2;250;232;253〠:foo〠0〠〠〠〠38;2;190;85;187;48;2;250;232;253〠 〠0〠〠38;2;190;85;187;48;2;250;232;253〠\"bar\"〠0〠〠38;2;190;85;187;48;2;250;232;253〠}〠0〠\n 〠38;2;122;62;157〠:boolean〠0〠〠〠          〠38;2;122;62;157〠true〠0〠\n 〠38;2;122;62;157〠:keyword〠0〠〠〠          〠38;2;122;62;157〠:keyword〠0〠\n 〠38;2;122;62;157〠:nil〠0〠〠〠              〠38;2;122;62;157〠nil〠0〠\n 〠38;2;122;62;157〠:##Nan〠0〠〠〠            〠38;2;122;62;157〠NaN〠0〠\n 〠38;2;122;62;157〠:##Inf〠0〠〠〠            〠38;2;122;62;157〠Infinity〠0〠\n 〠38;2;122;62;157〠:##-Inf〠0〠〠〠           〠38;2;122;62;157〠-Infinity〠0〠\n 〠38;2;122;62;157〠:int〠0〠〠〠              〠38;2;122;62;157〠1234〠0〠\n 〠38;2;122;62;157〠:float〠0〠〠〠            〠38;2;122;62;157〠3.33〠0〠\n 〠38;2;122;62;157〠:lambda〠0〠〠〠           〠3;38;2;57;137;98;48;2;238;251;238〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:lambda-2-args〠0〠〠〠    〠3;38;2;57;137;98;48;2;238;251;238〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:core-fn〠0〠〠〠          〠38;2;77;109;186〠clojure.core/juxt〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:date-fn〠0〠〠〠          〠38;2;77;109;186〠java.util/Date〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:datatype-class〠0〠〠〠   〠38;2;77;109;186〠fireworks.sample/MyType〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:recordtype-class〠0〠〠〠 〠38;2;77;109;186〠fireworks.sample/MyRecordType〠0〠〠38;2;153;153;153〠[]〠0〠\n 〠38;2;122;62;157〠:really-long-fn〠0〠〠〠   〠38;2;77;109;186〠xyasldfasldkfaslkjfzzzzzzzzzz〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠3;38;2;140;140;140〠\n 〠〠...               ...+14〠0〠〠0〠〠38;5;241〠}〠0〠"
                  :cljs
                  "%c{%c%c:string%c           %c\"string\"%c\n %c:regex%c            %c#\"myregex\"%c\n %c:uuid%c             %c#uuid %c%c\"4fe5d828-6444-11e8-8222\"%c...%c%c\n %c:symbol%c           %cmysym%c\n %c:symbol+meta%c      %cmysym%c %c    %c%c^{%c%c:foo%c %c\"bar\"%c%c}%c\n %c:boolean%c          %ctrue%c\n %c:keyword%c          %c:keyword%c\n %c:nil%c              %cnil%c\n %c:##Nan%c            %cNaN%c\n %c:##Inf%c            %cInfinity%c\n %c:##-Inf%c           %c-Infinity%c\n %c:int%c              %c1234%c\n %c:float%c            %c3.33%c\n %c:lambda%c           %cλ%c%c%c%c[]%c\n %c:lambda-2-args%c    %cλ%c%c%c%c[%1 %2]%c\n %c:core-fn%c          %ccljs.core/juxt%c%c[var_args]%c\n %c:date-fn%c          %cjs/Date%c%c[]%c\n %c:datatype-class%c   %cfireworks.sample/MyType%c%c[a b]%c\n %c:recordtype-class%c %cfireworks.sample/MyRecordType%c%c[a b]%c\n %c:really-long-fn%c   %cxyasldfasldkfaslkjfzzzzzzz%c...%c%c%c[x y]%c%c\n ...               ...+14%c%c}%c")))))
 
 
-(? {
-    :theme "Universal Neutral"
-    :find  [
-            {:path [:rainbow]}
+(let [finds [
+            ;;  {:path [:rainbow]}
 
-            {:path  [:vector]
-             :class :highlight-underlined}
+             {:path  [:map :c #_:fireworks.highlight/map-key]
+              :class :highlight-underlined}
 
-            {:path  [:int]
-             :class :highlight-error}
+            ;;  {:path  [:int]
+            ;;   :class :highlight-error}
 
-            {:path  [:keyword]
-             :class :highlight-warning}
+            ;;  {:path  [:keyword]
+            ;;   :class :highlight-warning}
 
-            {:path  [:nil]
-             :class :highlight-info}
+            ;;  {:path  [:nil]
+            ;;   :class :highlight-info}
 
-            {:path  [:float]
-             :class :highlight-error-underlined}
+            ;;  {:path  [:float]
+            ;;   :class :highlight-error-underlined}
 
-            {:path  [:boolean]
-             :class :highlight-warning-underlined}
+            ;;  {:path  [:boolean]
+            ;;   :class :highlight-warning-underlined}
 
-            {:path  [:##Nan]
-             :class :highlight-info-underlined}
+            ;;  {:path  [:##Nan]
+            ;;   :class :highlight-info-underlined}
+             ]]
 
-            ]}
-   sample/array-map-of-everything-cljc)
+  (println "\nSample output, in Universal Neutral, with various :path based :find highlighting\n")
+  (? {
+        :theme "Alabaster Light"
+        :find  finds}
+       (assoc-in sample/array-map-of-everything-cljc [:map :b] "asdfgasdfasdfasdfasdfadsfasfasfas")))
+
+#_(? sample/array-map-of-everything-cljc)
+#_(?pp (-> (? :data
+            {:find [{:path []}]}
+            [])
+         :formatted
+         :string
+         ?sgr))
+
+#_(-> (? :-
+       {:find {:pred #(= % 1)} #_[{:path []}]
+        :p-data? true}
+       1)
+    :formatted
+    :string
+    ?sgr)
+
 
 
 ;; TODO - Add tests for:

@@ -15,81 +15,82 @@
             #?(:clj [clojure.test :refer :all])))
 
 
-(def sample
-  ["\"hi\""
-   "hi"	
+#?(:clj
+   (def sample
+     ["\"hi\""
+      "hi"	
 
-   :hi	
-   :hi	
+      :hi	
+      :hi	
 
-   "^hi$"
-   "^hi$"	
+      "^hi$"
+      "^hi$"	
 
-   true
-   true	 
+      true
+      true	 
 
-   'mysym
-   'mysym	 
+      'mysym
+      'mysym	 
 
-   [1 2 3]
-   [1 2 3]
+      [1 2 3]
+      [1 2 3]
 
-   #{1 3 2}
-   #{1 3 2}
+      #{1 3 2}
+      #{1 3 2}
 
-   {:a 2
-    :b 3}
-   {:a 2
-    :b 3}
+      {:a 2
+       :b 3}
+      {:a 2
+       :b 3}
 
-   '(map inc (range 3))
-   (map inc (range 3))
+      '(map inc (range 3))
+      (map inc (range 3))
 
-   '(range 3)
-   (range 3)
+      '(range 3)
+      (range 3)
 
-   '(:a :b :c)
-   (:a :b :c)
+      '(:a :b :c)
+      (:a :b :c)
 
-   '##Inf
-      ##Inf
+      '##Inf
+         ##Inf
 
-        '##-Inf
-           ##-Inf
+           '##-Inf
+              ##-Inf
 
-             '##NaN
-                ##NaN
+                '##NaN
+                   ##NaN
 
-                  1/3
-                 1/3
+                     1/3
+                    1/3
 
-               '(byte 0)
-            (byte 0)
+                  '(byte 0)
+               (byte 0)
 
-          '(short 3)
-       (short 3)
+             '(short 3)
+          (short 3)
 
-     '(double 23.44)
-   (double 23.44)
+        '(double 23.44)
+      (double 23.44)
 
-   '1M
-   1M
+      '1M
+      1M
 
-   1 
-   1
+      1 
+      1
 
-   '(float 1.5)
-   (float 1.5)
+      '(float 1.5)
+      (float 1.5)
 
-   '(char 92)
-   (char 92)
+      '(char 92)
+      (char 92)
 
-   '(java.math.BigInteger. "171")
-    (java.math.BigInteger. "171")
+      '(java.math.BigInteger. "171")
+      (java.math.BigInteger. "171")
 
-   '(java.util.Date.)
-    (java.util.Date.)
-   ])
+      '(java.util.Date.)
+      (java.util.Date.)
+      ]))
 
 (def lasertag-sample
   #?(:cljs
