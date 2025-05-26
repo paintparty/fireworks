@@ -269,7 +269,7 @@ All the available alternate printing modes for **`fireworks.core/?`** and their 
 |  none       | Fireworks         | ✓             | ✓                 | value   |
 | `:-`        | Fireworks         | ×             | ×                 | value   |
 | `:no-label` | Fireworks         | ×             | ✓                 | value   |
-| `:no-file`  | Fireworks         | ×             | ✓                 | value   |
+| `:no-file`  | Fireworks         | ✓             | ×                 | value   |
 | `:log`      | `js/console.log`* | ✓             | ✓                 | value   |
 | `:log-`     | `js/console.log`* | ×             | ×                 | value   |
 | `:pp`       | `pp/pprint`       | ✓             | ✓                 | value   |
