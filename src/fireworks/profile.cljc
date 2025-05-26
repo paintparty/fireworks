@@ -89,18 +89,40 @@
                          
 (defn target-path-is-ancestor-coll?
   [tp vp tp-list]
-  ;; (?pp (keyed [tp vp tp-list]))
-  (boolean
-   (when (and tp
-              (< (count tp) 
-                 (count vp)))
-     (and (= tp-list
-             (take (count tp) vp))
-          (not= (into [] (take-last 2 vp))
-                [(first tp) :fireworks.truncate/map-key])
-          #_(not (-> vp last (= :fireworks.truncate/map-key))
-               (take-last 2 vp)
-               )))))
+  (let [debug?
+        false
+        #_(boolean (and (= tp [:map :c])
+                      (= vp [:map :c :fireworks.highlight/map-key])))
+
+        value-path-has-more-nodes-than-target-path?
+        (boolean (and tp (< (count tp) (count vp))))
+
+        target-path-is-potentially-an-ancestor?
+        (boolean (= tp-list (take (count tp) vp)))
+
+        rest-of-value-path
+        (drop (count tp) vp)
+
+        map-key-for-a-target-value?
+        (boolean (and (= (count rest-of-value-path) 1)
+                      (= (first rest-of-value-path)
+                         :fireworks.highlight/map-key)))
+        ret
+        (boolean
+         (when value-path-has-more-nodes-than-target-path?
+           (and target-path-is-potentially-an-ancestor?
+                (not map-key-for-a-target-value?))))]
+
+    #_(when debug?
+      (?pp (keyed [value-path-has-more-nodes-than-target-path?
+                   target-path-is-potentially-an-ancestor?
+                   map-key-for-a-target-value?
+                   rest-of-value-path
+                   tp
+                   vp
+                   tp-list
+                   ret])))
+    ret))
 
 (defn- highlighting*
   "Determines whether value receives highlighting"
