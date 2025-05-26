@@ -511,3 +511,48 @@
                    {:as-vec?              true
                     :show-extras?         true
                     :extras-keys          [:tag :call :all-tags]}))
+
+
+;; find and highlight example
+(defn find-and-highlight-with-paths-example []
+  (let [finds [
+            ;;  {:path [:rainbow]}
+               {:path  [:vector]
+                :class :highlight}
+
+               {:path  [:set "three" #_:fireworks.highlight/map-key]
+                :class :highlight}
+
+               {:path  [:map :c #_:fireworks.highlight/map-key]
+                :class :highlight-underlined}
+
+               {:path  [:multiline-map]
+                :class :highlight-info}
+
+               {:path  [:record #_:fireworks.highlight/map-key]
+                :class :highlight}
+
+               {:path  [:int]
+                :class :highlight-error}
+
+               {:path  [:keyword]
+                :class :highlight-warning}
+
+               {:path  [:nil]
+                :class :highlight-info}
+
+               {:path  [:float]
+                :class :highlight-error-underlined}
+
+               {:path  [:boolean]
+                :class :highlight-warning-underlined}
+
+               {:path  [:##Nan]
+                :class :highlight-info-underlined}
+               ]]
+
+    (println "\nSample output, in Universal Neutral, with various :path based :find highlighting\n")
+    (? {
+        :theme "Alabaster Light"
+        :find  finds}
+       (assoc-in array-map-of-everything-cljc [:map :b] "asdfgasdfasdfasdfasdfadsfasfasfas"))))
