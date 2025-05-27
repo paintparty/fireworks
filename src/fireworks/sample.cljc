@@ -316,7 +316,7 @@
    "Abstractions"
    (array-map
     :atom             (qc (atom 1))
-    :date             my-date
+    ;; :date             my-date
     :volatile!        (volatile! 1)
     :transient-vector (transient [1 2 3 4])
     :transient-set    (transient #{:a 1})
@@ -447,7 +447,7 @@
                     ;; "Map keys"
                     "Abstractions"
                     ;; "With meta"
-                    ] 
+                    ]
                    ;; TODO - maybe blank map or no map?
                    {:as-vec?              false
                     :show-extras?         false
