@@ -1,14 +1,42 @@
 # Changelog
-[Fireworks](https://github.com/paintparty/fireworks): A color printer for Clojure, ClojureScript, and Babashka. 
+[Fireworks](https://github.com/paintparty/fireworks): Fireworks is a themeable tapping library for Clojure, ClojureScript, and Babashka.
 
 For a list of breaking changes, check [here](#breaking-changes)
 
 
 ## Unreleased
 
+<!-- ## 0.12.0
+2025-3-12 -->
+
 #### Added
+- Call-site option to add indent to entire output (left margin). Closes #15.
+
+- Additional highlighting classes:<br>
+  - `:highlight-underlined`
+  - `:highlight-error`             
+  - `:highlight-warning`           
+  - `:highlight-info`              
+  - `:highlight-error-underlined`  
+  - `:highlight-warning-underlined`
+  - `:highlight-info-underlined`
+
+  Closes #59
+
+- Automatically sets `"Universal Neutral"` theme and disable rainbow brackets
+if user has `NO_COLOR` env var set to a non-black string. Closes #51.
+
+- Ability to provide a `:path` entry to `:find` option map, to highlight by path. Closes #58.
+
+- `:mode` aliases for `:result` `:file` and `:label` Closes #56.
 
 #### Fixed
+- Missing bg-color from kv-gap in metadata maps, terminal, node-js env. Fixes #44
+
+#### Changed
+- Bumps Lasertag dep to `0.11.0`.
+- Remove Bling dep.
+
 
 <br>
 <br>

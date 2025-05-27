@@ -572,7 +572,7 @@ Determines position of metadata relative to value that is carrying it. Options a
 #### **`:find`** 
 Defaults to `nil`<br>
 
-Find and highlight values in the printed output. See [Highlighting values](#highlighting-values) section.
+Find and highlight values in the printed output. See [Highlighting values](#highlighting-values-in-printed-output) section.
 
 <br>
 
@@ -663,7 +663,6 @@ You can also pass a custom highlighting style:
 <p align="center"><img src="resources/features/highlight-with-custom-style.png" width="534px" /></p>
 
 
-
 Or pass multiple preds, with different styles:
 ```Clojure
 (? {:find [{:pred #(= % 777)}
@@ -672,6 +671,34 @@ Or pass multiple preds, with different styles:
    [1 33 99 777 -16])
 ```
 <p align="center"><img src="resources/features/highlight-with-multiple-custom-styles.png" width="534px" /></p>
+
+<!-- TODO - Add screenshots -->
+You can use one of the following predefined highlighting styles via a `:class` entry:
+
+```Clojure
+:highlight-underlined
+:highlight-error             
+:highlight-warning           
+:highlight-info              
+:highlight-error-underlined  
+:highlight-warning-underlined
+:highlight-info-underlined
+```
+
+```Clojure
+(? {:find {:pred #(= % 777)
+           :class :error-underlined}}
+   [1 33 99 777 -16])
+```
+
+<br>
+
+
+As an alternative to providing a `:pred` entry, you can target the value to be highlighted with a `:path` entry:
+```Clojure
+(? {:find [{:path [3]}]}
+   [1 33 99 777 -16])
+```
 
 <br>
 <br>
