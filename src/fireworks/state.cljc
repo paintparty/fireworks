@@ -352,7 +352,7 @@
 
 
 (defn- with-removed-or-resolved-color
-  [m k {:keys [theme-token from-custom-badge-style?] :as opts}]
+  [m k {:keys [theme-token] :as opts}]
   (let [c               (k m)
         bg-transparent? (and (= k :background-color)
                              (contains? #{:transparent "transparent"} c))
@@ -369,11 +369,7 @@
                  :v      c
                  :spec   ::tokens/color-value
                  :header (str "fireworks.state/with-removed-or-resolved-color\n\n"
-                              "Invalid color value for theme token " theme-token "."
-                              (when from-custom-badge-style?
-                                (str "\n\n"
-                                     "This is from a :badge-style map within"
-                                     " a user-supplied custom printer.")))
+                              "Invalid color value for theme token " theme-token ".")
                  :body   (str "The fallback color value for the "
                               theme-token 
                               " theme token will be applied.")}
@@ -383,30 +379,6 @@
       :else
       m)))
 
-
-(defn- kv-pair-str [k v]
-  (str "\033[1;m" k " " "\"" v "\"\033[0;m"))
-
-(defn invalid-color-warning 
-  [{:keys [header v k footer theme-token from-custom-badge-style?]}]
-  (str header
-       "\n\n"
-       #?(:cljs (if node?
-                  (kv-pair-str k v)
-                  (str "%c" k " " "\"" v "\"%c"))
-          :clj (kv-pair-str k v))
-       
-       (when from-custom-badge-style?
-         (str "\n\n"
-              (str "This is from a :badge-style map within"
-                   " a user-supplied custom printer.")))
-       "\n\n"
-       "This color value should be a hex or named html color."
-       "\n\n"
-       (str "The fallback color value for the "
-            theme-token 
-            " theme token will be applied.")
-       footer))
 
 (defn with-conformed-colors
   "If :background-color is :transparent or \"transparent\", dissoc the entry.

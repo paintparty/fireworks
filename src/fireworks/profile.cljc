@@ -36,8 +36,7 @@
            java-lang-class?
            coll-type?
            transient?
-           classname
-           :fw/custom-badge-text]
+           classname]
     :as m}]
   (when (map? m)
    (let [t (cond lambda?
@@ -46,41 +45,40 @@
                  :transient
                  :else
                  t)
-         b (or custom-badge-text
-               (cond
-                 (contains? all-tags :record)
-                 (:classname m)
+         b (cond
+             (contains? all-tags :record)
+             (:classname m)
 
                  ;; Interesting visualization in JVM Clojure
                  ;; Labels everything, including primitives
                  ;; Maybe this could be exposed in an option 
-                 #_(or java-util-class? java-lang-class?)
-                 #_classname
+             #_(or java-util-class? java-lang-class?)
+             #_classname
 
-                 (= t :inst)
-                 defs/inst-badge
+             (= t :inst)
+             defs/inst-badge
 
-                 (or java-util-class?
-                     (and coll-type? java-lang-class?))
-                 classname
+             (or java-util-class?
+                 (and coll-type? java-lang-class?))
+             classname
 
-                 js-built-in-object?
-                 (str "js/" js-built-in-object-name)
+             js-built-in-object?
+             (str "js/" js-built-in-object-name)
 
-                 (and (not= t :js/Object)
-                      (or (contains? all-tags :js/map-like-object)
-                          (contains? all-tags :js/TypedArray)))
-                 (or (t badges-by-lasertag)
-                     (subs (str t) 1))
-                 
-                 transient?
-                 (or (some->> #?(:cljs #"/" :clj #"\$")
-                              (string/split classname)
-                              last)
-                     defs/transient-label)
+             (and (not= t :js/Object)
+                  (or (contains? all-tags :js/map-like-object)
+                      (contains? all-tags :js/TypedArray)))
+             (or (t badges-by-lasertag)
+                 (subs (str t) 1))
+             
+             transient?
+             (or (some->> #?(:cljs #"/" :clj #"\$")
+                          (string/split classname)
+                          last)
+                 defs/transient-label)
 
-                 :else
-                 (get badges-by-lasertag t nil)))
+             :else
+             (get badges-by-lasertag t nil))
          b #?(:cljs b
               :clj (if (= t :defmulti) "Multimethod" b))]
 
@@ -148,19 +146,6 @@
       (vector? hl)
       (some (partial highlighting* x path) hl))))
 
-
-(defn- extra-str-from-custom-badges [x]
-  (when (coll? x)
-    (reduce (fn [acc el]
-              (if-not (-> el :fw/truncated)
-                (+ acc (or (-> el
-                               meta
-                               :fw/custom-badge-text
-                               count)
-                           0))
-                acc))
-            0
-            x)))
 
 ;; TODO - double check accuracy of this
 ;; It seems this value is still used in fireworks.serialize/reduce-coll-profile
@@ -356,11 +341,11 @@
                   (some->> mm
                            :fw/type-after-custom-printing 
                            (hash-map :t))
+
+                  ;; TODO - This select-keys is where :fw/custom-badge-style and
+                  ;; :fw/custom-badge-text would go
                   (some-> mm
-                          (select-keys [:fw/custom-badge-style
-                                        :fw/custom-badge-text
-                                        :fw/user-meta
-                                        :fw/user-meta-map?])))
+                          (select-keys [:fw/user-meta :fw/user-meta-map?])))
 
            ;; TODO - make dedicated badge fn?
            badge (annotation-badge ret)

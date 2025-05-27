@@ -264,8 +264,6 @@
    :coll-limit 40}
   sample/array-map-of-everything-cljc)
 
-#_(pprint (-> (? :data sample/array-map-of-everything-cljc) :formatted+ keys))
-
 (deftest+ with-coll-limit
   {:theme      theme
    :coll-limit 5}

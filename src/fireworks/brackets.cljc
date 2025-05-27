@@ -68,15 +68,11 @@
                     (some-> mm :fw/user-meta)
 
                     {bgc :background-color}
-                    (or 
-                     ;; This colors brackets if custom-badge-style
-                     ;; Leave this out for now
-                     #_(some-> mm :fw/custom-badge-style)
-                     (when (or user-meta label-type)
-                       (let [style-maps
-                             @state/merged-theme-with-unserialized-style-maps]
-                         (or (get style-maps label-type nil)
-                             (get style-maps (state/metadata-token) nil)))))]
+                    (when (or user-meta label-type)
+                      (let [style-maps
+                            @state/merged-theme-with-unserialized-style-maps]
+                        (or (get style-maps label-type nil)
+                            (get style-maps (state/metadata-token) nil))))]
                   bgc)
         f #(if (and bgc (vector? bgc))
              (let [bgc-sgr (state/x->sgr bgc :bg)

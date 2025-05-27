@@ -97,8 +97,7 @@
            js-map-like-key?
            num-chars-dropped
            str-len-with-badge
-           ellipsized-char-count
-           :fw/custom-badge-style]
+           ellipsized-char-count]
     :as m}]
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
@@ -148,14 +147,13 @@
 
         badge-tagged
         (tagged badge
-                {:custom-badge-style custom-badge-style 
-                 :theme-token        (cond
-                                       (pos? (state/formatting-meta-level))
-                                       (state/metadata-token)
-                                       (= badge defs/lambda-symbol) 
-                                       :lambda-label 
-                                       :else
-                                       :literal-label)})
+                {:theme-token (cond
+                                (pos? (state/formatting-meta-level))
+                                (state/metadata-token)
+                                (= badge defs/lambda-symbol) 
+                                :lambda-label 
+                                :else
+                                :literal-label)})
 
         theme-tag
         (cond
@@ -408,7 +406,6 @@
                 val-str-len
                 ;; badge-str-len
                 single-column-map-layout?
-                :fw/custom-badge-style
                 str-len-with-badge
                 :fw/user-meta-map? ; <- maybe this is redundant? also exists as unq kw user-meta in this map. Maybe change unq key to user-metadata-map?, or val-is-user-metadata-map?
                 val-is-volatile?
@@ -522,8 +519,7 @@
              @state/let-bindings?)
 
         ret          
-        (keyed [custom-badge-style 
-                str-len-with-badge     
+        (keyed [str-len-with-badge     
                 annotation-newline 
                 metadata-position
                 user-meta-above?
@@ -597,8 +593,7 @@
                 highlighting
                 let-bindings?
                 val-is-volatile?
-                annotation-newline
-                custom-badge-style]
+                annotation-newline]
          :as m} 
         (reduce-coll-profile coll indent*)
 
@@ -614,10 +609,7 @@
         (when badge
           (let [theme-token (badge-type badge)
                 pred        true]
-            (tagged badge
-                    (keyed [theme-token
-                            pred
-                            custom-badge-style]))))
+            (tagged badge (keyed [theme-token pred]))))
 
         metadata-position
         (:metadata-position @state/config)
