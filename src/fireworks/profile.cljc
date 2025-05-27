@@ -36,8 +36,7 @@
            java-lang-class?
            coll-type?
            transient?
-           classname
-           :fw/custom-badge-text]
+           classname]
     :as m}]
   (when (map? m)
    (let [t (cond lambda?
@@ -46,77 +45,107 @@
                  :transient
                  :else
                  t)
-         b (or custom-badge-text
-               (cond
-                 (contains? all-tags :record)
-                 (:classname m)
+         b (cond
+             (contains? all-tags :record)
+             (:classname m)
 
                  ;; Interesting visualization in JVM Clojure
                  ;; Labels everything, including primitives
                  ;; Maybe this could be exposed in an option 
-                 #_(or java-util-class? java-lang-class?)
-                 #_classname
+             #_(or java-util-class? java-lang-class?)
+             #_classname
 
-                 (= t :inst)
-                 defs/inst-badge
+             (= t :inst)
+             defs/inst-badge
 
-                 (or java-util-class?
-                     (and coll-type? java-lang-class?))
-                 classname
+             (or java-util-class?
+                 (and coll-type? java-lang-class?))
+             classname
 
-                 js-built-in-object?
-                 (str "js/" js-built-in-object-name)
+             js-built-in-object?
+             (str "js/" js-built-in-object-name)
 
-                 (and (not= t :js/Object)
-                      (or (contains? all-tags :js/map-like-object)
-                          (contains? all-tags :js/TypedArray)))
-                 (or (t badges-by-lasertag)
-                     (subs (str t) 1))
-                 
-                 transient?
-                 (or (some->> #?(:cljs #"/" :clj #"\$")
-                              (string/split classname)
-                              last)
-                     defs/transient-label)
+             (and (not= t :js/Object)
+                  (or (contains? all-tags :js/map-like-object)
+                      (contains? all-tags :js/TypedArray)))
+             (or (t badges-by-lasertag)
+                 (subs (str t) 1))
+             
+             transient?
+             (or (some->> #?(:cljs #"/" :clj #"\$")
+                          (string/split classname)
+                          last)
+                 defs/transient-label)
 
-                 :else
-                 (get badges-by-lasertag t nil)))
+             :else
+             (get badges-by-lasertag t nil))
          b #?(:cljs b
               :clj (if (= t :defmulti) "Multimethod" b))]
 
      ;; If you want to signal React -> (str "⚛ " b)
      (when b {:badge b}))))
                          
+(defn target-path-is-ancestor-coll?
+  [tp vp tp-list]
+  (let [debug?
+        false
+        #_(boolean (and (= tp [:map :c])
+                      (= vp [:map :c :fireworks.highlight/map-key])))
+
+        value-path-has-more-nodes-than-target-path?
+        (boolean (and tp (< (count tp) (count vp))))
+
+        target-path-is-potentially-an-ancestor?
+        (boolean (= tp-list (take (count tp) vp)))
+
+        rest-of-value-path
+        (drop (count tp) vp)
+
+        map-key-for-a-target-value?
+        (boolean (and (= (count rest-of-value-path) 1)
+                      (= (first rest-of-value-path)
+                         :fireworks.highlight/map-key)))
+        ret
+        (boolean
+         (when value-path-has-more-nodes-than-target-path?
+           (and target-path-is-potentially-an-ancestor?
+                (not map-key-for-a-target-value?))))]
+
+    #_(when debug?
+      (?pp (keyed [value-path-has-more-nodes-than-target-path?
+                   target-path-is-potentially-an-ancestor?
+                   map-key-for-a-target-value?
+                   rest-of-value-path
+                   tp
+                   vp
+                   tp-list
+                   ret])))
+    ret))
 
 (defn- highlighting*
-  [x m]
-  (let [{:keys [pred style]} m]
-    (when (pred x)
-      {:highlighting style})))
+  "Determines whether value receives highlighting"
+  [x
+   value-path
+   {:keys       [pred style]
+    target-path :path
+    :as         m}]
+  (when (or (and pred (pred x))
+            (and target-path (= target-path value-path))
+            (target-path-is-ancestor-coll? target-path
+                                           value-path
+                                           (apply list target-path)))
+    {:highlighting style}))
 
 
 (defn- highlighting
-  [x]
+  [x path]
   (when-let [hl @state/highlight]
     (cond 
       (map? hl)
-      (highlighting* x hl)
+      (highlighting* x path hl)
       (vector? hl)
-      (some (partial highlighting* x) hl))))
+      (some (partial highlighting* x path) hl))))
 
-
-(defn- extra-str-from-custom-badges [x]
-  (when (coll? x)
-    (reduce (fn [acc el]
-              (if-not (-> el :fw/truncated)
-                (+ acc (or (-> el
-                               meta
-                               :fw/custom-badge-text
-                               count)
-                           0))
-                acc))
-            0
-            x)))
 
 ;; TODO - double check accuracy of this
 ;; It seems this value is still used in fireworks.serialize/reduce-coll-profile
@@ -301,7 +330,7 @@
                   {:x    (or (:x fw-truncated-meta) x)
                    :og-x og-x}
 
-                  (highlighting og-x)
+                  (highlighting og-x (:path fw-truncated-meta))
 
                   ;; TODO - need this mapkey map?
                   mapkey
@@ -312,11 +341,11 @@
                   (some->> mm
                            :fw/type-after-custom-printing 
                            (hash-map :t))
+
+                  ;; TODO - This select-keys is where :fw/custom-badge-style and
+                  ;; :fw/custom-badge-text would go
                   (some-> mm
-                          (select-keys [:fw/custom-badge-style
-                                        :fw/custom-badge-text
-                                        :fw/user-meta
-                                        :fw/user-meta-map?])))
+                          (select-keys [:fw/user-meta :fw/user-meta-map?])))
 
            ;; TODO - make dedicated badge fn?
            badge (annotation-badge ret)

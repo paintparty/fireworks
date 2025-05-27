@@ -1,5 +1,6 @@
 (ns ^:dev/always fireworks.brackets
   (:require [clojure.string :as string]
+            [fireworks.pp :refer [?pp pprint]]
             [fireworks.defs :as defs]
             #?(:clj [fireworks.state :as state]
                :cljs [fireworks.state :as state :refer [node?]])
@@ -67,15 +68,11 @@
                     (some-> mm :fw/user-meta)
 
                     {bgc :background-color}
-                    (or 
-                     ;; This colors brackets if custom-badge-style
-                     ;; Leave this out for now
-                     #_(some-> mm :fw/custom-badge-style)
-                     (when (or user-meta label-type)
-                       (let [style-maps
-                             @state/merged-theme-with-unserialized-style-maps]
-                         (or (get style-maps label-type nil)
-                             (get style-maps (state/metadata-token) nil)))))]
+                    (when (or user-meta label-type)
+                      (let [style-maps
+                            @state/merged-theme-with-unserialized-style-maps]
+                        (or (get style-maps label-type nil)
+                            (get style-maps (state/metadata-token) nil))))]
                   bgc)
         f #(if (and bgc (vector? bgc))
              (let [bgc-sgr (state/x->sgr bgc :bg)
@@ -98,11 +95,12 @@
    Rainbow parens by default.
    Function args vector not included in rainbow parens."
   [{:keys [t mm]} s]
-  (let [theme-token (cond
+  (let [formatting-meta? (pos? (state/formatting-meta-level))
+        theme-token (cond
                       (-> mm :user-meta :fw/hide-brackets?)
                       nil
 
-                      (pos? (state/formatting-meta-level))
+                      formatting-meta?
                       (state/metadata-token)
 
                       (= t :fn-args)
@@ -110,24 +108,39 @@
 
                       :else
                       :rainbow-brackets)
-        style (if (= theme-token :rainbow-brackets) 
-                (if (:enable-rainbow-brackets? @state/config)
-                  (rainbow-bracket-mixin mm)
-                  (style-from-theme :bracket nil))
-                (get @state/merged-theme theme-token nil))]
+        style (or (when-not formatting-meta? (:highlighting mm)) 
+                (if (= theme-token :rainbow-brackets) 
+                  (if (:enable-rainbow-brackets? @state/config)
+                    (rainbow-bracket-mixin mm)
+                    (style-from-theme :bracket nil))
+                  (get @state/merged-theme theme-token nil)))]
 
-    #_(when (state/debug-tagging?)
-        (println "tag-bracket! "
-                 #?(:clj (str style s "\033[0m"))
-                 "   theme-token is   "
-                 theme-token
-                 (str ",  style is:   " (readable-sgr style))))
+    #?(:clj (when (state/debug-tagging?)
+              (println "tag-bracket! "
+                       #?(:clj (str style s "\033[0m"))
+                       "   theme-token is   "
+                       theme-token
+                       (str ",  style is:   " (state/?sgr-str style)))))
 
-    #?(:cljs (if node? style (swap! state/styles conj style))
+    #?(:cljs (if node? 
+               style
+               (do 
+                 (when (state/debug-tagging?)
+                   (println "\n\n")
+                   (println "Debugging tag-bracket!")
+                   (println (str "bracket is: \"" s "\""))
+                   (println "bracket tag is: " t)
+                   (println "Current style is:")
+                   (pprint @state/styles)
+                   (println "Conj'ing style:")
+                   (pprint style)
+                   (println))
+                 (swap! state/styles conj style)))
        :clj style)))
 
 (defn- bracket!*
   [{:keys [s t] :as m}]
+  ;; (?pp m)
   (let [reset-theme-token (if (pos? (state/formatting-meta-level))
                             ;; :metadata
                             :foreground
@@ -142,7 +155,7 @@
              (str (tag-bracket! m s) s (tag-reset!))
              (str (tag-reset!) s (tag-reset!)))]
 
-    (when (state/debug-tagging?)
+    #_(when (state/debug-tagging?)
       (println "\nbracket!*  " s ",  t: " t))
 
     #?(:cljs (if node? 
@@ -205,7 +218,10 @@
     (when (or val-is-atom? val-is-volatile?)
       (let [k (if val-is-atom? :atom-wrapper :volatile-wrapper)]
         (when (state/debug-tagging?)
-          (println "\ntagging " defs/encapsulation-closing-bracket " with " k))
+          (println "fireworks.brackets/closing-angle-bracket! \ntagging "
+                   defs/encapsulation-closing-bracket
+                   " with " 
+                   k))
         (str (tag! k)
              defs/encapsulation-closing-bracket
              (tag-reset!))))))

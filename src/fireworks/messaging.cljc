@@ -1,159 +1,284 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
             [fireworks.pp :refer [?pp pprint]]
+            [fireworks.defs :as defs]
             [expound.alpha :as expound]
-            [bling.core :refer [stack-trace-preview bling point-of-interest callout]]))
+            [fireworks.util :as util :refer [maybe]]))
 
 (defrecord FireworksThrowable [err err-x err-opts])
 
 ;; Compile time errors for surfacing to cljs browser console
 (def warnings-and-errors (atom []))
 
+(defn block
+  [{:keys [header-str block-type body]}] 
+  (let [open-tag 
+        (case block-type
+          :warning defs/orange-tag-open
+          :error defs/red-tag-open
+          defs/gray-tag-open)
+
+        footer-stripe
+        "─────────────────────────────────────────────────────"
+
+        header-stripe-start
+        "══ "
+
+        header-stripe
+        (string/join (repeat (- (count footer-stripe)
+                                (count header-str)
+                                (count header-stripe-start)
+                                1)
+                             "═"))]
+    (str "\n"
+         open-tag
+         header-stripe-start
+         defs/sgr-tag-close
+         defs/bold-tag-open
+         #_"  " header-str
+         defs/sgr-tag-close
+         open-tag
+         " " header-stripe
+         "\n"
+         defs/sgr-tag-close
+         "\n"
+         body
+         open-tag
+         "\n"
+         footer-stripe
+         defs/sgr-tag-close
+         "\n")))
+
+
+(defn stack-trace-preview
+  "Creates a user-friendly stack-trace preview, limited to the frames which
+   contain a match with the supplied regex, up to the `depth` value, if supplied.
+   `depth` defaults to 7."
+  [{:keys [error regex depth header]}]
+  #?(:clj
+     (if-let [strace (some->> (maybe error #(instance? Exception %))
+                              .getStackTrace
+                              seq)]
+       (let [strace-len  (count strace)
+             depth       (or (maybe depth pos-int?) 7)
+
+             ;; Get a mini-strace, limited to the number of frames that will be
+             ;; displayed based on `depth`
+             mini-strace (->> strace
+                              (take depth)
+                              (mapv StackTraceElement->vec))
+
+             ;; If regex is legit, get a list of indexes that match the regex
+             ;; passed in by user. Regex will match on ns or filename where
+             ;; user's their program lives. Then get the last index of a match
+             ;; (within the mini-strace). If regex is not legit, use the depth.
+             last-index  (if (= java.util.regex.Pattern (type regex))
+                           ;; TODO - perf - use transduction here
+                           (some->> mini-strace
+                                    (keep-indexed
+                                      (fn [i [f]]
+                                        (when (re-find regex (str f))
+                                          i)))
+                                    seq
+                                    (take depth)
+                                    last)
+                           (dec depth))
+
+             ;; Get all the frames up to the last index
+             trace*      (when last-index
+                           (->> mini-strace (take (inc last-index))))
+             len         (when trace* (count trace*))
+             with-header [(or header
+                              (str defs/italic-tag-open 
+                                   "Stacktrace preview:"
+                                   defs/sgr-tag-close))
+                          "\n"]
+             trace       (some->> trace* (interpose "\n") (into with-header))
+             num-dropped (when trace
+                           (let [n (- (or strace-len 0) (or len 0))]
+                             (some->> (maybe n pos-int?)
+                                      (str "\n...+"))))
+
+             ;; Conj num-dropped annotation to mini-strace
+             trace       (some-> trace (conj num-dropped))]
+
+         ;; Create and return multiline string
+         (apply str trace))
+
+       ;; Print a warning if option args are bad
+       (block {:header-str "WARNING"
+                 :block-type :warning
+                 :body       (str
+                              "fireworks.messaging/stack-trace-preview\n\n"
+                              "Value of the "
+                              defs/bold-tag-open :error defs/sgr-tag-close
+                              " option should be an instance of "
+                              defs/bold-tag-open 'java.lang.Exception. defs/sgr-tag-close
+                              "\n\n"
+                              "Value received:\n"
+                              defs/bold-tag-open (util/shortened error 33) defs/sgr-tag-close
+                              "\n\n"
+                              "Type of value received:\n"
+                              defs/bold-tag-open (str (type error)) defs/sgr-tag-close
+                              )}))))
+
+
+
+
+
 (defn fw-debug-report-template
   ([s x]
    (fw-debug-report-template s x :info))
   ([s x k]
-   (callout {:label       s
-             :padding-top 1
-             :type        k}
-            (with-out-str (pprint x)))))
+   (println (block {:header-str s
+                    :block-type :info 
+                    :body       (with-out-str (pprint x))}))))
+
+(defn warning-or-exception-summary 
+  [{:keys [k v form line column file header block-type]}]
+  (let [line+sep
+        (str line " │ ")]
+
+    (str (when header
+           (str defs/italic-tag-open
+                "raised by:\n" 
+                defs/sgr-tag-close
+                "  " #_defs/bold-tag-open header #_defs/sgr-tag-close
+                "\n\n\n"))
+
+         (when (and line column file)
+           (str defs/italic-tag-open
+                "source:\n" 
+                defs/sgr-tag-close
+                #_defs/bold-tag-open
+                "  " file ":" line ":" column "\n\n\n"
+                #_defs/sgr-tag-close))
+
+         (when line 
+           (str defs/gray-tag-open line+sep defs/sgr-tag-close))
+
+         defs/bold-tag-open
+         (let [bad-form (with-out-str 
+                          (pprint (or (some-> form (util/shortened 33) symbol)
+                                      (symbol (str k " " v)))))
+               bad-form (string/replace bad-form #"\n$" "")]
+           (str bad-form "\n"
+                (when line+sep (string/join "" (repeat (count line+sep) " ")))
+                (case block-type :error defs/red-tag-open defs/orange-tag-open)
+                (string/join "" (repeat (count bad-form) "^"))
+                defs/sgr-tag-close))
+         defs/sgr-tag-close
+         "\n\n")))
+
+
+(defn warning-details 
+  [{:keys [k v spec default body form]}]
+  (apply str 
+         (concat
+          (when (and form k v)
+            (let [indent "  "]
+              ["\n"
+               "Bad value:\n\n"
+               indent
+               defs/bold-tag-open k defs/sgr-tag-close
+               " "
+               defs/bold-tag-open v defs/sgr-tag-close
+               (str "\n"
+                    (string/join (repeat (count (str k)) " "))
+                    " ")
+               indent
+               defs/orange-tag-open
+               (string/join (repeat (count (str v)) "^"))
+               defs/sgr-tag-close
+               "\n\n\n"]))
+          [(expound/expound-str spec v {:print-specs? false})
+           (when default
+             (str "\n\n"
+                  "The default value of `"
+                  default
+                  "` will be applied."))
+           (when body (str "\n\n" body))])))
+
 
 (defn bad-option-value-warning
-  [{:keys [k v spec default header body line column file form]}]
-  (callout {:type           :warning
-            :label-theme    :marquee
-            :padding-top    1
-            :padding-bottom 0
-            :label          "WARNING: Invalid value"}
-           (point-of-interest
-            (merge {:type   :warning
-                    :form   (or form
-                                (let [str? (string? v)]
-                                  (symbol (str k
-                                               " "
-                                               (when str? "\"")
-                                               v
-                                               (when str? "\"")))))          
-                    :line   line
-                    :column column
-                    :file   file
-                    :header (or header "Invalid option value:")
-                    :body   (apply bling 
-                                   (concat
-                                    (when (and form k v)
-                                      ["\n"
-                                       "Bad value:\n\n"
-                                       [:bold k]
-                                       " "
-                                       [:bold v]
-                                       (str "\n"
-                                            (string/join (repeat (count (str k)) " "))
-                                            " ")
-                                       [:bold.warning (string/join (repeat (count (str v)) "^"))]
-                                       "\n\n\n"])
-                                    [(expound/expound-str spec
-                                                          v
-                                                          {:print-specs? false})
-                                     (when default
-                                       (str "\n\n"
-                                            "The default value of `"
-                                            default
-                                            "` will be applied."))
-                                     (when body (str "\n\n" body))]))}))))
+  [opts]
+  (println 
+   (block {:header-str "WARNING: Invalid value"
+           :block-type :warning
+           :body       (str
+                        (warning-or-exception-summary opts)
+                        "\n"
+                        (warning-details opts))})))
 
 
 (defn unable-to-trace [opts]
-  (callout opts
-           (point-of-interest
-            (merge opts
-                   {:type
-                    :warning
+  (let [opts
+        (merge opts 
+               {:header-str "Unable to trace form"
+                :block-type :warning
+                :form       (list '?trace (:form opts))
+                :body       (str
+                             (warning-or-exception-summary opts)    
+                             "\n"
+                             (str "fireworks.core/?trace will trace forms beginning with:\n"
+                                      "  "
+                                      (string/join "\n  "
+                                                   ['->
+                                                    'some->
+                                                    '->>
+                                                    'some->>])))})]
+    (println (block opts))))
 
-                    :form           
-                    (list '?trace  (:form opts))
+(defn indented-string [s]
+  (when s
+    (string/join "\n"
+                 (map #(str "  "  %) 
+                      (string/split s
+                                    #"\n")))))
+(defn exception-info-from-clojure  
+  [err {:keys [body]}]
+  (if err
+    #?(:cljs
+       ;; TODO - Add stacktrace preview in bling for cljs?
+       body
+       :clj
+       (str
+        defs/italic-tag-open
+        "Message from Clojure:"
+        defs/sgr-tag-close
+        "\n"
+        (indented-string
+         (string/replace (.getMessage err) #"\(" "\n("))
+        "\n\n"
+        (when-let [stp          (stack-trace-preview
+                                 {:error err
+                                  :regex #"^fireworks\.|^lasertag\."
+                                  :depth 12})]
+          (let [[fl & rl]    (string/split stp #"\n")
+                section-head (str defs/italic-tag-open
+                                  fl
+                                  defs/sgr-tag-close)]
+            (str section-head
+                 "\n"
+                 (indented-string (string/join "\n" rl)))))
+        (some->> body (str "\n\n")))) 
+    body))
 
-                    :header         
-                    "Unable to trace form."
 
-                    :body           
-                    (str "fireworks.core/?trace will trace forms beginning with:\n"
-                         (string/join "\n"
-                                      ['->
-                                       'some->
-                                       '->>
-                                       'some->>
-                                       ;; Add let when you actually support it
-                                       ;; 'let
-                                       ]))}))))
-
-
-;; TODO - maybe move this to bling?
-;; Would have to pass in the regex part
-;; version with stack trace
 (defn caught-exception
   ([opts]
    (caught-exception nil opts))
-  ([err {:keys [k v form body]
-         :as   opts}]
-   (callout (merge opts
-                   {:type        :error
-                    :label       (str "ERROR(Caught): "
-                                      #?(:clj
-                                         (string/replace (type err)
-                                                         #"^class "
-                                                         "")
-                                         :cljs nil))
-                    :padding-top 1})
-            (point-of-interest
-             (merge opts
-                    {:type
-                     :error
+  ([err opts]
+   (println 
+    (block 
+     {:header-str (str "ERROR(Caught): "
+                       #?(:clj
+                          (string/replace (type err) #"^class " "")
+                          :cljs nil))
+      :block-type :error
+      :body       (str (warning-or-exception-summary (assoc opts :block-type :error))
+                       (exception-info-from-clojure err opts))}))))
 
-                     :form
-                     (or form (symbol (str k " " v)))
-
-                     :body           
-                     (if err
-                       #?(:cljs
-                          ;; TODO - Add stacktrace preview in bling for cljs?
-                          body
-                          :clj
-                          (let [
-                                ;;  Leave this stack trace stuff out but maybe put it back in with
-                                ;;  a config option for showing full-stacktrace of fireworks errors
-                                ;;  maybe call it :fireworks-dev/full-stacktrace? or something.
-                                ;; strace (some->> (when #(instance? Exception err)
-                                ;;                   err)
-                                ;;                 .getStackTrace
-                                ;;                 (map str))
-                                ]
-                            (bling
-                             [:italic.subtle.bold "Message from Clojure:"]
-                             "\n"
-                             (string/replace (.getMessage err) #"\(" "\n(")
-                             "\n\n"
-                             (stack-trace-preview
-                              {:error err
-                               :regex #"^fireworks\.|^lasertag\."
-                               :depth 12})
-                             (some->> body (str "\n\n"))
-                             
-                            ;;  Leave this stack trace stuff out but maybe put it back in with
-                            ;;  a config option for showing full-stacktrace of fireworks errors
-                            ;;  maybe call it :fireworks-dev/full-stacktrace? or something.
-                            ;;  
-                            ;;  (when strace "\n\n")
-                            ;;  (when strace [:italic.subtle.bold "Full stacktrace:"])
-                            ;;  (when strace "\n")
-                            ;;  (with-out-str (some-> strace pprint))
-                             )))
-                       body)})))))
-
-;; TODO fix this for new callouts
-;; (def dispatch 
-;;   {:messaging/bad-option-value-warning bad-option-value-warning
-;;    :messaging/read-file-warning        read-file-warning
-;;    :messaging/print-error              print-error})
 
 (def dispatch 
   {:messaging/bad-option-value-warning bad-option-value-warning
@@ -164,3 +289,4 @@
 ;; maybe useful if any weird behavior arises
 ;; (defn safe-println [& more]
 ;;   (.write *out* (str (clojure.string/join " " more) "\n")))
+

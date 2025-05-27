@@ -67,7 +67,7 @@
    :url    "url goes here"
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
-   :mood   :light
+   ;; :mood   :light
    :tokens {:classes {:background {:background-color "#f7f7f7"}
                       :string     {:color "#448C27"}
                       :constant   {:color "#7A3E9D"}
@@ -91,13 +91,7 @@
                                          :font-style           :italic
                                          :padding-inline-start :0ch}
                       :eval-label       :eval-label
-                      :eval-label-red   :eval-label-red
-                      :eval-label-green :eval-label-green
-                      :eval-label-blue  :eval-label-blue
                       :eval-form        :eval-label
-                      :eval-form-red    :eval-label-red
-                      :eval-form-green  :eval-label-green
-                      :eval-form-blue   :eval-label-blue
                       :comment          {:color            "#2e6666"
                                          :text-shadow      "0 0 2px #ffffff"
                                          :background-color "#e5f1fa"
@@ -516,24 +510,10 @@
   {:name             "Universal Neutral"
    :desc             (str "A neutral syntax theme for Clojure data that works on both light and dark backgrounds."
                           "The eval label is printed in blue, metadata is printed in purple, and object labels are printed in green.")
-   :rainbow-brackets {:browser [:neutral "#9e9e9e"
-                                :blue    "#00afff"
-                                :orange  "#ff8700"
-                                :green   "#00d700"
-                                :purple  "#ff00ff"]
-                      :x-term  [:neutral 247
-                                :blue    39
-                                :orange  208 
-                                :green   40
-                                :purple  201]}
-   :tokens           {:classes {:foreground {:color "#9e9e9e"}
-                                :metadata   {:font-style :italic}
-                                :metadata2  {:font-style :italic}
-                                :label      {:font-style :italic}
-                                :eval-label {:font-style :italic}}
-                      :syntax  {:js-object-key {:color "#ff00ff"}}
-
+   :mood             "universal"
+   :tokens           {:syntax  {:js-object-key {:color "#ff00ff"}}
                       :printer {:file-info     {:font-style :italic }
+                                ;; TODO maybe these values should be :classes/eval-label
                                 :eval-form     :eval-label
                                 :eval-label    :eval-label
                                 :comment       {:font-style :italic}
@@ -586,7 +566,6 @@
    :url    "url goes here"
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
-   :mood   :light
    :tokens {:classes {:background {:background-color "#f7f7f7"}
                       :string     {:color "#448C27"}
                       :constant   {:color "#7A3E9D"}

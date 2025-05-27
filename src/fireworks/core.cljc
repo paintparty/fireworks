@@ -1,8 +1,9 @@
 (ns fireworks.core
   (:require
-   [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
    [clojure.set :as set]
    [clojure.data :as data]
+   [clojure.spec.alpha :as s]
+   [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
@@ -16,9 +17,7 @@
    #?(:clj [fireworks.macros :refer [keyed get-user-config-edn-dynamic]])
    [clojure.string :as string]
    [fireworks.config :as config]
-   [clojure.spec.alpha :as s]
-   [fireworks.util :as util]
-   [bling.core :refer [bling callout]])
+   [fireworks.util :as util])
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
 
@@ -206,6 +205,8 @@
                    (contains? #{pr pr-str prn prn-str print println} 
                               user-print-fn))
             (with-out-str (user-print-fn source))
+
+            ;; This is where you feed the source to the formatting engine
             (serialize/formatted* source)))
 
         label-or-form
@@ -612,20 +613,22 @@
     (doseq [[label v k] reports]
       (messaging/fw-debug-report-template label v k))))
 
+;; TODO does this get surfaced in cljs-browser?
+;; Use generic callout here?
+
 (defn- fw-config-report []
-  (callout {:label       "fireworks.state/config"
-            :padding-top 1
-            :type        :info}
-           (str 
-            (bling [:italic (str
-                             "Result of merging options from user's"
-                             "\n"
-                             "config.edn file with defaults, and then"
-                             "\n"
-                             "merging optional call-site overrides.")])
-            "\n"
-            "\n"
-            (with-out-str (pprint @state/config)))) )
+  (println
+   (messaging/block 
+    {:header-str "fireworks.state/config "
+     :block-type :info
+     :body       (str "Result of merging options from user's"
+                      "\n"
+                      "config.edn file with defaults, and then"
+                      "\n"
+                      "merging optional call-site overrides:"
+                      "\n"
+                      "\n"
+                      (with-out-str (pprint @state/config)))})))
 
 (defn- native-logging*
   [x]
@@ -743,6 +746,7 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
+  #_(ff opts)
   (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
         config-before (when debug-config? @state/config)]
@@ -918,9 +922,9 @@
           :trace   [:form-or-label :file-info :result]}
          mode
          [:form-or-label :file-info :result])]
-    {:mode     mode
+    {:mode       mode
      :alias-mode alias-mode
-     :template template}))
+     :template   template}))
 
 #?(:clj
    (defn- ?2-helper
@@ -989,6 +993,12 @@
 (declare thread-helper)
 (declare threading-sym)
 
+
+
+
+
+
+
 (defmacro ?
   ([])
   ([x]
@@ -1009,9 +1019,7 @@
        (let [form-meta (meta &form)]
          (if-let [[thread-sym forms] (threading-sym x)]
            (let [[cfg-opts call]
-                 (thread-helper (assoc (keyed [forms
-                                               form-meta
-                                               thread-sym])
+                 (thread-helper (assoc (keyed [forms form-meta thread-sym])
                                        :&form
                                        &form))]
              `(do (fireworks.core/print-thread ~cfg-opts

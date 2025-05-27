@@ -5,6 +5,11 @@
    [fireworks.defs :as defs]
    [clojure.spec.alpha :as s]))
 
+(def bling-color-names-set
+  (let [ks (keys defs/bling-colors*)]
+    (into #{} 
+          (concat ks
+                  (mapv keyword ks)))))
 
 (def css-hex-regex
   #?(:clj
@@ -36,8 +41,8 @@
 (s/def ::color-value 
   (s/or 
    :css-hex ::css-hex
-   :xterm-color-id ::xterm-color-id))
-
+   :xterm-color-id ::xterm-color-id
+   :bling-color-name bling-color-names-set))
 
 (s/def ::font-style #{"italic" "normal" :italic :normal})
 
@@ -110,7 +115,6 @@
 ;; A merged config has this shape:
 ;; {...
 ;;  :theme       {:name   "Foo Dark"
-;;                :mood   "dark"
 ;;                :tokens {:classes {...}
 ;;                         :syntax  {...}
 ;;                         :printer {...}}

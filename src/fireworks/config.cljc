@@ -6,10 +6,7 @@
 ;; TODO add desc field to each entry, use for docs and potenitaly validation
 (def options
   {:theme                         {:spec           ::config/theme
-                                   :default        "Alabaster Light"
-                                   :updates-theme? true}
-   :mood                          {:spec           ::theme/mood
-                                   :default        "light"
+                                   :default        "Universal Neutral"
                                    :updates-theme? true}
    :coll-limit                    {:spec    ::config/coll-limit
                                    :default 33}
@@ -60,6 +57,8 @@
    :margin-bottom                 {:spec    ::config/margin-bottom
                                    :default 1}
    :margin-top                    {:spec    ::config/margin-top
+                                   :default 0}
+   :margin-inline-start           {:spec    ::config/margin-inline-start
                                    :default 0}
    :custom-printers               {:spec    ::config/custom-printers
                                    :default {}}

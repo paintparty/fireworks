@@ -49,6 +49,9 @@
 (s/def ::margin-top
   (s/and int? #(<= 0 % 100)))
 
+(s/def ::margin-inline-start
+  (s/and int? #(<= 0 % 100)))
+
 (s/def ::single-line-coll-length-limit
   (s/and int? #(<= 2 % 200)))
 
@@ -115,9 +118,17 @@
   (s/and fn? ::returns-boolean))
 
 (s/def ::find-for-highlighting-map
-  (s/and map?
-         (s/keys :req-un [::pred]
-                 :opt-un [::tokens/style])))
+  (s/or
+   :find-by-pred
+   (s/and map?
+          (s/keys :req-un [::pred]
+                  :opt-un [::tokens/style]))
+
+   :find-by-path
+   (s/and map?
+          (s/keys :req-un [::path]
+                  :opt-un [::tokens/style]))))
+
 
 (s/def ::find
   (s/or :map
@@ -141,7 +152,6 @@
                           ::print-level 
                           ::theme 
                           ::metadata-print-level 
-                          ::mood 
                           ::coll-limit 
                           ::display-metadata? 
                           ::metadata-position 

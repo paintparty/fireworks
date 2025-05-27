@@ -2,7 +2,7 @@
   (:require
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
-   [fireworks.pp :refer [?pp]]
+   [fireworks.pp :refer [?pp pprint]]
    [fireworks.truncate :as truncate]
    [fireworks.brackets
     :as brackets
@@ -12,11 +12,12 @@
             brackets-by-type]]
    [clojure.string :as string]
    [fireworks.defs :as defs]
-   [fireworks.state :as state]
    [fireworks.tag :as tag :refer [tag! tag-reset! tagged]]
    [fireworks.util :refer [spaces badge-type]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
+   #?(:cljs [fireworks.state :as state :refer [node?]]
+      :clj [fireworks.state :as state])
    [fireworks.util :as util]))
 
 (declare tagged-val)
@@ -96,8 +97,7 @@
            js-map-like-key?
            num-chars-dropped
            str-len-with-badge
-           ellipsized-char-count
-           :fw/custom-badge-style]
+           ellipsized-char-count]
     :as m}]
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
@@ -147,14 +147,13 @@
 
         badge-tagged
         (tagged badge
-                {:custom-badge-style custom-badge-style 
-                 :theme-token        (cond
-                                       (pos? (state/formatting-meta-level))
-                                       (state/metadata-token)
-                                       (= badge defs/lambda-symbol) 
-                                       :lambda-label 
-                                       :else
-                                       :literal-label)})
+                {:theme-token (cond
+                                (pos? (state/formatting-meta-level))
+                                (state/metadata-token)
+                                (= badge defs/lambda-symbol) 
+                                :lambda-label 
+                                :else
+                                :literal-label)})
 
         theme-tag
         (cond
@@ -178,7 +177,7 @@
 
         _ 
         (when (state/debug-tagging?)
-            (println "\nsev!   tagging " s " with " theme-tag))
+          (println "\nsev!   tagging " s " with " theme-tag))
 
         main-entity-tag                  
         (tag! theme-tag highlighting)
@@ -194,7 +193,7 @@
                       :foreground))
 
         fn-args-tagged
-        (tagged fn-args {:theme-token :function-args})
+        (tagged fn-args {:theme-token :function-args :highlighting highlighting})
 
         atom-closing-bracket-tagged
 
@@ -325,7 +324,8 @@
            too-deep?
            max-keylen
            multi-line?
-           num-dropped]
+           num-dropped
+           highlighting]
     :as m}]
   (let [num-dropped-syntax (str (when-not too-deep? defs/ellipsis)
                                 "+"
@@ -345,17 +345,25 @@
                                                        indent-chars))]
                              (if coll-is-map?
                                (str leading+indent
+                                    (tag! {} highlighting)
                                     map-key-ghost
                                     spaces-between-kv
-                                    num-dropped-syntax)
-                               (str leading+indent
                                     num-dropped-syntax
-                                    spaces-between-kv)))]
+                                    (tag-reset!)
+                                    )
+                               (str leading+indent
+                                    (tag! {} highlighting)
+                                     num-dropped-syntax
+                                     spaces-between-kv
+                                    (tag-reset!)
+                                    )))]
 
     (when (state/debug-tagging?)
       (println "\nnum-dropped-annotion! : tagging " extra* " with " :ellipsis))
 
-    (str (tag! :ellipsis) extra* (tag-reset!))))
+    (if highlighting 
+      extra*
+      (str (tag! :ellipsis) extra* (tag-reset!)))))
 
 
 (defn- stringified-bracketed-coll-with-num-dropped-syntax! 
@@ -365,10 +373,13 @@
    how many entries were dropped. This will be something like \"...+5\".
    This value is displayed, in the last position of the collection."
 
-  [{:keys [ob ret num-dropped let-bindings?] :as m}]
+  [{:keys [ob ret num-dropped let-bindings? highlighting] :as m}]
   (let [extra (when (some-> num-dropped pos?)
                 (num-dropped-annotation! m))
         cb    (closing-bracket! m)
+              #_(if highlighting
+                (str (tag! {} highlighting) (closing-bracket! m) (tag-reset!))
+                (closing-bracket! m))
         cb2   (closing-angle-bracket! m)
         ret   (str ob ret extra cb cb2)]
     ret))
@@ -395,13 +406,13 @@
                 val-str-len
                 ;; badge-str-len
                 single-column-map-layout?
-                :fw/custom-badge-style
                 str-len-with-badge
                 :fw/user-meta-map? ; <- maybe this is redundant? also exists as unq kw user-meta in this map. Maybe change unq key to user-metadata-map?, or val-is-user-metadata-map?
                 val-is-volatile?
                 :fw/user-meta ; <- maybe this is redundant? also exists as unq kw in this map. Maybe change unq key to user-metadata-map
                 js-map-like?         
                 val-is-atom?
+                highlighting
                 num-dropped
                 user-meta?
                 too-deep?
@@ -508,14 +519,14 @@
              @state/let-bindings?)
 
         ret          
-        (keyed [custom-badge-style 
-                str-len-with-badge     
+        (keyed [str-len-with-badge     
                 annotation-newline 
                 metadata-position
                 user-meta-above?
                 val-is-volatile?
                 let-bindings?
                 val-is-atom?   
+                highlighting
                 num-dropped
                 multi-line?
                 coll-count
@@ -579,10 +590,10 @@
                 user-meta
                 separator
                 val-is-atom?
+                highlighting
                 let-bindings?
                 val-is-volatile?
-                annotation-newline
-                custom-badge-style]
+                annotation-newline]
          :as m} 
         (reduce-coll-profile coll indent*)
 
@@ -598,10 +609,7 @@
         (when badge
           (let [theme-token (badge-type badge)
                 pred        true]
-            (tagged badge
-                    (keyed [theme-token
-                            pred
-                            custom-badge-style]))))
+            (tagged badge (keyed [theme-token pred]))))
 
         metadata-position
         (:metadata-position @state/config)
@@ -615,7 +623,13 @@
              badge
              (some-> user-metadata-map-block (str (when badge " ")))
              annotation-newline
-             (opening-bracket! (keyed [coll record? let-bindings?]))
+             (opening-bracket! (keyed [coll record? let-bindings? highlighting]))
+             #_(if highlighting
+               ;; Change this - move logic down in to opening bracket!
+               (str #_(tag! {} highlighting)
+                    (opening-bracket! (keyed [coll record? let-bindings?]))
+                    #_(tag-reset!))
+               (opening-bracket! (keyed [coll record? let-bindings?])))
              (when (-> coll meta :too-deep?)
                (tagged "#" {:theme-token :max-print-level-label})))
         
@@ -637,6 +651,7 @@
 (defn- reduce-coll
   [coll indent*]
   (let [{:keys [t
+                highlighting
                 js-typed-array?
                 truncated-coll-size                  ;; <- remove?
                 some-colls-as-keys?                  ;; <- remove?
@@ -662,6 +677,9 @@
                 ]
          :as profile+ob}
         (profile+ob coll indent*)
+
+        formatting-meta?
+        (pos? (state/formatting-meta-level))
 
         ret                 
         (string/join
@@ -698,7 +716,10 @@
                        (if (pos? (state/formatting-meta-level))
                          (tagged separator
                                  {:theme-token (state/metadata-token)})
-                         separator))))]
+                         (tagged separator 
+                                 (merge {:theme-token  :foreground}
+                                        (when-not formatting-meta?
+                                          {:highlighting highlighting})))))))]
               ret))
           coll))
         
@@ -710,6 +731,7 @@
                  truncated-coll-size                  ;; <-remove?
                  some-colls-as-keys?                  ;; <-remove?
                  let-bindings?                        ;; <-remove?
+                 highlighting
                  num-dropped                          ;; <-remove?
                  multi-line?
                  too-deep?                            ;; <-remove?
@@ -719,19 +741,26 @@
                  ob]))]
     ret))
 
+(defn- gap-spaces-impl [{:keys [s k formatting-meta? theme-token-map highlighting]}]
+  (if formatting-meta?
+    (do (when (state/debug-tagging?)
+          (println (str "\ntagging "
+                        (name k)
+                        " in metadata map")))
+        (tagged s
+                (assoc theme-token-map
+                       (keyword (str (name k) "?"))
+                       true)))
+    (tagged s (keyed [highlighting]))))
+
 (defn- gap-spaces
-  [{:keys [s k formatting-meta? theme-token-map]}]
-  #?(:cljs s ;; TODO - do we need to handle node here?
-     :clj  (if formatting-meta?
-             (do (when (state/debug-tagging?)
-                   (println (str "\ntagging "
-                                 (name k)
-                                 " in metadata map")))
-                 (tagged s
-                         (assoc theme-token-map
-                                (keyword (str (name k) "?"))
-                                true)))
-             s)))
+  [{:keys [s k formatting-meta? theme-token-map highlighting] :as m}]
+  #?(:cljs (if node?
+             (gap-spaces-impl m)
+             (tagged s (if formatting-meta?
+                         theme-token-map
+                         (keyed [highlighting]))))
+     :clj  (gap-spaces-impl m)))
 
 (defn- reduce-map*
   [{:keys [indent
@@ -739,7 +768,8 @@
            max-keylen
            coll-count
            untokenized
-           multi-line?]}
+           multi-line?
+           highlighting]}
   idx
   [_ v]]
   (let [[key-props val-props]
@@ -760,6 +790,9 @@
         formatting-meta?
         (pos? (state/formatting-meta-level))
 
+        gap-spaces-opts
+        (keyed [formatting-meta? theme-token-map highlighting])
+
         spaces-after-key
         (let [num-extra (if multi-line?
                           (- (or max-keylen 0) (or key-char-count 0))
@@ -767,12 +800,12 @@
               s         (when (some-> num-extra pos?) 
                           (spaces num-extra))
               k         :spaces-after-key]
-          (gap-spaces (keyed [s k formatting-meta? theme-token-map])))
+          (gap-spaces (assoc gap-spaces-opts :s s :k k)))
 
         kv-gap-spaces
         (let [s (spaces defs/kv-gap)
               k :kv-gap-spaces]
-          (gap-spaces (keyed [s k formatting-meta? theme-token-map])))
+          (gap-spaces (assoc gap-spaces-opts :s s :k k)))
 
         tagged-val          
         (tagged-val (keyed [v
@@ -785,10 +818,8 @@
         sep 
         (when-not (= coll-count (inc idx))
           (if formatting-meta?
-            (tagged separator
-                    (when-not multi-line?
-                      theme-token-map))
-            separator))
+            (tagged separator (when-not multi-line? theme-token-map))
+            (tagged separator (when-not multi-line? (keyed [highlighting])))))
 
         ret                  
         (str escaped-key
@@ -887,6 +918,58 @@
                               :val-props (meta v)}))]
     ret))
 
+(defn augment-meta [form path new-form]
+  (with-meta new-form
+    (assoc-in (meta form) [:fw/truncated :path] path)))
+
+(defn path-walker
+  "Walks a potentially nested data structure that is the result of
+   fireworks.truncate/truncate. Adds an entry to each value's metadata via
+   assoc-in [:fw/truncated :path]. The value of this entry is a vector, which
+   describes the value's location in the nested data structure. This path can be
+   leveraged for highlighting problem values with path info provided by spec or
+   malli."
+  ([form]
+   (path-walker form []))
+  ([form path]
+   (let [with-meta+ (partial augment-meta form path)]
+     (cond 
+       (map? form)
+       (with-meta+ 
+         (reduce-kv (fn [m k v]
+                      (let [
+                            ;; k (-> k meta :fw/truncated :og-x)
+                            ;; _ (?pp (-> k meta :fw/truncated :og-x))
+                            ;; k (-> k meta :fw/truncated :og-x)
+                            ]
+                       (assoc m
+                            ;; version with map-entry style paths for spec :in
+                            ;;  (path-walker k (conj path k 0))
+                            ;;  (path-walker v (conj path k 1))
+                              
+                            ;; version for malli :in
+                              (path-walker k (conj path k nil))
+                              (path-walker v (conj path k))
+                              )))
+                    {}
+                    form) )
+       
+       (coll? form)
+       (with-meta+ 
+         (let [mapped  
+               (map-indexed
+                (fn [i v]
+                  (path-walker v (conj path i)))
+                form)]
+           (cond (list? form)
+                 (apply list mapped)
+                 (seq? form)
+                 (doall mapped)
+                 :else
+                 (into (empty form) mapped))) )
+       :else
+       (with-meta+ form )))))
+
 (defn formatted*
   ([source]
    (formatted* source nil))
@@ -898,10 +981,11 @@
 
    ;; Just for debugging
    ;;  #?(:cljs (js/console.clear))
-   
-   (let [truncated  (truncate/truncate {:depth      0
-                                        :user-meta? user-meta?}
-                                       source)
+
+   #_(?pp 'source source)
+
+   (let [truncated  (truncate/truncate {:path [] :depth 0 :user-meta? user-meta?} source)
+        ;;  truncated  (path-walker truncated)
         ;;  custom-printed truncated
          ;; TODO - revisit this custom printing stuff
          ;; custom-printed (if (:evaled-form? opts)
@@ -911,6 +995,14 @@
          serialized (serialized profiled indent)
         ;;  len            (-> profiled meta :str-len-with-badge)
          ]
+
+   #_(?pp :WTF (-> truncated first second first meta :fw/truncated :path))
+
+    ;; for debugging path info
+    #_(walk/postwalk (fn [x]
+                     (println)
+                     (pprint (-> x meta :fw/truncated (select-keys [:og-x :path]))) x)
+                   truncated)
 
     ;; Just for debugging
     ;;  (when (:coll-type? (meta profiled))

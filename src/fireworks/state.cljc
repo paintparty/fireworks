@@ -1,8 +1,9 @@
 ;; TODO - what is difference between @config and user-config-edn
 
 (ns ^:dev/always fireworks.state
-  (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs keyed]]
-               :clj  [fireworks.macros :refer        [get-user-configs keyed]])
+  (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs get-user-color-env-vars keyed]]
+               :clj  [fireworks.macros :refer        [get-user-configs get-user-color-env-vars keyed]])
+            [clojure.pprint :refer [pprint]]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [fireworks.basethemes :as basethemes]
@@ -54,6 +55,7 @@
 
 ;; Internal state atoms for development debugging ------------------------
 (def debug-config? false)
+(def debug-theme? #_true false)
 (def print-config? false)
 
 ;; Temp for debugging tagging 
@@ -106,13 +108,23 @@
         (messaging/fw-debug-report-template
          "def fireworks.state/user-config-edn* (with :path-to-user-config)"
          (get-user-configs)))
+      (when debug-theme?
+        (messaging/fw-debug-report-template
+         "debugging-theme :: deffing fireworks.state/user-config-edn* (with :path-to-user-config)"
+         (str
+          (some-> (get-user-configs) :theme :name))))
       (get-user-configs)))
 
 (defn user-config-edn*-dynamic []
   (do (when debug-config?
         (messaging/fw-debug-report-template
-         "def fireworks.state/user-config-edn* (with :path-to-user-config)"
+         "def fireworks.state/user-config-edn*-dynamic (with :path-to-user-config)"
          (get-user-configs)))
+      (when debug-theme?
+        (messaging/fw-debug-report-template
+         "debugging-theme :: deffing fireworks.state/user-config-edn*-dynamic (with :path-to-user-config)"
+         (str
+          (some-> (get-user-configs) :theme :name))))
       (get-user-configs)))
 
 ;; -----------------------------------------------------------------------------
@@ -122,11 +134,14 @@
 ;; TODO - figure out how to get filename, line, and column.
 (defn validate-option-from-user-config-edn
   [k v {:keys [spec default]}]
+  
   (let [undefined? (or (when (string? v) (string/blank? v))
                        (nil? v))
         valid?     (when-not undefined? (if spec (s/valid? spec v) v))
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
+      #_(do (println :invalid "::" 'validate-option-from-user-config-edn "\n")
+          (?pp [k #_v]))
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
               :header (str (some-> user-config-edn*
@@ -144,6 +159,15 @@
         valid?     (when-not undefined? (if spec (s/valid? spec v) v))
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
+      #_(do (println :invalid "::" 'validate-option-from-user-config-edn-dynamic "\n")
+          ;; (?pp [k v])
+          (println "The spec")
+          (pprint spec)
+          (println "\n\n")
+          ;; (pprint user-config-edn*)
+          (pprint (s/explain-data spec v))
+          (println "\n\n")
+          )
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
               :header (str (some-> user-config-edn*
@@ -162,37 +186,41 @@
                   [k v]))
               m2)))
 
-(def user-config-edn
-  (try 
-    (let [ret
-          (into {}
-                (map (fn [[k v]]
-                       (let [m         
-                             (k config/options)
+;; Is this not ever used??
+#_(def user-config-edn
+  (do #_(println "user-config-edn")
+      (try 
+        (let [ret
+              (into {}
+                    (map (fn [[k v]]
+                           (let [m         (k config/options)
 
-                             validated
-                             (validate-option-from-user-config-edn k v m)]
-                         [k validated]))
-                     user-config-edn*))]
-      (when debug-config?
-        (messaging/fw-debug-report-template
-         "Invalid options from user-config-edn*"
-         (config-diffs user-config-edn* ret)))
-      (when debug-config?
-        (messaging/fw-debug-report-template
-         "def fireworks.state/user-cofig-edn (validated)"
-         ret))
-      ret)
+                                 validated (validate-option-from-user-config-edn k v m)]
+                             [k validated]))
+                         user-config-edn*))]
+          (when debug-config?
+            (messaging/fw-debug-report-template
+             "Invalid options from user-config-edn*"
+             (config-diffs user-config-edn* ret)))
+          (when debug-config?
+            (messaging/fw-debug-report-template
+             "def fireworks.state/user-cofig-edn (validated)"
+             ret))
+          (when debug-theme?
+            (messaging/fw-debug-report-template
+             "debugging theme :: deffing fireworks.state/user-cofig-edn (validated)"
+             (some-> ret :theme :name)))
+          ret)
 
-    ;; TODO - check if this actually catches anything?
-    (catch #?(:cljs js/Object
-              :clj Exception)
-           e
-      (messaging/caught-exception e {})
-      (swap! messaging/warnings-and-errors
-             conj
-             [:messaging/print-error e])
-      {})))
+        ;; TODO - check if this actually catches anything?
+        (catch #?(:cljs js/Object
+                  :clj Exception)
+               e
+          (messaging/caught-exception e {})
+          (swap! messaging/warnings-and-errors
+                 conj
+                 [:messaging/print-error e])
+          {}))))
 
 (defn user-config-edn-dynamic []
   (try 
@@ -221,6 +249,10 @@
         (messaging/fw-debug-report-template
          "def fireworks.state/user-cofig-edn (validated)"
          ret))
+      (when debug-theme?
+            (messaging/fw-debug-report-template
+             "debugging theme :: deffing fireworks.state/user-cofig-edn-dynamic (validated)"
+             (some-> ret :theme :name)))
       ret)
 
     ;; TODO - check if this actually catches anything?
@@ -244,8 +276,7 @@
 (defn- dark? [x]
   (contains? #{:dark "dark"} x))
 
-
-(defn- user-opt-val [user-config-edn k]
+(defn- user-opt-val [user-config-edn k bling-mood]
   (let [opt (k user-config-edn)
         ;; todo - why the string check?
         opt (when-not (and (string? opt)
@@ -254,32 +285,57 @@
         ret (if (not (nil? opt))
               opt
               (if (= k :theme)
-                ;; maybe nix cos theme should already be there
-                (if (dark? (:mood user-config-edn))
-                  "Alabaster Dark"
-                  "Alabaster Light")
-                (k default-config)))]
+
+                ;; This is where theme gets set to default light or dark if 
+                ;; User only has BLING_MOOD set and no other fireworks config.edn or bling config.edn
+                (case bling-mood
+                  "light" "Alabaster Light"
+                  "dark"  "Alabaster Dark"
+                  "Universal Neutral")
+
+                (k default-config)))
+
+        ]
     #_(println k opt ret)
     ret))
 
+;; THIS IS WHERE COLOR ENV VARS GET MERGED INTO CONFIG
 (defn merged-config []
-  (let [user-config-edn (user-config-edn-dynamic)]
-   (into {}
-         (map (fn [[k _]]
-                [k (user-opt-val user-config-edn k)])
-              config/options))))
+  (let [user-config-edn
+        (user-config-edn-dynamic)
+
+        {:keys [:env-var/no-color? :env-var/force-color? :env-var/bling-mood]
+         :as   color-env-vars}  
+        (get-user-color-env-vars)
+
+        ret
+        (into (or color-env-vars {})
+              (map (fn [[k _]]
+                     [k (user-opt-val user-config-edn k bling-mood)])
+                   config/options))
+
+        maybe-rainbow-brackets
+        (when (and no-color? (not force-color?))
+          {:enable-rainbow-brackets? false})]
+    (merge ret maybe-rainbow-brackets)))
 
 (def config
-  (do 
+  (let [mc (merged-config)] 
     (when debug-config?
       (messaging/fw-debug-report-template
        "Options from user-config-edn that will override defaults"
        (config-diffs default-config user-config-edn*)))
     (when debug-config?
       (messaging/fw-debug-report-template
-       "def config, initial value of atom"
-       (merged-config)))
-    (atom (merged-config))))
+       "def fireworks.state/config, initial value of atom"
+       mc))
+    (when debug-theme?
+      (messaging/fw-debug-report-template
+       "def fireworks.state/config, initial value of atom"
+       (if (some-> mc :theme map?)
+         (assoc mc :theme {:name (some-> mc :theme :name) '... '...})
+         mc)))
+    (atom mc)))
 
 
 ;; -----------------------------------------------------------------------------
@@ -296,7 +352,7 @@
 
 
 (defn- with-removed-or-resolved-color
-  [m k {:keys [theme-token from-custom-badge-style?] :as opts}]
+  [m k {:keys [theme-token] :as opts}]
   (let [c               (k m)
         bg-transparent? (and (= k :background-color)
                              (contains? #{:transparent "transparent"} c))
@@ -313,11 +369,7 @@
                  :v      c
                  :spec   ::tokens/color-value
                  :header (str "fireworks.state/with-removed-or-resolved-color\n\n"
-                              "Invalid color value for theme token " theme-token "."
-                              (when from-custom-badge-style?
-                                (str "\n\n"
-                                     "This is from a :badge-style map within"
-                                     " a user-supplied custom printer.")))
+                              "Invalid color value for theme token " theme-token ".")
                  :body   (str "The fallback color value for the "
                               theme-token 
                               " theme token will be applied.")}
@@ -327,30 +379,6 @@
       :else
       m)))
 
-
-(defn- kv-pair-str [k v]
-  (str "\033[1;m" k " " "\"" v "\"\033[0;m"))
-
-(defn invalid-color-warning 
-  [{:keys [header v k footer theme-token from-custom-badge-style?]}]
-  (str header
-       "\n\n"
-       #?(:cljs (if node?
-                  (kv-pair-str k v)
-                  (str "%c" k " " "\"" v "\"%c"))
-          :clj (kv-pair-str k v))
-       
-       (when from-custom-badge-style?
-         (str "\n\n"
-              (str "This is from a :badge-style map within"
-                   " a user-supplied custom printer.")))
-       "\n\n"
-       "This color value should be a hex or named html color."
-       "\n\n"
-       (str "The fallback color value for the "
-            theme-token 
-            " theme token will be applied.")
-       footer))
 
 (defn with-conformed-colors
   "If :background-color is :transparent or \"transparent\", dissoc the entry.
@@ -366,6 +394,27 @@
                  (with-removed-or-resolved-color :background-color opts))]
     ret))
 
+(def underline-style-codes-by-style
+  {"straight" 1 
+   "double"   2 
+   "wavy"    3 
+   "dotted"   4 
+   "dashed"   5})  
+
+(defn- sgr-text-decoration [m]
+  (when-not (:disable-text-decoration? m)
+    (cond
+      (or (contains? #{"underline" :underline} (:text-decoration m))
+          (contains? #{"underline" :underline} (:text-decoration-line m)))
+      (if-let [n (some->> m
+                          :text-decoration-style
+                          util/as-str
+                          (get underline-style-codes-by-style))] 
+        (str "4:" n)
+        "4")
+      (contains? #{"line-through" :strikethrough}
+                 (:text-decoration m))
+      "9")))
 
 (defn x->sgr [x k]
   (when x
@@ -382,24 +431,28 @@
     font-style  :font-style
     font-weight :font-weight
     :as         m}]
+
   (let [debug? false
         fgc    (x->sgr fgc* :fg)
-        bgc    (do #_(when bgc* (println "m->sgr:bgc* " bgc*))
-                (x->sgr bgc* :bg))
+        bgc    (x->sgr bgc* :bg)
         italic (when (and (:enable-terminal-italics? @config)
                           (contains? #{"italic" :italic} font-style))
-                 "3;")
+                 "3")
         weight (when (and (:enable-terminal-font-weights? @config)
                           (contains? #{"bold" :bold} font-weight))
-                 ";1")
-        ret    (str "\033[" 
-                    italic
-                    fgc
-                    weight
-                    (when (or (and fgc bgc)
-                              (and weight bgc))
-                      ";")
-                    bgc
+                 "1")
+
+        text-decoration
+        (sgr-text-decoration m)
+
+        ret    (str "\033["
+                    (string/join ";"
+                                 (remove nil?
+                                         [italic
+                                          fgc
+                                          weight
+                                          bgc
+                                          text-decoration]))
                     "m")]
     (when debug?
       (?pp "\nCombining the fg and bg into a single sgr..." m)
@@ -486,7 +539,8 @@
   (str (name k) ":" (if (number? v) v (some-> v name)) ";"))
 
 
-(defn sanitize-style-map [m]
+(defn sanitize-style-map
+  [m]
   (let [ret (select-keys m defs/valid-stylemap-keys)
         f #(let [ret* (if (false? (:enable-terminal-italics? @config)) 
                         (dissoc ret :font-style)
@@ -514,7 +568,7 @@
                            [k (m->sgr m-with-k)]
                            (let [m (with-line-height m)]
                              [k (string/join (map kv->css2 m))]))
-                   :clj [k (m->sgr m-with-k)])))
+                   :clj [k (m->sgr  m-with-k)])))
             merged))
 
 
@@ -547,13 +601,12 @@
 (defn merge-theme+
   "Merges a theme (light or dark) with base theme (light or dark).
 
-   Hydrates style-maps into maps that are computationally easier
-   for interop. This step removes the font-weight and font-style
-   options for the terminal context, as they are not reliably supported
-   across emulators.
+   Hydrates style-maps into maps that are computationally easier for interop.
+   This step removes the font-weight and font-style options for the terminal
+   context, as they are not reliably supported across emulators.
 
-   This :constant example would be under [:tokens :classes],
-   in a typical fireworks theme.
+   This :constant example would be under [:tokens :classes], in a typical
+   fireworks theme.
    {...
        {:constant {:color       \"#949494\"
                    :font-weight :bold
@@ -575,6 +628,8 @@
     ;; (?pp 'base (-> base :classes :label))
     ;; (?pp 'theme (-> theme))
     ;; (?pp classes)
+    ;; (?pp (select-keys classes [:highlight :highlight-underlined]))
+    ;; (?pp (select-keys merged [:highlight :highlight-underlined]))
     {:with-style-maps            merged
      :with-serialized-style-maps (assoc
                                   merged2
@@ -606,25 +661,6 @@
                     :clj (map xterm-id->sgr ret))]
     ret))
 
-;; TODO v0.5.0
-;; (defn metadata-bgcs
-;;   [mood
-;;    theme
-;;    base-theme]
-;;   (let [printer-metadata (some-> theme
-;;                                  :printer
-;;                                  :metadata)
-;;         bgc              (when (map? printer-metadata)
-;;                            (:background-color printer-metadata))
-;;         bgc              (or bgc
-;;                              (-> base-theme
-;;                                  :classes
-;;                                  :metadata
-;;                                  :background-color))
-;;         ;; rgb              ()
-;;         ]
-;;     (?pp :bgc bgc)))
-
 (defn valid-user-theme [theme*]
   (when (map? theme*) 
     (if (s/valid? ::theme/theme theme*)
@@ -639,33 +675,88 @@
                               (:name theme*)
                               "\":")}))))))
 
+
+;; FALLBACK THEMES
+(def fallback-theme
+  {:neutral themes/universal-neutral
+   :light   themes/alabaster-light
+   :dark    themes/alabaster-dark})
+
+
+(defn- resolve-theme [config user-theme]
+  (let [theme*                                             (:theme config)
+        {:keys [:env-var/no-color? :env-var/force-color?]} config
+        ;; no-color?                                          true
+        fallback-theme                                     themes/universal-neutral]
+    (when debug-theme?
+      (pprint (merge
+               (when (string? theme*) {"theme* from config" theme*})
+               {"theme* from config is string?"     (string? theme*)
+                "theme* from config name"           (some-> theme* :name)
+                "fallback theme name"               (some-> fallback-theme :name)
+                "valid user theme?"                 (when user-theme true)
+                "NO_COLOR env var is non-empty?"    no-color?
+                "FORCE_COLOR env var is non-empty?" force-color?}))
+      (println))
+    (cond
+      (and no-color? (not force-color?))
+      (do (when debug-theme?
+            (println (str "NO_COLOR env var is not empty, so falling back to "
+                          (some-> fallback-theme :name)))) 
+          fallback-theme)
+      
+
+      (string? theme*)
+      (do (when debug-theme?
+            (println (str "Theme from user-config is string: " theme*)))
+          (get basethemes/stock-themes theme*))
+
+      user-theme
+      (do (when debug-theme?
+            (if user-theme
+              (println (str "User theme is valid!" ))
+              (println (str "User theme is not valid!"))))
+          user-theme)
+
+      :else
+      (do (when debug-theme?
+            (println "Falling back to " (some-> fallback-theme :name))) 
+          fallback-theme))))
+
 (defn merged-theme*
   ([]
    (merged-theme* nil))
   ([reset]
    (let [theme*           (:theme @config) ;; TODO - should this be user-config?
-         fallback-theme   themes/universal-neutral
          user-theme       (valid-user-theme theme*)
-         theme            (cond
-                            (string? theme*)
-                            (get basethemes/stock-themes theme*)
-                            user-theme
-                            user-theme
-                            :else
-                            fallback-theme)
-         mood             (if (dark? (:mood theme))
+         theme            (resolve-theme @config user-theme)
+         theme-suffix     (some-> theme :name (string/split #" ") last)
+         mood             (case theme-suffix
+                            "Light"
+                            :light
+                            "Dark"
                             :dark
-                            :light)     
-         base-theme       (if (= mood :dark)
+                            :universal)
+         base-theme       (case mood
+                            :dark
                             basethemes/base-theme-dark*
-                            basethemes/base-theme-light*)
+                            :light
+                            basethemes/base-theme-light*
+                            basethemes/base-theme-universal*)
          rainbow-brackets (rainbow-brackets mood theme)
-        ;;  metadata-bgcs    (metadata-bgcs mood theme base-theme)
          base-theme       (assoc base-theme :rainbow-brackets rainbow-brackets)
          ret              (merge-theme+ base-theme theme)]
-     ;; TODO - Add observability for theme
-     ret)))
 
+     (when debug-theme?
+       (println)
+       (pprint {
+                "resolved theme name"   (some-> theme :name)
+                "resolved theme suffix" theme-suffix
+                "theme mood"            mood
+                ;; "rainbow-brackets"      rainbow-brackets
+                }))
+     #_(?pp (keyed [theme* fallback-theme user-theme theme theme-suffix mood]))
+     ret)))
 
 
 
@@ -716,20 +807,83 @@
 ;; Helpers for highlighting
 ;; -----------------------------------------------------------------------------
 
-(defn highlight-style* [{:keys [style pred]}]
+(defn- with-bling-color->sgr [m k v]
+  (if-let [sgr (some->> v util/as-str (get defs/bling-colors*) :sgr)]
+    (assoc m k sgr)
+    (assoc m k v)))
+
+(defn- with-bling-colors->sgr [m]
+  (some->>
+   m
+   :style
+   (reduce-kv
+    (fn [m k v]
+      (case (name k)
+        "background-color"
+        (with-bling-color->sgr m k v)
+        "color"
+        (with-bling-color->sgr m k v)
+        m))
+    {})))
+
+
+(defn ^:public ?sgr-str [s]
+  (string/replace s
+                  #"\u001b\[([0-9;]*)[mK]"
+                  (str "\033[38;5;231;48;5;247m"
+                       "\\\\033["
+                       "$1"
+                       "m"
+                       "\033[0;m")))
+
+(defn ^:public ?sgr
+  "For debugging of sgr code printing.
+
+   Prints the value with escaped sgr codes so you can read them in terminal
+   emulators (otherwise text would just get colored).
+
+   Returns the value."
+  [s]
+  ;; TODO - try to figure out way you can preserve the color in the output,
+  ;; which would help even more for debugging.
+  (some-> s 
+          ?sgr-str
+          println)
+  s)
+
+
+(defn highlight-style*
+  [{:keys [style pred path class] :as m}]
+  ;; (?pp m)
+  ;; (?pp (keys @merged-theme))
+  ;; (?pp (:highlight-underlined @merged-theme))
   ;; TODO - check is css-str always gonna be css?
-  (let [css-str (if style 
+  (let [style
+        (with-bling-colors->sgr m)
+        
+        css-str (if style 
                   (let [style (sanitize-style-map style)]
                     (when (seq style)
                       #?(:cljs (if node?
                                  (m->sgr (map-vals hexa-or-sgr style))
-                                 (str (->> style
-                                           (map kv->css2)
-                                           string/join)
+                                 (str (->> style (map kv->css2) string/join)
                                       (line-height-css)))
                          :clj  (m->sgr (map-vals hexa-or-sgr style)))))
-                  (:highlight @merged-theme))]
-    (assoc {:pred pred}
+                  (let [highlight-class-sgr (some->> class (get @merged-theme))
+                        highlight-sgr (:highlight @merged-theme)]
+
+                    #_(do 
+                      (println 'highlight-sgr)
+                      (?sgr highlight-sgr)
+                      (println 'highlight-class-sgr)
+                      (?sgr highlight-class-sgr)
+                      (println))
+
+                    (or highlight-class-sgr highlight-sgr)))]
+    (assoc (merge {} 
+                  (when pred {:pred pred})
+                  (when class {:class class})
+                  (when path {:path path}))
            :style
            css-str)))
 

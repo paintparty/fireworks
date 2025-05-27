@@ -1,7 +1,6 @@
 (ns fireworks.sample
   (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
-            [bling.core :refer [callout bling ?sgr]]
             [clojure.string :as string]
             [fireworks.pp :as pp :refer [?pp]]
             [clojure.pprint :refer [pprint]]
@@ -227,8 +226,13 @@
      :b 2
      :c "three"}
 
+    :multiline-map
+    {:a     "abcdefghijklmnopqrstuv"
+     :ab    "abcdefghijklmnopqrstuv12345"
+     :abcde "xyz"}
+
     :rainbow
-    [1 2 3]
+    [[[[[]]]]]
 
     :vector    
     [1 2 3]
@@ -254,7 +258,7 @@
     ;; Leave off until you fix this
     ;; :datatype
     ;; my-data-type
-
+    
     :set
     #{1 :2 "three"})
 
@@ -312,7 +316,7 @@
    "Abstractions"
    (array-map
     :atom             (qc (atom 1))
-    :date             my-date
+    ;; :date             my-date
     :volatile!        (volatile! 1)
     :transient-vector (transient [1 2 3 4])
     :transient-set    (transient #{:a 1})
@@ -443,7 +447,7 @@
                     ;; "Map keys"
                     "Abstractions"
                     ;; "With meta"
-                    ] 
+                    ]
                    ;; TODO - maybe blank map or no map?
                    {:as-vec?              false
                     :show-extras?         false
@@ -507,3 +511,48 @@
                    {:as-vec?              true
                     :show-extras?         true
                     :extras-keys          [:tag :call :all-tags]}))
+
+
+;; find and highlight example
+(defn find-and-highlight-with-paths-example []
+  (let [finds [
+            ;;  {:path [:rainbow]}
+               {:path  [:vector]
+                :class :highlight}
+
+               {:path  [:set "three" #_:fireworks.highlight/map-key]
+                :class :highlight}
+
+               {:path  [:map :c #_:fireworks.highlight/map-key]
+                :class :highlight-underlined}
+
+               {:path  [:multiline-map]
+                :class :highlight-info}
+
+               {:path  [:record #_:fireworks.highlight/map-key]
+                :class :highlight}
+
+               {:path  [:int]
+                :class :highlight-error}
+
+               {:path  [:keyword]
+                :class :highlight-warning}
+
+               {:path  [:nil]
+                :class :highlight-info}
+
+               {:path  [:float]
+                :class :highlight-error-underlined}
+
+               {:path  [:boolean]
+                :class :highlight-warning-underlined}
+
+               {:path  [:##Nan]
+                :class :highlight-info-underlined}
+               ]]
+
+    (println "\nSample output, in Universal Neutral, with various :path based :find highlighting\n")
+    (? {
+        :theme "Alabaster Light"
+        :find  finds}
+       (assoc-in array-map-of-everything-cljc [:map :b] "asdfgasdfasdfasdfasdfadsfasfasfas"))))

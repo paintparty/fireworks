@@ -3,11 +3,9 @@
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
-            [bling.core :refer [callout bling ?sgr]]
-            ;; [bling.sample]
             [clojure.string :as string]
             [fireworks.pp :as pp]
-            [clojure.pprint :refer [pprint]]
+            [clojure.pprint :refer [pprint print-table]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
             [fireworks.sample :as sample]
@@ -17,12 +15,107 @@
             #?(:clj [clojure.test :refer :all])))
 
 
+#?(:clj
+   (def sample
+     ["\"hi\""
+      "hi"	
+
+      :hi	
+      :hi	
+
+      "^hi$"
+      "^hi$"	
+
+      true
+      true	 
+
+      'mysym
+      'mysym	 
+
+      [1 2 3]
+      [1 2 3]
+
+      #{1 3 2}
+      #{1 3 2}
+
+      {:a 2
+       :b 3}
+      {:a 2
+       :b 3}
+
+      '(map inc (range 3))
+      (map inc (range 3))
+
+      '(range 3)
+      (range 3)
+
+      '(:a :b :c)
+      (:a :b :c)
+
+      '##Inf
+         ##Inf
+
+           '##-Inf
+              ##-Inf
+
+                '##NaN
+                   ##NaN
+
+                     1/3
+                    1/3
+
+                  '(byte 0)
+               (byte 0)
+
+             '(short 3)
+          (short 3)
+
+        '(double 23.44)
+      (double 23.44)
+
+      '1M
+      1M
+
+      1 
+      1
+
+      '(float 1.5)
+      (float 1.5)
+
+      '(char 92)
+      (char 92)
+
+      '(java.math.BigInteger. "171")
+      (java.math.BigInteger. "171")
+
+      '(java.util.Date.)
+      (java.util.Date.)
+      ]))
+
+(def lasertag-sample
+  #?(:cljs
+     ()
+     :clj
+      (reduce
+       (fn [acc [sym v]]
+         (conj acc
+               {'form              sym
+                'lasertag.core/tag (tag v)
+                'clojure.core/type (type v)}))
+       []
+       (partition 2 sample))))
+
+
+#_(println (table [{:name 'form :title "form" }
+                 {:name 'lasertag.core/tag :title "lasertag.core/tag"}
+                 {:name 'clojure.core/type :title "clojure.core/type"}]
+                lasertag-sample))
+
 ;; This is example config. If you want to run fireworks.core-test tests locally,
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
 ;; If you don't do this, the tests will break.
 ;; TODO - Fix the above situation.
 {:theme                        "Alabaster Light"
- :mood                         :light
  :line-height                  1.45
  :print-level                  7
  :non-coll-length-limit        33
@@ -115,9 +208,6 @@
     :label      "JVM Clojure Values with extras"}
     sample/vec-of-interop-types-with-extras)
 
-#_(bling.sample/sample)
-
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -129,19 +219,6 @@
 
 ;; TODO - Add more commentary and thorough examples
 
-(defn co [k commentary]
-  (callout {:border-weight :medium
-            :type          :magenta
-            :label         k
-            :margin-bottom 1}
-           commentary))
-
-(defn co2 [label form]
-  (callout {:type          :subtle
-            :border-weight :thin
-            :label         (bling [:italic label])
-            :margin-bottom 0}
-           (bling [:italic.subtle form])))
 
 (do
   ;; good 
@@ -306,28 +383,8 @@
  ;; TODO - Use the co fn to add some commentary to samples below.
  ;; -------------------------------------------------------------
 
- ;; Testing all the stock themes cljc
- #_(do
-   (doseq [mood ["Light" #_"Dark"]]
-     (doseq [theme ["Neutral"
-                    "Alabaster"
-                    "Zenburn"
-                    "Degas"
-                    "Solarized"
-                    "Monokai"]]
-      (let [x (str theme " " mood)]
-        (? {:label x :theme x}
-           basic-samples-cljc-theme)))))
-
-
  ;; Testing all the options cljc
  #_(do 
-
-  ;; :mood
-  (? {:label :mood :mood "light" :theme nil}
-     (with-meta ["Light"] {:mood :light}))
-  (? {:label :mood :mood "dark" :theme nil}
-     (with-meta ["Dark"] {:mood :dark}))
 
   ;; :print-level
   (? {:label :print-level :print-level                7}
@@ -359,26 +416,26 @@
      (with-meta [(with-meta (symbol "foo") {:my :meta})
                  (with-meta (symbol "foo") {:my :meta})
                  (with-meta (symbol "foo") {:my :meta})]
-       {:mood [1 [2 [3 [4 [5]]]]]})) 
+       {:moo [1 [2 [3 [4 [5]]]]]})) 
 
   
 
   (? {:label                :metadata-print-level
       :metadata-print-level 3
       :metadata-position    "inline"}
-     (with-meta [] {:mood [1 [2 [3 [4 [5]]]]]}))
+     (with-meta [] {:moo [1 [2 [3 [4 [5]]]]]}))
 
   ;; :display-metadata?
   (? {:label             ":display-metadata? false"
       :display-metadata? false
       :metadata-position "inline"}
-     (with-meta [(with-meta (symbol "foo") {:my :meta})] {:mood [1 [2 [3 [4 [5]]]]]}))
+     (with-meta [(with-meta (symbol "foo") {:my :meta})] {:moo [1 [2 [3 [4 [5]]]]]}))
 
   ;; :display-metadata?
   (? {:label             :display-metadata?
       :display-metadata? true
       :metadata-position "inline"}
-     (with-meta [(with-meta (symbol "foo") {:my :meta})] {:mood [1 [2 [3 [4 [5]]]]]}))
+     (with-meta [(with-meta (symbol "foo") {:my :meta})] {:moo [1 [2 [3 [4 [5]]]]]}))
 
   (? {:label ":enable-rainbow-brackets? false" :enable-rainbow-brackets?   false}
      [[[[[[]]]]]])
@@ -400,7 +457,6 @@
 
   (? {:label "Custom theme"
       :theme {:name   "MyCustomTheme Dark" 
-              :mood   "dark"     
               :tokens {:classes {:string {:color "#ff0000"}
                                  :comment {:color "#ff00cc"}}
                        :syntax  {:js-object-key {:color "#888888"}}
