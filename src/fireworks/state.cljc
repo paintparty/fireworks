@@ -54,7 +54,7 @@
 
 
 ;; Internal state atoms for development debugging ------------------------
-(def debug-config? false)
+(def debug-config? #_true false)
 (def debug-theme? #_true false)
 (def print-config? false)
 
@@ -110,9 +110,9 @@
          (get-user-configs)))
       (when debug-theme?
         (messaging/fw-debug-report-template
-         "debugging-theme :: deffing fireworks.state/user-config-edn* (with :path-to-user-config)"
-         (str
-          (some-> (get-user-configs) :theme :name))))
+         (str "debugging-theme :: deffing fireworks.state/user-config-edn* (with :path-to-user-config)"
+              "\n\n(str (some-> (get-user-configs) :theme :name)) =>")
+         (str (some-> (get-user-configs) :theme :name))))
       (get-user-configs)))
 
 (defn user-config-edn*-dynamic []
@@ -122,7 +122,8 @@
          (get-user-configs)))
       (when debug-theme?
         (messaging/fw-debug-report-template
-         "debugging-theme :: deffing fireworks.state/user-config-edn*-dynamic (with :path-to-user-config)"
+         (str "debugging-theme :: deffing fireworks.state/user-config-edn*-dynamic (with :path-to-user-config)"
+              "\n\n(str (some-> (get-user-configs) :theme :name)) =>")
          (str
           (some-> (get-user-configs) :theme :name))))
       (get-user-configs)))
@@ -251,7 +252,8 @@
          ret))
       (when debug-theme?
             (messaging/fw-debug-report-template
-             "debugging theme :: deffing fireworks.state/user-cofig-edn-dynamic (validated)"
+             (str "debugging theme :: deffing fireworks.state/user-cofig-edn-dynamic (validated)"
+                  "\n\n (some-> ret :theme :name) =>")
              (some-> ret :theme :name)))
       ret)
 

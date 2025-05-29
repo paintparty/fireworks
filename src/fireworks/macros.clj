@@ -10,6 +10,8 @@
   [clojure.edn :as edn]
   [clojure.spec.alpha :as s]))
 
+(def debug-config? false #_true)
+
 (defn- regex? [v]
   (-> v type str (= "class java.util.regex.Pattern")))
 
@@ -213,9 +215,10 @@
   []
   (use 'clojure.java.io)
   (reset! messaging/warnings-and-errors [])
-  (let [bling-config (System/getenv "BLING_CONFIG")]
-    (if-let [path-to-user-config (or bling-config 
-                                     (System/getenv "FIREWORKS_CONFIG"))]
+  (let [bling-mood     (System/getenv "BLING_MOOD")
+        bling-config     (System/getenv "BLING_CONFIG")
+        fireworks-config (System/getenv "FIREWORKS_CONFIG")]
+    (if-let [path-to-user-config (or bling-config fireworks-config)]
       (let [form-meta   (meta &form)
             valid-path? (s/valid?
                          ::config/edn-file-path 
@@ -300,8 +303,29 @@
 
     ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, or
     ;; (System/getenv "BLING_CONFIG") resolves to nil, we set theme to
-    ;; default \"Universal Neutral\"" stock theme.
-      {:theme "Universal Neutral"})))
+    ;; default \"Universal Neutral\"" stock theme,
+    ;; unless (System/getenv "BLING_CONFIG") is "light" or "dark", in which case
+    ;; we assign "Alabaster Light" or "Alabaster Dark" to theme.
+      (let [theme (case bling-mood
+                    "light"
+                    "Alabaster Light"
+                    "dark"
+                    "Alabaster Dark"
+                    "Universal Neutral")
+            config {:theme theme}]
+        (when debug-config?
+          (messaging/fw-debug-report-template
+           (str "Debugging config :: fireworks.macros/get-user-config"
+                "\n\n"
+                "BLING_CONFIG is not set."
+                "\n\n"
+                "BLING_MOOD env var is set to: " (or (when (contains? #{"light" "dark"} bling-mood)
+                                                       (str "\"" bling-mood "\""))
+                                                     (str "\"" bling-mood "\""))
+                "\n\n"
+                "Returning a config of:" )
+           config))
+        config))))
 
 
 (defn get-user-config-edn-dynamic
