@@ -6,8 +6,18 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 ## Unreleased
 
-<!-- ## 0.12.0
-2025-3-12 -->
+#### Added
+
+#### Fixed
+
+#### Changed
+
+<br>
+<br>
+
+
+## 0.12.0
+2025-3-12
 
 #### Added
 - Call-site option to add indent to entire output (left margin). Closes #15.
