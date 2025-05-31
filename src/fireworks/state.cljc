@@ -3,7 +3,6 @@
 (ns ^:dev/always fireworks.state
   (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs get-user-color-env-vars keyed]]
                :clj  [fireworks.macros :refer        [get-user-configs get-user-color-env-vars keyed]])
-            [clojure.pprint :refer [pprint]]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [fireworks.basethemes :as basethemes]
@@ -11,7 +10,7 @@
             [fireworks.config :as config]
             [fireworks.defs :as defs]
             [fireworks.messaging :as messaging]
-            [fireworks.pp :refer [?pp]]
+            [fireworks.pp :refer [?pp pprint]]
             [fireworks.specs.config :as config.specs]
             [fireworks.specs.theme :as theme]
             [fireworks.specs.tokens :as tokens]
