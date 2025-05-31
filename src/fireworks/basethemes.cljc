@@ -274,19 +274,19 @@
                                             :text-shadow "0 0 2px #003538"}
              :highlight                    {
                                             :color            "#ffffff"
-                                            :background-color "#5f5fff"
+                                            :background-color "#0000e0"
                                             :font-weight      :bold
                                             }
              
              :highlight-underlined         {
-                                            :color                 "#eae5ff"
+                                            :color                 "#ffffff"
                                             :background-color      "#0000e0"
                                             :font-weight           :bold
                                             :text-decoration-line  :underline
                                             :text-decoration-style :wavy}
 
              :highlight-error              {
-                                            :background-color "#8f006b"
+                                            :background-color "#800000"
                                             :color            "#ffe0e0"
                                             :font-weight      :bold
                                             }
@@ -304,7 +304,7 @@
                                             }
 
              :highlight-error-underlined   {
-                                            :background-color      "#8f006b"
+                                            :background-color      "#800000"
                                             :color                 "#ffe0e0"
                                             :font-weight           :bold
                                             :text-decoration-line  :underline

@@ -1,9 +1,7 @@
 (ns fireworks.sample
-  (:require [fireworks.core :refer [? !? ?> !?>]]
+  (:require [fireworks.core :refer [? !? ?> !?> pprint]]
             [fireworks.themes :as themes]
             [clojure.string :as string]
-            [fireworks.pp :as pp :refer [?pp]]
-            [clojure.pprint :refer [pprint]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
             [lasertag.core :refer [tag-map tag]]
