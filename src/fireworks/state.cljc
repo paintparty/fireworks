@@ -186,42 +186,6 @@
                   [k v]))
               m2)))
 
-;; Is this not ever used??
-#_(def user-config-edn
-  (do #_(println "user-config-edn")
-      (try 
-        (let [ret
-              (into {}
-                    (map (fn [[k v]]
-                           (let [m         (k config/options)
-
-                                 validated (validate-option-from-user-config-edn k v m)]
-                             [k validated]))
-                         user-config-edn*))]
-          (when debug-config?
-            (messaging/fw-debug-report-template
-             "Invalid options from user-config-edn*"
-             (config-diffs user-config-edn* ret)))
-          (when debug-config?
-            (messaging/fw-debug-report-template
-             "def fireworks.state/user-cofig-edn (validated)"
-             ret))
-          (when debug-theme?
-            (messaging/fw-debug-report-template
-             "debugging theme :: deffing fireworks.state/user-cofig-edn (validated)"
-             (some-> ret :theme :name)))
-          ret)
-
-        ;; TODO - check if this actually catches anything?
-        (catch #?(:cljs js/Object
-                  :clj Exception)
-               e
-          (messaging/caught-exception e {})
-          (swap! messaging/warnings-and-errors
-                 conj
-                 [:messaging/print-error e])
-          {}))))
-
 (defn user-config-edn-dynamic []
   (try 
     (let [user-config-edn*
@@ -433,7 +397,7 @@
     font-weight :font-weight
     :as         m}]
 
-  (let [debug? false
+  (let [debug? (contains? #{:highlight-underlined :highlight :highlight-info :string} (:k m) )
         fgc    (x->sgr fgc* :fg)
         bgc    (x->sgr bgc* :bg)
         italic (when (and (:enable-terminal-italics? @config)
@@ -454,11 +418,35 @@
                                           weight
                                           bgc
                                           text-decoration]))
-                    "m")]
+                    "m")
+        ret-css (str "_✂〠✂_"
+                     (string/join 
+                      ";"
+                      (reduce-kv
+                       (fn [acc k v]
+                         (conj acc (str (name k) ": " 
+                                        (if (contains?
+                                             #{:color :background-color}
+                                             k)
+                                          (let [[r g b a] v]
+                                            (str "rgb(" (string/join " " [r g b])  " / " a ")"))
+                                          (if (number? v)
+                                            (str v)
+                                            (name v))))))
+                       []
+                       (dissoc m :k)))
+                     "_〠✂〠_")
+        mock 
+        (str "_✂〠✂_background-color: rgb(255 238 0 / 1);font-weight: bold;text-decoration-line: underline;text-decoration-style: wavy_〠✂〠_"
+             "Hello"
+              "_✂〠✂color: initial; line-height: 1.4_〠✂〠_")]
     (when debug?
-      (?pp "\nCombining the fg and bg into a single sgr..." m)
-      (println "=>\n"
+      #_(re-seq #"_✂〠✂_" )
+      #_(println (:k m) "\n" m)
+      #_(println "=>\n"
                (util/readable-sgr ret)
+               "\n"
+               ret-css
                "\n"))
     ret))
 
@@ -566,6 +554,7 @@
               (let [m-with-k (assoc m :k k)
                     m        (sanitize-style-map m-with-k)] 
                 #?(:cljs (if node? 
+                           ;; TODO What is real difference here?
                            [k (m->sgr m-with-k)]
                            (let [m (with-line-height m)]
                              [k (string/join (map kv->css2 m))]))

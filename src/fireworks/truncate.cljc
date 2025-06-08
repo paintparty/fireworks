@@ -54,6 +54,7 @@
          (js-delete "target")))))
 
 
+;; Maybe this could go in Lastertag?
 (defn- cljc-atom?
   [x]
   #?(:cljs (= cljs.core/Atom (type x))

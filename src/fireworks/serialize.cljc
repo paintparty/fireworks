@@ -757,6 +757,7 @@
   [{:keys [s k formatting-meta? theme-token-map highlighting] :as m}]
   #?(:cljs (if node?
              (gap-spaces-impl m)
+             ;;TODO - possibly lose this if js post-replace works?
              (tagged s (if formatting-meta?
                          theme-token-map
                          (keyed [highlighting]))))

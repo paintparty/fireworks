@@ -124,6 +124,8 @@
 
     #?(:cljs (if node? 
                style
+
+    ;; TODO - Could lose if post-replace works out
                (do 
                  (when (state/debug-tagging?)
                    (println "\n\n")

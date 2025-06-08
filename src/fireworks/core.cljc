@@ -192,6 +192,7 @@
           ;; TODO - is the space before the newline necessary ?
           (tag/tag-entity! " \n" :result-header))
 
+        ;; TODO - Remove if post-replace works - cljs stuff below
         css-count*
         (count @state/styles)
 
@@ -317,6 +318,7 @@
                       log?]))]
     
     ;; TODO Change this to (= mode :data)
+     ;; TODO - Change if post-replace works - cljs stuff below
     (if p-data?
       ;; If p-data, return a map of preformatted values
       (merge
@@ -344,6 +346,7 @@
 
 #?(:cljs 
    (defn- js-print [opts]
+     ;; TODO - Change if post-replace works
      (let [js-arr (into-array (concat [(:fmt opts)] @state/styles))]
        (.apply (.-log  js/console)
                js/console
@@ -474,6 +477,7 @@
     (reset! state/let-bindings? (:let-bindings? opts))
     (reset! state/margin-inline-start (:margin-inline-start opts))
 
+    ;; TODO - lose if post-replace works
     (reset! state/styles [])
     (reset! state/*formatting-meta-level 0)
     (reset! state/rainbow-level 0)

@@ -79,58 +79,6 @@
     (string/join (repeat n (or s "")))))
 
 
-;; SGR for colorizing terminal output
-(defn x->sgr [x k]
-  (when x
-    (let [n (if (= k :fg) 38 48)]
-      (if (int? x)
-        (str n ";5;" x)
-        (let [[r g b _] x
-              ret       (str n ";2;" r ";" g ";" b)]
-          ret)))))
-
-;; TODO - migrate other calls in codebase to use this
-;; Difference being 'disable-*` opts
-;; add readable-sgr? opt for debugging
-(defn m->sgr
-  [{fgc*        :color
-    bgc*        :background-color
-    :keys       [k
-                 font-style 
-                 font-weight
-                 disable-italics?
-                 disable-font-weights?
-                 debug-on-token?]
-    :or {debug-on-token? false}
-    :as         m}]
-;; (println "mMM" m)
-  (when debug-on-token?
-    (println "\n(fireworks.state/m->sgr " m ")"))
-
-  (let [fgc    (x->sgr fgc* :fg)
-        bgc    (x->sgr bgc* :bg)
-        italic (when (and (not disable-italics?)
-                          (contains? #{"italic" :italic} font-style))
-                 "3;")
-        weight (when (and (not disable-font-weights?)
-                          (contains? #{"bold" :bold} font-weight))
-                 ";1")
-        ret    (str "\033[" 
-                    italic
-                    fgc
-                    weight
-                    (when (or (and fgc bgc)
-                              (and weight bgc))
-                      ";")
-                    bgc
-                    "m")]
-    (when debug-on-token?
-      (println "\nCombining the fg and bg into a single sgr...")
-      (println m)
-      (println "=>\n"
-               (readable-sgr ret)
-               "\n"))
-    ret))
 
 (defn maybe [x pred]
   (when (if (set? pred)

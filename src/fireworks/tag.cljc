@@ -107,6 +107,7 @@
 
      #?(:cljs (if node?
                 s
+                ;; TODO - lose if post-replace works
                 (let [s (cond
                           (= t :type-label)
                           s
@@ -130,6 +131,8 @@
               (do (when (state/debug-tagging?)
                     (println "tag/tag-reset!  with  \\\033[0m"))
                   sgr-closing-tag-str)
+
+              ;; TODO - lose if post-replace works
               (let [theme-token (or theme-token :foreground)]
                 (when (state/debug-tagging?)
                   (println "tag/tag-reset!  with  " theme-token))
@@ -140,6 +143,8 @@
       :clj 
       (do (when (state/debug-tagging?)
             (println "tag/tag-reset!  with  \\033[0m"))
+
+          ;; TODO -  if post-replace works
           sgr-closing-tag-str)
       )))
 

@@ -23,9 +23,9 @@
    :highlight-info               :foreground
 
    :highlight-underlined         :foreground
-   :highlight-underlined-error   :foreground
-   :highlight-underlined-warning :foreground
-   :highlight-underlined-info    :foreground
+   :highlight-error-underlined   :foreground
+   :highlight-warning-underlined :foreground
+   :highlight-info-underlined    :foreground
 
 
    :label                        :foreground ;; literal labels, type labels, atom wrappers, etc.
