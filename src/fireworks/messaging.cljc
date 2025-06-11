@@ -271,13 +271,14 @@
   ([err opts]
    (println 
     (block 
-     {:header-str (str "ERROR(Caught): "
+     {:header-str (str "ERROR (Caught): "
                        #?(:clj
                           (string/replace (type err) #"^class " "")
                           :cljs nil))
       :block-type :error
       :body       (str (warning-or-exception-summary (assoc opts :block-type :error))
-                       (exception-info-from-clojure err opts))}))))
+                       (exception-info-from-clojure err opts)
+                       )}))))
 
 
 (def dispatch 
