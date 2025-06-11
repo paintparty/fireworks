@@ -1,7 +1,7 @@
 (ns ^:dev/always fireworks.truncate
   (:require #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.macros :refer [keyed]])
-            [fireworks.pp :refer [?pp]]
+            [fireworks.pp :rename {?pp ?}]
             [clojure.string :as string]
             [fireworks.ellipsize :as ellipsize]
             [fireworks.order :refer [seq->sorted-map]]
@@ -67,6 +67,7 @@
 #?(:cljs 
    (defn- js-obj->array-map 
      [{:keys [x coll-limit depth uid-entry?]}]
+     ;; TODO should 8 value be tied to user config? 
      (if (> depth 8)
        {}
        (let [keys  (take coll-limit (.keys js/Object x))]
@@ -85,12 +86,14 @@
 
 (defn- truncate-iterable
   [{:keys [coll-limit
-           map-like?
            array-map?
-           depth
-           coll-size
            transient?
-           path]}
+           map-like?
+           too-deep?
+           coll-size
+           depth
+           path]
+    :as m}
    x]
   (let [
         ;; First we need to check if collection is both not map-like and 
@@ -119,21 +122,14 @@
                                                         path)
                                :map-entry-in-non-map? all-map-entries?}
                               nth-taken)))
-                (range (count taken))))
-        #_(->> x
-             (take coll-limit)
-             (into [])
-             ;; truncate call
-             (mapv (partial truncate
-                            {:depth                 (inc depth)
-                             :path                  path
-                             :map-entry-in-non-map? all-map-entries?}))
-             (into []))]
+                (range (count taken))))]
     (if map-like?
-      (if (or (zero? coll-size)
-              transient?)  ; treat transient maps as empty map
+      (if (or (zero? coll-size) transient?)  ; treat transient maps as empty map
         ret
-        (seq->sorted-map ret array-map?))
+        ;; If map is too-deep?, return empty map
+        (if too-deep? 
+          {}
+          (seq->sorted-map ret array-map?)))
       ret)))
 
 
