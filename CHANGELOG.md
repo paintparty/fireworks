@@ -57,7 +57,7 @@ if user has `NO_COLOR` env var set to a non-black string. Closes #51.
 - Missing bg-color from kv-gap in metadata maps, terminal, node-js env. Fixes #44
 
 #### Changed
-- Bumps Lasertag dep to `0.11.0`.
+- Bumps Lasertag dep to `0.11.1`.
 - Remove Bling dep.
 
 
