@@ -11,7 +11,7 @@
   [fireworks.themes :as themes]
   [fireworks.sample :as sample]
   [fireworks.smoke-test]
-  [clojure.test :refer :all]
+  [clojure.test :refer [deftest is]]
   [fireworks.config :as config]))
 
 

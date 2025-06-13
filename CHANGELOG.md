@@ -16,8 +16,21 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 
+## 0.12.1
+2025-6-13
+
+#### Added
+- Fall back to pprint if caught exception. Closes #63.
+
+#### Fixed
+- Fix printing of maps in when they are at the max print-level. Fixes #62
+
+<br>
+<br>
+
+
 ## 0.12.0
-2025-3-12
+2025-5-31
 
 #### Added
 - Call-site option to add indent to entire output (left margin). Closes #15.
