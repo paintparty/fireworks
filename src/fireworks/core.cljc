@@ -521,18 +521,23 @@
 (defn- print-formatted
   ([x]
    (print-formatted x nil))
-  ([{:keys [fmt log? err err-opts] :as x} f]
+  ([{:keys [fmt log? err err-x err-opts] :as x} f]
    (if (instance? fireworks.messaging.FireworksThrowable x)
      (let [{:keys [line column file]} (:form-meta err-opts)
            ns-str                     (:ns-str err-opts)] 
        (messaging/caught-exception err
-                                   {:type   :error
+                                   {:value  err-x
+                                    :type   :error
                                     :form   (:quoted-fw-form err-opts)
                                     :header (or (some-> err-opts :header)
                                                 (some-> err-opts :fw-fnsym))
                                     :line   line
                                     :column column
-                                    :file   (or file ns-str)}))
+                                    :file   (or file ns-str)})
+       (println 
+        "\nFalling back to pprint...\n\n"
+        (with-out-str (pprint err-x))))
+
      (let [termf #(do 
                     ;; If it has been formatted by fireworks, it will print here.
                     (print (:margin-top %))

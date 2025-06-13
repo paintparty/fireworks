@@ -7,60 +7,11 @@
    [fireworks.demo]
    [fireworks.sample :as sample] 
    [fireworks.smoke-test] 
-   [clojure.test :refer :all]
-   [fireworks.config :as config]))
+   [fireworks.config :as config]
+   [clojure.test :refer [deftest is]]))
 
-
-;; #?(:cljs
-;;    (deftest p-data-basic 
-;;      (is (=
-;;           (let [ret (? :data {:theme theme} "foo")] (!?pp 'p-data-basic ret))
-;;           {:quoted-form   "foo",
-;;            :formatted     {:string     "%c\"foo\"%c",
-;;                            :css-styles ["color:#448C27;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"]},
-;;            :file          "fireworks/core_test.cljc",
-;;            :end-column    51,
-;;            :ns-str        "fireworks.core-test",
-;;            :file-info-str "fireworks.core-test:24:21",
-;;            :column        21,
-;;            :line          24,
-;;            :end-line      24,
-;;            :formatted+    {:string     "%cfoo%c  %cfireworks.core-test:24:21%c%c \n%c%c\"foo\"%c",
-;;                            :css-styles ["color:#4d6dba;background-color:#edf2fc;text-shadow:0 0 2px #ffffff;font-style:italic;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"
-;;                                         "color:#4d6dba;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"
-;;                                         "color:;margin-block-end:0.5em;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"
-;;                                         "color:#448C27;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"]}}))))
-
-;; #?(:cljs
-;;    (deftest p-data-with-label
-;;      (is (= 
-;;           (let [ret (? :data "my-label" "foo")] (!?pp 'p-data-with-label ret))
-;;           {:quoted-form   "foo",
-;;            :formatted     {:string     "%c\"foo\"%c",
-;;                            :css-styles ["color:#448C27;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"]},
-;;            :file          "fireworks/core_test.cljc",
-;;            :end-column    47,
-;;            :ns-str        "fireworks.core-test",
-;;            :file-info-str "fireworks.core-test:48:21",
-;;            :column        21,
-;;            :line          48,
-;;            :end-line      48,
-;;            :formatted+    {:string     "%cmy-label%c  %cfireworks.core-test:48:21%c%c \n%c%c\"foo\"%c",
-;;                            :css-styles ["color:#3764cd;background-color:#edf2fc;font-style:italic;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"
-;;                                         "color:#3764cd;font-style:italic;padding-inline-start:0ch;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"
-;;                                         "color:;margin-block-end:0.5em;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"
-;;                                         "color:#448C27;line-height:1.45;"
-;;                                         "color:#585858;line-height:1.45;"]}}))))
- 
+;; TODO - Add tests for:
+;; - Make this write distinct clojurescript tests?
 
 ;; TODO - Add tests for:
 ;; - label display variations
@@ -75,7 +26,6 @@
 ;; - "Universal Default" theme, as well as default config options.
 ;; - :find highlighting with :pred in all highlighting variations
 ;; - :find highlighting with :path in all highlighting variations
-
 
 (declare visual-mode?)
 (declare theme)
@@ -211,13 +161,38 @@
                                       (list '? :data merged-opts qv)
                                       :formatted 
                                       :string)
-                                #?(:clj '[escape-sgr string/join]
-                                   :cljs nil))
-                        #?(:clj (-> (hifi-impl v merged-opts)
-                                    escape-sgr
-                                    string/join)
-                           :cljs (hifi-impl v merged-opts)))))))))
+                                '[escape-sgr string/join])
+                        (-> (hifi-impl v merged-opts)
+                            escape-sgr
+                            string/join))))))))
     @tests)))
+
+;; CLJC cruft
+;; (defn deftests-str 
+;;   "This creates a string of all of the generated deftests"
+;;   []
+;;   (string/join 
+;;    "\n\n"
+;;    (mapv 
+;;     (fn [{:keys [sym opts v qv #_escaped-str]}]
+;;       (with-out-str 
+;;         (pprint 
+;;          (list 
+;;           'deftest sym
+;;           (list 'is
+;;                 (let [merged-opts (merge default-options-map opts)]
+;;                   (list '=
+;;                         (concat (list '->
+;;                                       (list '? :data merged-opts qv)
+;;                                       :formatted 
+;;                                       :string)
+;;                                 #?(:clj '[escape-sgr string/join]
+;;                                    :cljs nil))
+;;                         #?(:clj (-> (hifi-impl v merged-opts)
+;;                                     escape-sgr
+;;                                     string/join)
+;;                            :cljs (hifi-impl v merged-opts)))))))))
+;;     @tests)))
 
 
 (defn write-tests-ns!
@@ -232,7 +207,7 @@
    To call from bb (from the fireworks project root dir):
    bb bb-write-tests-ns.cljc"
   []
-  (spit (str "./test/fireworks/test_suite" #?(:cljs ".cljs" :clj ".clj")) 
+  (spit (str "./test/fireworks/test_suite" ".clj") 
         (str (with-out-str 
                (pprint '(ns fireworks.test-suite 
                           (:require 
@@ -246,7 +221,7 @@
                            [fireworks.themes :as themes] 
                            [fireworks.sample :as sample] 
                            [fireworks.smoke-test] 
-                           [clojure.test :refer :all]
+                           [clojure.test :refer [deftest is]]
                            [fireworks.config :as config]))))
              "\n\n\n\n\n"
              "(deftest !?-par
@@ -316,25 +291,25 @@
    :non-coll-result-length-limit 44}
   "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
 
-#?(:clj
-   (do 
-     (deftest+ java-interop-types
-       {:theme      theme
-        :coll-limit 100}
-       sample/interop-types )
+;; JVM
+(do 
+  (deftest+ java-interop-types
+    {:theme      theme
+     :coll-limit 100}
+    sample/interop-types )
 
-     (deftest+ java-util-hashmap
-       {:theme theme}
-       (java.util.HashMap. {"a" 1
-                            "b" 2}))
+  (deftest+ java-util-hashmap
+    {:theme theme}
+    (java.util.HashMap. {"a" 1
+                         "b" 2}))
 
-     (deftest+ java-util-arraylist
-       {:theme theme}
-       (java.util.ArrayList. [1 2 3]))
+  (deftest+ java-util-arraylist
+    {:theme theme}
+    (java.util.ArrayList. [1 2 3]))
 
-     (deftest+ java-util-hashset
-       {:theme theme}
-       (java.util.HashSet. #{"a" 1 "b" 2}))))
+  (deftest+ java-util-hashset
+    {:theme theme}
+    (java.util.HashSet. #{"a" 1 "b" 2})))
 
 (def write-tests? false #_true)
 
