@@ -74,10 +74,10 @@
              ""
              m))
 
+
 (defn char-repeat [n s]
   (when (pos-int? n)
     (string/join (repeat n (or s "")))))
-
 
 
 (defn maybe [x pred]
@@ -85,6 +85,7 @@
           (contains? pred x)
           (pred x))
     x))
+
 
 (defn tag-map*
   ([x]
@@ -94,17 +95,27 @@
           :as   tag-map}
          (-> x
              (lasertag/tag-map opts)
-             (set/rename-keys {:tag :t}))]
-     (merge 
-      tag-map
-      (when (contains? all-tags :carries-meta) {:carries-meta? true})
-      (when (contains? all-tags :coll-type) {:coll-type? true})
-      (when (contains? all-tags :map-like) {:map-like? true})
-      (when (contains? all-tags :set-like) {:set-like? true})
-      (when (contains? all-tags :transient) {:transient? true})
-      (when (contains? all-tags :number-type) {:number-type? true})
-      (when (contains? all-tags :java-lang-class) {:java-lang-class? true})
-      (when (contains? all-tags :java-util-class) {:java-util-class? true})
-      #?(:cljs (merge (when (object? x) {:js-object? true})
-                      (when (array? x) {:js-array? true})))))))
+             (set/rename-keys {:tag :t}))
+
+         coll-size
+         (:coll-size tag-map)]
+
+     (when (= coll-size :lasertag.core/unknown-coll-size)
+       (throw 
+        #?(:cljs
+           (new js/Error (str coll-size))
+           :clj
+           (Exception. (str coll-size)))))
+
+     (merge tag-map
+            (when (contains? all-tags :carries-meta) {:carries-meta? true})
+            (when (contains? all-tags :coll-type) {:coll-type? true})
+            (when (contains? all-tags :map-like) {:map-like? true})
+            (when (contains? all-tags :set-like) {:set-like? true})
+            (when (contains? all-tags :transient) {:transient? true})
+            (when (contains? all-tags :number-type) {:number-type? true})
+            (when (contains? all-tags :java-lang-class) {:java-lang-class? true})
+            (when (contains? all-tags :java-util-class) {:java-util-class? true})
+            #?(:cljs (merge (when (object? x) {:js-object? true})
+                            (when (array? x) {:js-array? true})))))))
 

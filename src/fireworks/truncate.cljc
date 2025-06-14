@@ -221,7 +221,6 @@
         tag-map          (when-not kv? (util/tag-map* x))
         x                (reify-if-transient x tag-map)
         too-deep?        (> depth (:print-level @state/config))
-
         sev?             (boolean (when-not kv?
                                     (not (:coll-type? tag-map))))]
 

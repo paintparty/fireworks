@@ -10,6 +10,14 @@
 ;; Compile time errors for surfacing to cljs browser console
 (def warnings-and-errors (atom []))
 
+
+(defn bold [s]
+  (str defs/bold-tag-open s defs/sgr-tag-close))
+
+(defn italic [s]
+  (str defs/italic-tag-open s defs/sgr-tag-close))
+
+
 (defn block
   [{:keys [header-str block-type body]}] 
   (let [open-tag 
@@ -19,7 +27,7 @@
           defs/gray-tag-open)
 
         footer-stripe
-        "─────────────────────────────────────────────────────"
+        "───────────────────────────────────────────────────────────────"
 
         header-stripe-start
         "══ "
@@ -89,9 +97,7 @@
                            (->> mini-strace (take (inc last-index))))
              len         (when trace* (count trace*))
              with-header [(or header
-                              (str defs/italic-tag-open 
-                                   "Stacktrace preview:"
-                                   defs/sgr-tag-close))
+                              (italic "Stacktrace preview:"))
                           "\n"]
              trace       (some->> trace* (interpose "\n") (into with-header))
              num-dropped (when trace
@@ -111,19 +117,38 @@
                  :body       (str
                               "fireworks.messaging/stack-trace-preview\n\n"
                               "Value of the "
-                              defs/bold-tag-open :error defs/sgr-tag-close
+                              (bold :error)
                               " option should be an instance of "
-                              defs/bold-tag-open 'java.lang.Exception. defs/sgr-tag-close
+                              (bold 'java.lang.Exception.) 
                               "\n\n"
                               "Value received:\n"
-                              defs/bold-tag-open (util/shortened error 33) defs/sgr-tag-close
+                              (bold (util/shortened error 33)) 
                               "\n\n"
                               "Type of value received:\n"
-                              defs/bold-tag-open (str (type error)) defs/sgr-tag-close
+                              (bold (str (type error))) 
                               )}))))
 
 
+(defn unknown-coll-size [x]
+  (block
+   {:header-str "Warning: fireworks.core/?"
+    :block-type :warning
+    :body       (str
+                 (italic "Message:\n")
+                 (bold "  :lasertag.core/unknown-coll-size") 
+                 "\n\n"
+                 (italic  "Value received:\n" )
+                 (bold (str "  " (util/shortened x 33))) 
+                 "\n\n"
 
+                 (italic  "Type of value received:\n" )
+                 (bold (str "  " (type x))) 
+                 "\n\n"
+                 (italic  "Falling back to formatting with fireworks.core/pprint.\n\n" )
+                 (italic  "There will be no justified map values, syntax coloring,\n" )
+                 (italic  "or highlighting in the result." )
+                 "\n"
+                 )}))
 
 
 (defn fw-debug-report-template
@@ -140,19 +165,11 @@
         (str line " │ ")]
 
     (str (when header
-           (str defs/italic-tag-open
-                "raised by:\n" 
-                defs/sgr-tag-close
-                "  " #_defs/bold-tag-open header #_defs/sgr-tag-close
-                "\n\n\n"))
+           (str (italic "raised by:\n") "  "  header "\n\n\n"))
 
          (when (and line column file)
-           (str defs/italic-tag-open
-                "source:\n" 
-                defs/sgr-tag-close
-                #_defs/bold-tag-open
-                "  " file ":" line ":" column "\n\n\n"
-                #_defs/sgr-tag-close))
+           (str (italic "source:\n") 
+                "  " file ":" line ":" column "\n\n\n" ))
 
          (when line 
            (str defs/gray-tag-open line+sep defs/sgr-tag-close))
@@ -180,9 +197,9 @@
               ["\n"
                "Bad value:\n\n"
                indent
-               defs/bold-tag-open k defs/sgr-tag-close
+               (bold k)
                " "
-               defs/bold-tag-open v defs/sgr-tag-close
+               (bold v)
                (str "\n"
                     (string/join (repeat (count (str k)) " "))
                     " ")

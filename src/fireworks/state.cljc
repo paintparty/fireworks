@@ -53,6 +53,7 @@
 
 
 ;; Internal state atoms for development debugging ------------------------
+(def rewind-counter (atom 0))
 (def debug-config? #_true false)
 (def debug-theme? #_true false)
 (def print-config? false)
