@@ -20,7 +20,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 2025-6-14
 
 #### Added
-- Detect unknown coll size and fallback to pprint. Closes #63.
+- Detect unknown coll size and fallback to pprint. Closes #67.
 
 <br>
 <br>
