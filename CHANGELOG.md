@@ -16,7 +16,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 
-## 0.12.2
+## 0.12.3
 2025-6-14
 
 #### Added

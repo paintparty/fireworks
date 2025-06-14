@@ -51,7 +51,7 @@
 
 Try it out in your terminal:
 ```
-clj -Sdeps '{:deps {io.github.paintparty/fireworks {:mvn/version "0.12.2"}}}' -e "(require '[fireworks.core :refer [?]]) (def x {:string      \"string\" :number      1234 :symbol      'foo :symbol+     (with-meta 'foo {:foo :bar}) :boolean     true :set         #{1 2 3} :lambda      #(inc %) :fn          juxt :regex       #\"^hi$\" :atom/number (atom 1) :brackets    [[[[[[]]]]]] :java/array  (into-array [1 2 3 4])}) (? x)"
+clj -Sdeps '{:deps {io.github.paintparty/fireworks {:mvn/version "0.12.3"}}}' -e "(require '[fireworks.core :refer [?]]) (def x {:string      \"string\" :number      1234 :symbol      'foo :symbol+     (with-meta 'foo {:foo :bar}) :boolean     true :set         #{1 2 3} :lambda      #(inc %) :fn          juxt :regex       #\"^hi$\" :atom/number (atom 1) :brackets    [[[[[[]]]]]] :java/array  (into-array [1 2 3 4])}) (? x)"
 ``` -->
 
 <br> 
@@ -104,7 +104,7 @@ Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.12.2"]
+[io.github.paintparty/fireworks "0.12.3"]
 ```
 
 <br>
