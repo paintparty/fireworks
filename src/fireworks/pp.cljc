@@ -681,7 +681,7 @@
         (println
          (str ~ns-str
               "\n"
-              (util/shortened (quote ~x) 25)
+              (util/shortened (quote ~x) 66)
               "\n"
               (with-out-str (fireworks.pp/pprint ~x))))
         ~x)))
