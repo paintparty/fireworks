@@ -238,15 +238,15 @@
   #{js-literal-badge inst-badge uuid-badge lambda-symbol})
 
 ;; For printing messages and warnings
-(def italic-tag-open "\033[3m")
-(def gray-tag-open "\033[38;5;244m")
-(def bold-gray-tag-open "\033[38;5;244;1m")
-(def italic-gray-tag-open "\033[3;38;5;244m")
-(def bold-italic-gray-tag-open "\033[3;38;5;244;1m")
-(def orange-tag-open "\033[38;5;208;1m")
-(def red-tag-open "\033[38;5;196;1m")
-(def bold-tag-open "\033[1m")
-(def sgr-tag-close "\033[0;m")
+(def italic-tag-open #?(:cljs nil :clj "\033[3m"))
+(def gray-tag-open #?(:cljs nil :clj "\033[38;5;244m") )
+(def bold-gray-tag-open #?(:cljs nil :clj "\033[38;5;244;1m"))
+(def italic-gray-tag-open #?(:cljs nil :clj "\033[3;38;5;244m"))
+(def bold-italic-gray-tag-open #?(:cljs nil :clj "\033[3;38;5;244;1m"))
+(def orange-tag-open #?(:cljs nil :clj "\033[38;5;208;1m"))
+(def red-tag-open #?(:cljs nil :clj "\033[38;5;196;1m"))
+(def bold-tag-open #?(:cljs nil :clj "\033[1m"))
+(def sgr-tag-close #?(:cljs nil :clj "\033[0;m"))
 
 
 (def bling-colors*
