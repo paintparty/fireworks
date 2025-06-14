@@ -37,7 +37,7 @@
 
 (deftest string-with-label
   (is (= 
-       (let [ret (? :data "my-label" "foo")] (?pp 'p-data-with-label ret))
+       (let [ret (? :data "my-label" "foo")] (!?pp 'p-data-with-label ret))
        {:quoted-form   "foo",
         :formatted     {:string     "%c\"foo\"%c",
                         :css-styles ["color:#448C27;line-height:1.45;" "line-height:1.45;"]},
