@@ -659,20 +659,19 @@
      :clj nil))
 
 (defn- rewind-debug [printing-opts new-opts _p2 x]
-  (do 
-    ;; #?(:clj (.getMessage (:err printing-opts))) 
-    (ff @state/rewind-counter)
-    (swap! state/rewind-counter inc)
-    (if (ff (> 10 @state/rewind-counter))
-      (do (ff @state/rewind-counter)
-          (ff new-opts)
-          (_p2 new-opts x))
-      (throw 
-       (#?(:cljs
-           js/Error.
-           :clj
-           Exception.)
-        "fireworks.core/_p2 :: debug")))))
+  ;; #?(:clj (.getMessage (:err printing-opts))) 
+  (ff @state/rewind-counter)
+  (swap! state/rewind-counter inc)
+  (if (ff (> 10 @state/rewind-counter))
+    (do (ff @state/rewind-counter)
+        (ff new-opts)
+        (_p2 new-opts x))
+    (throw 
+     (#?(:cljs
+         js/Error.
+         :clj
+         Exception.)
+      "fireworks.core/_p2 :: debug"))))
 
 (defn- fw-throwable [e x opts]
   (messaging/->FireworksThrowable
@@ -917,7 +916,7 @@
 (defn- helper2
   "Extracts the :label entry when present fireworks config opts"
   [m]
-    ;;  (ff 'helper2 (get-user-config-edn-dynamic))
+  ;;  (ff 'helper2 (get-user-config-edn-dynamic))
   (let [cfg-opts (cfg-opts m)
         defd     (defd (:x m))]
     (keyed [cfg-opts defd])))
