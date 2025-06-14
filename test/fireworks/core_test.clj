@@ -10,6 +10,7 @@
    [fireworks.config :as config]
    [clojure.test :refer [deftest is]]))
 
+
 ;; TODO - Add tests for:
 ;; - Make this write distinct clojurescript tests?
 
@@ -30,7 +31,6 @@
 (declare visual-mode?)
 (declare theme)
 (declare escape-sgr)
-
 
 (deftest transient-set
   (is (= 
