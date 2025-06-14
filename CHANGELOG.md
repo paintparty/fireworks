@@ -16,6 +16,16 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 
+## 0.12.2
+2025-6-14
+
+#### Added
+- Detect unknown coll size and fallback to pprint. Closes #63.
+
+<br>
+<br>
+
+
 ## 0.12.1
 2025-6-13
 
