@@ -264,7 +264,7 @@ If you want to use a specific mode and also supply a custom label and/or overrid
 ### Tap-driven development
 Fireworks prints values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't require the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
 
-Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedciated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
+Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedicated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
 
 The `?` macro also provides a bevy of functionality that can be controlled an optional leading keyword flag and/or a map of options. For example, when it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:log` or `:pp` as the leading argument to **`fireworks.core/?`**.
 
@@ -383,7 +383,7 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
 
 Fireworks is designed to pick up your preferred theming and formatting options from a system-wide `.edn` config file that lives in a globally accessible place outside of any projects. In order to make this work, you will need to set the environment variable `BLING_CONFIG` to the path of this file.
 
-This naming convention comes from the syntax coloring libary (Bling)[https://github.com/paintparty/bling], which depends on fireworks for automatic syntax coloring of data structures to be printed.
+This naming convention comes from the syntax coloring library (Bling)[https://github.com/paintparty/bling], which depends on fireworks for automatic syntax coloring of data structures to be printed.
 
 This `.edn` config file can live anywhere on your computer, but by convention should be `~/.bling/config.edn`. If you were to set the environment variable in your `.zshrc` (or similar), it would look like this: 
 
@@ -453,7 +453,7 @@ Sets the max length of collections.  Collections whose count are at least 2 grea
 
  Defaults to `25`<br>
 
-Sets the max length of the form-to-be-evaled labe, or the user label, if supplied.
+Sets the max length of the form-to-be-evaled label, or the user label, if supplied.
 
 <br>
 
@@ -756,7 +756,7 @@ Fireworks includes a handful of popular themes:
 <div align="center"><sub><b><i>Neutral Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Neutral-Dark.png" width="534px"/></div>
 
-<div align="center"><sub><b><i>Univeral Neutral (used if no theme is specified)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Universal-Neutral-On-Dark.png" width="534px"/></div>
 
 
@@ -826,7 +826,7 @@ The simplest way to make a theme is to just start experimenting within any names
    {:string-sample   "string"
     :number-sample   1234
     :boolean-sample  true
-    :labmda-sample   #(inc %)
+    :lambda-sample   #(inc %)
     :fn-sample       juxt
     :regex-sample    #"^hi$"
     :symbol-sample   'mysym})
