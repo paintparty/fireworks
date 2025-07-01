@@ -39,7 +39,7 @@
   (is (= 
        (let [ret              (? :data {:non-coll-length-limit 33} {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
              formatted-string (-> ret :formatted :string)]
-         (?pp (string/join (escape-sgr formatted-string))))
+         (!?pp (string/join (escape-sgr formatted-string))))
        "〠38;5;241〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠abcdefghijklmnopqrstuvwxyz-ab〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;241〠}〠0〠")))
 
 (deftest transient-set
