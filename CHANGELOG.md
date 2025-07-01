@@ -16,6 +16,16 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 
+## 0.12.4
+2025-7-01
+
+#### Fixed
+- Add guards for arithmetic in `fireworks.ellipsize/budge-diff`
+
+<br>
+<br>
+
+
 ## 0.12.3
 2025-6-14
 
