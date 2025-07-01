@@ -13,11 +13,10 @@
 
 (defn- budge-diff
   [limit atom-wrap-count a b]
-  (- (+ (len a)
-        (len b)
-        atom-wrap-count)
-     limit))
-
+  (- (+ (or (len a) 0)
+        (or (len b) 0)
+        (or atom-wrap-count 0))
+     (or limit 0)))
 
 (defn- fn-args*
   [fn-args]
@@ -29,7 +28,6 @@
        fn-args)
     defs/mysterious-fn-args
     fn-args))
-
 
 (defn- ellipsized-char-count 
   [badge s num-chars-dropped]
