@@ -11,8 +11,7 @@
    [clojure.test :refer [deftest is]]))
 
 
-;; TODO - Add tests for:
-;; - Make this write distinct clojurescript tests?
+;; TODO - Make this write distinct clojurescript tests?
 
 ;; TODO - Add tests for:
 ;; - label display variations

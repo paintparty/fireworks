@@ -15,6 +15,14 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.12.5
+2025-7-09
+
+#### Changed
+- Bumped lasertag dep to `0.11.3`
+
+<br>
+<br>
 
 ## 0.12.4
 2025-7-01
