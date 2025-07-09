@@ -19,7 +19,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 2025-7-09
 
 #### Changed
-- Bumped lasertag dep to `0.11.3`
+- Bumped lasertag dep to `0.11.3`, to avoid potential problem with Babashka via Lasertag, addressed [here](https://github.com/paintparty/lasertag/issues/23).
 
 <br>
 <br>
