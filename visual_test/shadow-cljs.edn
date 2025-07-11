@@ -4,13 +4,12 @@
                 ;; Local Fireworks - uncomment if debugging Fireworks locally
                 "../src/"
                 ;; Local Lasertag - uncomment if debugging Lasertag locally
-                ;; "../../lasertag/src/"
+                "../../lasertag/src/"
                 ;; Local Bling - uncomment if debugging Bling locally
                 ;; "../../bling/src/"
                 ;; "../../bling/test/"
                 ]
- :dependencies [[io.github.paintparty/fireworks "0.10.4"]
-                [io.github.paintparty/bling "0.5.1"]
+ :dependencies [[io.github.paintparty/fireworks "0.12.6"]
                 [binaryage/devtools "1.0.6"]
                 [reagent/reagent "1.1.1"]]
  :dev-http     {8020 "public"}

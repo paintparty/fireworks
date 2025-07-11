@@ -2,7 +2,6 @@
   (:require [fireworks.config]
             [fireworks.themes]
             [fireworks.sample :as sample :refer []]
-            [bling.sample]
             [lasertag.core :refer [tag-map]]
             [fireworks.core :refer [? !? ?> !?> pprint]]))
 
@@ -55,11 +54,11 @@
         )
 
 
-         (!? {:coll-limit 200
+         (? {:coll-limit 200
               :label      "Clojure(Script) values"}
              everything)
 
-         (!? {:label      "Clojure(Script) multiline formatting"}
+         #_(? {:label      "Clojure(Script) multiline formatting"}
              sample/array-map-of-multiline-formatting-cljc)))
 
   #_(do 
@@ -95,6 +94,4 @@
     (println "\n:single-line-coll-length-limit of 50")
     (? {:single-line-coll-length-limit 50} (range 20)))
 
-  ;; Test bling
-  #_(bling.sample/sample)
   nil)

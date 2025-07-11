@@ -8,7 +8,7 @@
    [visual-testing.shared :refer [test-suite]]))
 
 (defn main-view []
-   [:div {:id    "foo"
+   [:div #_{:id    "foo"
           :style {:color            :red
                   :background-color "blue"}}
     "Hello"
@@ -17,7 +17,7 @@
 (defn ^:dev/after-load mount-root []
   (let [root-el (.getElementById js/document "app")]
     (rdom/render [main-view] root-el)
-    (js/setTimeout 
+    #_(js/setTimeout 
      (fn [] (? [(js/document.getElementById "foo")]))
      1000)))
 
