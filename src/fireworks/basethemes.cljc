@@ -172,64 +172,46 @@
 
                              :comment                      :annotation
 
-                             :annotation                   {
-                                                            :color      "#9f9f9f"
-                                                            :font-style :italic
-                                                            }
+                             :annotation                   {:color      "#9f9f9f"
+                                                            :font-style :italic }
 
-                             :highlight                    {
-                                                            :background-color "#ffee00"
-                                                            :font-weight      :bold
-                                                            }
+                             :highlight                    {:background-color "#ffee00"
+                                                            :font-weight      :bold }
 
-                             :highlight-underlined         {
-                                                            :background-color      "#ffee00"
+                             :highlight-underlined         {:background-color      "#ffee00"
                                                             :font-weight           :bold
                                                             :text-decoration-line  :underline
-                                                            :text-decoration-style :wavy
-                                                            }
+                                                            :text-decoration-style :wavy }
 
-                             :highlight-error              {
-                                                            :background-color "#ffdbdb"
+                             :highlight-error              {:background-color "#ffdbdb"
                                                             :color            "#660000"
-                                                            :font-weight      :bold
-                                                            }
+                                                            :font-weight      :bold }
 
-                             :highlight-warning            {
-                                                            :background-color "#ffdea8"
+                             :highlight-warning            {:background-color "#ffdea8"
                                                             :color            "#754800"
-                                                            :font-weight      :bold
-                                                            }
+                                                            :font-weight      :bold }
 
-                             :highlight-info               {
-                                                            :background-color "#d6efff"
+                             :highlight-info               {:background-color "#d6efff"
                                                             :color            "#003c5c"
-                                                            :font-weight      :bold
-                                                            }
+                                                            :font-weight      :bold }
 
-                             :highlight-error-underlined   {
-                                                            :background-color      "#ffdbdb"
+                             :highlight-error-underlined   {:background-color      "#ffdbdb"
                                                             :color                 "#660000"
                                                             :font-weight           :bold
                                                             :text-decoration-line  :underline
-                                                            :text-decoration-style :wavy
-                                                            }
+                                                            :text-decoration-style :wavy }
 
-                             :highlight-warning-underlined {
-                                                            :background-color      "#ffdea8"
+                             :highlight-warning-underlined {:background-color      "#ffdea8"
                                                             :color                 "#754800"
                                                             :font-weight           :bold
                                                             :text-decoration-line  :underline
-                                                            :text-decoration-style :wavy
-                                                            }
+                                                            :text-decoration-style :wavy }
 
-                             :highlight-info-underlined    {
-                                                            :background-color      "#d6efff"
+                             :highlight-info-underlined    {:background-color      "#d6efff"
                                                             :color                 "#003c5c"
                                                             :font-weight           :bold
                                                             :text-decoration-line  :underline
-                                                            :text-decoration-style :wavy
-                                                            }
+                                                            :text-decoration-style :wavy }
 
                              ;; TODO - change this to badge?
                              :label                        {:color            "#808080"
