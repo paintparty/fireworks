@@ -95,18 +95,7 @@
           :as   tag-map}
          (-> x
              (lasertag/tag-map opts)
-             (set/rename-keys {:tag :t}))
-
-         coll-size
-         (:coll-size tag-map)]
-
-     (when (= coll-size :lasertag.core/unknown-coll-size)
-       (throw 
-        #?(:cljs
-           (new js/Error (str coll-size))
-           :clj
-           (Exception. (str coll-size)))))
-
+             (set/rename-keys {:tag :t}))]
      (merge tag-map
             (when (contains? all-tags :carries-meta) {:carries-meta? true})
             (when (contains? all-tags :coll-type) {:coll-type? true})

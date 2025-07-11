@@ -985,7 +985,9 @@
 
   ;;  (?pp (:coll-limit @state/config))
 
-   (let [truncated  (truncate/truncate {:path [] :depth 0 :user-meta? user-meta?} source)
+   (let [truncated  (truncate/truncate {:path       []
+                                        :depth      0
+                                        :user-meta? user-meta?} source)
         ;;  truncated  (path-walker truncated)
         ;;  custom-printed truncated
          ;; TODO - revisit this custom printing stuff
@@ -997,7 +999,6 @@
         ;;  len            (-> profiled meta :str-len-with-badge)
          ]
 
-   #_(?pp :WTF (-> truncated first second first meta :fw/truncated :path))
 
     ;; for debugging path info
     #_(walk/postwalk (fn [x]

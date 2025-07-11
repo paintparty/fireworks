@@ -124,7 +124,9 @@
                               nth-taken)))
                 (range (count taken))))]
     (if map-like?
-      (if (or (zero? coll-size) transient?)  ; treat transient maps as empty map
+      (if (or (when (number? coll-size)
+                (zero? coll-size))
+              transient?)  ; treat transient maps as empty map
         ret
         ;; If map is too-deep?, return empty map
         (if too-deep? 
@@ -141,7 +143,7 @@
    coll]
   ;; TODO maybe-change binding name to truncated-coll-size -> coll-size?
   (let [truncated-coll-size (count coll)
-        coll-size-adjust    (- coll-size (if @uid-entry? 1 0))]
+        coll-size-adjust    (- (if (number? coll-size) coll-size 0) (if @uid-entry? 1 0))]
    (merge (keyed [truncated-coll-size coll-size-adjust])
           {:js-typed-array? (contains? all-tags :js/TypedArray)
            :js-map-like?    (contains? all-tags :js/map-like-object)
@@ -209,6 +211,19 @@
           (nth x n))))
     x))
 
+(defn- container-for-unknown-coll-size
+  [{:keys [all-tags] :as tag-map}]
+  (when (= (:coll-size tag-map)
+           :lasertag.core/unknown-coll-size)
+    (cond (contains? all-tags :map-like)
+          {(symbol " ...") (symbol "")}
+          ;; (contains? all-tags :coll)
+          (contains? all-tags :vector)
+          [(symbol "...")]
+          (contains? all-tags :set-like)
+          #{(symbol "...")}
+          :else
+          (list (symbol "...")))))
 
 (defn- truncation-profile
   [{:keys [path depth map-entry-in-non-map?]
@@ -219,7 +234,8 @@
         x                (if (or val-is-atom? val-is-volatile?) @x x)
         kv?              (boolean (when-not map-entry-in-non-map? (map-entry? x)))
         tag-map          (when-not kv? (util/tag-map* x))
-        x                (reify-if-transient x tag-map)
+        x                (or (container-for-unknown-coll-size tag-map)
+                             (reify-if-transient x tag-map))
         too-deep?        (> depth (:print-level @state/config))
         sev?             (boolean (when-not kv?
                                     (not (:coll-type? tag-map))))]

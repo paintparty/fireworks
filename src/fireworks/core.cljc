@@ -17,7 +17,8 @@
    #?(:clj [fireworks.macros :refer [keyed get-user-config-edn-dynamic]])
    [clojure.string :as string]
    [fireworks.config :as config]
-   [fireworks.util :as util])
+   [fireworks.util :as util] 
+   [lasertag.core :as lasertag])
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
 
@@ -189,7 +190,7 @@
                                  template)
                       log?
                       threading?)
-          ;; TODO - is the space before the newline necessary ?
+          ;; TODO - is the space before the newline necessary?
           (tag/tag-entity! " \n" :result-header))
 
         ;; TODO - Remove if post-replace works - cljs stuff below
@@ -197,9 +198,6 @@
         (count @state/styles)
 
         fmt           
-        ;; TODO - Don't really get this logic ... atom vs volatile! 
-        ;; maybe cos log? is true for volatile?
-        
         (if (:lasertag.core/unknown-coll-size opts)
           (with-out-str (pprint source))
           (when-not (or log?
@@ -208,8 +206,9 @@
             (if (fn? user-print-fn)
               (with-out-str (user-print-fn source))
 
-            ;; This is where you feed the source to the formatting engine
-              (serialize/formatted* source))))
+              ;; This is where you feed the source to the formatting engine
+              (serialize/formatted* source
+                                    (some-> opts :user-opts)))))
 
         label-or-form
         (or label form)
@@ -528,6 +527,7 @@
    (if (instance? fireworks.messaging.FireworksThrowable x)
      (let [{:keys [line column file]} (:form-meta err-opts)
            ns-str                     (:ns-str err-opts)] 
+
        (messaging/caught-exception err
                                    {:value  err-x
                                     :type   :error
@@ -552,10 +552,30 @@
        #?(:cljs (if node? (termf x) (f x))
           :clj (termf x))))))
 
+(defn- try-pp [x]
+  (try (pprint x)
+       #?(:cljs
+          ()
+          :clj
+          (catch Throwable e
+            (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)]
+              (messaging/unable-to-print-warning
+               "fireworks.core/?"
+               (str (messaging/italic "Problem:\n")
+                    "  " 
+                    "Unable to print value with pprint."
+                    "\n\n\n"
+                    (messaging/italic "Cause:\n")
+                    "  "
+                    coll-size
+                    "\n\n\n"
+                    (messaging/italic "Value class:\n")
+                    "  "
+                    classname)))))))
 
 (defn- _pp* [user-opts x]
   (print (margin-block-str user-opts :margin-top))
-  (pprint x)
+  (try-pp x)
   ;; Extra line after pprint result
   (print (margin-block-str user-opts :margin-bottom))
   x)
@@ -567,7 +587,7 @@
   #?(:cljs
      (if node? 
        (_pp* user-opts x)
-       (do (pprint x) x))
+       (do (try-pp x) x))
      :clj
      (_pp* user-opts x)))
 
@@ -645,17 +665,16 @@
 
 (defn- native-logging*
   [x opts]
-  #?(:cljs (when-not (:lasertag.core/unknown-coll-size opts)
-             (let [{:keys [coll-type? carries-meta? t transient?]} 
-                   (util/tag-map* x
-                                  {:include-function-info?           false
-                                   :include-js-built-in-object-info? false})]
-               (when (and coll-type?
-                          (not carries-meta?)
-                          (not= t :cljs.core/Atom)
-                          (not= t :cljs.core/Volatile)
-                          (not transient?))
-                 {:log? true})))
+  #?(:cljs (let [{:keys [coll-type? carries-meta? t transient?]} 
+                 (util/tag-map* x
+                                {:include-function-info?           false
+                                 :include-js-built-in-object-info? false})]
+             (when (and coll-type?
+                        (not carries-meta?)
+                        (not= t :cljs.core/Atom)
+                        (not= t :cljs.core/Volatile)
+                        (not transient?))
+               {:log? true}))
      :clj nil))
 
 (defn- rewind-debug [printing-opts new-opts _p2 x]
@@ -681,27 +700,6 @@
           :header
           "fireworks.core/formatted")))
 
-(defn- unknown-coll-size-error? [maybe-fw-throwable]
-  (and (instance? fireworks.messaging.FireworksThrowable maybe-fw-throwable)
-       (= ":lasertag.core/unknown-coll-size"
-          #?(:cljs
-             (.-message (:err maybe-fw-throwable))
-             :clj
-             (.getMessage (:err maybe-fw-throwable))))))
-
-(defn- rewind-and-print-with-pprint [opts* maybe-error _p2 x]
-  (println (messaging/unknown-coll-size x))
-  (let [dbg?     false
-        new-opts (assoc opts*
-                        :print-with 
-                        pprint
-                        :lasertag.core/unknown-coll-size
-                        true)]
-    (if dbg?
-      (rewind-debug maybe-error new-opts _p2 x)
-      (_p2 new-opts x))))
-
-
 ;; TODO - Is it possible to retire this in favor of directing all internal calls
 ;; to fireworks.core/_p2 ?
 (defn ^{:public true}
@@ -716,9 +714,7 @@
    (_p nil opts x))
 
   ([a opts x]
-  (let [opts* opts
-
-        opts (if (map? a)
+  (let [opts (if (map? a)
                (merge (dissoc opts x :label) a)
                opts)
         
@@ -731,58 +727,48 @@
 
     (reset-state! opts)
 
-    (let [native-logging      (try (native-logging* x opts)
-                                   (catch #?(:cljs js/Object :clj Exception)
-                                          e
-                                     (fw-throwable e x opts)))]
-      (if (unknown-coll-size-error? native-logging)
-        (rewind-and-print-with-pprint opts* native-logging _p x)
-        (let [
-              ;; In cljs, if val is data structure but not cljs data structure
-              ;; TODO - Mabye add tag-map to the opts to save a call in truncate
-              native-logging (native-logging* x opts)
-              opts           (merge opts native-logging)
-              printing-opts  (try (formatted x opts)
-                                  (catch #?(:cljs js/Object :clj Exception)
-                                         e
-                                    (fw-throwable e x opts)))
-              return-result? (when-not (= (:template opts)
-                                          [:form-or-label :file-info])
-                               x)]
-          (when debug-config?
-            (fw-debug-report config-before opts "fireworks.core/_p2")) 
+    (let [
+          ;; In cljs, if val is data structure but not cljs data structure
+          ;; TODO - Mabye add tag-map to the opts to save a call in truncate
+          native-logging (native-logging* x opts)
+          opts           (merge opts native-logging)
+          printing-opts  (try (formatted x opts)
+                              (catch #?(:cljs js/Object :clj Exception)
+                                     e
+                                (fw-throwable e x opts)))
+          return-result? (when-not (= (:template opts)
+                                      [:form-or-label :file-info])
+                           x)]
 
-          (when (or state/print-config?
-                    (-> opts :user-opts :fw/print-config? true?))
-            (fw-config-report))
+      (when debug-config?
+        (fw-debug-report config-before opts "fireworks.core/_p2")) 
+
+      (when (or state/print-config?
+                (-> opts :user-opts :fw/print-config? true?))
+        (fw-config-report))
 
 
-          ;; TODO Change this to (= (:mode opts) :data)
-          (if (:p-data? opts) 
+      ;; TODO Change this to (= (:mode opts) :data)
+      (if (:p-data? opts) 
+        printing-opts
 
-            (if (unknown-coll-size-error? printing-opts)
-              (rewind-and-print-with-pprint opts* printing-opts _p x)
-              printing-opts)
+        (do 
+          (print-formatted printing-opts
+                           #?(:cljs (when-not node? js-print)))
 
-            (if (unknown-coll-size-error? printing-opts)
-              (rewind-and-print-with-pprint opts* printing-opts _p x)
-              (do 
-                (print-formatted printing-opts
-                                 #?(:cljs (when-not node? js-print)))
+          ;; Fireworks formatting and printing of does not happen when:
+          ;; - Value being printed is non-cljs or non-clj data-structure
+          ;; - :log :log- is used
+          ;; - :pp or :pp- is used
+          (when (and (not (:fw/log? opts))
+                     (:log? opts))
+            #?(:cljs (if node?
+                       (fireworks.core/pprint x)
+                       (js/console.log x))
+               :clj (fireworks.core/pprint x)))
 
-              ;; Fireworks formatting and printing of does not happen when:
-              ;; - Value being printed is non-cljs or non-clj data-structure
-              ;; - :log :log- is used
-              ;; - :pp or :pp- is used
-                (when (and (not (:fw/log? opts))
-                           (:log? opts))
-                  #?(:cljs (if node?
-                             (fireworks.core/pprint x)
-                             (js/console.log x))
-                     :clj (fireworks.core/pprint x)))
-
-                (reset! state/formatting-form-to-be-evaled? false)
-                (when return-result? x))))))))))
+          (reset! state/formatting-form-to-be-evaled? false)
+          (when return-result? x)))))))
 
 
 (defn ^{:public true} _p2 
@@ -796,7 +782,7 @@
    
    Will not use fireworks formatting if:
 
-   - In ClojureScript, if value is native data structure.
+   - In ClrjureScript, if value is native data structure.
      Value will be printed with js/console.log or fireworks.core/pprint.
    
    - A native printing flag is supplied at callsite to fireworks.core/?
@@ -810,76 +796,62 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
-  (let [opts*         opts
-        debug-config? (or state/debug-config?
+  (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
         config-before (when debug-config? @state/config)]
 
     (reset-state! opts)
 
-    (let 
-     ;; In cljs, if val is data structure but not cljs data structure
-     [native-logging      (try (native-logging* x opts)
-                               (catch #?(:cljs js/Object :clj Exception)
-                                      e
-                                 (fw-throwable e x opts)))]
+    (let [native-logging (try (native-logging* x opts)
+                              (catch #?(:cljs js/Object :clj Exception)
+                                     e
+                                (fw-throwable e x opts)))
+          ;; TODO - Need a better way to do the hack for threading 
+          opts           (merge opts
+                                native-logging
+                                (when (some-> opts :label :threading?)
+                                  {:label (or (some-> opts :label :label)
+                                              "threading:")}))
 
-      (if (unknown-coll-size-error? native-logging)
-        (rewind-and-print-with-pprint opts* native-logging _p2 x)
-        (let [
-              ;; TODO - Need a better way to do the hack for threading 
-              opts           (merge opts
-                                    native-logging
-                                    (when (some-> opts :label :threading?)
-                                      {:label (or (some-> opts :label :label)
-                                                  "threading:")}))
+          printing-opts  (try (formatted x opts)
+                              (catch #?(:cljs js/Object :clj Exception)
+                                     e
+                                (fw-throwable e x opts)))
 
-              printing-opts  (try (formatted x opts)
-                                  (catch #?(:cljs js/Object :clj Exception)
-                                         e
-                                    (fw-throwable e x opts)))
+          return-result? (when-not (= (:template opts)
+                                      [:form-or-label :file-info])
+                           x)]
+      
+      (when debug-config? 
+        (fw-debug-report config-before opts "fireworks.core/_p2")) 
 
-              return-result? (when-not (= (:template opts)
-                                          [:form-or-label :file-info])
-                               x)]
-          
-          (when debug-config? 
-            (fw-debug-report config-before opts "fireworks.core/_p2")) 
-
-          (when (or state/print-config?
-                    (-> opts :user-opts :fw/print-config? true?))
-            (fw-config-report))
+      (when (or state/print-config?
+                (-> opts :user-opts :fw/print-config? true?))
+        (fw-config-report))
 
           ;; TODO Change this to (= (:mode opts) :data)
-          (if (:p-data? opts) 
-            (if (unknown-coll-size-error? printing-opts)
-              (rewind-and-print-with-pprint opts* printing-opts _p2 x)
-              (if (= :string (:alias-mode opts))
-                (-> printing-opts :formatted :string)
-                printing-opts))
+      (if (:p-data? opts) 
+        (if (= :string (:alias-mode opts))
+          (-> printing-opts :formatted :string)
+          printing-opts)
+        (let [print? (if (contains? opts :when) (:when opts) true)]
+          (when print?
+            (print-formatted printing-opts 
+                             #?(:cljs (when-not node? js-print))))
+          ;; Fireworks formatting and printing of does not happen when:
+          ;; - Value being printed is non-cljs or non-clj data-structure
+          ;; - :log :log- is used
+          ;; - :pp or :pp- is used
+          (when (and print?
+                     (not (:fw/log? opts))
+                     (:log? opts))
+            #?(:cljs (if node?
+                       (fireworks.core/pprint x)
+                       (js/console.log x))
+               :clj (fireworks.core/pprint x)))
 
-            (let [print? (if (contains? opts :when) (:when opts) true)]
-              (when print?
-                (if (unknown-coll-size-error? printing-opts)
-                  (rewind-and-print-with-pprint opts* printing-opts _p x)
-                  (print-formatted printing-opts 
-                                   #?(:cljs (when-not node? js-print)))))
-
-              ;; Fireworks formatting and printing of does not happen when:
-              ;; - Value being printed is non-cljs or non-clj data-structure
-              ;; - :log :log- is used
-              ;; - :pp or :pp- is used
-              
-              (when (and print?
-                         (not (:fw/log? opts))
-                         (:log? opts))
-                #?(:cljs (if node?
-                           (fireworks.core/pprint x)
-                           (js/console.log x))
-                   :clj (fireworks.core/pprint x)))
-
-              (reset! state/formatting-form-to-be-evaled? false)
-              (when return-result? x))))))))
+          (reset! state/formatting-form-to-be-evaled? false)
+          (when return-result? x))))))
 
 
 (defn- cfg-opts

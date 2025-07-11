@@ -39,6 +39,7 @@
            classname]
     :as m}]
   (when (map? m)
+   
    (let [t (cond lambda?
                  :lambda
                  transient?
@@ -46,12 +47,12 @@
                  :else
                  t)
          b (cond
-             (contains? all-tags :record)
+             (contains? all-tags :datatype)
              (:classname m)
 
-                 ;; Interesting visualization in JVM Clojure
-                 ;; Labels everything, including primitives
-                 ;; Maybe this could be exposed in an option 
+             ;; Interesting visualization in JVM Clojure
+             ;; Labels everything, including primitives
+             ;; Maybe this could be exposed in an option 
              #_(or java-util-class? java-lang-class?)
              #_classname
 

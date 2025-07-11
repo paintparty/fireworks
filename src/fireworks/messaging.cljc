@@ -27,7 +27,7 @@
           defs/gray-tag-open)
 
         footer-stripe
-        "───────────────────────────────────────────────────────────────"
+        "───────────────────────────────────────────────"
 
         header-stripe-start
         "══ "
@@ -122,33 +122,11 @@
                               (bold 'java.lang.Exception.) 
                               "\n\n"
                               "Value received:\n"
-                              (bold (util/shortened error 33)) 
+                              (bold (util/shortened error 44)) 
                               "\n\n"
                               "Type of value received:\n"
                               (bold (str (type error))) 
                               )}))))
-
-
-(defn unknown-coll-size [x]
-  (block
-   {:header-str "Warning: fireworks.core/?"
-    :block-type :warning
-    :body       (str
-                 (italic "Message:\n")
-                 (bold "  :lasertag.core/unknown-coll-size") 
-                 "\n\n"
-                 (italic  "Value received:\n" )
-                 (bold (str "  " (util/shortened x 33))) 
-                 "\n\n"
-
-                 (italic  "Type of value received:\n" )
-                 (bold (str "  " (type x))) 
-                 "\n\n"
-                 (italic  "Falling back to formatting with fireworks.core/pprint.\n\n" )
-                 (italic  "There will be no justified map values, syntax coloring,\n" )
-                 (italic  "or highlighting in the result." )
-                 "\n"
-                 )}))
 
 
 (defn fw-debug-report-template
@@ -158,6 +136,14 @@
    (println (block {:header-str s
                     :block-type :info 
                     :body       (with-out-str (pprint x))}))))
+
+
+(defn unable-to-print-warning
+  [s x]
+  (println (block {:header-str s
+                   :block-type :warning 
+                   :body       x})))
+
 
 (defn warning-or-exception-summary 
   [{:keys [k v form line column file header block-type]}]

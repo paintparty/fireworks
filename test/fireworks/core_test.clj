@@ -243,6 +243,21 @@
              (deftests-str))
         :append false))
 
+(deftest+ custom-vector-datatype
+  {:theme      theme
+   :coll-limit 40}
+  sample/custom-vector-datatype)
+
+(deftest+ custom-map-dataype
+  {:theme      theme
+   :coll-limit 40}
+  sample/custom-map-datatype)
+
+(deftest+ custom-map-dataype
+  {:theme      theme
+   :coll-limit 40}
+  sample/vector-with-custom-datatypes)
+
 (deftest+ basic-samples
   {:theme      theme
    :coll-limit 40}

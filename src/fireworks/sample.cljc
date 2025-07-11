@@ -16,6 +16,34 @@
 
 ;; Definitions to use in samples -----------------------------------------------
 
+#?(:cljs
+   ()
+   :clj
+   (do 
+     (deftype CustomMap [m]
+       clojure.lang.IPersistentMap
+       ;;  (count [_] (count m))
+       (assoc [this _ _] this))
+
+     (deftype CustomVector [vc]
+       clojure.lang.IPersistentVector
+       ;;  (count [_] (count m))
+       (assoc [this _ _] this))
+     
+     (def custom-vector-datatype (->CustomVector [:a 1 :b 3]))
+     (def custom-map-datatype (->CustomMap {:a 1 :b 3}))
+
+     (def vector-with-custom-datatypes 
+       [custom-vector-datatype
+        custom-map-datatype])
+
+    ;;  (? :pp vector-with-custom-datatypes)
+     (? :pp
+        {:label "gold"} 
+        custom-vector-datatype)
+
+     ))
+
 (deftype MyType [a b])
 (def my-data-type (->MyType 2 3))
 (defrecord MyRecordType [a b])
