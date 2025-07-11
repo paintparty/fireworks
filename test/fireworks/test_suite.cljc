@@ -2,20 +2,13 @@
  fireworks.test-suite
  (:require
   [clojure.string :as string]
-  [fireworks.core-test :refer [escape-sgr]]
-  [fireworks.core :refer [? !? ?> !?> _p2]]
+  [fireworks.test-util :refer [escape-sgr]]
+  [fireworks.core :refer [? !? ?> !?>]]
   [fireworks.config]
-  [fireworks.pp :as pp :refer [?pp !?pp pprint]]
   [fireworks.demo]
-  [fireworks.state :refer [?sgr]]
-  [fireworks.themes :as themes]
   [fireworks.sample :as sample]
   [fireworks.smoke-test]
-  [clojure.test :refer [deftest is]]
-  [fireworks.config :as config]))
-
-
-
+  [clojure.test :refer [deftest is]]))
 
 
 (deftest !?-par
@@ -24,6 +17,174 @@
                 (is (= (?> "foo") "foo")))
               (deftest !?>-par
                 (is (= (!?> "foo") "foo")))
+#?(:bb nil
+   :clj
+   (deftest
+    custom-vector-datatype
+    (is
+     (=
+      (->
+       (?
+        :data
+        {:non-coll-mapkey-length-limit 20,
+         :line-height 1.45,
+         :find nil,
+         :enable-terminal-italics? true,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :enable-terminal-truecolor? true,
+         :non-coll-depth-1-length-limit 69,
+         :margin-top 0,
+         :print-level 7,
+         :non-coll-result-length-limit 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 7,
+         :coll-limit 40,
+         :label-length-limit 44,
+         :non-coll-length-limit 33,
+         :single-line-coll-length-limit 33,
+         :enable-terminal-font-weights? true,
+         :legacy-terminal? false,
+         :custom-printers {},
+         :margin-inline-start 0,
+         :display-metadata? true,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :bracket-contrast "high"}
+        sample/custom-vector-datatype)
+       :formatted
+       :string
+       escape-sgr
+       string/join)
+      "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.CustomVector〠0〠\n〠38;5;241;48;2;255;249;245〠[〠0〠〠38;2;77;109;186〠...〠0〠〠38;5;241;48;2;255;249;245〠]〠0〠"))))
+
+#?(:bb nil
+   :clj
+   (deftest
+    custom-map-dataype
+    (is
+     (=
+      (->
+       (?
+        :data
+        {:non-coll-mapkey-length-limit 20,
+         :line-height 1.45,
+         :find nil,
+         :enable-terminal-italics? true,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :enable-terminal-truecolor? true,
+         :non-coll-depth-1-length-limit 69,
+         :margin-top 0,
+         :print-level 7,
+         :non-coll-result-length-limit 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 7,
+         :coll-limit 40,
+         :label-length-limit 44,
+         :non-coll-length-limit 33,
+         :single-line-coll-length-limit 33,
+         :enable-terminal-font-weights? true,
+         :legacy-terminal? false,
+         :custom-printers {},
+         :margin-inline-start 0,
+         :display-metadata? true,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :bracket-contrast "high"}
+        sample/custom-map-datatype)
+       :formatted
+       :string
+       escape-sgr
+       string/join)
+      "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.CustomMap〠0〠\n〠38;5;241;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠 ...〠0〠〠〠 〠0〠〠38;2;77;109;186〠〠0〠〠38;5;241;48;2;255;249;245〠}〠0〠"))))
+
+#?(:bb nil
+   :clj
+   (deftest
+    custom-map-dataype
+    (is
+     (=
+      (->
+       (?
+        :data
+        {:non-coll-mapkey-length-limit 20,
+         :line-height 1.45,
+         :find nil,
+         :enable-terminal-italics? true,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :enable-terminal-truecolor? true,
+         :non-coll-depth-1-length-limit 69,
+         :margin-top 0,
+         :print-level 7,
+         :non-coll-result-length-limit 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 7,
+         :coll-limit 40,
+         :label-length-limit 44,
+         :non-coll-length-limit 33,
+         :single-line-coll-length-limit 33,
+         :enable-terminal-font-weights? true,
+         :legacy-terminal? false,
+         :custom-printers {},
+         :margin-inline-start 0,
+         :display-metadata? true,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :bracket-contrast "high"}
+        sample/vector-with-custom-datatypes)
+       :formatted
+       :string
+       escape-sgr
+       string/join)
+      "〠38;5;241〠[〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.CustomVector〠0〠\n 〠38;5;32;48;2;255;249;245〠[〠0〠〠38;2;77;109;186〠...〠0〠〠38;5;32;48;2;255;249;245〠]〠0〠〠〠\n 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.CustomMap〠0〠\n 〠38;5;32;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠 ...〠0〠〠〠 〠0〠〠38;2;77;109;186〠〠0〠〠38;5;32;48;2;255;249;245〠}〠0〠〠38;5;241〠]〠0〠"))))
+
+#?(:bb nil
+   :clj
+   (deftest
+    user-fn-names
+    (is
+     (=
+      (->
+       (?
+        :data
+        {:non-coll-mapkey-length-limit 20,
+         :line-height 1.45,
+         :find nil,
+         :enable-terminal-italics? true,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :enable-terminal-truecolor? true,
+         :non-coll-depth-1-length-limit 69,
+         :margin-top 0,
+         :print-level 7,
+         :non-coll-result-length-limit 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 7,
+         :coll-limit 40,
+         :label-length-limit 44,
+         :non-coll-length-limit 33,
+         :single-line-coll-length-limit 33,
+         :enable-terminal-font-weights? true,
+         :legacy-terminal? false,
+         :custom-printers {},
+         :margin-inline-start 0,
+         :display-metadata? true,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :bracket-contrast "high"}
+        sample/user-fn-names)
+       :formatted
+       :string
+       escape-sgr
+       string/join)
+      "〠38;5;241〠{〠0〠〠38;2;122;62;157〠:user-fn〠0〠〠〠       〠0〠〠〠 〠0〠〠38;2;77;109;186〠fireworks.sample/xy〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:really-long-fn〠0〠〠〠 〠0〠〠38;2;77;109;186〠xyasldfasldkfaslkjfzzzzzzzzzz〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;241〠}〠0〠"))))
+
 (deftest
  basic-samples
  (is
@@ -36,7 +197,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -62,7 +222,7 @@
     :string
     escape-sgr
     string/join)
-   "〠38;5;241〠{〠0〠〠38;2;122;62;157〠:string〠0〠〠〠          〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"string\"〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:regex〠0〠〠〠           〠0〠〠〠 〠0〠〠38;2;68;140;39〠#\"myregex\"〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:uuid〠0〠〠〠            〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠#uuid 〠0〠〠38;2;68;140;39〠\"4fe5d828-6444-11e8-8222\"〠3;38;2;140;140;140〠...〠0〠〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:symbol〠0〠〠〠          〠0〠〠〠 〠0〠〠38;2;77;109;186〠mysym〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:symbol+meta〠0〠〠〠     〠0〠〠〠 〠0〠〠38;2;77;109;186〠mysym〠0〠 〠38;2;190;85;187;48;2;252;240;255〠    〠0〠〠38;2;190;85;187;48;2;252;240;255〠^{〠0〠〠38;2;190;85;187;48;2;252;240;255〠:foo〠0〠〠38;2;190;85;187;48;2;252;240;255〠 〠0〠〠38;2;190;85;187;48;2;252;240;255〠\"bar\"〠0〠〠38;2;190;85;187;48;2;252;240;255〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:boolean〠0〠〠〠         〠0〠〠〠 〠0〠〠38;2;122;62;157〠true〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:keyword〠0〠〠〠         〠0〠〠〠 〠0〠〠38;2;122;62;157〠:keyword〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:nil〠0〠〠〠             〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:##Nan〠0〠〠〠           〠0〠〠〠 〠0〠〠38;2;122;62;157〠NaN〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:##Inf〠0〠〠〠           〠0〠〠〠 〠0〠〠38;2;122;62;157〠Infinity〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:##-Inf〠0〠〠〠          〠0〠〠〠 〠0〠〠38;2;122;62;157〠-Infinity〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:int〠0〠〠〠             〠0〠〠〠 〠0〠〠38;2;122;62;157〠1234〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:float〠0〠〠〠           〠0〠〠〠 〠0〠〠38;2;122;62;157〠3.33〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:lambda〠0〠〠〠          〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:lambda-2-args〠0〠〠〠   〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:core-fn〠0〠〠〠         〠0〠〠〠 〠0〠〠38;2;77;109;186〠clojure.core/juxt〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:date-fn〠0〠〠〠         〠0〠〠〠 〠0〠〠38;2;77;109;186〠java.util/Date〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:datatype-class〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;77;109;186〠fireworks.sample/MyType〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:recordtype-class〠0〠〠〠 〠0〠〠38;2;77;109;186〠fireworks.sample/MyRecordType〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:really-long-fn〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;77;109;186〠xyasldfasldkfaslkjfzzzzzzzzzz〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:map〠0〠〠〠             〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠:c〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"three\"〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:multiline-map〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠    〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"abcdefghijklmnopqrstuv\"〠0〠〠〠\n                    〠0〠〠38;2;122;62;157〠:ab〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"abcdefghijklmnopqrstuv12345\"〠0〠〠〠\n                    〠0〠〠38;2;122;62;157〠:abcde〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"xyz\"〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:rainbow〠0〠〠〠         〠0〠〠〠 〠0〠〠38;5;32〠[〠0〠〠38;5;208〠[〠0〠〠38;5;28〠[〠0〠〠38;5;128〠[〠0〠〠38;5;241〠[〠0〠〠38;5;241〠]〠0〠〠38;5;128〠]〠0〠〠38;5;28〠]〠0〠〠38;5;208〠]〠0〠〠38;5;32〠]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:vector〠0〠〠〠          〠0〠〠〠 〠0〠〠38;5;32〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠38;5;32〠]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:vector+meta〠0〠〠〠     〠0〠〠〠 〠0〠〠38;5;32;48;2;252;240;255〠[〠0〠 〠38;2;190;85;187;48;2;252;240;255〠    〠0〠〠38;2;190;85;187;48;2;252;240;255〠^{〠0〠〠38;2;190;85;187;48;2;252;240;255〠:meta-on-coll〠0〠〠38;2;190;85;187;48;2;252;240;255〠 〠0〠〠38;2;190;85;187;48;2;252;240;255〠\"bar\"〠0〠〠38;2;190;85;187;48;2;252;240;255〠}〠0〠〠〠\n                    〠0〠〠38;2;77;109;186〠foo〠0〠〠〠\n                    〠0〠〠38;2;77;109;186〠bar〠0〠 〠38;2;190;85;187;48;2;252;240;255〠    〠0〠〠38;2;190;85;187;48;2;252;240;255〠^{〠0〠〠38;2;190;85;187;48;2;252;240;255〠:meta-on-sym〠0〠〠38;2;190;85;187;48;2;252;240;255〠 〠0〠〠38;2;190;85;187;48;2;252;240;255〠\"bar\"〠0〠〠38;2;190;85;187;48;2;252;240;255〠}〠0〠〠〠\n                    〠0〠〠38;2;77;109;186〠baz〠0〠〠38;5;32;48;2;252;240;255〠]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:set〠0〠〠〠             〠0〠〠〠 〠0〠〠38;5;32〠#{〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"three\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠:2〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:list〠0〠〠〠            〠0〠〠〠 〠0〠〠38;5;32〠(〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠38;5;32〠)〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:lazy-seq〠0〠〠〠        〠0〠〠〠 〠0〠〠38;5;32〠(〠0〠〠38;2;122;62;157〠0〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠38;5;32〠)〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:record〠0〠〠〠          〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyRecordType〠0〠\n                   〠38;5;32;48;2;255;249;245〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"a\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"b\"〠0〠〠38;5;32;48;2;255;249;245〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:atom〠0〠〠〠            〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠Atom<〠0〠〠38;2;122;62;157〠1〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠>〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:volatile!〠0〠〠〠       〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠Volatile<〠0〠〠38;2;122;62;157〠1〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠>〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:transient-vector〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠TransientVector〠0〠\n                   〠38;5;32;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠38;5;32;48;2;255;249;245〠]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:transient-set〠0〠〠〠   〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashSet〠0〠\n                   〠38;5;32;48;2;255;249;245〠#{〠0〠〠3;38;2;140;140;140〠〠〠...+2〠0〠〠0〠〠38;5;32;48;2;255;249;245〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:transient-map〠0〠〠〠   〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠TransientArrayMap〠0〠\n                   〠38;5;32;48;2;255;249;245〠{〠0〠〠3;38;2;140;140;140〠 〠〠......+2〠0〠〠0〠〠38;5;32;48;2;255;249;245〠}〠0〠〠38;5;241〠}〠0〠")))
+   "〠38;5;241〠{〠0〠〠38;2;122;62;157〠:string〠0〠〠〠          〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"string\"〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:regex〠0〠〠〠           〠0〠〠〠 〠0〠〠38;2;68;140;39〠#\"myregex\"〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:uuid〠0〠〠〠            〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠#uuid 〠0〠〠38;2;68;140;39〠\"4fe5d828-6444-11e8-8222\"〠3;38;2;140;140;140〠...〠0〠〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:symbol〠0〠〠〠          〠0〠〠〠 〠0〠〠38;2;77;109;186〠mysym〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:symbol+meta〠0〠〠〠     〠0〠〠〠 〠0〠〠38;2;77;109;186〠mysym〠0〠 〠38;2;190;85;187;48;2;252;240;255〠    〠0〠〠38;2;190;85;187;48;2;252;240;255〠^{〠0〠〠38;2;190;85;187;48;2;252;240;255〠:foo〠0〠〠38;2;190;85;187;48;2;252;240;255〠 〠0〠〠38;2;190;85;187;48;2;252;240;255〠\"bar\"〠0〠〠38;2;190;85;187;48;2;252;240;255〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:boolean〠0〠〠〠         〠0〠〠〠 〠0〠〠38;2;122;62;157〠true〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:keyword〠0〠〠〠         〠0〠〠〠 〠0〠〠38;2;122;62;157〠:keyword〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:nil〠0〠〠〠             〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:##Nan〠0〠〠〠           〠0〠〠〠 〠0〠〠38;2;122;62;157〠NaN〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:##Inf〠0〠〠〠           〠0〠〠〠 〠0〠〠38;2;122;62;157〠Infinity〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:##-Inf〠0〠〠〠          〠0〠〠〠 〠0〠〠38;2;122;62;157〠-Infinity〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:int〠0〠〠〠             〠0〠〠〠 〠0〠〠38;2;122;62;157〠1234〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:float〠0〠〠〠           〠0〠〠〠 〠0〠〠38;2;122;62;157〠3.33〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:lambda〠0〠〠〠          〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:lambda-2-args〠0〠〠〠   〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠λ〠0〠〠38;2;77;109;186〠〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:core-fn〠0〠〠〠         〠0〠〠〠 〠0〠〠38;2;77;109;186〠clojure.core/juxt〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:date-fn〠0〠〠〠         〠0〠〠〠 〠0〠〠38;2;77;109;186〠java.util/Date〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:datatype-class〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;77;109;186〠fireworks.sample/MyType〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:recordtype-class〠0〠〠〠 〠0〠〠38;2;77;109;186〠fireworks.sample/MyRecordType〠0〠〠38;2;153;153;153〠[]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:map〠0〠〠〠             〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠:c〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"three\"〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:multiline-map〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠    〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"abcdefghijklmnopqrstuv\"〠0〠〠〠\n                    〠0〠〠38;2;122;62;157〠:ab〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"abcdefghijklmnopqrstuv12345\"〠0〠〠〠\n                    〠0〠〠38;2;122;62;157〠:abcde〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"xyz\"〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:rainbow〠0〠〠〠         〠0〠〠〠 〠0〠〠38;5;32〠[〠0〠〠38;5;208〠[〠0〠〠38;5;28〠[〠0〠〠38;5;128〠[〠0〠〠38;5;241〠[〠0〠〠38;5;241〠]〠0〠〠38;5;128〠]〠0〠〠38;5;28〠]〠0〠〠38;5;208〠]〠0〠〠38;5;32〠]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:vector〠0〠〠〠          〠0〠〠〠 〠0〠〠38;5;32〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠38;5;32〠]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:vector+meta〠0〠〠〠     〠0〠〠〠 〠0〠〠38;5;32;48;2;252;240;255〠[〠0〠 〠38;2;190;85;187;48;2;252;240;255〠    〠0〠〠38;2;190;85;187;48;2;252;240;255〠^{〠0〠〠38;2;190;85;187;48;2;252;240;255〠:meta-on-coll〠0〠〠38;2;190;85;187;48;2;252;240;255〠 〠0〠〠38;2;190;85;187;48;2;252;240;255〠\"abc\"〠0〠〠38;2;190;85;187;48;2;252;240;255〠}〠0〠〠〠\n                    〠0〠〠38;2;77;109;186〠foo〠0〠〠〠\n                    〠0〠〠38;2;77;109;186〠bar〠0〠 〠38;2;190;85;187;48;2;252;240;255〠    〠0〠〠38;2;190;85;187;48;2;252;240;255〠^{〠0〠〠38;2;190;85;187;48;2;252;240;255〠:meta-on-sym〠0〠〠38;2;190;85;187;48;2;252;240;255〠 〠0〠〠38;2;190;85;187;48;2;252;240;255〠\"xyz\"〠0〠〠38;2;190;85;187;48;2;252;240;255〠}〠0〠〠〠\n                    〠0〠〠38;2;77;109;186〠baz〠0〠〠38;5;32;48;2;252;240;255〠]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:set〠0〠〠〠             〠0〠〠〠 〠0〠〠38;5;32〠#{〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"three\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠:2〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:list〠0〠〠〠            〠0〠〠〠 〠0〠〠38;5;32〠(〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠38;5;32〠)〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:lazy-seq〠0〠〠〠        〠0〠〠〠 〠0〠〠38;5;32〠(〠0〠〠38;2;122;62;157〠0〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠38;5;32〠)〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:record〠0〠〠〠          〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyRecordType〠0〠\n                   〠38;5;32;48;2;255;249;245〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"a\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"b\"〠0〠〠38;5;32;48;2;255;249;245〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:atom〠0〠〠〠            〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠Atom<〠0〠〠38;2;122;62;157〠1〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠>〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:volatile!〠0〠〠〠       〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠Volatile<〠0〠〠38;2;122;62;157〠1〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠>〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:transient-vector〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠TransientVector〠0〠\n                   〠38;5;32;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠38;5;32;48;2;255;249;245〠]〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:transient-set〠0〠〠〠   〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashSet〠0〠\n                   〠38;5;32;48;2;255;249;245〠#{〠0〠〠3;38;2;140;140;140〠〠〠...+2〠0〠〠0〠〠38;5;32;48;2;255;249;245〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:transient-map〠0〠〠〠   〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠TransientArrayMap〠0〠\n                   〠38;5;32;48;2;255;249;245〠{〠0〠〠3;38;2;140;140;140〠 〠〠......+2〠0〠〠0〠〠38;5;32;48;2;255;249;245〠}〠0〠〠38;5;241〠}〠0〠")))
 
 
 (deftest
@@ -77,7 +237,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -118,7 +277,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -159,7 +317,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -200,7 +357,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -241,7 +397,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -282,7 +437,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -323,7 +477,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -364,7 +517,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -405,7 +557,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -446,7 +597,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 60,
@@ -487,7 +637,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -528,7 +677,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -569,7 +717,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -610,7 +757,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,
@@ -651,7 +797,6 @@
       :find nil,
       :enable-terminal-italics? true,
       :display-namespaces? true,
-      :when nil,
       :enable-rainbow-brackets? true,
       :enable-terminal-truecolor? true,
       :non-coll-depth-1-length-limit 69,

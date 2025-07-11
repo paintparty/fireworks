@@ -2,6 +2,7 @@
   (:require 
    [clojure.string :as string]
    [fireworks.core :refer [?]]
+   [fireworks.test-util :refer [escape-sgr]]
    [fireworks.config]
    [fireworks.pp :as pp :refer [?pp !?pp pprint]]
    [fireworks.demo]
@@ -10,6 +11,8 @@
    [fireworks.config :as config]
    [clojure.test :refer [deftest is]]))
 
+#_(? {}
+ sample/array-map-of-everything-cljc)
 
 ;; TODO - Make this write distinct clojurescript tests?
 
@@ -29,7 +32,6 @@
 
 (declare visual-mode?)
 (declare theme)
-(declare escape-sgr)
 
 (defn abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn [] nil)
 
@@ -110,19 +112,6 @@
 
 (def tests (atom []))
 
-(defn escape-sgr
-  "Escape sgr codes so we can test clj output."
-  [s]
-  (let [_split   "✂"
-        _sgr     "〠"
-        replaced (string/replace s
-                                 #"\u001b\[([0-9;]*)[mK]"
-                                 (str _split _sgr "$1" _sgr _split))
-        split    (string/split replaced
-                               (re-pattern _split))
-        ret      (filter seq split)]
-    ret))
-
 (defn hifi-impl [x user-opts]
   (->> x 
        (fireworks.core/_p2 (merge user-opts
@@ -151,7 +140,8 @@
        (when visual-mode?
          (? (quote ~sym) ~opts ~v)))))
 
-
+;; TODO - if elide branches, just don't write bb
+;; generate a separate bb script that is just test-runner
 (defn deftests-str 
   "This creates a string of all of the generated deftests"
   []
@@ -159,21 +149,31 @@
    "\n\n"
    (mapv 
     (fn [{:keys [sym opts v qv #_escaped-str]}]
-      (with-out-str 
-        (pprint 
-         (list 
-          'deftest sym
-          (list 'is
-                (let [merged-opts (merge default-options-map opts)]
-                  (list '=
-                        (concat (list '->
-                                      (list '? :data merged-opts qv)
-                                      :formatted 
-                                      :string)
-                                '[escape-sgr string/join])
-                        (-> (hifi-impl v merged-opts)
-                            escape-sgr
-                            string/join))))))))
+      (let [deftest-str
+            (with-out-str 
+              (pprint 
+               (list 
+                'deftest sym
+                (list 'is
+                      (let [merged-opts (dissoc (merge default-options-map opts)
+                                                :when)]
+                        (list '=
+                              (concat (list '->
+                                            (list '? :data merged-opts qv)
+                                            :formatted 
+                                            :string)
+                                      '[escape-sgr string/join])
+                              (-> (hifi-impl v merged-opts)
+                                  escape-sgr
+                                  string/join)))))))]
+        (if-let [elide-branches (:elide-branches opts)]
+         (str 
+          "#?("
+          (reduce (fn [acc k] (str acc k " nil\n   ")) "" elide-branches)
+          ":clj\n   "
+          (string/join "\n   " (string/split deftest-str #"\n"))
+          ")")
+          deftest-str)))
     @tests)))
 
 ;; CLJC cruft
@@ -216,22 +216,18 @@
    To call from bb (from the fireworks project root dir):
    bb bb-write-tests-ns.cljc"
   []
-  (spit (str "./test/fireworks/test_suite" ".clj") 
+  (spit (str "./test/fireworks/test_suite" ".cljc") 
         (str (with-out-str 
                (pprint '(ns fireworks.test-suite 
                           (:require 
                            [clojure.string :as string]
-                           [fireworks.core-test :refer [escape-sgr]]
-                           [fireworks.core :refer [? !? ?> !?> _p2]]
+                           [fireworks.test-util :refer [escape-sgr]]
+                           [fireworks.core :refer [? !? ?> !?>]]
                            [fireworks.config]
-                           [fireworks.pp :as pp :refer [?pp !?pp pprint]]
                            [fireworks.demo]
-                           [fireworks.state :refer [?sgr]]
-                           [fireworks.themes :as themes] 
                            [fireworks.sample :as sample] 
                            [fireworks.smoke-test] 
-                           [clojure.test :refer [deftest is]]
-                           [fireworks.config :as config]))))
+                           [clojure.test :refer [deftest is]]))))
              "\n\n\n\n\n"
              "(deftest !?-par
                 (is (= (!? \"foo\") \"foo\")))
@@ -244,19 +240,28 @@
         :append false))
 
 (deftest+ custom-vector-datatype
-  {:theme      theme
-   :coll-limit 40}
+  {:theme          theme
+   :coll-limit     40
+   :elide-branches #{:bb}}
   sample/custom-vector-datatype)
 
 (deftest+ custom-map-dataype
-  {:theme      theme
-   :coll-limit 40}
+  {:theme          theme
+   :coll-limit     40
+   :elide-branches #{:bb}}
   sample/custom-map-datatype)
 
 (deftest+ custom-map-dataype
-  {:theme      theme
-   :coll-limit 40}
+  {:theme          theme
+   :coll-limit     40
+   :elide-branches #{:bb}}
   sample/vector-with-custom-datatypes)
+
+(deftest+ user-fn-names 
+  {:theme          theme
+   :coll-limit     40
+   :elide-branches #{:bb}}
+  sample/user-fn-names)
 
 (deftest+ basic-samples
   {:theme      theme

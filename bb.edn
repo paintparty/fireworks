@@ -1,0 +1,4 @@
+{:paths ["src" "test"]
+ :deps  {io.github.paintparty/fireworks {:local/root "."}
+         io.github.paintparty/lasertag {:local/root "../lasertag"}
+         }}

@@ -16,8 +16,8 @@
 
 ;; Definitions to use in samples -----------------------------------------------
 
-#?(:cljs
-   ()
+#?(:bb
+   []
    :clj
    (do 
      (deftype CustomMap [m]
@@ -37,9 +37,9 @@
        [custom-vector-datatype
         custom-map-datatype])
 
-    ;;  (? :pp vector-with-custom-datatypes)
-     (? :pp
-        {:label "gold"} 
+     #_(? :pp vector-with-custom-datatypes)
+     #_(? :pp
+        {:label "my-label"} 
         custom-vector-datatype)
 
      ))
@@ -207,6 +207,11 @@
    :set
    #{1 :2 "three"}))
 
+(def user-fn-names
+  (array-map
+   :user-fn          xy
+   :really-long-fn   xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz))
+
 (def everything*
   (array-map
 
@@ -242,8 +247,7 @@
                   :clj
                   java.util.Date)
     :datatype-class   MyType
-    :recordtype-class MyRecordType
-    :really-long-fn   xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz)
+    :recordtype-class MyRecordType)
 
    "Collections"  
    (array-map
@@ -264,9 +268,9 @@
     [1 2 3]
 
     :vector+meta
-    ^{:meta-on-coll "bar"}
+    ^{:meta-on-coll "abc"}
     ['foo
-     (with-meta 'bar {:meta-on-sym "bar"})
+     (with-meta 'bar {:meta-on-sym "xyz"})
      'baz]
 
     :set
