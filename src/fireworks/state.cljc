@@ -223,7 +223,7 @@
 
     ;; TODO - check if this actually catches anything?
     (catch #?(:cljs js/Object
-              :clj Exception)
+              :clj Throwable)
            e
       (messaging/caught-exception e {})
       (swap! messaging/warnings-and-errors
@@ -761,7 +761,7 @@
               err-x
               err-opts]}
       (try (merged-theme*)
-           (catch #?(:cljs js/Object :clj Exception)
+           (catch #?(:cljs js/Object :clj Throwable)
                   e
              (messaging/->FireworksThrowable e nil nil)))]
   ;; TODO - Does this ever reach the err branch?

@@ -276,7 +276,6 @@
            user-opts
            threading?]
     :as   opts}] 
-
   ;; Test error messaging
   (when (= :_fireworks-dev/force-error_ qf)
     #?(:cljs
@@ -307,19 +306,19 @@
                      (< 44 (count (str label))))))
 
         {:keys [fmt+ fmt file-info* css-count*]}
-        (fmt+ (keyed [file-info-first? 
-                      user-print-fn
-                      threading?
-                      template
-                      source
-                      label
-                      opts
-                      mll?
-                      log?]))]
+        (fmt+  (keyed [file-info-first? 
+                       user-print-fn
+                       threading?
+                       template
+                       source
+                       label
+                       opts
+                       mll?
+                       log?]))]
     
     ;; TODO Change this to (= mode :data)
      ;; TODO - Change if post-replace works - cljs stuff below
-    (if p-data?
+    (if  p-data?
       ;; If p-data, return a map of preformatted values
       (merge
        {:ns-str        ns-str
@@ -689,7 +688,7 @@
      (#?(:cljs
          js/Error.
          :clj
-         Exception.)
+         Throwable.)
       "fireworks.core/_p2 :: debug"))))
 
 (defn- fw-throwable [e x opts]
@@ -740,6 +739,7 @@
                                       [:form-or-label :file-info])
                            x)]
 
+
       (when debug-config?
         (fw-debug-report config-before opts "fireworks.core/_p2")) 
 
@@ -753,8 +753,10 @@
         printing-opts
 
         (do 
+
           (print-formatted printing-opts
                            #?(:cljs (when-not node? js-print)))
+
 
           ;; Fireworks formatting and printing of does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
@@ -803,7 +805,7 @@
     (reset-state! opts)
 
     (let [native-logging (try (native-logging* x opts)
-                              (catch #?(:cljs js/Object :clj Exception)
+                              (catch #?(:cljs js/Object :clj Throwable)
                                      e
                                 (fw-throwable e x opts)))
           ;; TODO - Need a better way to do the hack for threading 
@@ -814,7 +816,7 @@
                                               "threading:")}))
 
           printing-opts  (try (formatted x opts)
-                              (catch #?(:cljs js/Object :clj Exception)
+                              (catch #?(:cljs js/Object :clj Throwable)
                                      e
                                 (fw-throwable e x opts)))
 
