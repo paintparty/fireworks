@@ -303,6 +303,19 @@
     (merge mm* ellipsized)))
 
 
+#?(:bb
+   (defn- remove-sci-lang-type-metadata 
+     "Removes verbose :sci.impl/* metadata on custom datatypes."
+     [user-meta mm*]
+     (if (= "sci.lang.Type" (:classname mm*))
+       (reduce-kv (fn [m k v]
+                    (if (-> k str (string/starts-with? ":sci.impl"))
+                      m
+                      (assoc m k v)))
+                  {}
+                  user-meta)
+       user-meta)))
+
 ;; Make sure to update :fw/truncated entry in example in docstring, if the shape
 ;; of that value changes.
 (defn truncate
@@ -374,6 +387,9 @@
         ]
     (with-meta truncated-x
       (merge {:fw/truncated mm*
-              :fw/user-meta user-meta}
+              :fw/user-meta #?(:cljs user-meta
+                               :bb (remove-sci-lang-type-metadata user-meta mm*)
+                               :clj user-meta)}
              (some->> m* :user-meta? (hash-map :fw/user-meta-map?))))))
+
 
