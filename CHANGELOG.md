@@ -15,6 +15,21 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.12.6
+2025-7-11
+
+#### Changed
+- Bumped lasertag dep to `0.11.5`
+
+#### Added
+- Support for custom datatypes [#69](https://github.com/paintparty/fireworks/issues/69).
+- Test suite for Babashka [a1c13cf](https://github.com/paintparty/fireworks/commit/a1c13cf85735875b148462bf2988eb64a04b8b1a)
+
+
+<br>
+<br>
+
+
 ## 0.12.5
 2025-7-09
 

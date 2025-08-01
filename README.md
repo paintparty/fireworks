@@ -1089,6 +1089,20 @@ Even with all the specific formatting and syntax colorization, the performance o
 
 <br>
 
+## Test
+
+The JVM tests require [leiningen](https://leiningen.org/) to be installed.
+```Clojure
+lein test
+```
+
+Babashka tests:
+```Clojure
+bb test:bb
+```
+
+<br>
+
 ## Status / Roadmap
 Alpha, subject to change. Currently, the enhanced interop reflection / print handling is focused more on the ClojureScript side. It would be nice to add more support for native Java types and data structures. Issues welcome, see [contributing](#contributing).
 
