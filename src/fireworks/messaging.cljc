@@ -238,39 +238,42 @@
                  (map #(str "  "  %) 
                       (string/split s
                                     #"\n")))))
-(defn exception-info-from-clojure  
+(defn exception-info-from-clojure
   [err {:keys [body]}]
-  (if err
-    (let [err-msg-str #?(:cljs
-                         nil
-                         :bb
-                         (str err)
-                         :clj
-                         (string/replace (.getMessage err) #"\(" "\n("))]
-      #?(:cljs
+  
+   (if err
+     (let [err-msg-str #?(:cljs
+                          nil
+                          :bb
+                          (str err)
+                          :clj
+                          (try (string/replace (.getMessage err) #"\(" "\n(")
+                               (catch Throwable e
+                                 "No message from Clojure was provided.")))]
+       #?(:cljs
          ;; TODO - Add stacktrace preview in bling for cljs?
-         body
-         :clj
-         (str
-          defs/italic-tag-open
-          "Message from Clojure:"
-          defs/sgr-tag-close
-          "\n"
-          (some-> err-msg-str indented-string)
-          "\n\n"
-          (when-let [stp          (stack-trace-preview
-                                   {:error err
-                                    :regex #"^fireworks\.|^lasertag\."
-                                    :depth 12})]
-            (let [[fl & rl]    (string/split stp #"\n")
-                  section-head (str defs/italic-tag-open
-                                    fl
-                                    defs/sgr-tag-close)]
-              (str section-head
-                   "\n"
-                   (indented-string (string/join "\n" rl)))))
-          (some->> body (str "\n\n"))))) 
-    body))
+          body
+          :clj
+          (str defs/italic-tag-open
+               "Message from Clojure:"
+               defs/sgr-tag-close
+               "\n"
+               (some-> err-msg-str indented-string)
+               "\n\n"
+               (when-let [stp          (stack-trace-preview
+                                        {:error err
+                                         :regex #"^fireworks\.|^lasertag\."
+                                         :depth 12})]
+                 (let [[fl & rl]    (string/split stp #"\n")
+                       section-head (str defs/italic-tag-open
+                                         fl
+                                         defs/sgr-tag-close)]
+                   (str section-head
+                        "\n"
+                        (indented-string (string/join "\n" rl)))))
+               (some->> body (str "\n\n"))))) 
+     body))
+
 
 
 (defn caught-exception
