@@ -1007,7 +1007,7 @@
        (keyed [defd x qf-nil? cfg-opts log?*]))))
 
                                                                
-                                                               
+ 
 ;                  AAA               PPPPPPPPPPPPPPPPP   IIIIIIIIII
 ;                 A:::A              P::::::::::::::::P  I::::::::I
 ;                A:::::A             P::::::PPPPPP:::::P I::::::::I
@@ -1034,11 +1034,6 @@
 (declare print-thread)
 (declare thread-helper)
 (declare threading-sym)
-
-
-
-
-
 
 
 (defmacro ?

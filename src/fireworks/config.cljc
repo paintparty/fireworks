@@ -8,6 +8,8 @@
   {:theme                         {:spec           ::config/theme
                                    :default        "Universal Neutral"
                                    :updates-theme? true}
+   :truncate?                     {:spec    ::config/truncate
+                                   :default true}
    :coll-limit                    {:spec    ::config/coll-limit
                                    :default 33}
    :single-line-coll-length-limit {:spec    ::config/single-line-coll-length-limit

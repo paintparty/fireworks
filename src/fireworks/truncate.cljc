@@ -3,6 +3,7 @@
             #?(:clj [fireworks.macros :refer [keyed]])
             [fireworks.pp :rename {?pp ?}]
             [clojure.string :as string]
+            [fireworks.specs.config :as specs.config]
             [fireworks.ellipsize :as ellipsize]
             [fireworks.order :refer [seq->sorted-map]]
             [fireworks.profile :as profile]
@@ -197,6 +198,11 @@
     (when-not (and (list? x) (= '(:line :column) (keys m)))
       m)))
 
+(defn- resolve-coll-limit []
+  (if (false? (:truncate? @state/config))
+    specs.config/coll-limit
+    (:coll-limit @state/config)))
+
 
 (defn- reify-if-transient [x tag-map]
   (if (:transient? tag-map)
@@ -207,7 +213,7 @@
         (= t :set)
         #{}
         :else
-        (for [n (take (:coll-limit @state/config) (range (count x)))]
+        (for [n (take (resolve-coll-limit) (range (count x)))]
           (nth x n))))
     x))
 
@@ -253,7 +259,8 @@
            {:user-meta      (value-meta x)
             :og-x           x
             :uid-entry?     (volatile! false)
-            :coll-limit     (if too-deep? 0 (:coll-limit @state/config))
+            :coll-limit     (if too-deep? 0 
+                                (resolve-coll-limit))
             :array-map?     (contains? (:all-tags tag-map) :array-map)
             :top-level-sev? (and sev? (zero? depth))}))) 
 

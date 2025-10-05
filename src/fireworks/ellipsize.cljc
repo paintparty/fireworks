@@ -4,6 +4,7 @@
    [fireworks.defs :as defs]
    [fireworks.pp :refer [?pp]]
    [fireworks.state :as state]
+   [fireworks.specs.config :as specs.config]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])))
 
@@ -212,6 +213,7 @@
                    ret])))
     ret))
 
+
 (defn ellipsized
   "Ellipsizes longer-than acceptable self-evaluating values such as strings,
    regexes, keywords, #insts, fns, etc.
@@ -235,8 +237,32 @@
   (let [{:keys [non-coll-depth-1-length-limit
                 non-coll-result-length-limit
                 non-coll-mapkey-length-limit
-                non-coll-length-limit]}
+                non-coll-length-limit
+                truncate?]}
         @state/config
+
+        no-truncation?
+        (false? truncate?)
+
+        non-coll-length-limit
+        (if no-truncation?
+          specs.config/non-coll-length-limit
+          non-coll-length-limit)
+
+        non-coll-depth-1-length-limit
+        (if no-truncation?
+          specs.config/non-coll-length-limit
+          non-coll-depth-1-length-limit)
+
+        non-coll-result-length-limit
+        (if no-truncation? 
+          specs.config/non-coll-length-limit 
+          non-coll-result-length-limit)
+
+        non-coll-mapkey-length-limit
+        (if no-truncation? 
+          specs.config/non-coll-length-limit 
+          non-coll-mapkey-length-limit)
 
         limit
         (if-let [level-k (cond top-level-sev?

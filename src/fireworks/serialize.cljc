@@ -983,8 +983,6 @@
    ;; Just for debugging
    ;;  #?(:cljs (js/console.clear))
 
-  ;;  (?pp (:coll-limit @state/config))
-
    (let [truncated  (truncate/truncate {:path       []
                                         :depth      0
                                         :user-meta? user-meta?} source)

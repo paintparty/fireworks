@@ -12,9 +12,16 @@
 (s/def ::edn-file-path 
   (s/and string? #(re-find #"\.edn$" %)))
 
+;; Upper bound of non-coll-length-limits get set here
+(def non-coll-length-limit
+  1000)
+
+(def coll-limit
+  1000)
+
 ;; TODO - Should this be 1?
 (s/def ::fw-coll-limit
-  (s/and int? #(<= 2 % 200)))
+  (s/and int? #(<= 2 % coll-limit)))
 
 ;; This is for the theme entry in a fireworks config .edn
 ;; It can be either
@@ -36,6 +43,8 @@
         :theme ::theme/theme))
 
 
+(s/def ::truncate
+  boolean?)
 
 (s/def ::label-length-limit
   (s/and int? #(<= 10 % 100)))
@@ -59,7 +68,7 @@
   ::fw-coll-limit)
 
 (s/def ::non-coll-extended-length-limit
-  (s/and int? #(<= 10 % 1000)))
+  (s/and int? #(<= 10 % non-coll-length-limit)))
 
 (s/def ::non-coll-result-length-limit
   ::non-coll-extended-length-limit)
@@ -68,10 +77,10 @@
   ::non-coll-extended-length-limit)
 
 (s/def ::non-coll-length-limit
-  (s/and int? #(<= 10 % 80)))
+  (s/and int? #(<= 10 % non-coll-length-limit)))
 
 (s/def ::non-coll-mapkey-length-limit
-  (s/and int? #(<= 5 % 80)))
+  (s/and int? #(<= 5 % non-coll-length-limit)))
 
 (s/def ::print-level
   (s/and int? #(<= 1 % 20)))
