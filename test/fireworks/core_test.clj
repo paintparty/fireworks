@@ -11,6 +11,8 @@
    [fireworks.config :as config]
    [clojure.test :refer [deftest is]]))
 
+#_(? (re-find #"(?i)^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux" "linux"))
+
 #_(? [:foo
     "asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasadfadsfasdfasdfasdfasdsxxxxxx"
     1 2 3 4 5 6 7 8 9 10 11 12 13 14 15])

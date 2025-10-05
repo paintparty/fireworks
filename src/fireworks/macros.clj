@@ -187,6 +187,116 @@
                              s
                              "medium"))})
 
+(def color-support-level-1-term-re
+ #"(?i)^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux" )
+
+#_(if-let [v (? (some-> (System/getenv "TERM_PROGRAM_VERSION") ))]
+          (if (v >= 3) 3 2)
+          2)
+
+(defn- determine-color-support []
+  (let [term         (System/getenv "TERM")
+        term-program (System/getenv "TERM_PROGRAM")
+        colorterm    (System/getenv "COLORTERM")]
+    (cond 
+      (= "truecolor" colorterm)
+      (do (println "COLORTERM=\"trucolor\", setting to 3")
+          3)
+
+
+      (contains? #{"xterm-ghostty" "xterm-kitty" "wezterm"} term)
+      (do (println (str "TERM=" term ", setting to 3"))
+          3)
+
+
+      (not (string/blank? term-program))
+      (cond 
+        (= term-program "iTerm.app")
+        (if-let [v (? (some-> (System/getenv "TERM_PROGRAM_VERSION")
+                              str
+                              (string/split #"\.")
+                              first
+                              Integer/parseInt))]
+          (let [ret (if (>= v 3) 3 2)]
+            (do (println "iTerm.app, version " v  )
+                ret))
+          2)
+
+        (= term-program "Apple_Terminal")
+        (do (println "Apple_Terinmal, setting to 2")
+            2))
+
+
+      (re-find #"-256(color)?$" term)
+      (do (println (str "TERM="
+                        (re-find #"-256(color)?$" term)
+                        ", setting to 1"))
+          2)
+
+
+      (re-find color-support-level-1-term-re term)
+      (do (println (str "TERM="
+                        (re-find color-support-level-1-term-re term)
+                        ", setting to 1"))
+          1)
+
+
+      colorterm
+      1
+
+
+      :else
+      2
+
+    ;; TODO - maybe incorporate all this stuff?
+
+    ;; Azure DevOps pipelines
+    ;; (and (System/getenv "TF_BUILD") 
+    ;;      (System/getenv "AGENT_NAME"))
+    ;; 1
+      
+    ;; (= "dumb" (System/getenv "TERM"))
+    ;; 0
+      
+
+  ;;   	if (process.platform === 'win32') {
+	;; 	// Windows 10 build 10586 is the first Windows release that supports 256 colors.
+	;; 	// Windows 10 build 14931 is the first release that supports 16m/TrueColor.
+	;; 	const osRelease = os.release().split('.');
+	;; 	if (
+	;; 		Number(osRelease[0]) >= 10
+	;; 		&& Number(osRelease[2]) >= 10_586
+	;; 	) {
+	;; 		return Number(osRelease[2]) >= 14_931 ? 3 : 2;
+	;; 	}
+      
+	;; 	return 1;
+	;; }
+      
+
+
+	;; if ('CI' in env) {
+	;; 	if (['GITHUB_ACTIONS', 'GITEA_ACTIONS', 'CIRCLECI'].some(key => key in env)) {
+	;; 		return 3;
+	;; 	}
+      
+	;; 	if (['TRAVIS', 'APPVEYOR', 'GITLAB_CI', 'BUILDKITE', 'DRONE'].some(sign => sign in env) || env.CI_NAME === 'codeship') {
+	;; 		return 1;
+	;; 	}
+      
+	;; 	return min;
+	;; }
+      
+	;; if ('TEAMCITY_VERSION' in env) {
+	;; 	return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
+	;; }
+      
+
+      
+      
+      ))
+  )
+
 (defmacro get-user-configs
   "This gets the path to user config from sys env var, then returns a map of
    user config with resolved :theme entry.
@@ -215,6 +325,17 @@
   []
   (use 'clojure.java.io)
   (reset! messaging/warnings-and-errors [])
+
+  ;; TODO - incorporate this color-level stuff into state
+  (let [{:keys [no-color? force-color?]
+         :as   m} (get-user-color-env-vars)]
+    (cond force-color?
+          (determine-color-support)
+          no-color?
+          :NO_COLOR
+          :else
+          (determine-color-support)))
+
   (let [bling-mood     (System/getenv "BLING_MOOD")
         bling-config     (System/getenv "BLING_CONFIG")
         fireworks-config (System/getenv "FIREWORKS_CONFIG")]
