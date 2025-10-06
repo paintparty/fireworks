@@ -398,7 +398,7 @@
     font-weight :font-weight
     :as         m}]
 
-  (let [debug? (contains? #{:highlight-underlined :highlight :highlight-info :string} (:k m) )
+  (let [debug? false #_(contains? #{:highlight-underlined :highlight :highlight-info :string} (:k m))
         fgc    (x->sgr fgc* :fg)
         bgc    (x->sgr bgc* :bg)
         italic (when (and (:enable-terminal-italics? @config)
@@ -408,8 +408,7 @@
                           (contains? #{"bold" :bold} font-weight))
                  "1")
 
-        text-decoration
-        (sgr-text-decoration m)
+        text-decoration (sgr-text-decoration m)
 
         ret    (str "\033["
                     (string/join ";"
@@ -419,36 +418,37 @@
                                           weight
                                           bgc
                                           text-decoration]))
-                    "m")
-        ret-css (str "_✂〠✂_"
-                     (string/join 
-                      ";"
-                      (reduce-kv
-                       (fn [acc k v]
-                         (conj acc (str (name k) ": " 
-                                        (if (contains?
-                                             #{:color :background-color}
-                                             k)
-                                          (let [[r g b a] v]
-                                            (str "rgb(" (string/join " " [r g b])  " / " a ")"))
-                                          (if (number? v)
-                                            (str v)
-                                            (name v))))))
-                       []
-                       (dissoc m :k)))
-                     "_〠✂〠_")
-        mock 
-        (str "_✂〠✂_background-color: rgb(255 238 0 / 1);font-weight: bold;text-decoration-line: underline;text-decoration-style: wavy_〠✂〠_"
-             "Hello"
-              "_✂〠✂color: initial; line-height: 1.4_〠✂〠_")]
-    (when debug?
-      #_(re-seq #"_✂〠✂_" )
-      #_(println (:k m) "\n" m)
-      #_(println "=>\n"
-               (util/readable-sgr ret)
-               "\n"
-               ret-css
-               "\n"))
+                    "m")]
+    #_(when debug?
+      (let [ret-css (str "_✂〠✂_"
+                         (string/join 
+                          ";"
+                          (reduce-kv
+                           (fn [acc k v]
+                             (conj acc (str (name k) ": " 
+                                            (if (contains?
+                                                 #{:color :background-color}
+                                                 k)
+                                              (let [[r g b a] v]
+                                                (str "rgb(" (string/join " " [r g b])  " / " a ")"))
+                                              (if (number? v)
+                                                (str v)
+                                                (name v))))))
+                           []
+                           (dissoc m :k)))
+                         "_〠✂〠_")
+            mock    (str "_✂〠✂_background-color: rgb(255 238 0 / 1);font-weight: bold;text-decoration-line: underline;text-decoration-style: wavy_〠✂〠_"
+                         "Hello"
+                         "_✂〠✂color: initial; line-height: 1.4_〠✂〠_") ]
+
+        #_ (re-seq #"_✂〠✂_" )
+        #_ (println (:k m) "\n" m)
+        #_ (println "=>\n"
+                    (util/readable-sgr ret)
+                    "\n"
+                    ret-css
+                    "\n"))
+      )
     ret))
 
 
