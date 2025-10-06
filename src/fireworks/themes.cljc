@@ -447,8 +447,13 @@
                                  :eval-label {:color            "#316363"
                                               :text-shadow      "0 0 2px #ffffff"
                                               :font-style       :italic
-                                              :background-color "#defcfc"}}
-                       :syntax  {:number        {:color "#cc3d9c"}
+                                              :background-color "#defcfc"
+                                              ;; :background-color "#edfdfdff" ; <- for testing level-2 color support
+                                              }}
+
+                       :syntax  {:number        {:color "#cc3d9c"
+                                                ;;  :color "#a7ebaaff" ; <- for testing level-2 color support
+                                                 }
                                  :js-object-key {:color "#888888"}}
                        :printer {:file-info        {:color                "#316363"
                                                     :font-style           :italic
