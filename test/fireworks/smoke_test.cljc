@@ -22,10 +22,10 @@
         1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]))
 
 ;; Color level support smoke test
-#_(do 
+(do 
   (def my-sample ["string" 1234 :keyword 'sym])
   (? my-sample)
-  (? {:legacy-terminal? true} my-sample))
+  #_(? {:legacy-terminal? true} my-sample))
 
 
 #?(:clj

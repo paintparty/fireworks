@@ -749,7 +749,14 @@
                 "FORCE_COLOR env var is non-empty?" force-color?}))
       (println))
     (cond
-      (and no-color? (not force-color?))
+      (= detected-color-level 1)
+      (do (when debug-theme?
+            (println (str "detected color level support is 1, so falling back to "
+                          (some-> fallback-theme :name)))) 
+          fallback-theme)
+
+      (and no-color?
+           (not force-color?))
       (do (when debug-theme?
             (println (str "NO_COLOR env var is not empty, so falling back to "
                           (some-> fallback-theme :name)))) 

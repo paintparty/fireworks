@@ -442,7 +442,7 @@
   (let [term         (System/getenv "TERM")
         term-program (System/getenv "TERM_PROGRAM")
         colorterm    (System/getenv "COLORTERM")
-        debug?       true
+        debug?       false
         dbgf         (if debug? println identity)]
     (cond 
       (= "truecolor" colorterm)
