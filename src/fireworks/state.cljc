@@ -1,8 +1,8 @@
 ;; TODO - what is difference between @config and user-config-edn
 
 (ns ^:dev/always fireworks.state
-  (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs get-user-color-env-vars keyed]]
-               :clj  [fireworks.macros :refer        [get-user-configs get-user-color-env-vars keyed]])
+  (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs get-user-color-env-vars keyed get-detected-color-level]]
+               :clj  [fireworks.macros :refer        [get-user-configs get-user-color-env-vars keyed get-detected-color-level]])
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [fireworks.basethemes :as basethemes]
@@ -17,6 +17,10 @@
             [fireworks.themes :as themes]
             [fireworks.util :as util]))
 
+
+;; -----------------------------------------------------------------------------
+;; Detect if node or deno 
+;; -----------------------------------------------------------------------------
 #?(:cljs
    ;; In cljs, detect if env is node/deno vs browser
    (defonce node?
@@ -51,6 +55,16 @@
              :deno))
        (contains? #{:deno :node})))))
 
+;; -----------------------------------------------------------------------------
+;; Detect color level support
+;; -----------------------------------------------------------------------------
+
+(defonce detected-color-level
+  #?(:cljs
+     (if node?
+       (get-detected-color-level)
+       3)
+     :clj (get-detected-color-level)))
 
 ;; Internal state atoms for development debugging ------------------------
 (def rewind-counter (atom 0))
@@ -305,6 +319,27 @@
 
 
 ;; -----------------------------------------------------------------------------
+;; Detect truecolor support
+;; -----------------------------------------------------------------------------
+
+(defn truecolor?
+  "Returns boolean indicating that output should use truecolor. Will be false if
+   user explicitly disables truecolor support via :legacy-terminal? option set
+   to `true`, or `:enable-terminal-truecolor` option set to `false`. Will return
+   false if the detected color level support is less than 3."
+  []
+  (let [truecolor-disabled?       (false? (:enable-terminal-truecolor? @config))
+        ;; TODO deprecate this :legacy-terminal? option
+        ;; not needed post color-support detection
+        legacy-terminal?          (:legacy-terminal? @config)
+        old-color-level-detected? (and (int? detected-color-level)
+                                       (< detected-color-level 3))]
+    (not (or legacy-terminal?
+             truecolor-disabled?
+             old-color-level-detected?))))
+
+
+;; -----------------------------------------------------------------------------
 ;; Theme merging functions
 ;; -----------------------------------------------------------------------------
 
@@ -482,10 +517,34 @@
    (str "enable-terminal-truecolor? is set to false, so converting to x256 id "
         "(int) via (color/hexa->x256 v) => " v)))
 
+#_(defn color-value->hexa-wip [v]
+  (cond (string/starts-with? v "#")
+        v
+
+        (and (pos-int? v) (<= 0 v 256))
+        (get color/xterm-colors-by-id v)
+
+        :else
+        (if-let [hex (and (string? v)
+                          (some->> v
+                                   (get defs/bling-colors*)
+                                   :sgr
+                                   (get color/xterm-colors-by-id)))]
+          hex
+          "#000000")))
+
+#_(defn named-bling-color->sgr-wip [v]
+  (and (string? v)
+       (some->> v
+                (get defs/bling-colors*)
+                :sgr
+                (get color/xterm-colors-by-id))))
+
+
 (defn hexa-or-sgr
   [[k v]]
   (let [debug? false
-        f      #(if (:enable-terminal-truecolor? @config) 
+        f      #(if (truecolor?) 
                   (let [ret (color/hexa->rgba v)] 
                     (when debug? (enable-truecolor-debug-message ret))
                     ret)
