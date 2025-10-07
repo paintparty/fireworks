@@ -57,7 +57,8 @@
          (? {:coll-limit  200
              :label       "Clojure(Script) values"
              :label-color :blue
-             :bold?       true}
+            ;;  :bold?       true
+             }
             everything)
 
          #_(? {:label "Clojure(Script) multiline formatting"}

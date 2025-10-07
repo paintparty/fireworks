@@ -321,22 +321,30 @@
 ;; -----------------------------------------------------------------------------
 ;; Detect truecolor support
 ;; -----------------------------------------------------------------------------
+(defn- non-truecolor-level? [x]
+  (boolean (and (int? x) (< x 3))))
 
 (defn truecolor?
-  "Returns boolean indicating that output should use truecolor. Will be false if
-   user explicitly disables truecolor support via :legacy-terminal? option set
-   to `true`, or `:enable-terminal-truecolor` option set to `false`. Will return
-   false if the detected color level support is less than 3."
+  "Returns boolean indicating that output should use truecolor.
+   
+   Will be false if user explicitly disables truecolor support via
+   `:legacy-terminal?` option set to `true`, or `:enable-terminal-truecolor`
+   option set to `false`.
+   
+   Returns false if `:color-support-level` is an int less than 3.
+
+   Returns false if the detected color level support is and int less than 3."
   []
-  (let [truecolor-disabled?       (false? (:enable-terminal-truecolor? @config))
-        ;; TODO deprecate this :legacy-terminal? option
-        ;; not needed post color-support detection
-        legacy-terminal?          (:legacy-terminal? @config)
-        old-color-level-detected? (and (int? detected-color-level)
-                                       (< detected-color-level 3))]
+  (let [truecolor-disabled?        (false? (:enable-terminal-truecolor? @config))
+        legacy-terminal?           (:legacy-terminal? @config)
+        old-color-level-detected?  (non-truecolor-level? detected-color-level)
+        old-color-level-requested? (non-truecolor-level? 
+                                    (:color-support-level @config))]
     (not (or legacy-terminal?
              truecolor-disabled?
-             old-color-level-detected?))))
+             old-color-level-detected?
+             old-color-level-requested?))))
+
 
 
 ;; -----------------------------------------------------------------------------
@@ -754,10 +762,14 @@
                 "FORCE_COLOR env var is non-empty?" force-color?}))
       (println))
     (cond
-      (= detected-color-level 1)
+      (or (= detected-color-level 1)
+          (= (:color-support-level config) 1))
       (do (when debug-theme?
-            (println (str "detected color level support is 1, so falling back to "
-                          (some-> fallback-theme :name)))) 
+            (if (= detected-color-level 1)
+              (println (str "detected color level support is 1, so falling back to "
+                            (some-> fallback-theme :name)))
+              (println (str "`:color-support-level` config option is set to 1, so falling back to "
+                            (some-> fallback-theme :name))))) 
           fallback-theme)
 
       (and no-color?

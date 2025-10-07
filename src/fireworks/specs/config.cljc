@@ -105,6 +105,10 @@
 (s/def ::bracket-contrast
   #{:high :low "high" "low"})
 
+(s/def ::color-support-level
+  (s/nilable #(and int? 
+                   (< 0 % 4))))
+
 (s/def ::legacy-terminal?
   boolean?)
 

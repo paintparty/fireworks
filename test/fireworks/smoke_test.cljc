@@ -15,7 +15,8 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
-(? {:truncate? false :bold? true} sample/array-map-of-everything-cljc)
+;; Bold smoke test
+#_(? {:truncate? false :bold? true} sample/array-map-of-everything-cljc)
 
 ;; Truncation smoke test
 #_(do (? "truncate? test"
@@ -28,7 +29,10 @@
 #_(do 
   (def my-sample ["string" 1234 :keyword 'sym])
   (? my-sample)
-  #_(? {:enable-terminal-truecolor? false} my-sample)
+  (? {:color-support-level 3} my-sample)
+  (? {:color-support-level 2} my-sample)
+  (? {:enable-terminal-truecolor? false} my-sample)
+  (? {:color-support-level 1} my-sample)
   #_(? {:legacy-terminal? true} my-sample))
 
 

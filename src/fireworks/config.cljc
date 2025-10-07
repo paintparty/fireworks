@@ -42,12 +42,17 @@
    :bracket-contrast              {:spec           ::config/bracket-contrast
                                    :default        "high"
                                    :updates-theme? true}
+   :color-support-level           {:spec           ::config/color-support-level
+                                   :default        nil
+                                   :updates-theme? true}
    :legacy-terminal?              {:spec           ::config/legacy-terminal?
                                    :default        false
-                                   :updates-theme? true}
+                                   :updates-theme? true
+                                   :deprecated?    true}
    :enable-terminal-truecolor?    {:spec           ::config/enable-terminal-truecolor?
                                    :default        true
-                                   :updates-theme? true}
+                                   :updates-theme? true
+                                   :deprecated?    true}
    :enable-terminal-italics?      {:spec           ::config/enable-terminal-italics?
                                    :default        true
                                    :updates-theme? true}
