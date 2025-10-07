@@ -500,7 +500,8 @@
                                               ;; :background-color "#edfdfdff" ; <- for testing level-2 color support
                                               }}
 
-                       :syntax  {:number        {:color "#cc3d9c"
+                       :syntax  {:number        {
+                                                 :color "#cc3d9c"
                                                 ;;  :color "#a7ebaaff" ; <- for testing level-2 color support
                                                  }
                                  :js-object-key {:color "#888888"}}

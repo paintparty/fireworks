@@ -434,7 +434,7 @@
     {:theme "Universal Neutral"}))
 
 
-(def color-support-level-1-term-re
+(def supports-color-level-1-term-re
  #"(?i)^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux")
 
 ;; Logic in detect-color-level culled from  https://github.com/chalk/supports-color
@@ -480,9 +480,9 @@
           2)
 
 
-      (re-find color-support-level-1-term-re term)
+      (re-find supports-color-level-1-term-re term)
       (do (dbgf (str "TERM="
-                        (re-find color-support-level-1-term-re term)
+                        (re-find supports-color-level-1-term-re term)
                         ", setting to 1"))
           1)
 

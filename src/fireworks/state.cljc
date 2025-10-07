@@ -331,7 +331,7 @@
    `:legacy-terminal?` option set to `true`, or `:enable-terminal-truecolor`
    option set to `false`.
    
-   Returns false if `:color-support-level` is an int less than 3.
+   Returns false if `:supports-color-level` is an int less than 3.
 
    Returns false if the detected color level support is and int less than 3."
   []
@@ -339,7 +339,7 @@
         legacy-terminal?           (:legacy-terminal? @config)
         old-color-level-detected?  (non-truecolor-level? detected-color-level)
         old-color-level-requested? (non-truecolor-level? 
-                                    (:color-support-level @config))]
+                                    (:supports-color-level @config))]
     (not (or legacy-terminal?
              truecolor-disabled?
              old-color-level-detected?
@@ -763,12 +763,12 @@
       (println))
     (cond
       (or (= detected-color-level 1)
-          (= (:color-support-level config) 1))
+          (= (:supports-color-level config) 1))
       (do (when debug-theme?
             (if (= detected-color-level 1)
               (println (str "detected color level support is 1, so falling back to "
                             (some-> fallback-theme :name)))
-              (println (str "`:color-support-level` config option is set to 1, so falling back to "
+              (println (str "`:supports-color-level` config option is set to 1, so falling back to "
                             (some-> fallback-theme :name))))) 
           fallback-theme)
 

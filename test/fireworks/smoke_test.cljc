@@ -29,10 +29,10 @@
 #_(do 
   (def my-sample ["string" 1234 :keyword 'sym])
   (? my-sample)
-  (? {:color-support-level 3} my-sample)
-  (? {:color-support-level 2} my-sample)
+  (? {:supports-color-level 3} my-sample)
+  (? {:supports-color-level 2} my-sample)
   (? {:enable-terminal-truecolor? false} my-sample)
-  (? {:color-support-level 1} my-sample)
+  (? {:supports-color-level 1} my-sample)
   #_(? {:legacy-terminal? true} my-sample))
 
 

@@ -42,7 +42,7 @@
    :bracket-contrast              {:spec           ::config/bracket-contrast
                                    :default        "high"
                                    :updates-theme? true}
-   :color-support-level           {:spec           ::config/color-support-level
+   :supports-color-level           {:spec           ::config/supports-color-level
                                    :default        nil
                                    :updates-theme? true}
    :legacy-terminal?              {:spec           ::config/legacy-terminal?
