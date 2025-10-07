@@ -15,6 +15,23 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.13.0
+2025-10-07
+
+<p><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this release!</sub></p>
+
+#### Added
+- Support for automatic color-level-detection [#73](https://github.com/paintparty/fireworks/issues/73).
+- Support for override of color-level via `:supports-color-level` option. [#74](https://github.com/paintparty/fireworks/issues/74).
+- Support for bold output [#70](https://github.com/paintparty/fireworks/issues/70).
+- Support for changing label color at call-site [#53](https://github.com/paintparty/fireworks/issues/53).
+- Support for disabling all truncation with `:truncate?` option [#14](https://github.com/paintparty/fireworks/issues/14).
+
+
+<br>
+<br>
+
+
 ## 0.12.6
 2025-7-11
 

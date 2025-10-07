@@ -1,3 +1,5 @@
+<p align="center"><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this project!</sub></p>
+
 <div align="center"><img src="./resources/color-printer-logo.png" width="400"></img></div> 
 <p align="center">
 <a href="https://clojars.org/io.github.paintparty/fireworks">
@@ -139,19 +141,23 @@ Add a [system-wide config file](#system-wide-config) at `/Users/<your-home-folde
   ;; :theme "Monokai Light"     
   ;; :theme "Monokai Dark"
   ;; :theme "Universal Neutral" ; works with both light and dark bg
-  
-  ;; set to true if your terminal doesn't support truecolor
-  ;; :legacy-terminal? false 
   }
 ```
 
-Most terminal-emulators support truecolor (16m colors). If your terminal does not, then you definitely will want to set the `:legacy-terminal?` option to `true`. You can check support by pasting this into your terminal:
+Fireworks automatically checks the color support level of the environment and
+will use truecolor (16m colors) for level `3`, or 8bit (x256) for level `2`. If
+color level `1` is detected, a black & white theme ("Universal Neutral") is used.
+
+Most terminal-emulators support truecolor (16m colors). You can check support by pasting this into your terminal:
 
 ```
 echo -e "\033[1;38;2;255;0;0mRED\033[0m \033[1;38;2;0;255;0mGREEN\033[0m \033[1;38;2;0;0;255mBLUE\033[0m \033[1;38;2;255;255;0mYELLOW\033[0m"
 ```
 
 If the words in the resulting output are not colored red, green, blue, and yellow, then your terminal does not support truecolor.
+
+You can explicitly set the color level support by setting the
+`:supports-color-level` config option to `1`, `2`, or `3`.
 
 <br>
 
@@ -370,11 +376,9 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
  :metadata-print-level          7
  :display-metadata?             true
  :metadata-position             :inline   ; :inline | :block
- :enable-rainbow-brackets?      true
  :bracket-contrast              :high     ; :high | :low
- :legacy-terminal?              false     
- :find                          nil
- :when                          nil}
+ :supports-color-level          nil       ; 1, 2, or 3. 
+ :enable-rainbow-brackets?      true}
 ```
 
 <br>
@@ -457,6 +461,16 @@ Sets the max length of the form-to-be-evaled label, or the user label, if suppli
 
 <br>
 
+#### **`:label-color`**
+
+ Defaults to `nil`<br>
+
+Sets the color of the form-to-be-evaled label, or the user label, if supplied.
+Valid values are `:blue`, `:green`, or `:red`. All stock themes will have a preset color
+that is synced with the particular theme, so this option is intended to be used as an override at the call site if you have multiple printings from different places in your codebase, and you want an easy way to distinguish them from each other. 
+
+<br>
+
 #### **`:print-level`**
  Defaults to `7`<br>
 
@@ -513,6 +527,22 @@ Sets the level of rainbow bracket intensity to `"high"` or `"low"`.  Default val
 
 <br>
 
+#### **`:bold?`**
+Defaults to `false`<br>
+
+Will render the printed output with a `font-weight` of `bold`.
+
+
+<br>
+
+#### **`:truncate?`**
+Defaults to `true`<br>
+
+Intended primarily to used at the call site when you want to turn off all truncation of collections and all truncation (ellipsis) of self-evaluating values (string, keywords, symbols, etc.). If set to `false`, all truncation will be capped at 1000, meaning 1000 things in a collection and a length of 1000 for self-evaluating values.
+
+
+<br>
+
 #### **`:display-namespaces?`**
 Defaults to `true`<br>
 
@@ -520,26 +550,13 @@ Whether or not to print out fully qualified namespaces for functions and classes
 
 <br>
 
-#### **`:legacy-terminal?`**
+#### **`:supports-color-level`**
 
-Defaults to `false`<br>
+Defaults to `nil`<br>
 
-If set to `true`, Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If you will be printing with Fireworks in a terminal, and your terminal emulator does not supports 24-bit color, it is highly recommended to set this to `true`. The majority of modern terminal emulators offer support for truecolor. You can test whether or not your terminal supports truecolor by pasting the following in your terminal:
-
-```
-echo -e "\033[1;38;2;255;0;0mRED\033[0m \033[1;38;2;0;255;0mGREEN\033[0m \033[1;38;2;0;0;255mBLUE\033[0m \033[1;38;2;255;255;0mYELLOW\033[0m"
-```
-
-If the words in the resulting output are not colored red, green, blue, and yellow, then your terminal does not support truecolor, and you will want to set this option to `true`.
+You should generally not need to set this, as Fireworks automatically detects the host environment's level of color support, and will set this value internally. Most terminal environments support level `3` (truecolor). If set to `2`, Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If set to `1`, Fireworks will use a b&w theme ("Universal Neutral"). If you find that your host environment's color support level is not being detected, you can set this value explicitly to match a target level of color support.
 
 <br>
-
-#### <!--**`:enable-terminal-truecolor?`**-->
-<!--Defaults to `true`<br>-->
-
-<!--If set to `false`, Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If you will be printing with Fireworks in a terminal, and your terminal emulator does not support 24-bit color, it is highly recommended to set this to `false`.-->
-
-<!--<br>-->
 
 #### <!--**`:enable-terminal-italics?`**-->
 <!--Defaults to `true`<br>-->
@@ -834,7 +851,7 @@ The simplest way to make a theme is to just start experimenting within any names
 
 Tweak the colors to your liking, save the theme as an `.edn` file somewhere on your computer, then set that path as the value of the `:theme` entry in your `.edn` config.
 
-For a theme token's `:color` or `:background-color`, the value must be a string which is a valid css hex(a) color. This hex will be used for both browser dev consoles and terminal consoles. Your terminal must support 24bit (TrueColor) , and you must explicitly set `:enable-terminal-truecolor?` to `true` in order for the colors to render as expected. If you are using a terminal that does not support 24bit color, such as the Terminal app on macOS, and Fireworks config option `:enable-terminal-truecolor?` is set to `false` (which is default), the specified hex color will automatically get converted to its closest `x256` equivalent.
+For a theme token's `:color` or `:background-color`, the value must be a string which is a valid css hex(a) color. This hex will be used for both browser dev consoles and terminal consoles. If you are using a terminal that is limited to 8-bit (x256) color support, the specified hex color will automatically get converted to its closest 8-bit equivalent.
 
 
 <br>
