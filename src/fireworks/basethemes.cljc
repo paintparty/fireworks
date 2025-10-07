@@ -175,6 +175,10 @@
                              :annotation                   {:color      "#9f9f9f"
                                                             :font-style :italic }
 
+                             :metadata                     {:color            "#808080"
+                                                            :text-shadow      "0 0 2px #ffffff"
+                                                            :background-color "#e6fafa"}
+
                              :highlight                    {:background-color "#ffee00"
                                                             :font-weight      :bold }
 
@@ -229,14 +233,10 @@
                                                             :text-shadow      "0 0 2px #ffffff"
                                                             :font-style       :italic}
 
-                             :eval-label-blue              {:color            "#309738"
-                                                            :background-color "#f2fdf2"
-                                                            :text-shadow      "0 0 2px #ffffff"
+                             :eval-label-blue              {:color            "#3764cd"
+                                                            :background-color "#f3f7feff"
                                                             :font-style       :italic}
-
-                             :metadata                     {:color            "#808080"
-                                                            :text-shadow      "0 0 2px #ffffff"
-                                                            :background-color "#e6fafa"}})
+                             })
 
    ;; TODO - I don't think these currently merge if we were to use maps
    :syntax           defs/base-syntax-tokens
@@ -254,65 +254,67 @@
                                             :font-style :italic}
              :metadata                     {:color       "#999999"
                                             :text-shadow "0 0 2px #003538"}
-             :highlight                    {
-                                            :color            "#ffffff"
+             :highlight                    {:color            "#ffffff"
                                             :background-color "#0000e0"
-                                            :font-weight      :bold
-                                            }
+                                            :font-weight      :bold}
              
-             :highlight-underlined         {
-                                            :color                 "#ffffff"
+             :highlight-underlined         {:color                 "#ffffff"
                                             :background-color      "#0000e0"
                                             :font-weight           :bold
                                             :text-decoration-line  :underline
                                             :text-decoration-style :wavy}
 
-             :highlight-error              {
-                                            :background-color "#800000"
+             :highlight-error              {:background-color "#800000"
                                             :color            "#ffe0e0"
-                                            :font-weight      :bold
-                                            }
+                                            :font-weight      :bold}
 
-             :highlight-warning            {
-                                            :background-color "#6b4200"
+             :highlight-warning            {:background-color "#6b4200"
                                             :color            "#ffe4b8"
-                                            :font-weight      :bold
-                                            }
+                                            :font-weight      :bold}
 
-             :highlight-info               {
-                                            :color            "#eae5ff"
+             :highlight-info               {:color            "#eae5ff"
                                             :background-color "#0000e0"
-                                            :font-weight      :bold
-                                            }
+                                            :font-weight      :bold}
 
-             :highlight-error-underlined   {
-                                            :background-color      "#800000"
+             :highlight-error-underlined   {:background-color      "#800000"
                                             :color                 "#ffe0e0"
                                             :font-weight           :bold
                                             :text-decoration-line  :underline
-                                            :text-decoration-style :wavy
-                                            }
+                                            :text-decoration-style :wavy}
 
-             :highlight-warning-underlined {
-                                            :background-color      "#6b4200"
+             :highlight-warning-underlined {:background-color      "#6b4200"
                                             :color                 "#ffe4b8"
                                             :font-weight           :bold
                                             :text-decoration-line  :underline
-                                            :text-decoration-style :wavy
-                                            }
+                                            :text-decoration-style :wavy}
 
-             :highlight-info-underlined    {
-                                            :color                 "#eae5ff"
+             :highlight-info-underlined    {:color                 "#eae5ff"
                                             :background-color      "#0000e0"
                                             :font-weight           :bold
                                             :text-decoration-line  :underline
-                                            :text-decoration-style :wavy
-                                            }
+                                            :text-decoration-style :wavy}
 
              :label                        {:color            "#a3a3a3"
                                             :background-color "#333333"
                                             :text-shadow      "0 0 2px #000000"
-                                            :font-style       :italic}}
+                                            :font-style       :italic}
+             
+             
+             :eval-label-red               {:color            "#e47f8eff"
+                                            :font-style       :italic
+                                            :text-shadow      "0 0 2px #003d6b"
+                                            :background-color "#4a040eff"}
+
+             :eval-label-green             {:color            "#49ca49ff"
+                                            :font-style       :italic
+                                            :text-shadow      "0 0 2px #003d6b"
+                                            :background-color "#044301ff"}
+
+             :eval-label-blue              {:color            "#85b7e5"
+                                            :font-style       :italic
+                                            :text-shadow      "0 0 2px #003d6b"
+                                            :background-color "#00345c"}
+             }
    :syntax  defs/base-syntax-tokens
    :printer defs/base-printer-tokens})
 
