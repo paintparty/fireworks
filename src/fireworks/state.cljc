@@ -440,7 +440,8 @@
                           (contains? #{"italic" :italic} font-style))
                  "3")
         weight (when (and (:enable-terminal-font-weights? @config)
-                          (contains? #{"bold" :bold} font-weight))
+                          (or (?pp (:bold? @config))
+                              (contains? #{"bold" :bold} font-weight)))
                  "1")
 
         text-decoration (sgr-text-decoration m)
@@ -495,7 +496,9 @@
   (let [fgc    (some->> color (str "38;5;"))
         bgc    (some->> background-color (str "48;5;"))
         italic (when (contains? #{"italic" :italic} font-style) "3;")
-        weight (when (contains? #{"bold" :bold} font-weight) ";1")
+        weight (when (or (contains? #{"bold" :bold} font-weight)
+                         (:bold? @config))
+                 ";1")
         ret    (str "\033[" italic fgc weight (when bgc ";") bgc "m")]
     ret))
 

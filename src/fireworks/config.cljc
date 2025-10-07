@@ -10,6 +10,9 @@
                                    :updates-theme? true}
    :truncate?                     {:spec    ::config/truncate
                                    :default true}
+   :bold?                         {:spec           ::config/bold
+                                   :default        false
+                                   :updates-theme? true}
    :coll-limit                    {:spec    ::config/coll-limit
                                    :default 33}
    :single-line-coll-length-limit {:spec    ::config/single-line-coll-length-limit

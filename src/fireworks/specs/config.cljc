@@ -42,6 +42,8 @@
         :path  ::edn-file-path
         :theme ::theme/theme))
 
+(s/def ::bold
+  boolean?)
 
 (s/def ::truncate
   boolean?)
