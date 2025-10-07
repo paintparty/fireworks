@@ -440,7 +440,7 @@
                           (contains? #{"italic" :italic} font-style))
                  "3")
         weight (when (and (:enable-terminal-font-weights? @config)
-                          (or (?pp (:bold? @config))
+                          (or (:bold? @config)
                               (contains? #{"bold" :bold} font-weight)))
                  "1")
 
@@ -619,7 +619,9 @@
                 #?(:cljs (if node? 
                            ;; TODO What is real difference here?
                            [k (m->sgr m-with-k)]
-                           (let [m (with-line-height m)]
+                           (let [m (merge (with-line-height m)
+                                          (when (true? (:bold? @config)) 
+                                            {:font-weight :bold}))]
                              [k (string/join (map kv->css2 m))]))
                    :clj [k (m->sgr  m-with-k)])))
             merged))

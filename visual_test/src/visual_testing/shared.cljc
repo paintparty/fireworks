@@ -14,52 +14,54 @@
                :label      "ClojureScript interop types"}
               sample/interop-types)
 
-      #_(let [buffer      (new js/ArrayBuffer 8)
-            arr         (new js/Int32Array buffer)
-            js-array    (array "a" "b")
-            i8-array    (new js/Int8Array #js[1 2 3])
+         #_(let [buffer      (new js/ArrayBuffer 8)
+                 arr         (new js/Int32Array buffer)
+                 js-array    (array "a" "b")
+                 i8-array    (new js/Int8Array #js[1 2 3])
 
-            js-map      (new js/Map #js[#js["a", 1], #js["b", 2]])
-            js-set      (new js/Set #js[1 2])
-            js-weak-map (let [wm (js/WeakMap.)
-                              o  #js{:a 1}]
-                          (.set wm o 100))
-            js-weak-set (new js/WeakSet #js[#js{"a" 1} #js{"b" 2}])]
+                 js-map      (new js/Map #js[#js["a", 1], #js["b", 2]])
+                 js-set      (new js/Set #js[1 2])
+                 js-weak-map (let [wm (js/WeakMap.)
+                                   o  #js{:a 1}]
+                               (.set wm o 100))
+                 js-weak-set (new js/WeakSet #js[#js{"a" 1} #js{"b" 2}])]
 
 
-        #_(js/console.log buffer)
-        #_(pprint (tag-map buffer))
-        #_(pprint (tag-map arr))
+             #_(js/console.log buffer)
+             #_(pprint (tag-map buffer))
+             #_(pprint (tag-map arr))
 
         ;; (js/console.log js-array)
         ;; (pprint (tag-map js-array))
         ;; (pprint (array? i8-array))
         ;; (pprint (tag-map i8-array))
         ;; (pprint (tag-map js-map))
-        
+             
         ;; (pprint (tag-map js-set))
-
+             
         ;; (js/console.log js-weak-map)
         ;; (pprint (tag-map js-weak-map))
         ;; (js/console.log js-weak-set)
         ;; (pprint (tag-map js-weak-set))
-
+             
         ;; (pprint (tag-map [1 2 3]))
-
+             
         ;;  (pprint (tag-map js/JSON
         ;;                     {
         ;;                     ;; :include-js-built-in-object-info? false
         ;;                     ;; :exclude [:function-info]
         ;;                      }))
-        )
+             )
+         
 
+         (? {:coll-limit  200
+             :label       "Clojure(Script) values"
+             :label-color :blue
+             :bold?       true}
+            everything)
 
-         (? {:coll-limit 200
-              :label      "Clojure(Script) values"}
-             everything)
-
-         #_(? {:label      "Clojure(Script) multiline formatting"}
-             sample/array-map-of-multiline-formatting-cljc)))
+         #_(? {:label "Clojure(Script) multiline formatting"}
+              sample/array-map-of-multiline-formatting-cljc)))
 
   #_(do 
     (? {:theme "Alabaster Light"
