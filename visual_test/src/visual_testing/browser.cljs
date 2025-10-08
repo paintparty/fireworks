@@ -11,7 +11,6 @@
    [:div #_{:id    "foo"
           :style {:color            :red
                   :background-color "blue"}}
-    "Hello"
     ])
 
 (defn ^:dev/after-load mount-root []

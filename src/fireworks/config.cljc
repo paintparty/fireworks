@@ -10,6 +10,9 @@
                                    :updates-theme? true}
    :truncate?                     {:spec    ::config/truncate
                                    :default true}
+   :bold?                         {:spec           ::config/bold
+                                   :default        false
+                                   :updates-theme? true}
    :coll-limit                    {:spec    ::config/coll-limit
                                    :default 33}
    :single-line-coll-length-limit {:spec    ::config/single-line-coll-length-limit
@@ -30,7 +33,7 @@
    :display-namespaces?           {:spec    ::config/display-namespaces?
                                    :default true}
    :display-metadata?             {:spec    ::config/display-metadata?
-                                   :default true}
+                                   :default false}
    :metadata-position             {:spec    ::config/metadata-position
                                    :default "inline"}
    :enable-rainbow-brackets?      {:spec           ::config/enable-rainbow-brackets?
@@ -39,12 +42,17 @@
    :bracket-contrast              {:spec           ::config/bracket-contrast
                                    :default        "high"
                                    :updates-theme? true}
+   :supports-color-level           {:spec           ::config/supports-color-level
+                                   :default        nil
+                                   :updates-theme? true}
    :legacy-terminal?              {:spec           ::config/legacy-terminal?
                                    :default        false
-                                   :updates-theme? true}
+                                   :updates-theme? true
+                                   :deprecated?    true}
    :enable-terminal-truecolor?    {:spec           ::config/enable-terminal-truecolor?
                                    :default        true
-                                   :updates-theme? true}
+                                   :updates-theme? true
+                                   :deprecated?    true}
    :enable-terminal-italics?      {:spec           ::config/enable-terminal-italics?
                                    :default        true
                                    :updates-theme? true}

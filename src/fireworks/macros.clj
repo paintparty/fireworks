@@ -187,6 +187,7 @@
                              s
                              "medium"))})
 
+
 (defmacro get-user-configs
   "This gets the path to user config from sys env var, then returns a map of
    user config with resolved :theme entry.
@@ -215,6 +216,7 @@
   []
   (use 'clojure.java.io)
   (reset! messaging/warnings-and-errors [])
+
   (let [bling-mood     (System/getenv "BLING_MOOD")
         bling-config     (System/getenv "BLING_CONFIG")
         fireworks-config (System/getenv "FIREWORKS_CONFIG")]
@@ -430,3 +432,85 @@
     ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, we set theme to
     ;; default \"Universal Neutral\"" stock theme.
     {:theme "Universal Neutral"}))
+
+
+(def supports-color-level-1-term-re
+ #"(?i)^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux")
+
+;; Logic in detect-color-level culled from  https://github.com/chalk/supports-color
+(defn- detect-color-level []
+  (let [term         (System/getenv "TERM")
+        term-program (System/getenv "TERM_PROGRAM")
+        colorterm    (System/getenv "COLORTERM")
+        debug?       false
+        dbgf         (if debug? println identity)]
+    (cond 
+      (= "truecolor" colorterm)
+      (do (dbgf "COLORTERM=\"trucolor\", setting to 3")
+          3)
+
+
+      (contains? #{"xterm-ghostty" "xterm-kitty" "wezterm"} term)
+      (do (dbgf (str "TERM=" term ", setting to 3"))
+          3)
+
+
+      (not (string/blank? term-program))
+      (cond 
+        (= term-program "iTerm.app")
+        (if-let [v (? (some-> (System/getenv "TERM_PROGRAM_VERSION")
+                              str
+                              (string/split #"\.")
+                              first
+                              Integer/parseInt))]
+          (let [ret (if (>= v 3) 3 2)]
+            (do (dbgf "iTerm.app, version " v  )
+                ret))
+          2)
+
+        (= term-program "Apple_Terminal")
+        (do (dbgf "Apple_Terinmal, setting to 2")
+            2))
+
+
+      (re-find #"-256(color)?$" term)
+      (do (dbgf (str "TERM="
+                        (re-find #"-256(color)?$" term)
+                        ", setting to 1"))
+          2)
+
+
+      (re-find supports-color-level-1-term-re term)
+      (do (dbgf (str "TERM="
+                        (re-find supports-color-level-1-term-re term)
+                        ", setting to 1"))
+          1)
+
+
+      colorterm
+      1
+
+
+      :else
+      2
+
+    ;; TODO - try to test & incorporate additional logic to deal with:
+    ;; - Azure DevOps pipelines
+    ;; - "dumb" term
+    ;; - platform win32
+    ;; - "CI" in env - 'GITHUB_ACTIONS', 'GITEA_ACTIONS', 'CIRCLECI', 'TRAVIS', 'APPVEYOR', 'GITLAB_CI', 'BUILDKITE', 'DRONE' 
+    ;; - 'TEAMCITY_VERSION' in env
+
+)))
+
+(defmacro get-detected-color-level []
+  ;; TODO - incorporate this color-level stuff into state
+  (let [{:keys [no-color? force-color?]
+         :as   m}
+        (get-user-color-env-vars)]
+    (cond force-color?
+          (detect-color-level)
+          no-color?
+          :NO_COLOR
+          :else
+          (detect-color-level))))

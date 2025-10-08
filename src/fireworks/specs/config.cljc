@@ -42,6 +42,8 @@
         :path  ::edn-file-path
         :theme ::theme/theme))
 
+(s/def ::bold
+  boolean?)
 
 (s/def ::truncate
   boolean?)
@@ -102,6 +104,10 @@
 
 (s/def ::bracket-contrast
   #{:high :low "high" "low"})
+
+(s/def ::supports-color-level
+  (s/nilable #(and int? 
+                   (< 0 % 4))))
 
 (s/def ::legacy-terminal?
   boolean?)

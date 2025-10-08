@@ -1,8 +1,8 @@
 ;; TODO - what is difference between @config and user-config-edn
 
 (ns ^:dev/always fireworks.state
-  (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs get-user-color-env-vars keyed]]
-               :clj  [fireworks.macros :refer        [get-user-configs get-user-color-env-vars keyed]])
+  (:require #?(:cljs [fireworks.macros :refer-macros [get-user-configs get-user-color-env-vars keyed get-detected-color-level]]
+               :clj  [fireworks.macros :refer        [get-user-configs get-user-color-env-vars keyed get-detected-color-level]])
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [fireworks.basethemes :as basethemes]
@@ -17,6 +17,10 @@
             [fireworks.themes :as themes]
             [fireworks.util :as util]))
 
+
+;; -----------------------------------------------------------------------------
+;; Detect if node or deno 
+;; -----------------------------------------------------------------------------
 #?(:cljs
    ;; In cljs, detect if env is node/deno vs browser
    (defonce node?
@@ -51,6 +55,16 @@
              :deno))
        (contains? #{:deno :node})))))
 
+;; -----------------------------------------------------------------------------
+;; Detect color level support
+;; -----------------------------------------------------------------------------
+
+(defonce detected-color-level
+  #?(:cljs
+     (if node?
+       (get-detected-color-level)
+       3)
+     :clj (get-detected-color-level)))
 
 ;; Internal state atoms for development debugging ------------------------
 (def rewind-counter (atom 0))
@@ -305,6 +319,35 @@
 
 
 ;; -----------------------------------------------------------------------------
+;; Detect truecolor support
+;; -----------------------------------------------------------------------------
+(defn- non-truecolor-level? [x]
+  (boolean (and (int? x) (< x 3))))
+
+(defn truecolor?
+  "Returns boolean indicating that output should use truecolor.
+   
+   Will be false if user explicitly disables truecolor support via
+   `:legacy-terminal?` option set to `true`, or `:enable-terminal-truecolor`
+   option set to `false`.
+   
+   Returns false if `:supports-color-level` is an int less than 3.
+
+   Returns false if the detected color level support is and int less than 3."
+  []
+  (let [truecolor-disabled?        (false? (:enable-terminal-truecolor? @config))
+        legacy-terminal?           (:legacy-terminal? @config)
+        old-color-level-detected?  (non-truecolor-level? detected-color-level)
+        old-color-level-requested? (non-truecolor-level? 
+                                    (:supports-color-level @config))]
+    (not (or legacy-terminal?
+             truecolor-disabled?
+             old-color-level-detected?
+             old-color-level-requested?))))
+
+
+
+;; -----------------------------------------------------------------------------
 ;; Theme merging functions
 ;; -----------------------------------------------------------------------------
 
@@ -398,18 +441,18 @@
     font-weight :font-weight
     :as         m}]
 
-  (let [debug? (contains? #{:highlight-underlined :highlight :highlight-info :string} (:k m) )
+  (let [debug? false #_(contains? #{:highlight-underlined :highlight :highlight-info :string} (:k m))
         fgc    (x->sgr fgc* :fg)
         bgc    (x->sgr bgc* :bg)
         italic (when (and (:enable-terminal-italics? @config)
                           (contains? #{"italic" :italic} font-style))
                  "3")
         weight (when (and (:enable-terminal-font-weights? @config)
-                          (contains? #{"bold" :bold} font-weight))
+                          (or (:bold? @config)
+                              (contains? #{"bold" :bold} font-weight)))
                  "1")
 
-        text-decoration
-        (sgr-text-decoration m)
+        text-decoration (sgr-text-decoration m)
 
         ret    (str "\033["
                     (string/join ";"
@@ -419,36 +462,37 @@
                                           weight
                                           bgc
                                           text-decoration]))
-                    "m")
-        ret-css (str "_✂〠✂_"
-                     (string/join 
-                      ";"
-                      (reduce-kv
-                       (fn [acc k v]
-                         (conj acc (str (name k) ": " 
-                                        (if (contains?
-                                             #{:color :background-color}
-                                             k)
-                                          (let [[r g b a] v]
-                                            (str "rgb(" (string/join " " [r g b])  " / " a ")"))
-                                          (if (number? v)
-                                            (str v)
-                                            (name v))))))
-                       []
-                       (dissoc m :k)))
-                     "_〠✂〠_")
-        mock 
-        (str "_✂〠✂_background-color: rgb(255 238 0 / 1);font-weight: bold;text-decoration-line: underline;text-decoration-style: wavy_〠✂〠_"
-             "Hello"
-              "_✂〠✂color: initial; line-height: 1.4_〠✂〠_")]
-    (when debug?
-      #_(re-seq #"_✂〠✂_" )
-      #_(println (:k m) "\n" m)
-      #_(println "=>\n"
-               (util/readable-sgr ret)
-               "\n"
-               ret-css
-               "\n"))
+                    "m")]
+    #_(when debug?
+      (let [ret-css (str "_✂〠✂_"
+                         (string/join 
+                          ";"
+                          (reduce-kv
+                           (fn [acc k v]
+                             (conj acc (str (name k) ": " 
+                                            (if (contains?
+                                                 #{:color :background-color}
+                                                 k)
+                                              (let [[r g b a] v]
+                                                (str "rgb(" (string/join " " [r g b])  " / " a ")"))
+                                              (if (number? v)
+                                                (str v)
+                                                (name v))))))
+                           []
+                           (dissoc m :k)))
+                         "_〠✂〠_")
+            mock    (str "_✂〠✂_background-color: rgb(255 238 0 / 1);font-weight: bold;text-decoration-line: underline;text-decoration-style: wavy_〠✂〠_"
+                         "Hello"
+                         "_✂〠✂color: initial; line-height: 1.4_〠✂〠_") ]
+
+        #_ (re-seq #"_✂〠✂_" )
+        #_ (println (:k m) "\n" m)
+        #_ (println "=>\n"
+                    (util/readable-sgr ret)
+                    "\n"
+                    ret-css
+                    "\n"))
+      )
     ret))
 
 
@@ -460,7 +504,9 @@
   (let [fgc    (some->> color (str "38;5;"))
         bgc    (some->> background-color (str "48;5;"))
         italic (when (contains? #{"italic" :italic} font-style) "3;")
-        weight (when (contains? #{"bold" :bold} font-weight) ";1")
+        weight (when (or (contains? #{"bold" :bold} font-weight)
+                         (:bold? @config))
+                 ";1")
         ret    (str "\033[" italic fgc weight (when bgc ";") bgc "m")]
     ret))
 
@@ -482,10 +528,34 @@
    (str "enable-terminal-truecolor? is set to false, so converting to x256 id "
         "(int) via (color/hexa->x256 v) => " v)))
 
+#_(defn color-value->hexa-wip [v]
+  (cond (string/starts-with? v "#")
+        v
+
+        (and (pos-int? v) (<= 0 v 256))
+        (get color/xterm-colors-by-id v)
+
+        :else
+        (if-let [hex (and (string? v)
+                          (some->> v
+                                   (get defs/bling-colors*)
+                                   :sgr
+                                   (get color/xterm-colors-by-id)))]
+          hex
+          "#000000")))
+
+#_(defn named-bling-color->sgr-wip [v]
+  (and (string? v)
+       (some->> v
+                (get defs/bling-colors*)
+                :sgr
+                (get color/xterm-colors-by-id))))
+
+
 (defn hexa-or-sgr
   [[k v]]
   (let [debug? false
-        f      #(if (:enable-terminal-truecolor? @config) 
+        f      #(if (truecolor?) 
                   (let [ret (color/hexa->rgba v)] 
                     (when debug? (enable-truecolor-debug-message ret))
                     ret)
@@ -557,7 +627,9 @@
                 #?(:cljs (if node? 
                            ;; TODO What is real difference here?
                            [k (m->sgr m-with-k)]
-                           (let [m (with-line-height m)]
+                           (let [m (merge (with-line-height m)
+                                          (when (true? (:bold? @config)) 
+                                            {:font-weight :bold}))]
                              [k (string/join (map kv->css2 m))]))
                    :clj [k (m->sgr  m-with-k)])))
             merged))
@@ -690,7 +762,18 @@
                 "FORCE_COLOR env var is non-empty?" force-color?}))
       (println))
     (cond
-      (and no-color? (not force-color?))
+      (or (= detected-color-level 1)
+          (= (:supports-color-level config) 1))
+      (do (when debug-theme?
+            (if (= detected-color-level 1)
+              (println (str "detected color level support is 1, so falling back to "
+                            (some-> fallback-theme :name)))
+              (println (str "`:supports-color-level` config option is set to 1, so falling back to "
+                            (some-> fallback-theme :name))))) 
+          fallback-theme)
+
+      (and no-color?
+           (not force-color?))
       (do (when debug-theme?
             (println (str "NO_COLOR env var is not empty, so falling back to "
                           (some-> fallback-theme :name)))) 

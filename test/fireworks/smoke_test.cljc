@@ -9,12 +9,112 @@
             [clojure.walk :as walk]
             [fireworks.util :as util]
             [fireworks.sample :as sample]
+            [fireworks.basethemes :as basethemes]
             [lasertag.core :refer [tag-map tag]]
             ;; [lambdaisland.ansi :as ansi]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
+;; Bold smoke test
+#_(? {:truncate? false :bold? true} sample/array-map-of-everything-cljc)
 
+;; Truncation smoke test
+#_(do (? "truncate? test"
+       {:truncate? true}
+       [:foo
+        "asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasadfadsfasdfasdfasdfasdsxxxxxx"
+        1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]))
+
+;; Color level support smoke test
+#_(do 
+  (def my-sample ["string" 1234 :keyword 'sym])
+  (? my-sample)
+  (? {:supports-color-level 3} my-sample)
+  (? {:supports-color-level 2} my-sample)
+  (? {:enable-terminal-truecolor? false} my-sample)
+  (? {:supports-color-level 1} my-sample)
+  #_(? {:legacy-terminal? true} my-sample))
+
+
+;; Smoke test: red, green, or blue form/label tags at call-site, light themes
+#_(let [my-sample (with-meta (symbol "foo") {:metadata :bar})] 
+  #_(do (println "\n\nAlabaster Light\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Alabaster Light" :label-color color} my-sample)
+            (? :no-file {:theme "Alabaster Light" :label-color color :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nDegas Light\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Degas Light" :label-color color} my-sample)
+            (? :no-file {:theme "Degas Light" :label-color color :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nSolarized Light\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Solarized Light" :label-color color} my-sample)
+            (? :no-file {:theme "Solarized Light" :label-color color :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nZenburn Light\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Zenburn Light" :label-color color} my-sample)
+            (? :no-file {:theme "Zenburn Light" :label-color color :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nMonokai Light\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Monokai Light" :label-color color} my-sample)
+            (? :no-file {:theme "Monokai Light" :label-color color :label "custom label text"} my-sample))))
+  
+  #_(do (println "\n\nNeutral Light\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Neutral Light" :label-color color :display-metadata? true} my-sample)
+            (? :no-file {:theme "Neutral Light" :label-color color :display-metadata? true :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nUniversal\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Universal" :label-color color :display-metadata? true} my-sample)
+            (? :no-file {:theme "Universal" :label-color color :display-metadata? true :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nUniversal Neutral\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Universal Neutral" :display-metadata? true :label-color color } my-sample)
+            (? :no-file {:theme "Universal Neutral" :display-metadata? true :label-color color :label "custom label text"} my-sample))))
+  )
+
+
+;; Smoke test: red, green, or blue form/label tags at call-site, dark themes
+#_(let [my-sample (with-meta (symbol "foo") {:metadata :bar})] 
+  
+  #_(do (println "\n\nAlabaster Dark\n")
+        (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Alabaster Dark" :label-color color} my-sample)
+            (? :no-file {:theme "Alabaster Dark" :label-color color :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nDegas Dark\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Degas Dark" :label-color color} my-sample)
+            (? :no-file {:theme "Degas Dark" :label-color color :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nSolarized Dark\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Solarized Dark" :label-color color} my-sample)
+            (? :no-file {:theme "Solarized Dark" :label-color color :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nZenburn Dark\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Zenburn Dark" :label-color color} my-sample)
+            (? :no-file {:theme "Zenburn Dark" :label-color color :label "custom label text"} my-sample))))
+
+  #_(do (println "\n\nMonokai Dark\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Monokai Dark" :label-color color} my-sample)
+            (? :no-file {:theme "Monokai Dark" :label-color color :label "custom label text"} my-sample))))
+  
+  #_(do (println "\n\nNeutral Dark\n")
+      (doseq [color [:red :green :blue]]
+        (do (? :no-file {:theme "Neutral Dark" :label-color color :display-metadata? true} my-sample)
+            (? :no-file {:theme "Neutral Dark" :label-color color :display-metadata? true :label "custom label text"} my-sample))))
+
+  )
+  
 #?(:clj
    (def sample
      ["\"hi\""

@@ -124,9 +124,10 @@
 
     #?(:cljs (if node? 
                style
-
-    ;; TODO - Could lose if post-replace works out
-               (do 
+               ;; TODO - Could lose if post-replace works out
+               (let [style (if (:bold? @state/config)
+                             (str "font-weight:bold;" style)
+                             style)] 
                  (when (state/debug-tagging?)
                    (println "\n\n")
                    (println "Debugging tag-bracket!")

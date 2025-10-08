@@ -3,7 +3,10 @@
 
 (def neutral-light
   {:name   "Neutral Light"
-   :desc   "Neutral dark theme with no syntax coloring"
+   :desc   "Neutral dark theme with no syntax coloring on data. The label
+            above the printed result that displays the evaled form
+            (or user-provided label) will be colorized. Metadata will also be
+            colorized."
    :mood   :light
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
@@ -27,14 +30,22 @@
             :printer {:file-info        {:color                "#3e76a8"
                                          :font-style           :italic
                                          :padding-inline-start :0ch}
+                      :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
                       :eval-label-green :eval-label-green
                       :eval-label-blue  :eval-label-blue
+                      :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
                       }}})
                         
 (def neutral-dark
   {:name   "Neutral Dark"
-   :desc   "Neutral dark theme with no syntax coloring"
+   :desc   "Neutral dark theme with no syntax coloring on data. The label
+            above the printed result that displays the evaled form
+            (or user-provided label) will be colorized. Metadata will also be
+            colorized."
    :mood   :dark
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
@@ -55,10 +66,18 @@
                       :metadata2  {:color            "#9773b5"
                                    :text-shadow      "0 0 2px #003538"
                                    :background-color "#260a3d"}} 
-            :printer {:file-info {:color                "#85b7e5"
-                                  :font-style           :italic
-                                  :padding-inline-start :0ch}
-                      :eval-form :eval-label}}})
+            :printer {:file-info        {:color                "#85b7e5"
+                                         :font-style           :italic
+                                         :padding-inline-start :0ch}
+                      :eval-label       :eval-label
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
+                      :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
+                      }}})
 
 (def alabaster-light
   {:name   "Alabaster Light"
@@ -84,14 +103,20 @@
                                    :background-color "#fff9f5"
                                    :font-style       :italic}
                       :eval-label {:color            "#3764cd"
-                                   :background-color "#edf2fc"
+                                   :background-color "#f3f7feff"
                                    :font-style       :italic}}
             :syntax  {:js-object-key {:color "#888888"}}
             :printer {:file-info        {:color                "#3764cd"
                                          :font-style           :italic
                                          :padding-inline-start :0ch}
                       :eval-label       :eval-label
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
                       :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
                       :comment          {:color            "#2e6666"
                                          :text-shadow      "0 0 2px #ffffff"
                                          :background-color "#e5f1fa"
@@ -135,8 +160,14 @@
             :printer {:file-info     {:color                "#71ADE7"
                                       :font-style           :italic
                                       :padding-inline-start :0ch}
-                      :eval-form     :eval-label
-                      :eval-label    :eval-label
+                      :eval-label       :eval-label
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
+                      :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
                       :comment       {:color             "#2e6666"
                                       :text-shadow       "0 0 2px #ffffff"
                                       :background-color  "#e5f1fa"
@@ -227,8 +258,14 @@
             :printer {:file-info     {:color                "#9ac2d6"
                                       :font-style           :italic
                                       :padding-inline-start :0ch}
-                      :eval-form     :eval-label
-                      :eval-label    :eval-label
+                      :eval-label       :eval-label
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
+                      :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
                       :comment       {:color             "#2e6666"
                                       :text-shadow       "0 0 2px #ffffff"
                                       :background-color  "#e5f1fa"
@@ -316,12 +353,18 @@
                                                 :font-style       :italic}}
                       :syntax  {:number        {:color "#8fb8cc"}
                                 :js-object-key {:color "#888888"}}
-                      :printer {:file-info     {:color                "#9ac2d6"
-                                                :font-style           :italic
-                                                :padding-inline-start :0ch}
-                                :eval-form     :eval-label
-                                :eval-label    :eval-label
-                                :atom-wrapper  :label}}})
+                      :printer {:file-info        {:color                "#9ac2d6"
+                                                   :font-style           :italic
+                                                   :padding-inline-start :0ch}
+                                :eval-label       :eval-label
+                                :eval-label-red   :eval-label-red
+                                :eval-label-green :eval-label-green
+                                :eval-label-blue  :eval-label-blue
+                                :eval-form        :eval-label
+                                :eval-form-red    :eval-label-red
+                                :eval-form-green  :eval-label-green
+                                :eval-form-blue   :eval-label-blue
+                                :atom-wrapper     :label}}})
 
 
 (def solarized-light 
@@ -409,17 +452,23 @@
                                              :font-style       :italic}}
                       :syntax  {:number        {:color "#bf6986"}
                                 :js-object-key {:color "#888888"}}
-                      :printer {:file-info     {:color                "#659bdc"
-                                                :font-style           :italic
-                                                :padding-inline-start :0ch}
-                                :eval-form     :eval-label
-                                :eval-label    :eval-label
-                                :comment       {:color             "#2e6666"
-                                                :text-shadow       "0 0 2px #ffffff"
-                                                :background-color  "#e5f1fa"
-                                                :outline           "2px solid #e5f1fa"
-                                                :font-style        :italic}
-                                :atom-wrapper  :label}}})
+                      :printer {:file-info        {:color                "#659bdc"
+                                                   :font-style           :italic
+                                                   :padding-inline-start :0ch}
+                                :eval-label       :eval-label
+                                :eval-label-red   :eval-label-red
+                                :eval-label-green :eval-label-green
+                                :eval-label-blue  :eval-label-blue
+                                :eval-form        :eval-label
+                                :eval-form-red    :eval-label-red
+                                :eval-form-green  :eval-label-green
+                                :eval-form-blue   :eval-label-blue
+                                :comment          {:color            "#2e6666"
+                                                   :text-shadow      "0 0 2px #ffffff"
+                                                   :background-color "#e5f1fa"
+                                                   :outline          "2px solid #e5f1fa"
+                                                   :font-style       :italic}
+                                :atom-wrapper     :label}}})
 
 (def monokai-light 
   {:name             "Monokai Light"
@@ -447,8 +496,14 @@
                                  :eval-label {:color            "#316363"
                                               :text-shadow      "0 0 2px #ffffff"
                                               :font-style       :italic
-                                              :background-color "#defcfc"}}
-                       :syntax  {:number        {:color "#cc3d9c"}
+                                              :background-color "#defcfc"
+                                              ;; :background-color "#edfdfdff" ; <- for testing level-2 color support
+                                              }}
+
+                       :syntax  {:number        {
+                                                 :color "#cc3d9c"
+                                                ;;  :color "#a7ebaaff" ; <- for testing level-2 color support
+                                                 }
                                  :js-object-key {:color "#888888"}}
                        :printer {:file-info        {:color                "#316363"
                                                     :font-style           :italic
@@ -499,12 +554,18 @@
                                              :background-color "#00345c"}}
                       :syntax  {:number        {:color "#14bcd2"}
                                 :js-object-key {:color "#888888"}}
-                      :printer {:file-info    {:color                "#71ADE7"
-                                               :font-style           :italic
-                                               :padding-inline-start :0ch}
-                                :eval-form    :eval-label
-                                :eval-label   :eval-label
-                                :atom-wrapper :label}}})
+                      :printer {:file-info        {:color                "#71ADE7"
+                                                   :font-style           :italic
+                                                   :padding-inline-start :0ch}
+                                :eval-label       :eval-label
+                                :eval-label-red   :eval-label-red
+                                :eval-label-green :eval-label-green
+                                :eval-label-blue  :eval-label-blue
+                                :eval-form        :eval-label
+                                :eval-form-red    :eval-label-red
+                                :eval-form-green  :eval-label-green
+                                :eval-form-blue   :eval-label-blue
+                                :atom-wrapper     :label}}})
 
 (def universal-neutral
   {:name             "Universal Neutral"
@@ -514,14 +575,23 @@
    :tokens           {:syntax  {:js-object-key {:color "#ff00ff"}}
                       :printer {:file-info     {:font-style :italic }
                                 ;; TODO maybe these values should be :classes/eval-label
-                                :eval-form     :eval-label
-                                :eval-label    :eval-label
+                                :eval-label       :eval-label
+                                :eval-label-red   :eval-label-red
+                                :eval-label-green :eval-label-green
+                                :eval-label-blue  :eval-label-blue
+                                :eval-form        :eval-label
+                                :eval-form-red    :eval-label-red
+                                :eval-form-green  :eval-label-green
+                                :eval-form-blue   :eval-label-blue
                                 :comment       {:font-style :italic}
                                 :function-args {:color "#9e9e9e"}}}})
 
 (def universal
   {:name   "Universal"
-   :desc   "A colorized syntax theme for Clojure data that works on both light and dark backgrounds."
+   :desc   "A colorized syntax theme for Clojure data that works on both light
+            and dark backgrounds. The label above the printed result that
+            displays the evaled form (or user-provided label) will not be
+            colorized."
    :mood   "dark"
    :rainbow-brackets {:browser [:neutral "#9e9e9e"
                                 :blue    "#00afff"
@@ -539,8 +609,6 @@
                       :metadata   {:color "#af87ff"}     ;; purple 
                       :metadata2  {:color "#87af00"}     ;; yellow
                       :label      {:color      "#ff00ff" ;; magenta
-                                   :font-style :italic}
-                      :eval-label {:color      "#af87ff"
                                    :font-style :italic}}
 
             :syntax  {:number        {:color "#ff8700"} ;; orange 
@@ -548,14 +616,6 @@
 
             :printer {:file-info        {:color      "#9e9e9e"
                                          :font-style :italic}
-                      :eval-label       :eval-label
-                      :eval-label-red   :eval-label-red
-                      :eval-label-green :eval-label-green
-                      :eval-label-blue  :eval-label-blue
-                      :eval-form        :eval-label
-                      :eval-form-red    :eval-label-red
-                      :eval-form-green  :eval-label-green
-                      :eval-form-blue   :eval-label-blue
                       :comment          {:font-style :italic}
                       :function-args    {:color "#9e9e9e"}}}})
 
