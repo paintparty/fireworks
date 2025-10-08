@@ -426,7 +426,7 @@ This must be one of the following 3 types of values:
 `"Zenburn Dark"`<br>
 `"Monokai Light"`<br>
 `"Monokai Dark"`<br>
-`"Universal Default"`<br>
+`"Universal Neutral"`<br>
 
 - A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/<your-home-folder>/.bling/my-theme.edn"`<br>
 This will not work:
@@ -581,7 +581,7 @@ Sets the max depth of printing for metadata maps that contain nested collections
 <br>
 
 #### **`:display-metadata?`**
-Defaults to `true`<br>
+Defaults to `false`<br>
 
 Print metadata values.
 
@@ -1106,7 +1106,7 @@ Even with all the specific formatting and syntax colorization, the performance o
 
 <br>
 
-## Test
+## Testing
 
 The JVM tests require [leiningen](https://leiningen.org/) to be installed.
 ```Clojure
@@ -1123,6 +1123,7 @@ bb test:bb
 ## Status / Roadmap
 Alpha, subject to change. Currently, the enhanced interop reflection / print handling is focused more on the ClojureScript side. It would be nice to add more support for native Java types and data structures. Issues welcome, see [contributing](#contributing).
 
+Project roadmap docs can be found [here](https://github.com/paintparty/fireworks/blob/main/docs/roadmap)
 <br>
 
 ## Contributing
