@@ -33,7 +33,7 @@
    :display-namespaces?           {:spec    ::config/display-namespaces?
                                    :default true}
    :display-metadata?             {:spec    ::config/display-metadata?
-                                   :default true}
+                                   :default false}
    :metadata-position             {:spec    ::config/metadata-position
                                    :default "inline"}
    :enable-rainbow-brackets?      {:spec           ::config/enable-rainbow-brackets?
