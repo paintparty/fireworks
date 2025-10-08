@@ -12,6 +12,9 @@
    [clojure.test :refer [deftest is]]))
 
 
+;; TODO - augment write-test-ns function to also write to testbb dir, but without
+;; the problematic namespaces
+
 ;; TODO - Make this write distinct clojurescript tests?
 
 ;; TODO - Add tests for:
@@ -36,10 +39,11 @@
 
 (deftest long-fn-name
   (is (= 
-       (let [ret              (? :data {:non-coll-length-limit 33} {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
+       (let [ret              (? :data
+                                 {:non-coll-length-limit 33 :theme theme} {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
              formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
-       "〠38;5;241〠{〠0〠〠38;2;133;69;230〠:a〠0〠〠〠 〠0〠〠38;2;23;140;84〠abcdefghijklmnopqrstuvwxyz-ab〠3;38;2;166;166;166〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;241〠}〠0〠")))
+"〠38;5;241〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠abcdefghijklmnopqrstuvwxyz-ab〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;241〠}〠0〠")))
 
 (deftest transient-set
   (is (= 
@@ -100,10 +104,10 @@
        "〠3;38;2;199;104;35;48;2;255;249;245〠TransientVector〠0〠\n〠38;5;241;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠38;5;241;48;2;255;249;245〠]〠0〠")))
 
 
-(def visual-mode? #_true false)
 
-(def theme "Alabaster Light")
-(def label "my-label")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TEST GENERATION                                                            ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def default-options-map
   (reduce-kv (fn [m k v] (assoc m k (:default v))) {} config/options))
@@ -174,68 +178,82 @@
           deftest-str)))
     @tests)))
 
-;; CLJC cruft
-;; (defn deftests-str 
-;;   "This creates a string of all of the generated deftests"
-;;   []
-;;   (string/join 
-;;    "\n\n"
-;;    (mapv 
-;;     (fn [{:keys [sym opts v qv #_escaped-str]}]
-;;       (with-out-str 
-;;         (pprint 
-;;          (list 
-;;           'deftest sym
-;;           (list 'is
-;;                 (let [merged-opts (merge default-options-map opts)]
-;;                   (list '=
-;;                         (concat (list '->
-;;                                       (list '? :data merged-opts qv)
-;;                                       :formatted 
-;;                                       :string)
-;;                                 #?(:clj '[escape-sgr string/join]
-;;                                    :cljs nil))
-;;                         #?(:clj (-> (hifi-impl v merged-opts)
-;;                                     escape-sgr
-;;                                     string/join)
-;;                            :cljs (hifi-impl v merged-opts)))))))))
-;;     @tests)))
+(def basic-tapping-macros-tests
+  (with-out-str 
+    (pprint '(do (deftest !?-par
+                   (is (= (!? "foo") "foo")))
+                 (deftest ?>-par
+                   (is (= (?> "foo") "foo")))
+                 (deftest !?>-par
+                   (is (= (!?> "foo") "foo")))))))
 
+(defn- spit-test-ns! [path ns-form deftests-string]
+  (spit path 
+        (str ns-form
+             "\n\n"
+             basic-tapping-macros-tests
+             "\n\n"
+             deftests-string)
+        :append false))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Options
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Toggle this true / false to generate tests 
+
+(def write-tests? false)
+;; (def write-tests? true)
+
+;; Toggle this true / false to see the output
+;; Visual mode does not yet work when running bb tests
+(def visual-mode? false)
+;; (def visual-mode? true)
+
+;; Change the theme here (probably don't want to do this)
+(def theme "Alabaster Light")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn write-tests-ns!
-  "This updates/generates a fireworks.test-suite namespace.
+  "This updates/generates 2 test suite namespaces and writes them to
+   test/fireworks/test_suite.cljc and testbb/fireworks/bb_test.cljc. 
       
-   Used ocasionally during dev, when tests are modified or added, or functionality
-   changes.
-
-   This is intended to be called from repl or babashka script in
-   dev/bb-script.cljc.
-  
-   To call from bb (from the fireworks project root dir):
-   bb bb-write-tests-ns.cljc"
+   Used ocasionally during dev, when tests are modified or added, or
+   functionality changes.
+   
+   To update/generate the above mentioned test namespaces with this function,
+   set `fireworks.core-test/write-tests?` to `true`, save this file, then run
+   `lein test`. Then set `fireworks.core-test/write-tests?` back to `false`."
   []
-  (spit (str "./test/fireworks/test_suite" ".cljc") 
-        (str (with-out-str 
-               (pprint '(ns fireworks.test-suite 
-                          (:require 
-                           [clojure.string :as string]
-                           [fireworks.test-util :refer [escape-sgr]]
-                           [fireworks.core :refer [? !? ?> !?>]]
-                           [fireworks.config]
-                           [fireworks.demo]
-                           [fireworks.sample :as sample] 
-                           [fireworks.smoke-test] 
-                           [clojure.test :refer [deftest is]]))))
-             "\n\n\n\n\n"
-             "(deftest !?-par
-                (is (= (!? \"foo\") \"foo\")))
-              (deftest ?>-par
-                (is (= (?> \"foo\") \"foo\")))
-              (deftest !?>-par
-                (is (= (!?> \"foo\") \"foo\")))"
-              "\n"
-             (deftests-str))
-        :append false))
+  (let [cljc-test-ns-form
+        (with-out-str 
+          (pprint '(ns fireworks.test-suite 
+                     (:require 
+                      [clojure.string :as string]
+                      [fireworks.test-util :refer [escape-sgr]]
+                      [fireworks.core :refer [? !? ?> !?>]]
+                      [fireworks.config]
+                      [fireworks.demo]
+                      [fireworks.sample :as sample] 
+                      [fireworks.smoke-test] 
+                      [clojure.test :refer [deftest is]]))))
+
+        bb-test-ns-form
+        (with-out-str 
+          (pprint '(ns fireworks.bb-test
+                     (:require
+                      [clojure.string :as string]
+                      [fireworks.test-util :refer [escape-sgr]]
+                      [fireworks.core :refer [? !? ?> !?>]]
+                      [fireworks.sample :as sample]
+                      [clojure.test :refer [deftest is]]) )))
+
+        s
+        (deftests-str)]
+
+   (spit-test-ns! "./test/fireworks/test_suite.cljc" cljc-test-ns-form s) 
+   (spit-test-ns! "./testbb/fireworks/bb_test.cljc" bb-test-ns-form s)))
 
 (deftest+ custom-vector-datatype
   {:theme          theme
@@ -266,11 +284,18 @@
    :coll-limit 40}
   sample/array-map-of-everything-cljc)
 
-(deftest+ with-coll-limit
+(deftest+ no-truncation
   {:theme      theme
-   :coll-limit 5}
-  [1 2 3 4 5 6 7 8])
+   :truncate?  false
+   :coll-limit 40}
+  (cons "adsfasdfasdfasdfasdfadsfsdfasdfadsfadsfasdfasdfasdfadsfasdfasdfsadfxxx"
+         (range 50)))
 
+(deftest+ bolded
+  {:theme      theme
+   :bold?      true
+   :coll-limit 40}
+  sample/array-map-of-everything-cljc)
 
 (deftest+ single-line-coll-length-limit-50-19
   {:theme theme
@@ -318,6 +343,8 @@
    :non-coll-result-length-limit 44}
   "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
 
+
+
 ;; JVM
 (do 
   (deftest+ java-interop-types
@@ -337,8 +364,6 @@
   (deftest+ java-util-hashset
     {:theme theme}
     (java.util.HashSet. #{"a" 1 "b" 2})))
-
-(def write-tests? false #_true)
 
 ;; Call this from script or uncomment here to regenerate test suite
 (when write-tests? 

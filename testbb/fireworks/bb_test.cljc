@@ -1,13 +1,10 @@
 (ns
- fireworks.test-suite
+ fireworks.bb-test
  (:require
   [clojure.string :as string]
   [fireworks.test-util :refer [escape-sgr]]
   [fireworks.core :refer [? !? ?> !?>]]
-  [fireworks.config]
-  [fireworks.demo]
   [fireworks.sample :as sample]
-  [fireworks.smoke-test]
   [clojure.test :refer [deftest is]]))
 
 
