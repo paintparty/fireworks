@@ -221,6 +221,15 @@ Calling **`fireworks.core/?`** with two arguments will print a label (instead of
 ```
 <p align="center"><img src="resources/features/fireworks-core-par-label.png" width="534px" /></p>
 
+<br>
+
+The first argument can also be a specific flag, in the form of a keyword,
+which dictates a mode of functionality (See the table in the following section for more details):
+
+```Clojure
+(? :- x)
+```
+<br>
 
 The first argument can also be a map, which supplies various [config options](#options):
 
@@ -231,24 +240,14 @@ The first argument can also be a map, which supplies various [config options](#o
    x)
 ```
 
-
 <br>
 
-The first argument can also be a specific flag, in the form of a keyword,
-which dictates a mode of functionality (See the table in the following section for more details):
-
-```Clojure
-(? :- x)
-```
-
-<br>
-
-If you want to use a specific mode and also supply a custom label and/or override config options, you can call  **`fireworks.core/?`** with 3 arguments:
+If you want to use a specific mode and also supply override config options, you can call  **`fireworks.core/?`** with 3 arguments:
 
 ```Clojure
 ;; Passing the `:log` flag as the first argument will print the value with js/console.log or pprint, instead of fireworks formatting.
 ;; Prints with custom label of "My label", the file info, and returns the result.
-(? :log "My label" x)
+(? :log {:label "my label" :bold? true} x)
 
 ;; Passing the `:-` flag as the first argument will print only the value.
 ;; Omits form (or custom label) and the file info.
@@ -287,18 +286,19 @@ All the available alternate printing modes for **`fireworks.core/?`** and their 
 
 <br>
 
-| Mode        | Prints with       | Prints label? | Prints file info? | Returns |
-| :---        | :---              | :---          | :---              | :--     |
-|  none       | Fireworks         | ✓             | ✓                 | value   |
-| `:-`        | Fireworks         | ×             | ×                 | value   |
-| `:no-label` | Fireworks         | ×             | ✓                 | value   |
-| `:no-file`  | Fireworks         | ✓             | ×                 | value   |
-| `:log`      | `js/console.log`* | ✓             | ✓                 | value   |
-| `:log-`     | `js/console.log`* | ×             | ×                 | value   |
-| `:pp`       | `pp/pprint`       | ✓             | ✓                 | value   |
-| `:pp-`      | `pp/pprint`       | ×             | ×                 | value   |
-| `:data`     | N/A               | ×             | ×                 | map     |
-| `:comment`  | N/A               | ✓             | ✓                 | nil     |
+| Mode        | Prints with       | Prints label? | Prints file info? | Returns | Notes |
+| :---        | :---              | :---          | :---              | :--     | :--   |
+|  none       | Fireworks         | ✓             | ✓                 | value   |       |
+| `:-`        | Fireworks         | ×             | ×                 | value   |       |
+| `:+`        | Fireworks         | ✓             | ✓                 | value   | No truncation |
+| `:no-label` | Fireworks         | ×             | ✓                 | value   |       |
+| `:no-file`  | Fireworks         | ✓             | ×                 | value   |       |
+| `:log`      | `js/console.log`* | ✓             | ✓                 | value   |       |
+| `:log-`     | `js/console.log`* | ×             | ×                 | value   |       |
+| `:pp`       | `pp/pprint`       | ✓             | ✓                 | value   |       |
+| `:pp-`      | `pp/pprint`       | ×             | ×                 | value   |       |
+| `:data`     | N/A               | ×             | ×                 | map     |       |
+| `:comment`  | N/A               | ✓             | ✓                 | nil     |       |
 
 
 <!--TODO put this back in once problems fixed>
