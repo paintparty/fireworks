@@ -12,17 +12,17 @@
 
 <div align="center">
 
-**[Features]**  &nbsp;•&nbsp; **[Setup]**  &nbsp;•&nbsp;  **[Usage]** &nbsp;•&nbsp; **[Modes]** &nbsp;•&nbsp;  **[Options]** &nbsp;•&nbsp; **[Theming]** &nbsp;•&nbsp; **[Interop]** &nbsp;•&nbsp;  **[Contributing]**
+**[Features]**  &nbsp;•&nbsp; **[Setup]**  &nbsp;•&nbsp;  **[Editors]**  &nbsp;•&nbsp;  **[Usage]** &nbsp;•&nbsp; **[Modes]** &nbsp;•&nbsp;  **[Options]** &nbsp;•&nbsp; **[Theming]** &nbsp;•&nbsp; **[Interop]**
 </div>
 
 [Features]:     #features
 [Setup]:        #setup
+[Editors]:      #editor-integrations
 [Usage]:        #usage
 [Modes]:        #tap-driven-development
 [Options]:      #options
 [Theming]:      #theming
 [Interop]:      #printing-conventions
-[Contributing]: #contributing
 
 
 <br>
@@ -191,7 +191,7 @@ For production builds, use the [`io.github.paintparty/fireworks-stubs`](https://
 
 ## Editor Integrations
 
-[IntelliJ IDEA + Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md)
+#### [IntelliJ IDEA + Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md)
 
 
 

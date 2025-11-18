@@ -18,9 +18,6 @@ pom.xml.asc
 .calva
 .vscode
 .idea
-
-printer.workspace.code-workspace
-
 out/
 node_modules/
 .shadow-cljs/
@@ -28,3 +25,4 @@ node_modules/
 .clj-kondo/.cache
 /public/js
 visual_test/public/js
+.joyride/.nrepl-port
