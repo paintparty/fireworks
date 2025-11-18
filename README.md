@@ -106,7 +106,7 @@ Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.13.1"]
+[io.github.paintparty/fireworks "0.13.0"]
 ```
 
 <br>
@@ -191,7 +191,7 @@ For production builds, use the [`io.github.paintparty/fireworks-stubs`](https://
 
 ## Editor Integrations
 
-[IntelliJ IDEA + Cursive](resources/features/fireworks-core-par.png" width="534px)
+[IntelliJ IDEA + Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md)
 
 
 
