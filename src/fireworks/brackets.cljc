@@ -53,7 +53,7 @@
         color        (nth rb
                           level
                           (let [new-index (rem level num-brackets)]
-                            (nth rb new-index)))]
+                            (nth rb new-index 0)))]
     color))
 
 (defn- rainbow-bracket-mixin
