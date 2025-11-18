@@ -8,27 +8,24 @@ Summary of goals achieved in the first half of Q3:
 
 <br>
 
-- **Primary goals**
+**Primary goals**
 
-### Automatic color support detection
-Add support for automatic detection of the 3 levels of color support (16-color, 256-color, or Truecolor), using an approach similar to [Chalk](https://github.com/chalk/supports-color).<br>[#42](https://github.com/paintparty/fireworks/issues/42)
+-   Add support for automatic detection of the 3 levels of color support (16-color, 256-color, or Truecolor), using an approach similar to [Chalk](https://github.com/chalk/supports-color).<br>[#42](https://github.com/paintparty/fireworks/issues/42)<br>
 [Completed](https://github.com/paintparty/fireworks/pull/76)
   
-### Call-site options for quick formatting changes.
-Support call-site option to disable all truncation and ellipsis
-<br>
-[#14](https://github.com/paintparty/fireworks/issues/14)
+  - Support call-site option to disable all truncation and ellipsis<br>
+[#14](https://github.com/paintparty/fireworks/issues/14)<br>
 [Completed](https://github.com/paintparty/fireworks/commit/d1232b7fe3d522f751009c2cccc8aeca87966d34)
 
 <br>
 
-### Option for changing label color at callsite
-Allow for quick call-site changes to the label color for Fireworks output.<br>[#53](https://github.com/paintparty/fireworks/issues/53)
+**Secondary goals**
+  - Allow for call-site changes to the label color for Fireworks output.<br>[#53](https://github.com/paintparty/fireworks/issues/53)<br>
 [Completed](https://github.com/paintparty/fireworks/pull/76)
 
-### Support bold output
-Allow for quick call-site changes to the produce bold Fireworks output.<br>[#70](https://github.com/paintparty/fireworks/issues/70)
+  - Add option to the produce bold Fireworks output.<br>[#70](https://github.com/paintparty/fireworks/issues/70)<br>
 [Completed](https://github.com/paintparty/fireworks/pull/76)
 
+<br>
 
 The latest release is [`v0.13.0`](https://clojars.org/io.github.paintparty/fireworks/versions/0.13.0), which features the enhancements listed above.

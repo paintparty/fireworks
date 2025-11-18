@@ -106,7 +106,7 @@ Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.13.0"]
+[io.github.paintparty/fireworks "0.13.1"]
 ```
 
 <br>
@@ -185,6 +185,15 @@ details.
 In development, use the `io.github.paintparty/fireworks` library.
 
 For production builds, use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. The API is identical to `fireworks` but the macros don't print anything - they just expand to the original form itself. This way, you don't have to worry about production code that contains tapping/debugging code that you forgot to remove.
+
+<br>
+<br>
+
+## Editor Integrations
+
+[IntelliJ IDEA + Cursive](resources/features/fireworks-core-par.png" width="534px)
+
+
 
 <br>
 <br>
