@@ -8,16 +8,24 @@ You can optimize the ergonomics of using Firework's print-and-return macros by s
 
 <br>
 
-The **`Toggle Fireworks`** command below will transform `(+ 1 1)` into `(? (+ 1 1))`.
-Conversely, it will transform `(? (+ 1 1))` into `(+ 1 1)`.
+The **`Toggle Fireworks`** command below, for example, would transform:<br>
+ `(+ 1 1)`<br>
+  into<br>
+ `(? (+ 1 1))`<br>
+
+Conversely, it would transform `(? (+ 1 1))` into `(+ 1 1)`.
 
 If the `?` symbol is selected within an existing wrapped form, the **`Toggle Fireworks`**
 command will toggle the symbol to `!?` (silent version of `?`), and vice-versa.
 
 <br>
 
-The **`Toggle Fireworks Tap`** command below will transform `(+ 1 1)` into `(?> (+ 1 1))`.
-Conversely, it will transform `(?> (+ 1 1))` into `(+ 1 1)`.
+The **`Toggle Tap`** command below, for example, would transform:<br>
+ `(+ 1 1)`<br>
+  into<br>
+ `(?> (+ 1 1))`<br>
+
+Conversely, it would transform `(?> (+ 1 1))` into `(+ 1 1)`.
 
 If the `?>` symbol is selected within an existing wrapped form, the **`Toggle Fireworks Tap>`**
 command will toggle the symbol to `!?>` (silent version of `?>`), and vice-versa.
