@@ -4,7 +4,7 @@ Requirements: [IntelliJ IDEA Ultimate](https://www.jetbrains.com/idea/) + [Cursi
 
 <br>
 
-You can optimize the ergonomics of using Firework's print-and-return macros by setting up some REPL Commands. These commands can be bound to the shortcut of your choosing and will execute the wrapping and unwrapping of the form which is selected.
+You can optimize the ergonomics of using Firework's print-and-return macros by setting up some REPL Commands. These commands can be bound to the shortcut of your choosing and will execute the wrapping and unwrapping of the form which is selected. Note, the form must be visually selected in order for these commands to perform the action.
 
 <br>
 
