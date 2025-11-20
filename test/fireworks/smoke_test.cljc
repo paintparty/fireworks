@@ -15,6 +15,8 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
+:foo
+
 ;; Bold smoke test
 (!? {:truncate? false :bold? false} sample/array-map-of-everything-cljc)
 

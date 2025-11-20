@@ -11,14 +11,15 @@
 ;; option) any later version, with the GNU Classpath Exception which is available
 ;; at https://www.gnu.org/software/classpath/license.html.
 
-;; {:description  "Joyride script providing editor support for Fireworks"
-;;  :url          "https://github.com/paintparty/fireworks/integrations/vscode/joyride/scripts/fireworks.cljs"
+;; {:name         "Toggle Fireworks"
+;;  :description  "Joyride script providing editor support for Fireworks"
+;;  :url          "https://github.com/paintparty/fireworks/integrations/vscode/joyride/scripts/"
 ;;  :license      {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
 ;;                 :url  "https://www.eclipse.org/legal/epl-2.0/"}
 ;;  :version      "0.1.0"
 ;;  :release-date {2025-11-20}}
-
-(ns fireworks
+:foo
+(ns toggle-fireworks
   (:require ["vscode" :as vscode]
             [clojure.string :as string]
             [joyride.core :as joyride]
