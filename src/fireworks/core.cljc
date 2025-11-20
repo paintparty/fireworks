@@ -165,6 +165,7 @@
            label
            source
            template
+           truncate?
            threading?
            user-print-fn
            file-info-first?]}]
@@ -207,8 +208,11 @@
               (with-out-str (user-print-fn source))
 
               ;; This is where you feed the source to the formatting engine
-              (serialize/formatted* source
-                                    (some-> opts :user-opts)))))
+              (let [user-opts (merge (or (some-> opts :user-opts)
+                                         {})
+                                     (when (false? truncate?)
+                                       {:truncate? false}))]
+                (serialize/formatted* source user-opts)))))
 
         label-or-form
         (or label form)
@@ -274,6 +278,7 @@
            template
            form-meta
            user-opts
+           truncate?
            threading?]
     :as   opts}] 
   ;; Test error messaging
@@ -309,6 +314,7 @@
         (fmt+  (keyed [file-info-first? 
                        user-print-fn
                        threading?
+                       truncate?
                        template
                        source
                        label
@@ -909,6 +915,7 @@
              :log-
              :pp
              :pp-
+             :no-truncation
 
              ;; deprecated in favor of alias :no-label, :no-file, etc.
              :label
@@ -928,6 +935,7 @@
    :no-label     :file
    :no-file      :label
    :-            :result 
+   :+            :no-truncation
    :log/-        :log-
    :pp/-         :pp-
    :log/no-label :log
@@ -970,7 +978,7 @@
 
 #?(:clj
    (defn- ?2-helper
-     [{:keys [cfg-opts* alias-mode mode template label &form x]}]
+     [{:keys [cfg-opts* alias-mode mode template label &form x truncation-flag]}]
      (let [defd           (defd x)
 
            log?*          (contains? #{:log :pp} mode)
@@ -987,20 +995,30 @@
 
            qf-nil?        (contains? #{:comment :result} mode)
 
+           user-opts     (merge cfg-opts*
+                                (when (false? truncation-flag)
+                                {:truncate? false}))
+
            cfg-opts       (merge (dissoc (or cfg-opts* {}) :label)
+
                                  {:mode           mode
                                   :alias-mode     alias-mode
                                   :label          label
                                   :template       template
                                   :ns-str         (some-> *ns* ns-name str)
-                                  :user-opts      cfg-opts*
+                                  :user-opts      user-opts
                                   :quoted-fw-form quoted-fw-form
                                   :fw-fnsym       fw-fnsym}
+
+                                 (when (false? truncation-flag) 
+                                   {:truncate? false})
+
                                  (when form-meta
                                    {:form-meta form-meta})
+
                                  (when log?*
-                                   {:log?    log?*
-                                    :fw/log? log?*})
+                                   {:log? log?* :fw/log? log?*})
+
                                  (when (= mode :data)
                                    {:p-data? true}))]
 
@@ -1091,8 +1109,18 @@
                        mode              nil
                        :else             (when-not cfg-opts* a)))
 
+             truncation-flag
+             (when (= mode :no-truncation) false)
+
              {:keys [log?* defd qf-nil? cfg-opts]}
-             (?2-helper (keyed [mode alias-mode template cfg-opts* label &form x]))]
+             (?2-helper (keyed [mode
+                                alias-mode
+                                template 
+                                cfg-opts* 
+                                label
+                                truncation-flag
+                                &form
+                                x]))]
 
         ;;  #_(ff "?, 2-arity, cfg-opts" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
@@ -1155,8 +1183,14 @@
                    (not cfg-opts*)   a
                    :else             (when-not mode mode-or-label)))
 
+             truncation-flag
+             (when (= mode :no-truncation) false)
+
              {:keys [log?* defd qf-nil? cfg-opts]}
-             (?2-helper (keyed [mode template cfg-opts* label &form x]))]
+             (?2-helper (keyed [mode template cfg-opts* label &form x truncation-flag]))]
+
+         
+
 
         ;;  (ff "?, 3-arity" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))

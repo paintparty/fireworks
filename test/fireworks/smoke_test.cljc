@@ -15,15 +15,35 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
-;; Bold smoke test
-#_(? {:truncate? false :bold? true} sample/array-map-of-everything-cljc)
+:foo
 
-;; Truncation smoke test
-#_(do (? "truncate? test"
-       {:truncate? true}
-       [:foo
-        "asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasadfadsfasdfasdfasdfasdsxxxxxx"
-        1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]))
+;; Bold smoke test
+(!? {:truncate? false :bold? false} sample/array-map-of-everything-cljc)
+
+;; No Truncation smoke test
+(let [v
+      [:foo
+       "asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasadfadsfasdfasdfasdfasdsxxxxxx"
+       1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+       1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+       1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]]
+
+  #_(? "truncate? set to false"
+     {:truncate?  false
+      :coll-limit 10}
+     v)
+  #_(? "truncate? set to true"
+     {:coll-limit 10}
+     v)
+
+  #_(? 
+   :+
+   {:label      ":+ flag"
+    :foo        true
+    :coll-limit 10
+    }
+   v)
+  )
 
 ;; Color level support smoke test
 #_(do 

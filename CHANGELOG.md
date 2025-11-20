@@ -15,13 +15,14 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
-## 0.13.1
+## 0.14.0
 2025-11-17
 
 <p><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this release!</sub></p>
 
 #### Added
 - Documentation for adding Fireworks REPL Commands to IntelliJ + Cursive.
+- Call-site `:+` flag for quickly disabling all truncation, e.g `(? :+ my-coll)`. 
 
 #### Fixed
 - Potential index out-of-bounds exception in `fireworks.brackets` namespace
