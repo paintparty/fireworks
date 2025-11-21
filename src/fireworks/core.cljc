@@ -670,15 +670,17 @@
 
 (defn- native-logging*
   [x opts]
-  #?(:cljs (let [{:keys [coll-type? carries-meta? t transient?]} 
+  #?(:cljs (let [{:keys [coll-type? carries-meta? t transient? classname] :as m} 
                  (util/tag-map* x
                                 {:include-function-info?           false
                                  :include-js-built-in-object-info? false})]
-             (when (and coll-type?
-                        (not carries-meta?)
-                        (not= t :cljs.core/Atom)
-                        (not= t :cljs.core/Volatile)
-                        (not transient?))
+             #_(ff m)
+             (when (or (and coll-type?
+                            (not carries-meta?)
+                            (not= t :cljs.core/Atom)
+                            (not= t :cljs.core/Volatile)
+                            (not transient?))
+                       (contains? #{"NodeList"} classname))
                {:log? true}))
      :clj nil))
 
