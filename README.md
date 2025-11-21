@@ -192,7 +192,7 @@ For production builds, use the [`io.github.paintparty/fireworks-stubs`](https://
 ## Editor Integrations
 
 #### [IntelliJ IDEA + Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md)
-
+#### [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md)
 
 
 <br>

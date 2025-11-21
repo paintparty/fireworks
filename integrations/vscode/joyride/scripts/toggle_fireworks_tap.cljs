@@ -53,7 +53,10 @@
       (string/split #"\n")
       (->> (map-indexed #(if (zero? %1) 
                            %2
-                           (str (apply str (repeat (+ 2 (count sym)) " "))
+                           (str (apply str
+                                       (repeat (+ 2
+                                                  (count sym))
+                                               " "))
                                 %2))))
       (->> (string/join "\n"))))
 
