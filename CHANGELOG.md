@@ -21,8 +21,9 @@ For a list of breaking changes, check [here](#breaking-changes)
 <p><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this release!</sub></p>
 
 #### Added
-- Documentation for adding Fireworks REPL Commands to IntelliJ + Cursive.
-- Call-site `:+` flag for quickly disabling all truncation, e.g `(? :+ my-coll)`. 
+- Documentation for adding Fireworks REPL Commands to IntelliJ + Cursive. [#80](https://github.com/paintparty/fireworks/issues/80).
+- User scripts and Documentation for editor support with VSCode + Joyride. [#79](https://github.com/paintparty/fireworks/issues/79).
+- Call-site `:+` flag for quickly disabling all truncation, e.g `(? :+ my-coll)`. [#77](https://github.com/paintparty/fireworks/issues/77). 
 
 #### Fixed
 - Potential index out-of-bounds exception in `fireworks.brackets` namespace
