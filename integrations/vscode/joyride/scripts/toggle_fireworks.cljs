@@ -1,5 +1,3 @@
-;; Copyright © 2024-2025 Jeremiah Coyle
-
 ;; This program and the accompanying materials are made available under the
 ;; terms of the Eclipse Public License 2.0 which is available at
 ;; http://www.eclipse.org/legal/epl-2.0.
@@ -18,7 +16,9 @@
 ;;                 :url  "https://www.eclipse.org/legal/epl-2.0/"}
 ;;  :version      "0.1.0"
 ;;  :release-date {2025-11-20}}
-:foo
+
+;; Copyright © 2024-2025 Jeremiah Coyle
+
 (ns toggle-fireworks
   (:require ["vscode" :as vscode]
             [clojure.string :as string]
@@ -32,14 +32,6 @@
         selection ed.selection
         code      (.getText ed.document ed.selection)]
     [code selection]))
-
-;; For dev of this script
-(do 
-  (defn ? ([x] (? nil x)) ([x y] y))
-  (defn !? ([x] (!? nil x)) ([x y] y))
-  (defn ?> ([x] (?> nil x)) ([x y] y))
-  (defn !?> ([x] (!?> nil x)) ([x y] y))
-  (defn !?u ([x] (!?u nil x)) ([x y] y)))
 
 (defn lo
   ([o]
@@ -88,11 +80,6 @@
           zloc  (z/of-string s)
           zd    (-> zloc z/down)
           n     (count sexpr)]
-      (!? (-> zloc
-              z/down
-              z/right
-              z/right
-              z/string))
       (case n
         2 [(node-1 zd)
            (node-2 zd)]
@@ -115,6 +102,7 @@
            (.delete builder selection)
            (.insert builder (.-start selection) s)
            (when vim? (.executeCommand vscode/commands "extension.vim_escape"))
+           ;; TODO - Refactor to use a promise?
            (js/setTimeout
             (fn []
               (let [new-position (new vscode/Position line col)]
@@ -124,13 +112,68 @@
                 (.executeCommand vscode/commands "calva-fmt.alignCurrentForm")))
             50))
          #js {:undoStopBefore true
-              :undoStopAfter  false}))
+              :undoStopAfter  false})
+
+  ;; Returning nil here because if we don't return a  value, .edit will return a
+  ;; Thenable that will cause the call stack to blow.
+  nil)
 
 (def inverse-macro-sym-by-macro
   {"?" "!?"
    "!?" "?"
    "?>" "!?>"
    "!?>" "?>"})
+
+(def superscipts
+  {0 "⁰"
+   1 "¹"
+   2 "²"
+   3 "³"
+   4 "⁴"
+   5 "⁵"
+   6 "⁶"
+   7 "⁷"
+   8 "⁸"})
+
+(defn- profile-line 
+  [%1
+   %2
+   col
+   subs-start-base 
+   subs-start 
+   sel-start-col
+   num-leading-spaces 
+   last-node-on-same-line? 
+   indentation]
+  (lo (clj->js
+       (array-map :current-line-string     (apply str 
+                                                  (map-indexed
+                                                   (fn [i char] 
+                                                     (if (= " " char) 
+                                                       (get superscipts i " ")
+                                                       char))
+                                                   %2))
+                  :last-node-column        col
+                  :sel-start-column        sel-start-col
+                  :subs-start-base         subs-start-base
+                  :subs-start              subs-start
+                  :num-leading-spaces      num-leading-spaces
+                  :line-index              %1
+                  :indentation             indentation
+                  :last-node-on-same-line? last-node-on-same-line?))))
+
+(defn- diagram-lines [last-node-as-str last-node-column]
+  (str (apply str (repeat last-node-column " "))
+       (string/join
+        "\n"
+        (mapv #(apply str 
+                      (map-indexed
+                       (fn [i char] 
+                         (if (= " " char) 
+                           (get superscipts i " ")
+                           char))
+                       %))
+              (string/split last-node-as-str #"\n")))))
 
 (defn- unwrap-fireworks-form 
   [forms sel-start-col opts sel-start-line]
@@ -142,33 +185,74 @@
          {:keys [row col]} :loc} 
         (last forms)
 
-        last-node-on-same-line?                                           
+        last-node-column ;<- Converting from 0 to 1 based to synce with rewrite-clj
+        (dec col)
+
+        last-node-on-same-line?                     
         (= 1 row)
+
+        _
+        (println (diagram-lines last-node-as-str last-node-column))
 
         reformatted                                                       
         (-> last-node-as-str 
             (string/split #"\n")
-            (->> (map-indexed #(if (zero? %1) 
-                                 %2
-                                 (subs %2
-                                       (if last-node-on-same-line?
-                                         (dec col)
-                                         (- (dec col) sel-start-col))
-                                       ))))
+            (->> (map-indexed
+                  #(if (zero? %1) 
+                     %2
+                     (let [num-leading-spaces
+                           (some-> (re-find #"^( *)" %2)
+                                   last
+                                   count)
+
+                           indentation
+                           (- num-leading-spaces last-node-column)
+
+                           subs-start-base
+                           (- last-node-column sel-start-col)
+
+                           subs-start 
+                           (if last-node-on-same-line?
+
+                             (if (neg? indentation)
+                               (+ last-node-column indentation)
+                               last-node-column)
+
+                             (if (neg? indentation)
+                               subs-start-base
+                               subs-start-base))] 
+                       
+                       (profile-line %1
+                                     %2
+                                     col
+                                     subs-start-base 
+                                     subs-start 
+                                     sel-start-col
+                                     num-leading-spaces 
+                                     last-node-on-same-line? 
+                                     indentation)
+                       (subs %2 subs-start)))))
             (->> (string/join "\n")))]
 
+
+    ;; (do (println "last node is on same line")
+    ;;     (lo {:current-line (str "|" %2 "|")
+    ;;          })
+    ;;     (dec col))
+    
+
     #_(comment
-      (println "last-node-on-same-line?" last-node-on-same-line?)
-      (println "sel-start-col" sel-start-col)
-      (println "row" row)
-      (println "col" col)
-      (println "last" last-node-as-str)
-      (println)
-      (println "last-node-as-str\n")
-      (println (str "|" last-node-as-str "|"))
-      (println)
-      (println "reformatted\n")
-      (println reformatted))
+        (println "last-node-on-same-line?" last-node-on-same-line?)
+        (println "sel-start-col" sel-start-col)
+        (println "row" row)
+        (println "col" col)
+        (println "last" last-node-as-str)
+        (println)
+        (println "last-node-as-str\n")
+        (println (str "|" last-node-as-str "|"))
+        (println)
+        (println "reformatted\n")
+        (println reformatted))
     
     (edit! (assoc opts
                   :s
@@ -216,8 +300,8 @@
 
     (if-let [inverse-macro-sym (get inverse-macro-sym-by-macro code nil)]
       ;; -----------------------------------------------------------------------
-      ;; The current form is a symbol bound to a fireworks debugging macro, so
-      ;; we will toggle the macro to silence/unsilence printing
+      ;; The current form is a symbol bound to a fireworks macro, one so we will
+      ;; toggle the macro to silence/unsilence printing.
       ;; -----------------------------------------------------------------------
       (let [start-col sel-start-col
             line      sel-start-line
@@ -236,29 +320,32 @@
 
       (if-let [forms (fireworks-wrapped-form code)]
         ;; ---------------------------------------------------------------------
-        ;; The current form is an existing wrapped call to a fireworks macro
-        ;; So we will unwrap it and try to preserve line formatting.
+        ;; The current form is an existing wrapped call to a fireworks macro, so
+        ;; we will unwrap it while preserving line formatting.
         ;; ---------------------------------------------------------------------
         (unwrap-fireworks-form forms sel-start-col opts sel-start-line)
         
         ;; ---------------------------------------------------------------------
         ;; The current form will be wrapped with a call to fireworks.core/?
         ;; ---------------------------------------------------------------------
-        (let [code (if (re-find #"\n" code)
-                     (reformat-code code "?")
-                     code)]
-          (println "\nwrapping with ?\n")
+        (let [macro-sym-str
+              "?"
+
+              code 
+              (if (re-find #"\n" code)
+                (reformat-code code macro-sym-str)
+                code)]
+          (println (str "\nwrapping with " macro-sym-str "\n"))
           (edit! (assoc opts
                         :s
-                        (str "(? " code ")")
+                        (str "(" macro-sym-str  " " code ")")
                         :line
                         sel-start-line
                         :col
-                        sel-start-col)))))))
+                        sel-start-col
+                        :op
+                        :wrap-with-?>)))))))
 
 
 (when (= (joyride/invoked-script) joyride/*file*)
   (main))
-
-
-(false? :ignore/meandyou)

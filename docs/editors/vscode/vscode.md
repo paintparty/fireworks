@@ -60,6 +60,12 @@ Use whichever shortcut suites you best.
 {
   "key": "cmd+'",
   "command": "joyride.runUserScript",
-  "args": "fireworks.cljs"
+  "args": "toggle_fireworks.cljs"
+},
+
+{
+  "key": "cmd+'",
+  "command": "joyride.runUserScript",
+  "args": "toggle_fireworks_tap.cljs"
 }
 ```
