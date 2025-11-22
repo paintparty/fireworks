@@ -64,6 +64,8 @@
                                    :updates-theme? true}
    :label-length-limit            {:spec    ::config/label-length-limit
                                    :default 44}
+   :format-label-as-code?         {:spec    ::config/format-label-as-code?
+                                   :default false}
    :margin-bottom                 {:spec    ::config/margin-bottom
                                    :default 1}
    :margin-top                    {:spec    ::config/margin-top

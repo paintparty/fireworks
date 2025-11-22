@@ -470,6 +470,15 @@ Sets the max length of the form-to-be-evaled label, or the user label, if suppli
 
 <br>
 
+#### **`:format-label-as-code`**
+
+ Defaults to `false`<br>
+
+If a custom label is not supplied, this will pretty-print the form-to-be-printed,
+instead of truncating it.
+
+<br>
+
 #### **`:label-color`**
 
  Defaults to `nil`<br>

@@ -57,7 +57,7 @@
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
-   {:keys [label-length-limit format-label-as-code?]} :user-opts
+   {:keys [label-length-limit]} :user-opts
     :as opts}]
   (let [indent-spaces
         (or (some-> @state/margin-inline-start
@@ -114,7 +114,7 @@
                   
                   shortened
                   (tag/tag-entity! 
-                   (if format-label-as-code?
+                   (if (:format-label-as-code? @state/config)
                      (str (with-out-str (pprint qf {:max-width 33})) "\n")
                      (util/shortened qf
                                         (resolve-label-length label-length-limit)))

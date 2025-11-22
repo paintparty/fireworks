@@ -42,14 +42,15 @@
         :path  ::edn-file-path
         :theme ::theme/theme))
 
-(s/def ::bold
-  boolean?)
+(s/def ::bold boolean?)
 
-(s/def ::truncate
-  boolean?)
+(s/def ::truncate boolean?)
 
 (s/def ::label-length-limit
   (s/and int? #(<= 10 % 100)))
+
+(s/def ::format-label-as-code?
+  boolean?)
 
 (s/def ::line-height
   (s/and number? #(<= 0.5 % 3.0)))
