@@ -57,7 +57,7 @@
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
-   {:keys [label-length-limit]} :user-opts
+   {:keys [label-length-limit format-label-as-code?]} :user-opts
     :as opts}]
   (let [indent-spaces
         (or (some-> @state/margin-inline-start
@@ -114,8 +114,10 @@
                   
                   shortened
                   (tag/tag-entity! 
-                   (util/shortened qf
-                                   (resolve-label-length label-length-limit))
+                   (if format-label-as-code?
+                     (str (with-out-str (pprint qf {:max-width 33})) "\n")
+                     (util/shortened qf
+                                        (resolve-label-length label-length-limit)))
                    form-entity-tag) 
                   ret       shortened]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it
