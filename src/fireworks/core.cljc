@@ -251,7 +251,7 @@
     (and (= template [:result])
          (not (pos-int? (k user-opts))))
     ""
-    (contains? #{:log :pp} mode)
+    (contains? #{:log :pp :js} mode)
     "\n"
     :else
     (string/join (repeat (get @state/config k 0) "\n")))
@@ -770,7 +770,8 @@
 
           ;; Fireworks formatting and printing of does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
-          ;; - :log :log- is used
+          ;; - :log or :log- is used (deprecated)
+          ;; - :js or :js- is used
           ;; - :pp or :pp- is used
           (when (and (not (:fw/log? opts))
                      (:log? opts))
@@ -799,7 +800,7 @@
    
    - A native printing flag is supplied at callsite to fireworks.core/?
      Flag must be a leading keyword, one of:
-     `#{:pp, :pp-, :log, or :log-}`
+     `#{:pp, :pp-, :js, :js- :log, or :log-}`
      Example: `(? :pp (+ 1 1))`
      
    - A valid `:print-with` option is supplied at callsite to fireworks.core/?
@@ -919,6 +920,8 @@
              :log-
              :pp
              :pp-
+             :js
+             :js-
              :no-truncation
 
              ;; deprecated in favor of alias :no-label, :no-file, etc.
@@ -941,9 +944,12 @@
    :-            :result 
    :+            :no-truncation
    :log/-        :log-
+   :js/-         :js-
    :pp/-         :pp-
    :log/no-label :log
    :log/no-file  :log
+   :js/no-label  :js
+   :js/no-file   :js
    :pp/no-label  :pp
    :pp/no-file   :pp 
    })
@@ -970,6 +976,9 @@
           :log     [:form-or-label :file-info :result]
           :log-    nil
           ;; default-case nix?
+          :js     [:form-or-label :file-info :result]
+          :js-    nil
+          ;; default-case nix?
           :pp      [:form-or-label :file-info :result]
           :pp-     nil
           ;; default-case nix?
@@ -985,16 +994,18 @@
      [{:keys [cfg-opts* alias-mode mode template label &form x truncation-flag]}]
      (let [defd           (defd x)
 
-           log?*          (contains? #{:log :pp} mode)
+           log?*          (contains? #{:log :pp :js} mode)
 
-           quoted-fw-form (if (contains? #{:result :log- :pp-} mode)
+           results-mode?  (contains? #{:result :log- :pp- :js-} mode)
+
+           quoted-fw-form (if results-mode?
                             (list 'quote nil)
                             (list 'quote &form))
 
-           fw-fnsym       (when-not (contains? #{:result :log- :pp-} mode)
+           fw-fnsym       (when-not results-mode?
                             "fireworks.core/?")
 
-           form-meta      (when-not (contains? #{:result :log- :pp-} mode)
+           form-meta      (when-not results-mode?
                             (meta &form))
 
            qf-nil?        (contains? #{:comment :result} mode)
@@ -1100,6 +1111,13 @@
                :clj (fireworks.core/pprint ~x))
             ~x)
 
+       :js-
+       `(do #?(:cljs (if node?
+                       (fireworks.core/pprint ~x)
+                       (js/console.log ~x))
+               :clj (fireworks.core/pprint ~x))
+            ~x)
+
        :pp-
        `(do (fireworks.core/pprint ~x)
             ~x)
@@ -1133,7 +1151,7 @@
             (if ~log?*
               (do 
                 (fireworks.core/_p2 cfg-opts# ret#)
-                ((if (= ~mode :log)
+                ((if (or (= ~mode :log) (= ~mode :js))
                    fireworks.core/_log
                    fireworks.core/_pp)
                  ~cfg-opts
@@ -1203,7 +1221,7 @@
             (if ~log?*
               (do 
                 (fireworks.core/_p2 cfg-opts# ret#)
-                ((if (= ~mode :log)
+                ((if ((= ~mode :log) (= ~mode :js))
                    fireworks.core/_log
                    fireworks.core/_pp)
                  ~cfg-opts

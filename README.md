@@ -245,9 +245,13 @@ The first argument can also be a map, which supplies various [config options](#o
 If you want to use a specific mode and also supply override config options, you can call  **`fireworks.core/?`** with 3 arguments:
 
 ```Clojure
-;; Passing the `:log` flag as the first argument will print the value with js/console.log or pprint, instead of fireworks formatting.
+;; Passing the `:pp` flag as the first argument will print the value with fireworks.pp/pprint, instead of fireworks formatting.
 ;; Prints with custom label of "My label", the file info, and returns the result.
-(? :log {:label "my label" :bold? true} x)
+(? :pp {:label "my label" :bold? true} x)
+
+;; Passing the `:js` flag as the first argument will print the value with js/console.log, instead of fireworks formatting.
+;; Prints with custom label of "My label", the file info, and returns the result.
+(? :js {:label "my label" :bold? true} x)
 
 ;; Passing the `:-` flag as the first argument will print only the value.
 ;; Omits form (or custom label) and the file info.
@@ -280,7 +284,7 @@ Fireworks prints values from your source without altering the execution of your 
 
 Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedicated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
 
-The `?` macro also provides a bevy of functionality that can be controlled an optional leading keyword flag and/or a map of options. For example, when it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:log` or `:pp` as the leading argument to **`fireworks.core/?`**.
+The `?` macro also provides a bevy of functionality that can be controlled an optional leading keyword flag and/or a map of options. For example, when it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:+`, or `:pp`, or `:js` as the leading argument to **`fireworks.core/?`**.
 
 All the available alternate printing modes for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing an optional leading keyword flag. Unless noted otherwise, **`fireworks.core/?`** will always return the value passed to it.
 
@@ -293,8 +297,8 @@ All the available alternate printing modes for **`fireworks.core/?`** and their 
 | `:+`        | Fireworks         | ✓             | ✓                 | value   | No truncation |
 | `:no-label` | Fireworks         | ×             | ✓                 | value   |       |
 | `:no-file`  | Fireworks         | ✓             | ×                 | value   |       |
-| `:log`      | `js/console.log`* | ✓             | ✓                 | value   |       |
-| `:log-`     | `js/console.log`* | ×             | ×                 | value   |       |
+| `:js`       | `js/console.log`* | ✓             | ✓                 | value   |       |
+| `:js-`      | `js/console.log`* | ×             | ×                 | value   |       |
 | `:pp`       | `pp/pprint`       | ✓             | ✓                 | value   |       |
 | `:pp-`      | `pp/pprint`       | ×             | ×                 | value   |       |
 | `:data`     | N/A               | ×             | ×                 | map     |       |
@@ -303,8 +307,6 @@ All the available alternate printing modes for **`fireworks.core/?`** and their 
 
 <!--TODO put this back in once problems fixed>
 <!-- | `:trace`   | Fireworks         | ✓             | ✓                 | Traces `->`, `->>` `some->`, `some->>`.                                              | -->
-
-<span>*</span> `:log` and `:log-` will dispatch to `pp/pprint` in a JVM context.
 
 <br>
 
@@ -375,6 +377,7 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
  :line-height                   1.45
  :print-level                   7
  :label-length-limit            25
+ :format-label-as-code?         false
  :non-coll-length-limit         33
  :non-coll-mapkey-length-limit  20
  :non-coll-result-length-limit  444
@@ -630,13 +633,14 @@ If supplied, this value should be a predicate. Will only print something if valu
 #### **`:print-with`**
 Defaults to `nil`<br>
 
-Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`. If you want to print with `pprint` or `js/console.log`, use `(? :pp ...)` or `(? :log ...)`.
+Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`.
 
 ```Clojure
 (? {:label      "My label"
     :print-with prn}
    x)
-```
+``` 
+If you want to print with `pprint` or `js/console.log`, use `(? :pp ...)` or `(? :js ...)`.
 
 <br>
 <br>
