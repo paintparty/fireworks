@@ -369,8 +369,7 @@ Calling `(? :data ...)` in a ClojureScript (browser) context also provides vecto
 
 ## Options
 
-
-For cutting & pasting into your [system-wide config](#system-wide-config), or trying things out at the call site: 
+Reference map of options and default values, for cutting & pasting:
 
 ```Clojure
 {:theme                         "Alabaster Light"
@@ -395,6 +394,47 @@ For cutting & pasting into your [system-wide config](#system-wide-config), or tr
 
 <br>
 
+You can try any of the options out at the call site: 
+```Clojure
+    (let [sample {:string  "string"
+                  :regex   #"myregex"
+                  :uuid    #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+                  :symbol  'mysym
+                  :nesting [[[[[[]]]]]]
+                  :vector  (with-meta 
+                             ['foo
+                              (with-meta 'bar {:meta-on-sym "xyz"})
+                              'baz]
+                             {:meta-on-coll "abc"})}]
+
+      (? sample)
+
+      (? "Displays metadata on the vector"
+       {:display-metadata? true}
+       sample)
+
+      (? "The uuid will not be truncated" 
+       {:non-coll-length-limit 50}
+       sample)
+
+      (? "The nested vector will be truncated" 
+       {:print-level 3} 
+       sample))
+```
+
+<br>
+
+You can also set them globally, in your project, at runtime:
+```Clojure
+(fireworks.core/config! {:display-metadata? true})
+```
+
+<br>
+
+And you will probably want to set them globally, for your system, via a [system-wide config](#system-wide-config).
+
+<br>
+
 ### System-wide config
 
 Fireworks is designed to pick up your preferred theming and formatting options from a system-wide `.edn` config file that lives in a globally accessible place outside of any projects. In order to make this work, you will need to set the environment variable `BLING_CONFIG` to the path of this file.
@@ -412,6 +452,7 @@ You will need to substitute `<your-home-folder>` in the example above with the n
 For the actual `config.edn` file, you can use the above example map (at the beginning of this section) as a starting point. Prior to doing this you can experiment with the various configuration options ala-carte via passing a leading options map to `fireworks.core/?`:
 
 
+<br>
 <br>
 
 ### All the options

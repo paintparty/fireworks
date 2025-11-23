@@ -54,7 +54,7 @@ These scripts can be found [here](https://github.com/paintparty/fireworks/integr
 
 Open the command pallette to find the ***Preferences: Open Keyboard Shortcuts (JSON)***.
 
-Use whichever shortcut suites you best.
+Change the `"key"` value of the shortcuts to suite your workflow.
 
 ```JSON
 {
@@ -64,7 +64,7 @@ Use whichever shortcut suites you best.
 },
 
 {
-  "key": "cmd+'",
+  "key": "shift+cmd+'",
   "command": "joyride.runUserScript",
   "args": "toggle_fireworks_tap.cljs"
 }
