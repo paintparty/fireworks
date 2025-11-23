@@ -1070,7 +1070,7 @@
 (defmacro config!
   "Resets the value of fireworks.state/config-overrides"
   [m]
-  (ff (reset! state/config-overrides m)))
+  (reset! state/config-overrides m))
 
 (defmacro ?> 
   "Passes value to clojure.core/tap> and returns value."
@@ -1224,17 +1224,14 @@
              {:keys [log?* defd qf-nil? cfg-opts]}
              (?2-helper (keyed [mode template cfg-opts* label &form x truncation-flag]))]
 
-         
-
-
-        ;;  (ff "?, 3-arity" cfg-opts)
+          (ff "?, 3-arity" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
                 ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)] 
             (when ~defd ~x)
             (if ~log?*
               (do 
                 (fireworks.core/_p2 cfg-opts# ret#)
-                ((if ((= ~mode :log) (= ~mode :js))
+                ((if (or (= ~mode :log) (= ~mode :js))
                    fireworks.core/_log
                    fireworks.core/_pp)
                  ~cfg-opts
