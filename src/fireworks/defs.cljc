@@ -268,3 +268,25 @@
                   :semantic "subtle"}
     "black"      {:sgr 16}
     "white"      {:sgr 231}]))
+
+
+#?(:cljs
+   (do (def html-collection-types-primary
+         #{"NodeList"
+           "DOMTokenList"
+           "HTMLCollection"
+           "CSSStyleDeclaration"
+           "StyleSheetList"
+           "CSSRuleList"
+           "DOMStringList"})
+       (def html-collection-types-secondary
+         #{"RadioNodeList"
+           "NamedNodeMap"
+           "HTMLOptionsCollection"
+           "HTMLFormControlsCollection"
+           "HTMLAllCollection"
+           "MediaList"
+           "DOMRectList"
+           "FileList"
+           "TouchList"
+           "DataTransferItemList"})))

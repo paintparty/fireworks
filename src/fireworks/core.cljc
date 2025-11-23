@@ -18,7 +18,8 @@
    [clojure.string :as string]
    [fireworks.config :as config]
    [fireworks.util :as util] 
-   [lasertag.core :as lasertag])
+   [lasertag.core :as lasertag]
+   [fireworks.defs :as defs])
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
 
@@ -677,19 +678,28 @@
 
 (defn- native-logging*
   [x opts]
-  #?(:cljs (let [{:keys [coll-type? carries-meta? t transient? classname] :as m} 
-                 (util/tag-map* x
-                                {:include-function-info?           false
-                                 :include-js-built-in-object-info? false})]
-             #_(ff m)
-             (when (or (and coll-type?
-                            (not carries-meta?)
-                            (not= t :cljs.core/Atom)
-                            (not= t :cljs.core/Volatile)
-                            (not transient?))
-                       (contains? #{"NodeList"} classname))
-               {:log? true}))
-     :clj nil))
+  #?(:cljs 
+     (let [{:keys [coll-type? carries-meta? t transient? classname]
+            :as   m} 
+           (util/tag-map* x
+                          {:include-function-info?           false
+                           :include-js-built-in-object-info? false})]
+
+       (when (or (and coll-type?
+                      (not carries-meta?)
+                      (not= t :cljs.core/Atom)
+                      (not= t :cljs.core/Volatile)
+                      (not transient?))
+                 ;; Specific to HTML DOM Collections, maybe swap this out for
+                 ;; something else, after adding support to lasertag
+                 (when (= t :iterable) 
+                   (or (contains? defs/html-collection-types-primary classname)
+                       (contains? defs/html-collection-types-secondary classname))))
+         {:log? true}))
+
+     :clj
+     nil))
+
 
 (defn- rewind-debug [printing-opts new-opts _p2 x]
   ;; #?(:clj (.getMessage (:err printing-opts))) 
