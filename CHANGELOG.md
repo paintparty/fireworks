@@ -15,6 +15,22 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.15.0
+2025-11-22
+
+<p><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this release!</sub></p>
+
+#### Added
+- Add function to set options programmatically [#81](https://github.com/paintparty/fireworks/issues/81). 
+
+- Add option to format the label as code. [#82](https://github.com/paintparty/fireworks/pull/82)
+
+- Added `:js` and `:js-` flags for output via `js/console.log`.
+
+
+<br>
+<br>
+
 ## 0.14.0
 2025-11-17
 
