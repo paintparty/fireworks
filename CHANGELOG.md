@@ -28,6 +28,9 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Support for native logging of all HTML DOM collection types such as `NodeList`, `DOMTokenList`, etc.
 - Typo causing bug in 3-arity version of `?` macro. 
 
+#### Changed
+- Using the neutral `:annotation` class for the `:file-info` in all stock themes, to help distinguish between the form/label and file info above the printed result.
+
 #### Removed
 - Deprecated `?--` and `?-` macros.
 
