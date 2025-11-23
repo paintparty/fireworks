@@ -82,6 +82,7 @@
                     "red"
                     :eval-label-red
                     :eval-label)
+
                   label
                   (if mll?
                     (string/join
@@ -117,9 +118,12 @@
                   shortened
                   (tag/tag-entity! 
                    (if (:format-label-as-code? @state/config)
-                     (str (with-out-str (pprint qf {:max-width 33})) "\n")
+                     (-> qf
+                         (pprint {:max-width 33})
+                         with-out-str
+                         (string/replace #"\n+$" ""))
                      (util/shortened qf
-                                        (resolve-label-length label-length-limit)))
+                                     (resolve-label-length label-length-limit)))
                    form-entity-tag) 
                   ret       shortened]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it
@@ -890,6 +894,7 @@
   [{:keys [a] :as m}]
   (let [cfg-opts  (when (map? a) a)
         label     (if cfg-opts (:label cfg-opts) a)
+        user-opts (merge @state/config-overrides cfg-opts)
         cfg-opts  (merge
                    (dissoc (or cfg-opts {}) :label)
                    ;; maybe don't need the select-keys, just use m
@@ -900,13 +905,13 @@
                                    :form-meta])
                    {:ns-str         (some-> *ns* ns-name str)
                     :label          label
-                    :user-opts      (merge @state/config-overrides
-                                           cfg-opts)
+                    :user-opts      user-opts
                     :quoted-fw-form (list 'quote (:&form m))
                     :fw-fnsym       (some-> m
                                             :&form
                                             (nth 0 nil)
-                                            (->> (str "fireworks.core/")))})]
+                                            (->> (str "fireworks.core/")))}
+                   (some->> user-opts :template (hash-map :template)))]
     cfg-opts))
 
 
