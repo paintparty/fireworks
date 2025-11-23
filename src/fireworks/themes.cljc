@@ -21,10 +21,8 @@
                                    :background-color "#f2f0ff"}
                       :label      {:color            "#4a4b5e"
                                    :background-color "#f1f5f8"
-                                   :text-shadow      "0 0 2px #ffffff"
                                    :font-style       :italic}
                       :eval-label {:color            "#3e76a8"
-                                   :text-shadow      "0 0 2px #ffffff"
                                    :background-color "#f0fbfe"
                                    :font-style       :italic}}
             :printer {:file-info        {:color                "#3e76a8"
@@ -54,14 +52,12 @@
                                    :font-style :italic}
                       :eval-label {:color            "#85b7e5"
                                    :font-style       :italic
-                                   :text-shadow      "0 0 2px #003d6b"
                                    :background-color "#00345c"}
                       :metadata   {:color            "#bb7777"
                                    :text-shadow      "0 0 2px #003538"
                                    :background-color "#2e0a0a"}
                       :label      {:color            "#a9aabc"
                                    :background-color "#212d36"
-                                   :text-shadow      "0 0 2px #000000"
                                    :font-style       :italic}
                       :metadata2  {:color            "#9773b5"
                                    :text-shadow      "0 0 2px #003538"
@@ -140,7 +136,7 @@
                                       :font-style :italic}
                       :constant      {:color "#b696b5"}
                       :definition    {:color "#71ADE7"}
-                      :annotation    {:color      "#DFDF8E"
+                      :annotation    {:color      "#a3a3a3ff"
                                       :font-style :italic}
                       :metadata      {:color            "#ae849b"
                                       :text-shadow      "0 0 2px #003538"
@@ -150,11 +146,9 @@
                                       :background-color "#351d1d"}
                       :label         {:color            "#5f9ed8"
                                       :background-color "#162f46"
-                                      :text-shadow      "0 0 2px #00381d"
                                       :font-style       :italic}
                       :eval-label    {:color            "#85b7e5"
                                       :font-style       :italic
-                                      :text-shadow      "0 0 2px #003d6b"
                                       :background-color "#00345c"}}
             :syntax  {:js-object-key {:color "#b2b2b2"}}
             :printer {:file-info     {:color                "#71ADE7"
@@ -196,11 +190,9 @@
                                       :text-shadow      "0 0 2px #ffffff"
                                       :background-color "#e4e0ff"}
                       :label         {:color            "#c4793b"
-                                      :text-shadow      "0 0 2px #ffffff"
                                       :background-color "#f7ece3"
                                       :font-style       :italic}
                      :eval-label     {:color             "#4f7878"
-                                     :text-shadow       "0 0 2px #ffffff"
                                      :background-color  "#e5f1fa"
                                      :font-style        :italic}}
            :syntax  {:number {:color "#737373"}
@@ -246,12 +238,10 @@
                                    :text-shadow      "0 0 2px #000738"
                                    :background-color "#42477b"}
                       :label      {:color            "#bc8b71"
-                                   :text-shadow      "0 0 2px #202288"
                                    :background-color "#4d3f38"
                                    :font-style       :italic}
                       :eval-label {:color            "#9ac2d6"
                                    :background-color "#2b4c69"
-                                   :text-shadow      "0 0 2px #002916"
                                    :font-style       :italic}}
             :syntax  {:number        {:color "#afaf87"}
                       :js-object-key {:color "#888888"}}
@@ -295,11 +285,9 @@
                                                 :text-shadow      "0 0 2px #ffffff"
                                                 :background-color "#e4e0ff"}
                                 :label         {:color             "#99770f"
-                                                :text-shadow       "0 0 2px #ffffff"
                                                 :background-color  "#f5eccc"
                                                 :font-style        :italic}
                                 :eval-label    {:color            "#618d98"
-                                                :text-shadow      "0 0 2px #ffffff"
                                                 :font-style       :italic
                                                 :background-color "#e8f3fd"}}
                       :syntax  {:number        {:color "#3d7a99"}
@@ -345,11 +333,9 @@
                                                 :text-shadow      "0 0 2px #002916"}
                                 :label         {:color            "#b49d5f"
                                                 :background-color "#524019"
-                                                :text-shadow      "0 0 2px #000000"
                                                 :font-style       :italic}
                                 :eval-label    {:color            "#9ac2d6"
                                                 :background-color "#2b4c69"
-                                                :text-shadow      "0 0 2px #002916"
                                                 :font-style       :italic}}
                       :syntax  {:number        {:color "#8fb8cc"}
                                 :js-object-key {:color "#888888"}}
@@ -392,11 +378,9 @@
                                              :text-shadow      "0 0 2px #ffffff"
                                              :background-color "#faefbc"}
                                 :label      {:color            "#6c71c4"
-                                             :text-shadow      "0 0 2px #ffffff"
                                              :background-color "#eef3ec"
                                              :font-style       :italic}
                                 :eval-label {:color            "#6c71c4"
-                                             :text-shadow      "0 0 2px #ffffff"
                                              :background-color "#eef3ec"
                                              :font-style       :italic}
                                 }
@@ -444,11 +428,9 @@
                                              :background-color "#34273a"
                                              :text-shadow      "0 0 2px #000000"}
                                 :metadata2  {:color            "#ad5952"
-                                             :text-shadow      "0 0 2px #321d06"
                                              :background-color "#2c2f04"}
                                 :eval-label {:color            "#659bdc"
                                              :background-color "#263d5a"
-                                             :text-shadow      "0 0 2px #002916"
                                              :font-style       :italic}}
                       :syntax  {:number        {:color "#bf6986"}
                                 :js-object-key {:color "#888888"}}
@@ -491,10 +473,8 @@
                                               :background-color "#fdf6ed"}
                                  :label      {:color            "#398962"
                                               :background-color "#eefbee"
-                                              :text-shadow      "0 0 2px #ffffff"
                                               :font-style       :italic}
                                  :eval-label {:color            "#316363"
-                                              :text-shadow      "0 0 2px #ffffff"
                                               :font-style       :italic
                                               :background-color "#defcfc"
                                               ;; :background-color "#edfdfdff" ; <- for testing level-2 color support
@@ -546,11 +526,9 @@
                                              :background-color "#3d274f"}
                                 :label      {:color            "#cd8923"
                                              :background-color "#3c2a06"
-                                             :text-shadow      "0 0 2px #000000"
                                              :font-style       :italic}
                                 :eval-label {:color            "#85b7e5"
                                              :font-style       :italic
-                                             :text-shadow      "0 0 2px #003d6b"
                                              :background-color "#00345c"}}
                       :syntax  {:number        {:color "#14bcd2"}
                                 :js-object-key {:color "#888888"}}
@@ -642,11 +620,9 @@
                                    :background-color "#eefbee"
                                   ;;  :color            "#619488"
                                   ;;  :background-color "#e7f9f5"
-                                   :text-shadow      "0 0 2px #ffffff"
                                    :font-style       :italic}
                       :eval-label {:color            "#4d6dba"
                                    :background-color "#edf2fc"
-                                   :text-shadow      "0 0 2px #ffffff"
                                    :font-style       :italic}}
             :syntax  {:js-object-key {:color "#888888"}}
             :printer {:file-info     {:color                "#4d6dba"
