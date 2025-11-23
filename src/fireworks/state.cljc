@@ -249,6 +249,8 @@
 ;; Internal state atom for merged config
 ;; -----------------------------------------------------------------------------
 
+(def ^:public config-overrides (atom {}))
+
 (def ^:private default-config
   (into {} (map (fn [[k v]] [k (:default v)]) config/options)))
 
