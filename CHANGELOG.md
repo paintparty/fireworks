@@ -15,6 +15,27 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.16.0
+2025-11-23
+
+<p><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this release!</sub></p>
+
+#### Added
+- Ability to display file-info atop form/label via option:
+ `(? {:template [:file-info :form-or-label :result]} (+ 1 1)) 
+
+#### Fixed
+- Support for native logging of all HTML DOM collection types such as `NodeList`, `DOMTokenList`, etc.
+- Typo causing bug in 3-arity version of `?` macro. 
+
+#### Removed
+- Deprecated `?--` and `?-` macros.
+
+
+<br>
+<br>
+
+
 ## 0.15.0
 2025-11-22
 

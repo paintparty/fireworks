@@ -68,6 +68,7 @@
         label
         (when (contains?
                #{[:form-or-label :file-info :result]
+                 [:file-info :form-or-label :result]
                  [:form-or-label :result]
                  [:form-or-label :file-info]}
                template)
@@ -133,6 +134,7 @@
            ns-str]}]
   (let [file-info* (when (contains?
                           #{[:form-or-label :file-info :result]
+                            [:file-info :form-or-label :result]
                             [:file-info :result]
                             [:form-or-label :file-info]}
                           template)
@@ -304,7 +306,8 @@
 
         file-info-first?
         (or (contains?
-             #{[:file-info :result]}
+             #{[:file-info :result]
+               [:file-info :form-or-label :result]}
              template)
             (and label
                  (contains? #{[:form-or-label :file-info]
@@ -982,23 +985,23 @@
 
         template
         (get 
-         {:label   [:form-or-label :result]
-          :file    [:file-info :result]
-          :result  [:result]
-          :comment [:form-or-label :file-info]
+         {:label      [:form-or-label :result]
+          :file       [:file-info :result]
+          :result     [:result]
+          :comment    [:form-or-label :file-info]
           ;; default-case nix?
-          :data    [:form-or-label :file-info :result]
+          :data       [:form-or-label :file-info :result]
           ;; default-case nix?
-          :log     [:form-or-label :file-info :result]
-          :log-    nil
+          :log        [:form-or-label :file-info :result]
+          :log-       nil
           ;; default-case nix?
-          :js     [:form-or-label :file-info :result]
-          :js-    nil
+          :js         [:form-or-label :file-info :result]
+          :js-        nil
           ;; default-case nix?
-          :pp      [:form-or-label :file-info :result]
-          :pp-     nil
+          :pp         [:form-or-label :file-info :result]
+          :pp-        nil
           ;; default-case nix?
-          :trace   [:form-or-label :file-info :result]}
+          :trace      [:form-or-label :file-info :result]}
          mode
          [:form-or-label :file-info :result])]
     {:mode       mode
@@ -1031,6 +1034,7 @@
                                 (when (false? truncation-flag)
                                   {:truncate? false}))
 
+           template       (or (:template user-opts) template)
            cfg-opts       (merge (dissoc (or cfg-opts* {}) :label)
 
                                  {:mode           mode
@@ -1184,6 +1188,7 @@
   ([mode-or-label a x]
    (let [{:keys [mode template]}
          (mode+template mode-or-label)]
+     #_(ff template)
      (case mode
        :trace
        (let [form-meta (meta &form)]
@@ -1234,7 +1239,7 @@
              {:keys [log?* defd qf-nil? cfg-opts]}
              (?2-helper (keyed [mode template cfg-opts* label &form x truncation-flag]))]
 
-          (ff "?, 3-arity" cfg-opts)
+          #_(ff "?, 3-arity" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
                 ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)] 
             (when ~defd ~x)
