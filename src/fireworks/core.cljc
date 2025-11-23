@@ -382,7 +382,8 @@
 (defn- reset-user-opt!
   "Validates user option override from call site and updates config."
   [k opts]
-  (let [new-val (k opts)
+  (let [new-val (or (k opts)
+                    (k (:user-opts opts)))
         valid?  (some-> k
                         config/options
                         :spec
@@ -390,9 +391,8 @@
     (if valid?
       (swap! state/config assoc k new-val)
       (messaging/bad-option-value-warning
-       (let [m                (k config/options)
-             {:keys [line 
-                     column]} (:form-meta opts)]
+       (let [m                     (k config/options)
+             {:keys [line column]} (:form-meta opts)]
          (merge m 
                 (keyed [k line column])
                 {:header (:fw-fnsym opts)
@@ -412,7 +412,12 @@
 
 (defn- opts-to-reset
   "Get a set of overrides the user has passed at call site.
-   They will be reset only if they are different from current value."
+
+   Merge these on top of the value of @state/config-overrides, which are 
+   config options the user may have set globally, at runtime, in their program
+   via fireworks.core/config!.
+
+   Opts will be reset only if they are different from current value."
   [user-opts]
   (some->> user-opts
            seq
@@ -447,14 +452,14 @@
 
 (defn- reset-config+theme!
   [config-before user-opts opts]
-  (let [opts-to-reset (let [ks  (opts-to-reset user-opts)]
-                        (doseq [k ks]
-                          (reset-user-opt! k opts))
-                        ks)]
+  (let [
+        ks               (opts-to-reset user-opts)
+        opts-to-reset    (doseq [k ks] (reset-user-opt! k opts))]
     (when (or (diff-call-site-theme-option-keys opts-to-reset)
               (diff-from-merged-user-config config-before))
       (let [{:keys [with-style-maps
-                    with-serialized-style-maps]} (state/merged-theme* :reset)]
+                    with-serialized-style-maps]} 
+            (state/merged-theme* :reset)]
         (reset! state/merged-theme
                 with-serialized-style-maps)
         (reset! state/merged-theme-with-unserialized-style-maps
@@ -882,7 +887,8 @@
                                    :form-meta])
                    {:ns-str         (some-> *ns* ns-name str)
                     :label          label
-                    :user-opts      cfg-opts
+                    :user-opts      (merge @state/config-overrides
+                                           cfg-opts)
                     :quoted-fw-form (list 'quote (:&form m))
                     :fw-fnsym       (some-> m
                                             :&form
@@ -1010,9 +1016,10 @@
 
            qf-nil?        (contains? #{:comment :result} mode)
 
-           user-opts     (merge cfg-opts*
+           user-opts     (merge @state/config-overrides
+                                cfg-opts*
                                 (when (false? truncation-flag)
-                                {:truncate? false}))
+                                  {:truncate? false}))
 
            cfg-opts       (merge (dissoc (or cfg-opts* {}) :label)
 
@@ -1032,7 +1039,8 @@
                                    {:form-meta form-meta})
 
                                  (when log?*
-                                   {:log? log?* :fw/log? log?*})
+                                   {:log?    log?*
+                                    :fw/log? log?*})
 
                                  (when (= mode :data)
                                    {:p-data? true}))]
@@ -1058,7 +1066,12 @@
 ;    A:::::A                 A:::::A P::::::::P          I::::::::I
 ;   AAAAAAA                   AAAAAAAPPPPPPPPPP          IIIIIIIIII
                                                               
-          
+
+(defmacro config!
+  "Resets the value of fireworks.state/config-overrides"
+  [m]
+  (ff (reset! state/config-overrides m)))
+
 (defmacro ?> 
   "Passes value to clojure.core/tap> and returns value."
   ([x] `(do (tap> ~x) ~x)))
