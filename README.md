@@ -106,7 +106,7 @@ Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.14.0"]
+[io.github.paintparty/fireworks "0.16.0"]
 ```
 
 <br>
