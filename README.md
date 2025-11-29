@@ -271,7 +271,7 @@ If you want to use a specific mode and also supply override config options, you 
 
 <br>
 
-**`fireworks.core/?>`** is a no-op that just returns the value. It is intended for situations where you already have a form wrapped with `?>`, and you want to temporarily *not* send it to `clojure.core/tap>`.
+**`fireworks.core/!?>`** is a no-op that just returns the value. It is intended for situations where you already have a form wrapped with `?>`, and you want to temporarily *not* send it to `clojure.core/tap>`.
 
 
 
