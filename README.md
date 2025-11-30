@@ -63,6 +63,8 @@ clj -Sdeps '{:deps {io.github.paintparty/fireworks {:mvn/version "0.12.6"}}}' -e
 
 - Prints values without altering the execution of your program.
 
+- Editor integrations for [Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md) & [VSCode](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md).
+
 - Achieve thematic parity between editor, terminal emulator, and browser dev console.
 
 - Customizable via system-wide `.edn` config file.
@@ -106,7 +108,7 @@ Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.16.0"]
+[io.github.paintparty/fireworks "0.16.1"]
 ```
 
 <br>
@@ -271,7 +273,7 @@ If you want to use a specific mode and also supply override config options, you 
 
 <br>
 
-**`fireworks.core/?>`** is a no-op that just returns the value. It is intended for situations where you already have a form wrapped with `?>`, and you want to temporarily *not* send it to `clojure.core/tap>`.
+**`fireworks.core/!?>`** is a no-op that just returns the value. It is intended for situations where you already have a form wrapped with `?>`, and you want to temporarily *not* send it to `clojure.core/tap>`.
 
 
 
