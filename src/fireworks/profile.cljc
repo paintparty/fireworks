@@ -1,7 +1,7 @@
 (ns ^:dev/always fireworks.profile
   (:require
    [fireworks.defs :as defs]
-   [fireworks.pp :refer (?pp)]
+   [fireworks.pp :rename {?pp ?}]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
    [fireworks.util :as util]
@@ -40,51 +40,58 @@
     :as m}]
   (when (map? m)
    
-   (let [t (cond lambda?
-                 :lambda
+   (let [t     (cond lambda?
+                     :lambda
+                     transient?
+                     :transient
+                     :else
+                     t)
+
+         badge (cond
+                 (contains? all-tags :datatype)
+                 (:classname m)
+
+                 ;; Interesting visualization in JVM Clojure
+                 ;; Labels everything, including primitives
+                 ;; Maybe this could be exposed in an option 
+                 #_(or java-util-class? java-lang-class?)
+                 #_classname
+
+                 (= t :inst)
+                 defs/inst-badge
+
+                 (or java-util-class?
+                     (and coll-type? java-lang-class?))
+                 classname
+
+                 js-built-in-object?
+                 (str "js/" js-built-in-object-name)
+
+                 (and (not= t :js/Object)
+                      (or (contains? all-tags :js-map-like-object)
+                          (contains? all-tags :js-typed-array)))
+                 (str "js/" classname)
+                 
                  transient?
-                 :transient
+                 (or (some->> #?(:cljs #"/" :clj #"\$")
+                              (string/split classname)
+                              last)
+                     defs/transient-label)
+
                  :else
-                 t)
-         b (cond
-             (contains? all-tags :datatype)
-             (:classname m)
+                 #?(:cljs
+                    (get {"Map"    "js/Map"
+                          "Set"    "js/Set"
+                          "Array"  "js/Array"
+                          "Object" "js/Object"}
+                         classname 
+                         nil)
+                    :clj
+                    (get badges-by-lasertag t nil)))
+         badge #?(:cljs badge
+                  :clj  (if (= t :defmulti) "Multimethod" badge))]
 
-             ;; Interesting visualization in JVM Clojure
-             ;; Labels everything, including primitives
-             ;; Maybe this could be exposed in an option 
-             #_(or java-util-class? java-lang-class?)
-             #_classname
-
-             (= t :inst)
-             defs/inst-badge
-
-             (or java-util-class?
-                 (and coll-type? java-lang-class?))
-             classname
-
-             js-built-in-object?
-             (str "js/" js-built-in-object-name)
-
-             (and (not= t :js/Object)
-                  (or (contains? all-tags :js/map-like-object)
-                      (contains? all-tags :js/TypedArray)))
-             (or (t badges-by-lasertag)
-                 (subs (str t) 1))
-             
-             transient?
-             (or (some->> #?(:cljs #"/" :clj #"\$")
-                          (string/split classname)
-                          last)
-                 defs/transient-label)
-
-             :else
-             (get badges-by-lasertag t nil))
-         b #?(:cljs b
-              :clj (if (= t :defmulti) "Multimethod" b))]
-
-     ;; If you want to signal React -> (str "⚛ " b)
-     (when b {:badge b}))))
+     (when badge {:badge badge}))))
                          
 (defn target-path-is-ancestor-coll?
   [tp vp tp-list]

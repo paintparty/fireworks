@@ -417,7 +417,9 @@
                 user-meta?
                 too-deep?
                 set-like?
+                js-set?
                 record?
+                array?         
                 badge
                 depth
                 t]
@@ -505,7 +507,7 @@
                             num-indent-spaces-for-t)))))
 
         maybe-comma  
-        (when js-map-like? ",")
+        (when (or js-map-like? js-set? array?) ",")
 
         separator    
         (if multi-line?
@@ -700,7 +702,7 @@
 
                   maybe-comma
                   (when (or js-typed-array?
-                            (contains? #{:js/Array :js/Set} t))
+                            (contains? #{:js-array :js-set} t))
                     ",")
 
                   separator
