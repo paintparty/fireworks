@@ -308,6 +308,9 @@
         mll?
         (when (string? label) (re-find #"\n" label))
 
+        ml-qf?
+        (when (string? qf) (re-find #"\n" qf))
+
         file-info-first?
         (or (contains?
              #{[:file-info :result]
@@ -317,8 +320,9 @@
                  (contains? #{[:form-or-label :file-info]
                               [:form-or-label :file-info :result]}
                             template)
-                 (or mll?
-                     (< 44 (count (str label))))))
+                 (or mll? (< 44 (count (str label)))))
+            (and (= template [:form-or-label :file-info :result])
+                 (or ml-qf? (:format-label-as-code? opts))))
 
         {:keys [fmt+ fmt file-info* css-count*]}
         (fmt+  (keyed [file-info-first? 
