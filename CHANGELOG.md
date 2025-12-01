@@ -9,7 +9,6 @@ For a list of breaking changes, check [here](#breaking-changes)
 #### Added
 
 #### Fixed
-Properly show contents and badges for various js data structures, when they are inside a cljs data-structure [#46](https://github.com/paintparty/fireworks/issues/46)
 
 #### Changed
 
@@ -18,6 +17,8 @@ Properly show contents and badges for various js data structures, when they are 
 
 ## 0.16.1
 2025-11-30
+
+<p><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this release!</sub></p>
 
 #### Added
 Example of hot-reload workflow project setups for `deps.edn` and `Leiningen`.
