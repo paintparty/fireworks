@@ -1,6 +1,6 @@
 {:paths   ["src"]
  :deps    {org.clojure/clojure            {:mvn/version "1.12.3"}
-           io.github.paintparty/fireworks {:mvn/version "0.16.0"}}
+           io.github.paintparty/fireworks {:mvn/version "0.16.1"}}
  :aliases {:test-refresh {:extra-paths ["test"]
                           :extra-deps  {com.jakemccrary/test-refresh {:mvn/version "0.26.0"}}
                           :main-opts   ["-m" "com.jakemccrary.test-refresh"]}}}

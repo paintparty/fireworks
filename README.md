@@ -53,6 +53,8 @@
 
 - Prints values without altering the execution of your program.
 
+- Editor integrations for [Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md) & [VSCode](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md).
+
 - Achieve thematic parity between editor, terminal emulator, and browser dev console.
 
 - Customizable via system-wide `.edn` config file.

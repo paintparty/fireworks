@@ -1,7 +1,7 @@
 (defproject fireworks-test-refresh-workflow "0.1.0-SNAPSHOT"
   :description  "Sample project using Fireworks and test-refresh"
   :dependencies [[org.clojure/clojure "1.12.3"]
-                 [io.github.paintparty/fireworks "0.16.0"]]
+                 [io.github.paintparty/fireworks "0.16.1"]]
   :plugins      [[com.jakemccrary/lein-test-refresh  "0.26.0"]]
   :test-refresh {:quiet             true
                  :notify-on-success false
