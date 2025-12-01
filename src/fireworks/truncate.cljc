@@ -8,7 +8,7 @@
             [fireworks.order :refer [seq->sorted-map]]
             [fireworks.profile :as profile]
             [fireworks.state :as state]
-            [fireworks.util :as util]))
+            [fireworks.util :as util :refer [maybe]]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -67,19 +67,25 @@
 ;; Maybe use reduce-kv or transducer to speed this up
 #?(:cljs 
    (defn- js-obj->array-map 
-     [{:keys [x coll-limit depth uid-entry?]}]
+     [{:keys [x coll-limit depth uid-entry? classname]}]
      ;; TODO should 8 value be tied to user config? 
      (if (> depth 8)
        {}
-       (let [keys  (take coll-limit (.keys js/Object x))]
+       (let [js-map? (= classname "Map") 
+             keys*   (if js-map? (js/Array.from (.keys x)) (.keys js/Object x))
+             keys    (take coll-limit keys*)]
          (into (array-map)
                (reduce (fn [acc k]
-                         (if (string/starts-with? k "closure_uid_")
+                         (if (some-> k
+                                     (maybe string?)
+                                     (string/starts-with? "closure_uid_"))
                            (do (vreset! uid-entry? true)
                                acc)
                            (conj acc
                                  [(symbol (str "'" k "':"))
-                                  (aget x k)])))
+                                  (if js-map?
+                                    (.get x k)
+                                    (aget x k))])))
                        []
                        keys))))))
 
@@ -137,17 +143,18 @@
 
 
 (defn- new-coll-info
-  [{:keys [uid-entry?
-           coll-size
-           all-tags
-           map-like?]}
+  [{:keys [uid-entry? coll-size all-tags map-like?]}
    coll]
   ;; TODO maybe-change binding name to truncated-coll-size -> coll-size?
   (let [truncated-coll-size (count coll)
-        coll-size-adjust    (- (if (number? coll-size) coll-size 0) (if @uid-entry? 1 0))]
+        coll-size-adjust    (- (if (number? coll-size) coll-size 0)
+                               (if @uid-entry? 1 0))]
    (merge (keyed [truncated-coll-size coll-size-adjust])
-          {:js-typed-array? (contains? all-tags :js/TypedArray)
-           :js-map-like?    (contains? all-tags :js/map-like-object)
+          {:js-typed-array? (contains? all-tags :js-typed-array)
+           :js-map-like?    (or (contains? all-tags :js-object)
+                                (contains? all-tags :js-map)
+                                (contains? all-tags :js-map-like-object))
+           :js-set?         (contains? all-tags :js-set)
            :num-dropped     (some->> truncated-coll-size (- coll-size-adjust))}
           (when map-like?
             {:sorted-map-keys (mapv #(nth % 0 nil) coll)}))))
@@ -155,6 +162,7 @@
 
 (defn- truncated-coll
   [m x]
+  
   #?(:cljs
      (if (satisfies? ISeqable x)
        (truncate-iterable m x)
@@ -169,28 +177,39 @@
              m]
          (cond
            dom-node-type
-           (truncate {:depth (inc depth) :path path}
+           (truncate {:depth (inc depth)
+                      :path  path}
                      (dom-el-attrs-map x))
 
-           (or js-array? (contains? all-tags :js/TypedArray))
+           (or js-array? (contains? all-tags :js-typed-array))
            (mapv 
-             (fn [i]
-               ;; truncate call
-               (truncate {:depth (inc depth)
-                          :path path}
-                         (aget x i)))
-             (range (min coll-limit coll-size)))
+            (fn [i]
+              (truncate {:depth (inc depth)
+                         :path  path}
+                        (aget x i)))
+            (range (min coll-limit coll-size)))
+
+           (contains? all-tags :js-set)
+           (->> x
+                js/Array.from
+                (take coll-limit)
+                (mapv (partial truncate {:depth (inc depth)
+                                         :path  path})))
 
            :else
+           ;; This is where js objects or js maps get turned into cljs maps
+           ;; for printing
            (do 
              (when (= t :SyntheticBaseEvent) (prune-synthetic-base-event x))
              (->> m 
                   js-obj->array-map
                   ;; truncate call
-                  (mapv (partial truncate {:depth (inc depth) :path path}))
+                  (mapv (partial truncate {:depth (inc depth)
+                                           :path  path}))
                   (into {}))))))
      :clj
      (truncate-iterable m x)))
+
 
 
 (defn- value-meta [x]
@@ -391,12 +410,12 @@
         ;; TODO - Use this instead of what is happening in fireworks.profile
         ;; mm*
         ;; (with-badge-and-ellipsized x kv? mm*)
-        ]
-    (with-meta truncated-x
-      (merge {:fw/truncated mm*
-              :fw/user-meta #?(:cljs user-meta
-                               :bb (remove-sci-lang-type-metadata user-meta mm*)
-                               :clj user-meta)}
-             (some->> m* :user-meta? (hash-map :fw/user-meta-map?))))))
+        meta-to-attach
+        (merge {:fw/truncated mm*
+                :fw/user-meta #?(:cljs user-meta
+                                 :bb (remove-sci-lang-type-metadata user-meta mm*)
+                                 :clj user-meta)}
+               (some->> m* :user-meta? (hash-map :fw/user-meta-map?)))]
+    (with-meta truncated-x meta-to-attach)))
 
 
