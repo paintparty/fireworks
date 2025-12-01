@@ -1,5 +1,6 @@
 .DS_Store
 /target
+examples/test-refresh/lein-project/target
 /classes
 /checkouts
 profiles.clj
@@ -26,3 +27,5 @@ node_modules/
 .clj-kondo/.cache
 /public/js
 visual_test/public/js
+.cpcache
+pom.properties

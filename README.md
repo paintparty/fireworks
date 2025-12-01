@@ -30,7 +30,7 @@
 <br>
 <br>
 
-<p align="center"><sub><b>Fireworks (Alabaster Dark) + Clojure + lein-test-refresh + integrated terminal</b></sub></p>
+<p align="center"><sub><b>Fireworks (Alabaster Dark) + Clojure + lein-test-refresh + integrated terminal + VSCode Joyride user script</b></sub></p>
 <p align="center">
   <img width="830px"
        src="resources/tour/fw-tour-intro-dark.gif"
@@ -38,23 +38,13 @@
   </img>
 </p>
 <br>
-<p align="center"><sub><b>Fireworks (Alabaster Light) + Clojure + lein-test-refresh + integrated terminal</b></sub></p>
+<p align="center"><sub><b>Fireworks (Alabaster Light) + Clojure + lein-test-refresh + integrated terminal + VSCode Joyride user script</b></sub></p>
 <p align="center">
   <img width="830px"
        src="resources/tour/fw-tour-intro-light.gif"
        alt="Fireworks light and dark themes animated slideshow">
   </img>
 </p>
-<!-- <p align="center"><img width="830px" src="resources/fireworks-samples-cropped-xl-2.gif" alt="Fireworks light and dark themes animated slideshow"></img></p> -->
-<!-- <p align="center"><sub><b>Light and dark variants of <i> Alabaster, Neutral, Monokai, Solarized, Zenburn, and Degas.</i></b></sub></p> -->
-
-<!-- <br> 
-<br>
-
-Try it out in your terminal:
-```
-clj -Sdeps '{:deps {io.github.paintparty/fireworks {:mvn/version "0.12.6"}}}' -e "(require '[fireworks.core :refer [?]]) (def x {:string      \"string\" :number      1234 :symbol      'foo :symbol+     (with-meta 'foo {:foo :bar}) :boolean     true :set         #{1 2 3} :lambda      #(inc %) :fn          juxt :regex       #\"^hi$\" :atom/number (atom 1) :brackets    [[[[[[]]]]]] :java/array  (into-array [1 2 3 4])}) (? x)"
-``` -->
 
 <br> 
 <br>
@@ -113,17 +103,59 @@ Add as a dependency to your project:
 
 ### Step 2:
 
-Import into your namespace:
+Import into your namespace, config, and start using:
 
 ```clojure
 (ns myns.core
   (:require
-    [fireworks.core :refer [? !? ?> !?>]]))
+    [fireworks.core :refer [? !?]]))
+
+;; Chose a theme below based on your terminal theme
+;; You don't need to use config! like this if you set
+;; up a system-wide config.
+
+(fireworks.core/config!
+ {
+  :theme "Universal Neutral"
+  ;; :theme "Alabaster Light"
+  ;; :theme "Alabaster Dark"
+  ;; :theme "Neutral Light"     
+  ;; :theme "Neutral Dark"      
+  ;; :theme "Degas Light"       
+  ;; :theme "Degas Dark"        
+  ;; :theme "Zenburn Light"     
+  ;; :theme "Zenburn Dark"      
+  ;; :theme "Solarized Light"   
+  ;; :theme "Solarized Dark"    
+  ;; :theme "Monokai Light"     
+  ;; :theme "Monokai Dark"      
+  :display-metadata? true})
+
+(def sample
+     {:string  "hi"	
+      :int     1111
+      :keyword :hi	
+      :regex   "^hi$"
+      :boolean true	 
+      :symbol  (with-meta 'mysym {:foo :bar})
+      :vector  [1 2 3]
+      :set     #{1 3 2}
+      :map     {:a 2 :b 3}
+      :seq     (map inc (range 3))
+      :date    (java.util.Date.)})
+
+(? sample)
 ```
 
 <br>
 
-### Step 3:
+## Setting up a system-wide config
+
+Optional, but highly recommended if you are going to be using Fireworks across
+different projects, and you want to set your default printing options and
+preferred theme (on your machine, for your eyes only) in one place. 
+
+### Step 1:
 
 Add a [system-wide config file](#system-wide-config) at `/Users/<your-home-folder>/.config/bling/config.edn` (suggested path). You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. There are a [bunch of options](#all-the-options), but at minimum you'll probably want to specify a light or dark stock theme:
 
@@ -161,7 +193,7 @@ You can explicitly set the color level support by setting the
 
 <br>
 
-### Step 4:
+### Step 2:
 
 Add a [system-wide environmental variable](#system-wide-config) in the right place (in your `.zshrc` or similar), to let Fireworks know where to find your config:
 
@@ -170,7 +202,7 @@ export BLING_CONFIG="/Users/<your-home-folder>/.config/bling/config.edn"
 ```
 <br>
 
-### Step 5:
+### Step 3:
 
 Align your terminal and/or browser dev console background color with the
 Fireworks theme you are using. See
@@ -189,7 +221,47 @@ For production builds, use the [`io.github.paintparty/fireworks-stubs`](https://
 <br>
 <br>
 
+## Hot-reloaded workflow
+
+Fireworks is a great fit for a hot-reloaded, tap-driven-dev style workflow.
+
+For many ClojureScript projects using something like Shadow-cljs, this is the norm.
+
+For this kind of workflow on JVM Clojure, there are 2 sample setups in `examples/test-refresh/` directory. One is a `deps.edn` project and the other is a Leiningen project. Both of these projects use [test-refresh](https://github.com/jakemcc/test-refresh), with the `:debug` option set to `true`.
+
+### JVM Clojure Deps Setup
+From the root of `examples/test-refresh/deps-project` run `clojure -M:test-refresh`. Open the `example.hello` namespace and play around with the examples. Checkout the `.test-refresh.edn` file for notes on the options that are specific to this kind of hot-reload workflow. More info about how test-refresh works for `deps.edn` projects can be found [here](https://github.com/jakemcc/test-refresh/blob/master/docs/deps_edn.md).
+
+### JVM Clojure Leiningen Setup
+From the root of `examples/test-refresh/lein-project` run `lein test-refresh`. Open the `example.hello` namespace and play around with the examples. Checkout the `.test-refresh.edn` file for notes on the options that are specific to this kind of hot-reload workflow. More info about how test-refresh works for Leiningen projects can be found [here](https://github.com/jakemcc/test-refresh/blob/master/docs/leiningen.md).
+
+You can also add relevant entries from the sample `project.clj` to your `~/.lein/profiles.clj`, to make them available globally on your system:
+```Clojure
+{:user         {:plugins [[com.jakemccrary/lein-test-refresh "0.26.0"]]}
+ :test-refresh {:quiet             true
+                :notify-on-success false
+                :changes-only      true
+
+                ;; The :debug option, if set to true, will skip all tests, but still reloads
+                ;; namespaces that have changed. This is a nice way to spin up a hot-reload dev
+                ;; environment for tap-driven development with Fireworks in JVM Clojure.
+                ;; If you want to run tests on every refresh, just set this back to the default
+                ;; value of false.
+                :debug             true
+
+                ;; With a hot-reload workflow, it is nice to use a simple custom banner.
+                :banner            "🔥🔥🔥🔥🔥🔥🔥🔥🔥"
+
+                ;; With a hot-reload workflow, it is nice to clear the terminal on refresh. 
+                :clear             true}
+```
+<br>
+<br>
+
 ## Editor Integrations
+
+These integrations allow you to quickly wrap and unwrap forms with a shortcut,
+as well as toggle the silencing of wrapped forms.
 
 #### [IntelliJ IDEA + Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md)
 #### [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md)
@@ -426,7 +498,9 @@ You can try any of the options out at the call site:
 
 You can also set them globally, in your project, at runtime:
 ```Clojure
-(fireworks.core/config! {:display-metadata? true})
+(fireworks.core/config! {:display-metadata?     true
+                         :non-coll-length-limit 50
+                         :print-level           3})
 ```
 
 <br>
