@@ -4,48 +4,76 @@
             [fireworks.sample :as sample :refer []]
             [bling.core :refer [print-bling bling ?sgr callout]]
             [lasertag.core :refer [tag-map]]
+            [taoensso.tufte :as tufte :refer [p profile]]
             [fireworks.core :refer [? !? ?> !?> pprint]]))
 
 (def everything sample/array-map-of-everything-cljc)
+
+;; (tufte/add-handler! :my-console-handler (tufte/handler:console))
 
 (defn test-suite []
   #?(:cljs
      ;; Move this interop demo code into fireworks.sample
      (do 
+       #_(js/console.clear)
        
-       ;;  (print-bling ["bold italic red wavy-underline" "bang"])
        
+       #_(profile ; Profile any `p` forms called during body execution
+        {} ; Profiling options; we'll use the defaults for now
+        (dotimes [_ 100]
+          #_(p :nested
+               (bling [:p "First paragraph"]
+                      [:p [:bold
+                           "Bold, "
+                           [:italic "bold italic, "
+                            [:red "bold italic red, "]]
+                           "bold."]]
+                      "Last line"))
+          (p :mock-node
+             (? {:string "string"
+                 :regex  #"myregex"
+                 :uuid   #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+                 :symbol 'mysym
+                 :nesting [[[[[[]]]]]]
+                 :vector (with-meta 
+                           ['foo
+                            (with-meta 'bar {:meta-on-sym "xyz"})
+                            'baz]
+                           {:meta-on-coll "abc"})})
+             #_(? everything))))
+
+       #_(pprint (:formatted+ (? {:string "string"})))
        #_(print-bling [:bold.italic.red.wavy-underline.yellow-bg "bang"])
        #_(print-bling [{:font-weight           :bold
-                      :font-style            :italic
-                      :color                 :red
-                      ;; :background-color :yellow
-                      :text-decoration-style :wavy
-                      :text-decoration       :underline
-                      }
-                     "bang"])
+                        :font-style            :italic
+                        :color                 :red
+                        ;; :background-color :yellow
+                        :text-decoration-style :wavy
+                        :text-decoration       :underline
+                        }
+                       "bang"])
 
-       (callout {:label       (bling [:bold.black-bg.white " whoa "])
-                 :label-theme :pipe
-                 :type        :warning}
-                (bling [:p "First paragraph"]
-                       [:p [:bold
-                            "Bold, "
-                            [:italic "bold italic, "
-                             [:red "bold italic red, "]]
-                            "bold."]]
-                       "Last line")
-                #_(bling "First paragraph"
-                         "\n\n"
-                         [:bold "Bold, "] 
-                         [:bold.italic "bold italic, "] 
-                         [:bold.red.italic "bold italic red, "] 
-                         [:bold.red.italic.yellow-bg "bold italic red, yellow bg"] 
-                         [:bold " bold."]
-                         "\n\n"
-                         [{:href "www.pets.com"} "Pets.com"]
-                         "\n\n"
-                         "Last line with " [:wavy-underline "wavy-underline"]))
+       #_(callout {:label       (bling [:bold.black-bg.white " whoa "])
+                   :label-theme :pipe
+                   :type        :warning}
+                  (bling [:p "First paragraph"]
+                         [:p [:bold
+                              "Bold, "
+                              [:italic "bold italic, "
+                               [:red "bold italic red, "]]
+                              "bold."]]
+                         "Last line")
+                  #_(bling "First paragraph"
+                           "\n\n"
+                           [:bold "Bold, "] 
+                           [:bold.italic "bold italic, "] 
+                           [:bold.red.italic "bold italic red, "] 
+                           [:bold.red.italic.yellow-bg "bold italic red, yellow bg"] 
+                           [:bold " bold."]
+                           "\n\n"
+                           [{:href "www.pets.com"} "Pets.com"]
+                           "\n\n"
+                           "Last line with " [:wavy-underline "wavy-underline"]))
        
        
        
