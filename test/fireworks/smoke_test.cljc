@@ -3,6 +3,8 @@
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [? !? ?> !?>]]
             [fireworks.themes :as themes]
+            [fireworks.state]
+            [fireworks.color]
             [clojure.string :as string]
             [fireworks.pp :as pp]
             [clojure.pprint :refer [pprint print-table]]
@@ -14,6 +16,12 @@
             ;; [lambdaisland.ansi :as ansi]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
+
+
+
+
+
+
 
 
 ;; Bold smoke test

@@ -902,7 +902,8 @@
         m))
     {})))
 
-
+;; TODO - move to a util namespace, or in bling?
+;; TODO - Use this one to get text-decoration SGR "[0-9;(?:9|4(?::[1-5])?)]*m"
 (defn ^:public ?sgr-str [s]
   (string/replace s
                   #"\u001b\[([0-9;]*)[mK]"
@@ -912,6 +913,7 @@
                        "m"
                        "\033[0;m")))
 
+;; TODO - move to a util namespace, or in bling?
 (defn ^:public ?sgr
   "For debugging of sgr code printing.
 
