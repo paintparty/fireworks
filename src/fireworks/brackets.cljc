@@ -3,7 +3,7 @@
             [fireworks.pp :refer [?pp pprint]]
             [fireworks.defs :as defs]
             #?(:clj [fireworks.state :as state]
-               :cljs [fireworks.state :as state :refer [node?]])
+               :cljs [fireworks.state :as state :refer [node? mock-node?]])
             [fireworks.tag :as tag :refer [style-from-theme tag! tag-reset!]]
             [fireworks.util :refer [badge-type]]))
 
@@ -80,7 +80,7 @@
                color)
              color)]
     #?(:cljs
-       (if node? 
+       (if (or node? @mock-node?) 
          (f)
          (str "color:" color 
               (when bgc (str ";background-color:" bgc))
@@ -122,7 +122,7 @@
                        theme-token
                        (str ",  style is:   " (state/?sgr-str style)))))
 
-    #?(:cljs (if node? 
+    #?(:cljs (if (or node? @mock-node?) 
                style
                ;; TODO - Could lose if post-replace works out
                (let [style (if (:bold? @state/config)
@@ -161,7 +161,7 @@
     #_(when (state/debug-tagging?)
       (println "\nbracket!*  " s ",  t: " t))
 
-    #?(:cljs (if node? 
+    #?(:cljs (if (or node? @mock-node?) 
                (f)
                (if t 
                  (do (tag-bracket! m s)

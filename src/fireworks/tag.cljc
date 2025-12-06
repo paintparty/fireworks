@@ -4,7 +4,7 @@
             [fireworks.pp :refer [?pp pprint]]
             #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.state :as state :refer [?sgr]]
-               :cljs [fireworks.state :as state :refer [node?]])))
+               :cljs [fireworks.state :as state :refer [node? mock-node?]])))
 
 
 (def tagtype->theme-key
@@ -64,7 +64,7 @@
                           f #(let [m (state/map-vals state/hexa-or-sgr m)]
                                (state/m->sgr m))]
                       #?(:cljs
-                         (if node? (f) (string/join (mapv state/kv->css2 m)))
+                         (if (or node? @mock-node?) (f) (string/join (mapv state/kv->css2 m)))
                          :clj
                          (f)))
                     (or highlighting m))]
@@ -90,7 +90,7 @@
 
      (when (state/debug-tagging?)
        #?(
-          ;; :cljs (if node?
+          ;; :cljs (if (or node? @mock-node?)
           ;;         s
           ;;         (let [s (cond
           ;;                   (= t :type-label)
@@ -105,7 +105,7 @@
                    (?sgr s))
           ))
 
-     #?(:cljs (if node?
+     #?(:cljs (if (or node? @mock-node?)
                 s
                 ;; TODO - lose if post-replace works
                 (let [s (cond
@@ -127,7 +127,7 @@
   ([]
    (tag-reset! :foreground))
   ([theme-token]
-   #?(:cljs (if node?
+   #?(:cljs (if (or node? @mock-node?)
               (do (when (state/debug-tagging?)
                     (println "tag/tag-reset!  with  \\\033[0m"))
                   sgr-closing-tag-str)

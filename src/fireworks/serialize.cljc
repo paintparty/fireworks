@@ -16,7 +16,7 @@
    [fireworks.util :refer [spaces badge-type]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
-   #?(:cljs [fireworks.state :as state :refer [node?]]
+   #?(:cljs [fireworks.state :as state :refer [node? mock-node?]]
       :clj [fireworks.state :as state])
    [fireworks.util :as util]))
 
@@ -757,7 +757,7 @@
 
 (defn- gap-spaces
   [{:keys [s k formatting-meta? theme-token-map highlighting] :as m}]
-  #?(:cljs (if node?
+  #?(:cljs (if (or node? @mock-node?)
              (gap-spaces-impl m)
              ;;TODO - possibly lose this if js post-replace works?
              (tagged s (if formatting-meta?

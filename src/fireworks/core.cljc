@@ -1,14 +1,20 @@
+;; Make an option to turn on mock-node? and then reset it.
+;; Confirm one way or another
+;; Do perf test
+
+
 (ns fireworks.core
   (:require
    [clojure.set :as set]
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
+   [fireworks.browser]
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
    #?(:clj [fireworks.state :as state]
-      :cljs [fireworks.state :as state :refer [node?]])
+      :cljs [fireworks.state :as state :refer [node? mock-node?]])
    [fireworks.tag :as tag]
    #?(:cljs [fireworks.macros
              :refer-macros
@@ -346,9 +352,10 @@
         :file-info-str file-info*}
        form-meta
        {:formatted+ (merge {:string fmt+}
-                           #?(:cljs (when-not node? {:css-styles @state/styles})))
+                           #?(:cljs (when-not (or node? @mock-node?)
+                                      {:css-styles @state/styles})))
         :formatted  (merge {:string fmt}
-                           #?(:cljs (when-not node? 
+                           #?(:cljs (when-not (or node? @mock-node?) 
                                       {:css-styles (subvec @state/styles 
                                                            css-count*)})))})
 
@@ -360,13 +367,30 @@
        ;; If :result flag is used it will be {:margin-bottom 0 :margin-top 0}
        ;; If :result flag is used w call-site opts for :margin-*, those will win
        :margin-bottom (margin-block-str opts :margin-bottom)
-       :margin-top    (margin-block-str opts :margin-top)})))
+       :margin-top    (margin-block-str opts :margin-top)
+       :template      template})))
 
 
 #?(:cljs 
    (defn- js-print [opts]
-     ;; TODO - Change if post-replace works
-     (let [js-arr (into-array (concat [(:fmt opts)] @state/styles))]
+     (let [js-arr 
+           (if @mock-node?
+             (-> opts
+                 :fmt
+                 fireworks.browser/ansi-sgr-string->browser-dev-console-array)
+             (into-array (concat [(:fmt opts)] @state/styles)))
+
+           template-count
+           (-> opts :template count)
+
+           index-to-insert-margin-block-end
+           (case template-count 3 5 2 3 nil)]
+       
+       ;; When printing to a browser dev console, use margin-block-end at the
+       ;; right index, to create a 1/2 line of space between the header (aka the
+       ;; label / file-info), but only if there is a header.
+       (when-let [i index-to-insert-margin-block-end]
+         (aset js-arr i (str (aget js-arr i) "; margin-block-end: 0.5em")))
        (.apply (.-log  js/console)
                js/console
                js-arr))))
@@ -609,7 +633,7 @@
   "Called internally."
   [{:keys [user-opts]} x]
   #?(:cljs
-     (if node? 
+     (if (or node? @mock-node?) 
        (_pp* user-opts x)
        (do (try-pp x) x))
      :clj
@@ -618,7 +642,7 @@
 (defn ^{:public true} _log 
   [{:keys [user-opts]} x]
   #?(:cljs
-     (if node? 
+     (if (or node? @mock-node?) 
        (_pp* user-opts x)
        (do (js/console.log x) x))
      :clj (_pp* user-opts x)))
@@ -712,21 +736,6 @@
      nil))
 
 
-(defn- rewind-debug [printing-opts new-opts _p2 x]
-  ;; #?(:clj (.getMessage (:err printing-opts))) 
-  (ff @state/rewind-counter)
-  (swap! state/rewind-counter inc)
-  (if (ff (> 10 @state/rewind-counter))
-    (do (ff @state/rewind-counter)
-        (ff new-opts)
-        (_p2 new-opts x))
-    (throw 
-     (#?(:cljs
-         js/Error.
-         :clj
-         Throwable.)
-      "fireworks.core/_p2 :: debug"))))
-
 (defn- fw-throwable [e x opts]
   (messaging/->FireworksThrowable
    e
@@ -737,6 +746,12 @@
 
 ;; TODO - Is it possible to retire this in favor of directing all internal calls
 ;; to fireworks.core/_p2 ?
+#?(:cljs
+   (defn ^:public print-to-browser-dev-console [s]
+     (->> s
+          fireworks.browser/ansi-sgr-string->browser-dev-console-array
+          (.apply js/console.log js/console))))
+
 (defn ^{:public true}
   _p 
   "Internal runtime dispatch target for fireworks macros.
@@ -775,6 +790,20 @@
                                       [:form-or-label :file-info])
                            x)]
 
+      #_#?(:cljs
+         (do (ff @state/mock-node?)
+             (let [fmt (-> printing-opts :fmt)
+                   arr (if @state/mock-node?
+                         (fireworks.browser/ansi-sgr-string->browser-dev-console-array fmt)
+                         (into-array (into [fmt] @state/styles)))]
+              ;;  (ff printing-opts)
+              ;;  (when @state/mock-node? (ff fmt))
+              ;;  (ff (js->clj arr))
+               (when @state/mock-node? (print-to-browser-dev-console fmt)))
+
+             #_(js->clj (-> printing-opts
+                            :fmt
+                            print-to-browser-dev-console))))
 
       (when debug-config?
         (fw-debug-report config-before opts "fireworks.core/_p2")) 
@@ -801,7 +830,7 @@
           ;; - :pp or :pp- is used
           (when (and (not (:fw/log? opts))
                      (:log? opts))
-            #?(:cljs (if node?
+            #?(:cljs (if (or node? @mock-node?)
                        (fireworks.core/pprint x)
                        (js/console.log x))
                :clj (fireworks.core/pprint x)))
@@ -884,7 +913,7 @@
           (when (and print?
                      (not (:fw/log? opts))
                      (:log? opts))
-            #?(:cljs (if node?
+            #?(:cljs (if (or node? @mock-node?)
                        (fireworks.core/pprint x)
                        (js/console.log x))
                :clj (fireworks.core/pprint x)))
@@ -1141,14 +1170,14 @@
               ~x)))
 
        :log-
-       `(do #?(:cljs (if node?
+       `(do #?(:cljs (if (or node? @mock-node?)
                        (fireworks.core/pprint ~x)
                        (js/console.log ~x))
                :clj (fireworks.core/pprint ~x))
             ~x)
 
        :js-
-       `(do #?(:cljs (if node?
+       `(do #?(:cljs (if (or node? @mock-node?)
                        (fireworks.core/pprint ~x)
                        (js/console.log ~x))
                :clj (fireworks.core/pprint ~x))
@@ -1222,7 +1251,7 @@
               ~x)))      
 
        :log-
-       `(do #?(:cljs (if node?
+       `(do #?(:cljs (if (or node? @mock-node?)
                        (fireworks.core/pprint ~x)
                        (js/console.log ~x))
                :clj (fireworks.core/pprint ~x))
