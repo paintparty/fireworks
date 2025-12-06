@@ -71,6 +71,32 @@
                       :eval-form-blue   :eval-label-blue
                       }}})
 
+;; TODO - migrate theme syntax towards this?
+#_{:background-hue       :neutral
+ :background-lightness 25       ;; optional
+ :background-chroma    :medium  ;; optional
+ :foreground-hue       :neutral
+ :foreground-lightness 600      ;; optional
+ :foreground-chroma    :medium  ;; optional
+ :bracket-lightness    :600     ;; optional, syncs to foreground-lightness
+ :bracket-chroma       :medium  ;; optional, syncs to foreground-saturation, applies only to rainbow or colored brackets 
+ :rainbow-brackets?    true     ;; optional, overrides bracket below
+ :languages            ["Clojure" "ClojureScript" "Babashka"]         
+ :tokens               {:string                {:hue :green}
+                        :annotation            {:hue        :neutral
+                                                :contrast   :low  ;; -> adjusts both hue and saturation
+                                                :font-style :italic}
+                        :bracket               {:hue        :blue
+                                                :contrast   :xlow
+                                                :lightness  300
+                                                :chroma     400
+                                                :font-style :italic}
+                        :reader-macro          :annotation
+                        :js-object-key         :foreground
+                        :printer/file-info     :annotation
+                        :printer/function-args :annotation}}
+
+
 (def alabaster-light
   {:name   "Alabaster Light"
    :desc   "Based on @tonsky's Alabaster theme."
