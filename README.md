@@ -421,11 +421,11 @@ If you just want the formatted string, and/or other data that **`fireworks.core/
  :column 21,
  :line 17,
  :end-line 17,
- :formatted {:string-with-ansi-sgr-tags "�[3;34;mmy-project.core:17:21�[0m",
+ :formatted {:string "\\033[3;34;mmy-project.core:17:21\\033[0m",
              :string-with-format-specifier-tags "%c\"foo\"%c",
              :css-styles ["color:#448C27;line-height:1.45;"
                           "color:#585858;line-height:1.45;"]},
- :formatted-with-header {:string-with-ansi-sgr-tags "�[3;34;mmy-project.core:17:21�[0m"
+ :formatted-with-header {:string "\\033[3;34;mmy-project.core:17:21\\033[0m"
                          :string-with-format-specifier-tags "%cmy-project.core:17:21%c\n%c\"foo\"%c %c=>%c %c\"foo\"%c",
                          :css-styles ["color:#8c8c8c;font-style:italic;line-height:1.45;"
                                       "color:#585858;line-height:1.45;"
