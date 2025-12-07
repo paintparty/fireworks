@@ -1,8 +1,3 @@
-;; Make an option to turn on mock-node? and then reset it.
-;; Confirm one way or another
-;; Do perf test
-
-
 (ns fireworks.core
   (:require
    [clojure.set :as set]
@@ -14,7 +9,7 @@
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
    #?(:clj [fireworks.state :as state]
-      :cljs [fireworks.state :as state :refer [node? mock-node?]])
+      :cljs [fireworks.state :as state :refer [node?]])
    [fireworks.tag :as tag]
    #?(:cljs [fireworks.macros
              :refer-macros
@@ -349,16 +344,10 @@
       (merge
        {:ns-str        ns-str
         :quoted-form   qf
-        :file-info-str file-info*}
-       form-meta
-       ;; TAKE THIS OUT
-       {:formatted+ (merge {:string fmt+}
-                           #?(:cljs (when-not (or node? @mock-node?)
-                                      {:css-styles @state/styles})))
-        :formatted  (merge {:string fmt}
-                           #?(:cljs (when-not (or node? @mock-node?) 
-                                      {:css-styles (subvec @state/styles 
-                                                           css-count*)})))})
+        :file-info-str file-info*
+        :formatted+    {:string fmt+}
+        :formatted     {:string fmt}}
+       form-meta)
 
       ;; Else if print-and-return fns, return printing opts
       {:fmt           fmt+
@@ -375,11 +364,9 @@
 #?(:cljs 
    (defn- js-print [opts]
      (let [js-arr 
-           (if @mock-node?
-             (-> opts
-                 :fmt
-                 fireworks.browser/ansi-sgr-string->browser-dev-console-array)
-             (into-array (concat [(:fmt opts)] @state/styles)))
+           (-> opts
+               :fmt
+               fireworks.browser/ansi-sgr-string->browser-dev-console-array)
 
            template-count
            (-> opts :template count)
@@ -390,8 +377,9 @@
        ;; When printing to a browser dev console, use margin-block-end at the
        ;; right index, to create a 1/2 line of space between the header (aka the
        ;; label / file-info), but only if there is a header.
-       (when-let [i index-to-insert-margin-block-end]
-         (aset js-arr i (str (aget js-arr i) "; margin-block-end: 0.5em")))
+       (when-not (:log? opts)
+         (when-let [i index-to-insert-margin-block-end]
+           (aset js-arr i (str (aget js-arr i) "; margin-block-end: 0.5em"))))
        (.apply (.-log  js/console)
                js/console
                js-arr))))
@@ -572,7 +560,8 @@
 (defn- print-formatted
   ([x]
    (print-formatted x nil))
-  ([{:keys [fmt log? err err-x err-opts] :as x} f]
+  ([{:keys [fmt log? err err-x err-opts] :as x}
+    js-printing-fn]
    (if (instance? fireworks.messaging.FireworksThrowable x)
      (let [{:keys [line column file]} (:form-meta err-opts)
            ns-str                     (:ns-str err-opts)] 
@@ -598,14 +587,12 @@
                     ;; TODO - not print if fmt is nil or blank string?
                     ((if log? print println) (:margin-bottom x)))  ]
 
-       #?(:cljs (if node? (termf x) (f x))
+       #?(:cljs (if node? (termf x) (js-printing-fn x))
           :clj (termf x))))))
 
 (defn- try-pp [x]
   (try (pprint x)
-       #?(:cljs
-          ()
-          :clj
+       #?(:clj
           (catch Throwable e
             (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)]
               (messaging/unable-to-print-warning
@@ -634,7 +621,7 @@
   "Called internally."
   [{:keys [user-opts]} x]
   #?(:cljs
-     (if (or node? @mock-node?) 
+     (if node? 
        (_pp* user-opts x)
        (do (try-pp x) x))
      :clj
@@ -643,7 +630,7 @@
 (defn ^{:public true} _log 
   [{:keys [user-opts]} x]
   #?(:cljs
-     (if (or node? @mock-node?) 
+     (if node? 
        (_pp* user-opts x)
        (do (js/console.log x) x))
      :clj (_pp* user-opts x)))
@@ -745,28 +732,22 @@
           :header
           "fireworks.core/formatted")))
 
-;; TODO - Is it possible to retire this in favor of directing all internal calls
-;; to fireworks.core/_p2 ?
-#?(:cljs
-   (defn ^:public print-to-browser-dev-console [s]
-     (->> s
-          fireworks.browser/ansi-sgr-string->browser-dev-console-array
-          (.apply js/console.log js/console))))
 
 (defn ^{:public true}
   tagged-string-data
   [printing-opts k]
-  (let [string-with-ansi-sgr-tags                        
+  (let [string                        
         (->> printing-opts k :string)
 
         [string-with-format-specifier-tags & css-styles] 
-        (->> string-with-ansi-sgr-tags
+        (->> string
              fireworks.browser/ansi-sgr-string->browser-dev-console-array
              (into []))]
 
-    (keyed [string-with-ansi-sgr-tags
+    (keyed [string
             string-with-format-specifier-tags 
             css-styles])))
+
 
 (defn ^{:public true}
   as-data
@@ -839,9 +820,9 @@
           ;; - :js or :js- is used
           ;; - :pp or :pp- is used
           (when (and (not (:fw/log? opts))
-                     (:log? opts))
-            #?(:cljs (if (or node? @mock-node?)
-                       (fireworks.core/pprint x)
+                     (:log? opts))        ; <- This is for something like (? #js[1 2 3])
+            #?(:cljs (if node?
+                       (fireworks.core/pprint x) ; <- In node, do you want pprint here, or just js/console.log ?
                        (js/console.log x))
                :clj (fireworks.core/pprint x)))
 
@@ -923,7 +904,7 @@
           (when (and print?
                      (not (:fw/log? opts))
                      (:log? opts))
-            #?(:cljs (if (or node? @mock-node?)
+            #?(:cljs (if node?
                        (fireworks.core/pprint x)
                        (js/console.log x))
                :clj (fireworks.core/pprint x)))
@@ -1180,14 +1161,14 @@
               ~x)))
 
        :log-
-       `(do #?(:cljs (if (or node? @mock-node?)
+       `(do #?(:cljs (if node?
                        (fireworks.core/pprint ~x)
                        (js/console.log ~x))
                :clj (fireworks.core/pprint ~x))
             ~x)
 
        :js-
-       `(do #?(:cljs (if (or node? @mock-node?)
+       `(do #?(:cljs (if node?
                        (fireworks.core/pprint ~x)
                        (js/console.log ~x))
                :clj (fireworks.core/pprint ~x))
@@ -1260,8 +1241,9 @@
                  :form (quote ~x)}))
               ~x)))      
 
+       ;; Remove this? or should it be js?
        :log-
-       `(do #?(:cljs (if (or node? @mock-node?)
+       `(do #?(:cljs (if node?
                        (fireworks.core/pprint ~x)
                        (js/console.log ~x))
                :clj (fireworks.core/pprint ~x))

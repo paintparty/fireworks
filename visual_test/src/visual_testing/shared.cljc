@@ -5,7 +5,7 @@
             [bling.core :refer [print-bling bling ?sgr callout]]
             [bling.hifi :refer [hifi print-hifi]]
             [lasertag.core :refer [tag-map]]
-            [taoensso.tufte :as tufte :refer [p profile]]
+            ;; [taoensso.tufte :as tufte :refer [p profile]]
             [fireworks.core :refer [? !? ?> !?> pprint]]))
 
 (def everything sample/array-map-of-everything-cljc)
@@ -18,19 +18,24 @@
      (do 
 
        (js/console.clear)
-      ;;  (js/console.log (? :data {:a "foo"
-      ;;                            :b 2
-      ;;                            :c 3}))
+       ;;  (js/console.log (? :data {:a "foo"
+       ;;                            :b 2
+       ;;                            :c 3}))
        
        #_(print-hifi {:a "foo"
                       :b 2
                       :c 3})
-      ;;  (println (hifi {:a "foo"
-      ;;                  :b 2
-      ;;                  :c 3}))
+       ;;  (println (hifi {:a "foo"
+       ;;                  :b 2
+       ;;                  :c 3}))
        
-       
-       (callout {:type        :error
+       (? #js[])
+       (? :js  (ffirst everything))
+       (? :js- (ffirst everything))
+       (? :pp  (ffirst everything))
+       (? :pp- (ffirst everything))
+
+       (callout {:type        :info
                  :label-theme :pipe}
                 (bling [:p [:red "This is red" [:bold " and bold."]]]
                        [:p "Line two"]
@@ -38,7 +43,22 @@
                               :b 2
                               :c 3})))
 
-       
+       (? {:coll-limit  200
+           :label       "Clojure(Script) values"
+           :label-color :blue
+           ;;  :bold?       true
+           :find        {:pred #(= % 3.33)}
+           }
+          everything
+          #_(select-keys everything [:atom]))
+
+       (? {:coll-limit  200
+           :label       "Clojure(Script) values"
+           :label-color :red
+           :bold?       true
+           }
+          (select-keys everything [:atom]))
+
        #_(profile ; Profile any `p` forms called during body execution
           {} ; Profiling options; we'll use the defaults for now
           (dotimes [_ 100]
@@ -102,8 +122,8 @@
        
        
        #_(? {:coll-limit 200
-           :label      "ClojureScript interop types"}
-          sample/interop-types)
+             :label      "ClojureScript interop types"}
+            sample/interop-types)
 
        #_(let [buffer      (new js/ArrayBuffer 8)
                arr         (new js/Int32Array buffer)
@@ -145,12 +165,7 @@
            )
        
 
-       (? {:coll-limit  200
-             :label       "Clojure(Script) values"
-             :label-color :blue
-             ;;  :bold?       true
-             }
-            everything)
+       
 
        #_(? {:label "Clojure(Script) multiline formatting"}
             sample/array-map-of-multiline-formatting-cljc)))
