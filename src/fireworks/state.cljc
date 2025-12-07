@@ -55,7 +55,10 @@
                  :deno))
            (contains? #{:deno :node}))))
        
-       (def mock-node? (atom false))))
+       ;; Mocking node in cljs browser envs, for post-processing ansi-sgr->%c%
+       ;; Leave this as true, then remove it after all refactors that will 
+       ;; obviate the needs for most of instances of the `node?` check. 
+       (def mock-node? (atom true))))
 
 ;; -----------------------------------------------------------------------------
 ;; Detect color level support

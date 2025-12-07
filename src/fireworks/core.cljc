@@ -351,6 +351,7 @@
         :quoted-form   qf
         :file-info-str file-info*}
        form-meta
+       ;; TAKE THIS OUT
        {:formatted+ (merge {:string fmt+}
                            #?(:cljs (when-not (or node? @mock-node?)
                                       {:css-styles @state/styles})))
@@ -753,6 +754,36 @@
           (.apply js/console.log js/console))))
 
 (defn ^{:public true}
+  tagged-string-data
+  [printing-opts k]
+  (let [string-with-ansi-sgr-tags                        
+        (->> printing-opts k :string)
+
+        [string-with-format-specifier-tags & css-styles] 
+        (->> string-with-ansi-sgr-tags
+             fireworks.browser/ansi-sgr-string->browser-dev-console-array
+             (into []))]
+
+    (keyed [string-with-ansi-sgr-tags
+            string-with-format-specifier-tags 
+            css-styles])))
+
+(defn ^{:public true}
+  as-data
+  [printing-opts]
+  (ff (keys (:formatted (assoc (dissoc printing-opts :formatted :formatted+)
+                               :formatted
+                               (tagged-string-data printing-opts :formatted)
+                               :formatted-with-header
+                               (tagged-string-data printing-opts :formatted+)))))
+  (assoc (dissoc printing-opts :formatted :formatted+)
+         :formatted
+         (tagged-string-data printing-opts :formatted)
+         :formatted-with-header
+         (tagged-string-data printing-opts :formatted+)))
+
+
+(defn ^{:public true}
   _p 
   "Internal runtime dispatch target for fireworks macros.
 
@@ -790,21 +821,6 @@
                                       [:form-or-label :file-info])
                            x)]
 
-      #_#?(:cljs
-         (do (ff @state/mock-node?)
-             (let [fmt (-> printing-opts :fmt)
-                   arr (if @state/mock-node?
-                         (fireworks.browser/ansi-sgr-string->browser-dev-console-array fmt)
-                         (into-array (into [fmt] @state/styles)))]
-              ;;  (ff printing-opts)
-              ;;  (when @state/mock-node? (ff fmt))
-              ;;  (ff (js->clj arr))
-               (when @state/mock-node? (print-to-browser-dev-console fmt)))
-
-             #_(js->clj (-> printing-opts
-                            :fmt
-                            print-to-browser-dev-console))))
-
       (when debug-config?
         (fw-debug-report config-before opts "fireworks.core/_p2")) 
 
@@ -815,10 +831,9 @@
 
       ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
-        printing-opts
+        (as-data printing-opts)
 
         (do 
-
           (print-formatted printing-opts
                            #?(:cljs (when-not node? js-print)))
 
@@ -897,11 +912,11 @@
                 (-> opts :user-opts :fw/print-config? true?))
         (fw-config-report))
 
-          ;; TODO Change this to (= (:mode opts) :data)
+      ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
-        (if (= :string (:alias-mode opts))
-          (-> printing-opts :formatted :string)
-          printing-opts)
+        (as-data printing-opts)
+        
+
         (let [print? (if (contains? opts :when) (:when opts) true)]
           (when print?
             (print-formatted printing-opts 

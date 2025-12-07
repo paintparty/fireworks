@@ -3,6 +3,7 @@
             [fireworks.themes]
             [fireworks.sample :as sample :refer []]
             [bling.core :refer [print-bling bling ?sgr callout]]
+            [bling.hifi :refer [hifi print-hifi]]
             [lasertag.core :refer [tag-map]]
             [taoensso.tufte :as tufte :refer [p profile]]
             [fireworks.core :refer [? !? ?> !?> pprint]]))
@@ -15,35 +16,54 @@
   #?(:cljs
      ;; Move this interop demo code into fireworks.sample
      (do 
-       #_(js/console.clear)
+
+       (js/console.clear)
+      ;;  (js/console.log (? :data {:a "foo"
+      ;;                            :b 2
+      ;;                            :c 3}))
        
+       #_(print-hifi {:a "foo"
+                      :b 2
+                      :c 3})
+      ;;  (println (hifi {:a "foo"
+      ;;                  :b 2
+      ;;                  :c 3}))
+       
+       
+       (callout {:type        :error
+                 :label-theme :pipe}
+                (bling [:p [:red "This is red" [:bold " and bold."]]]
+                       [:p "Line two"]
+                       (hifi {:a "foo"
+                              :b 2
+                              :c 3})))
+
        
        #_(profile ; Profile any `p` forms called during body execution
-        {} ; Profiling options; we'll use the defaults for now
-        (dotimes [_ 100]
-          #_(p :nested
-               (bling [:p "First paragraph"]
-                      [:p [:bold
-                           "Bold, "
-                           [:italic "bold italic, "
-                            [:red "bold italic red, "]]
-                           "bold."]]
-                      "Last line"))
-          (p :mock-node
-             (? {:string "string"
-                 :regex  #"myregex"
-                 :uuid   #uuid "4fe5d828-6444-11e8-8222-720007e40350"
-                 :symbol 'mysym
-                 :nesting [[[[[[]]]]]]
-                 :vector (with-meta 
-                           ['foo
-                            (with-meta 'bar {:meta-on-sym "xyz"})
-                            'baz]
-                           {:meta-on-coll "abc"})})
-             #_(? everything))))
+          {} ; Profiling options; we'll use the defaults for now
+          (dotimes [_ 100]
+            #_(p :nested
+                 (bling [:p "First paragraph"]
+                        [:p [:bold
+                             "Bold, "
+                             [:italic "bold italic, "
+                              [:red "bold italic red, "]]
+                             "bold."]]
+                        "Last line"))
+            (p :mock-node
+               (? {:string  "string"
+                   :regex   #"myregex"
+                   :uuid    #uuid "4fe5d828-6444-11e8-8222-720007e40350"
+                   :symbol  'mysym
+                   :nesting [[[[[[]]]]]]
+                   :vector  (with-meta 
+                              ['foo
+                               (with-meta 'bar {:meta-on-sym "xyz"})
+                               'baz]
+                              {:meta-on-coll "abc"})})
+               #_(? everything))))
 
        #_(pprint (:formatted+ (? {:string "string"})))
-       #_(print-bling [:bold.italic.red.wavy-underline.yellow-bg "bang"])
        #_(print-bling [{:font-weight           :bold
                         :font-style            :italic
                         :color                 :red

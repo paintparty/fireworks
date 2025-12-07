@@ -408,33 +408,33 @@ Some annotated examples using modes outlined in the above table:
 
 If you just want the formatted string, and/or other data that **`fireworks.core/?`** uses to construct the printed output, you can use the `:data` option.
 
-Calling `(? :data ...)` in a ClojureScript (browser) context also provides vectors of css styles. This corresponds to the arguments that `js/console.log` requires for syntax-colored formatting. In a terminal context, `p-data` returns the same map as below, but with sgr escape codes for syntax coloring (instead of the `%c` tags), and no vectors of css styles:
-
 ```Clojure
 ;; ClojureScript
 
 (? :data "foo")
 =>
-{:quoted-form   "foo",
- :formatted     {:string     "%c\"foo\"%c",
-                 :css-styles ["color:#448C27;line-height:1.45;"
-                              "color:#585858;line-height:1.45;"]},
- :file          "fireworks/core_test.cljc",
- :end-column    46,
- :ns-str        "fireworks.core-test",
- :file-info-str "fireworks.core-test:17:21",
- :column        21,
- :line          17,
- :end-line      17,
- :formatted+    {:string     "%cfireworks.core-test:17:21%c\n%c\"foo\"%c %c=>%c %c\"foo\"%c",
-                 :css-styles ["color:#8c8c8c;font-style:italic;line-height:1.45;"
-                              "color:#585858;line-height:1.45;"
-                              "color:#448C27;line-height:1.45;"
-                              "color:#585858;line-height:1.45;"
-                              "color:#28cc7d;line-height:1.45;"
-                              "color:#585858;line-height:1.45;"
-                              "color:#448C27;line-height:1.45;"
-                              "color:#585858;line-height:1.45;"]}}
+{:quoted-form "foo",
+ :file "my_project/core.cljc",
+ :end-column 46,
+ :ns-str "my-project.core",
+ :file-info-str "my-project.core:17:21",
+ :column 21,
+ :line 17,
+ :end-line 17,
+ :formatted {:string-with-ansi-sgr-tags "�[3;34;mmy-project.core:17:21�[0m",
+             :string-with-format-specifier-tags "%c\"foo\"%c",
+             :css-styles ["color:#448C27;line-height:1.45;"
+                          "color:#585858;line-height:1.45;"]},
+ :formatted-with-header {:string-with-ansi-sgr-tags "�[3;34;mmy-project.core:17:21�[0m"
+                         :string-with-format-specifier-tags "%cmy-project.core:17:21%c\n%c\"foo\"%c %c=>%c %c\"foo\"%c",
+                         :css-styles ["color:#8c8c8c;font-style:italic;line-height:1.45;"
+                                      "color:#585858;line-height:1.45;"
+                                      "color:#448C27;line-height:1.45;"
+                                      "color:#585858;line-height:1.45;"
+                                      "color:#28cc7d;line-height:1.45;"
+                                      "color:#585858;line-height:1.45;"
+                                      "color:#448C27;line-height:1.45;"
+                                      "color:#585858;line-height:1.45;"]}}
 ```
 
 <br>
