@@ -41,7 +41,7 @@
   (is (= 
        (let [ret              (? :data
                                  {:non-coll-length-limit 33 :theme theme} {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
-             formatted-string (-> ret :formatted :string-with-ansi-sgr-tags)]
+             formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
 "〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠abcdefghijklmnopqrstuvwxyz-ab〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;102〠}〠0〠")))
 
@@ -62,7 +62,7 @@
                                   (? 'transient-set {:theme theme} x))
                                 (conj! x 11)
                                 ret)
-             formatted-string (-> ret :formatted :string-with-ansi-sgr-tags)]
+             formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
        "〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashSet〠0〠\n〠38;5;102;48;2;255;249;245〠#{〠0〠〠3;38;2;140;140;140〠〠〠...+20〠0〠〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
      
@@ -84,7 +84,7 @@
                                   (? 'transient-map {:theme theme} x))
                                 (assoc! x :k 11)
                                 ret)
-             formatted-string (-> ret :formatted :string-with-ansi-sgr-tags)]
+             formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
        "〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashMap〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠3;38;2;140;140;140〠 〠〠......+10〠0〠〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
 
@@ -97,7 +97,7 @@
                                   (? 'transient-vector {:theme theme} x))
                                 (conj! x 5)
                                 ret)
-             formatted-string (-> ret :formatted :string-with-ansi-sgr-tags)]
+             formatted-string (-> ret :formatted :string)]
          ;; (pp/pprint 'transient-vector)
          ;; (pp/pprint (escape-sgr formatted-string))
          (!?pp (string/join (escape-sgr formatted-string))))
@@ -122,7 +122,7 @@
                                    :p-data?   true
                                    :template  [:result]}))
        :formatted
-       :string-with-ansi-sgr-tags))
+       :string))
 
 (defmacro deftest+ 
   [sym opts v]
@@ -163,7 +163,7 @@
                               (concat (list '->
                                             (list '? :data merged-opts qv)
                                             :formatted 
-                                            :string-with-ansi-sgr-tags)
+                                            :string)
                                       '[escape-sgr string/join])
                               (-> (hifi-impl v merged-opts)
                                   escape-sgr
