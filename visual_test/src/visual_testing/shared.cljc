@@ -102,8 +102,8 @@
        
        
        #_(? {:coll-limit 200
-             :label      "ClojureScript interop types"}
-            sample/interop-types)
+           :label      "ClojureScript interop types"}
+          sample/interop-types)
 
        #_(let [buffer      (new js/ArrayBuffer 8)
                arr         (new js/Int32Array buffer)
@@ -145,7 +145,7 @@
            )
        
 
-       #_(? {:coll-limit  200
+       (? {:coll-limit  200
              :label       "Clojure(Script) values"
              :label-color :blue
              ;;  :bold?       true

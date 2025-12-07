@@ -771,11 +771,6 @@
 (defn ^{:public true}
   as-data
   [printing-opts]
-  (ff (keys (:formatted (assoc (dissoc printing-opts :formatted :formatted+)
-                               :formatted
-                               (tagged-string-data printing-opts :formatted)
-                               :formatted-with-header
-                               (tagged-string-data printing-opts :formatted+)))))
   (assoc (dissoc printing-opts :formatted :formatted+)
          :formatted
          (tagged-string-data printing-opts :formatted)
