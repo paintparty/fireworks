@@ -29,13 +29,31 @@
        ;;                  :b 2
        ;;                  :c 3}))
        
-       (? #js[])
-       (? :js  (ffirst everything))
-       (? :js- (ffirst everything))
-       (? :pp  (ffirst everything))
-       (? :pp- (ffirst everything))
+      ;;  (? #js[])
+      ;;  (? :js  (ffirst everything))
+      ;;  (? :js- (ffirst everything))
+      ;;  (? :pp  (ffirst everything))
+      ;;  (? :pp- (ffirst everything))
+       
 
-       (callout {:type        :info
+       (callout {:type  :info
+                 :theme :boxed}
+                (bling [:p [:red "This is red" [:bold " and bold."]]]
+                       
+                       (hifi {:a "foo"
+                              :b 2
+                              :c 3
+                              :d "asdfsadfsdfasdfasdfasdfasdffsaa"
+                              :e "asdfsadfsdfasdfasdfasdfasdffsaa"
+                              })))
+
+       #_(callout {:type  :info
+                 :theme :sideline}
+                (bling [:p [:red "This is red" [:bold " and bold."]]]
+                       [:p "Line two"]
+                       (hifi {:a "foo" :b 2 :c 3})))
+
+       #_(callout {:type        :info
                  :label-theme :pipe}
                 (bling [:p [:red "This is red" [:bold " and bold."]]]
                        [:p "Line two"]
@@ -43,21 +61,21 @@
                               :b 2
                               :c 3})))
 
-       (? {:coll-limit  200
-           :label       "Clojure(Script) values"
-           :label-color :blue
+       #_(? {:coll-limit  200
+             :label       "Clojure(Script) values"
+             :label-color :blue
            ;;  :bold?       true
-           :find        {:pred #(= % 3.33)}
-           }
-          everything
-          #_(select-keys everything [:atom]))
+             :find        {:pred #(= % 3.33)}
+             }
+            everything
+            #_(select-keys everything [:atom]))
 
-       (? {:coll-limit  200
-           :label       "Clojure(Script) values"
-           :label-color :red
-           :bold?       true
-           }
-          (select-keys everything [:atom]))
+       #_(? {:coll-limit  200
+             :label       "Clojure(Script) values"
+             :label-color :red
+             :bold?       true
+             }
+            (select-keys everything [:atom]))
 
        #_(profile ; Profile any `p` forms called during body execution
           {} ; Profiling options; we'll use the defaults for now
