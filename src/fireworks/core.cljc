@@ -3,6 +3,7 @@
    [clojure.set :as set]
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
+   [fireworks.browser]
    [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
@@ -343,14 +344,10 @@
       (merge
        {:ns-str        ns-str
         :quoted-form   qf
-        :file-info-str file-info*}
-       form-meta
-       {:formatted+ (merge {:string fmt+}
-                           #?(:cljs (when-not node? {:css-styles @state/styles})))
-        :formatted  (merge {:string fmt}
-                           #?(:cljs (when-not node? 
-                                      {:css-styles (subvec @state/styles 
-                                                           css-count*)})))})
+        :file-info-str file-info*
+        :formatted+    {:string fmt+}
+        :formatted     {:string fmt}}
+       form-meta)
 
       ;; Else if print-and-return fns, return printing opts
       {:fmt           fmt+
@@ -360,13 +357,29 @@
        ;; If :result flag is used it will be {:margin-bottom 0 :margin-top 0}
        ;; If :result flag is used w call-site opts for :margin-*, those will win
        :margin-bottom (margin-block-str opts :margin-bottom)
-       :margin-top    (margin-block-str opts :margin-top)})))
+       :margin-top    (margin-block-str opts :margin-top)
+       :template      template})))
 
 
 #?(:cljs 
    (defn- js-print [opts]
-     ;; TODO - Change if post-replace works
-     (let [js-arr (into-array (concat [(:fmt opts)] @state/styles))]
+     (let [js-arr 
+           (-> opts
+               :fmt
+               fireworks.browser/ansi-sgr-string->browser-dev-console-array)
+
+           template-count
+           (-> opts :template count)
+
+           index-to-insert-margin-block-end
+           (case template-count 3 5 2 3 nil)]
+       
+       ;; When printing to a browser dev console, use margin-block-end at the
+       ;; right index, to create a 1/2 line of space between the header (aka the
+       ;; label / file-info), but only if there is a header.
+       (when-not (:log? opts)
+         (when-let [i index-to-insert-margin-block-end]
+           (aset js-arr i (str (aget js-arr i) "; margin-block-end: 0.5em"))))
        (.apply (.-log  js/console)
                js/console
                js-arr))))
@@ -547,7 +560,8 @@
 (defn- print-formatted
   ([x]
    (print-formatted x nil))
-  ([{:keys [fmt log? err err-x err-opts] :as x} f]
+  ([{:keys [fmt log? err err-x err-opts] :as x}
+    js-printing-fn]
    (if (instance? fireworks.messaging.FireworksThrowable x)
      (let [{:keys [line column file]} (:form-meta err-opts)
            ns-str                     (:ns-str err-opts)] 
@@ -573,14 +587,12 @@
                     ;; TODO - not print if fmt is nil or blank string?
                     ((if log? print println) (:margin-bottom x)))  ]
 
-       #?(:cljs (if node? (termf x) (f x))
+       #?(:cljs (if node? (termf x) (js-printing-fn x))
           :clj (termf x))))))
 
 (defn- try-pp [x]
   (try (pprint x)
-       #?(:cljs
-          ()
-          :clj
+       #?(:clj
           (catch Throwable e
             (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)]
               (messaging/unable-to-print-warning
@@ -712,21 +724,6 @@
      nil))
 
 
-(defn- rewind-debug [printing-opts new-opts _p2 x]
-  ;; #?(:clj (.getMessage (:err printing-opts))) 
-  (ff @state/rewind-counter)
-  (swap! state/rewind-counter inc)
-  (if (ff (> 10 @state/rewind-counter))
-    (do (ff @state/rewind-counter)
-        (ff new-opts)
-        (_p2 new-opts x))
-    (throw 
-     (#?(:cljs
-         js/Error.
-         :clj
-         Throwable.)
-      "fireworks.core/_p2 :: debug"))))
-
 (defn- fw-throwable [e x opts]
   (messaging/->FireworksThrowable
    e
@@ -735,8 +732,33 @@
           :header
           "fireworks.core/formatted")))
 
-;; TODO - Is it possible to retire this in favor of directing all internal calls
-;; to fireworks.core/_p2 ?
+
+(defn ^{:public true}
+  tagged-string-data
+  [printing-opts k]
+  (let [string                        
+        (->> printing-opts k :string)
+
+        [string-with-format-specifier-tags & css-styles] 
+        (->> string
+             fireworks.browser/ansi-sgr-string->browser-dev-console-array
+             (into []))]
+
+    (keyed [string
+            string-with-format-specifier-tags 
+            css-styles])))
+
+
+(defn ^{:public true}
+  as-data
+  [printing-opts]
+  (assoc (dissoc printing-opts :formatted :formatted+)
+         :formatted
+         (tagged-string-data printing-opts :formatted)
+         :formatted-with-header
+         (tagged-string-data printing-opts :formatted+)))
+
+
 (defn ^{:public true}
   _p 
   "Internal runtime dispatch target for fireworks macros.
@@ -775,7 +797,6 @@
                                       [:form-or-label :file-info])
                            x)]
 
-
       (when debug-config?
         (fw-debug-report config-before opts "fireworks.core/_p2")) 
 
@@ -786,10 +807,9 @@
 
       ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
-        printing-opts
+        (as-data printing-opts)
 
         (do 
-
           (print-formatted printing-opts
                            #?(:cljs (when-not node? js-print)))
 
@@ -800,9 +820,9 @@
           ;; - :js or :js- is used
           ;; - :pp or :pp- is used
           (when (and (not (:fw/log? opts))
-                     (:log? opts))
+                     (:log? opts))        ; <- This is for something like (? #js[1 2 3])
             #?(:cljs (if node?
-                       (fireworks.core/pprint x)
+                       (fireworks.core/pprint x) ; <- In node, do you want pprint here, or just js/console.log ?
                        (js/console.log x))
                :clj (fireworks.core/pprint x)))
 
@@ -868,11 +888,11 @@
                 (-> opts :user-opts :fw/print-config? true?))
         (fw-config-report))
 
-          ;; TODO Change this to (= (:mode opts) :data)
+      ;; TODO Change this to (= (:mode opts) :data)
       (if (:p-data? opts) 
-        (if (= :string (:alias-mode opts))
-          (-> printing-opts :formatted :string)
-          printing-opts)
+        (as-data printing-opts)
+        
+
         (let [print? (if (contains? opts :when) (:when opts) true)]
           (when print?
             (print-formatted printing-opts 
@@ -1221,6 +1241,7 @@
                  :form (quote ~x)}))
               ~x)))      
 
+       ;; Remove this? or should it be js?
        :log-
        `(do #?(:cljs (if node?
                        (fireworks.core/pprint ~x)

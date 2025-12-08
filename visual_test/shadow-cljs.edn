@@ -6,19 +6,20 @@
                 ;; Local Lasertag - uncomment if debugging Lasertag locally
                 "../../lasertag/src/"
                 ;; Local Bling - uncomment if debugging Bling locally
-                ;; "../../bling/src/"
-                ;; "../../bling/test/"
+                "../../bling/src/"
+                "../../bling/test/"
                 ]
- :dependencies [[io.github.paintparty/fireworks "0.12.6"]
+ :dependencies [[io.github.paintparty/fireworks "0.16.1"]
                 [binaryage/devtools "1.0.6"]
+                [com.taoensso/tufte "3.0.0"]
                 [reagent/reagent "1.1.1"]]
  :dev-http     {8020 "public"}
- :builds       {:app  {:target           :browser
-                       :output-dir       "public/js"
-                       :asset-path       "/js"
-                       :compiler-options {:output-feature-set :es8}
-                       :build-hooks      [(shadow.cljs.build-report/hook
-                                           {:output-to "tmp/report.html"})]
-                       :devtools         {:log false}
-                       :modules          {:main ; becomes public/js/main.js
-                                          {:init-fn visual-testing.browser/init}}}}}
+ :builds       {:app {:target           :browser
+                      :output-dir       "public/js"
+                      :asset-path       "/js"
+                      :compiler-options {:output-feature-set :es8}
+                      :build-hooks      [(shadow.cljs.build-report/hook
+                                          {:output-to "tmp/report.html"})]
+                      :devtools         {:log false}
+                      :modules          {:main ; becomes public/js/main.js
+                                         {:init-fn visual-testing.browser/init}}}}}

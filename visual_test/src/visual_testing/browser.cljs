@@ -23,7 +23,7 @@
 ;; start is called by init and after code reloading finishes
 (defn ^:dev/after-load start []
   (mount-root)
-  (js/console.clear)
+  #_(js/console.clear)
   ;; This will run test suite of cljc calls to fireworks.core/? in browser dev-console 
   (test-suite)
 

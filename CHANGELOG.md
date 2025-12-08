@@ -6,14 +6,29 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 ## Unreleased
 
-#### Added
+<br>
+<br>
 
-#### Fixed
+## 0.17.0
+2025-12-6
+
+<p><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this release!</sub></p>
+
+#### Added
+Post-processing of ansi-sgr tags for browser dev console target. [#87](https://github.com/paintparty/fireworks/issues/46)
+
+#### Removed
+A lot of `:cljs` branching code made obsolete by the post-processing 
 
 #### Changed
+Various refactors to clean up codebase
 
-<br>
-<br>
+#### Breaking changes
+In a cljs browser context, the map returned from a call such as `(? :data foo)` now always has an ANSI SGR tagged string in `[:formatted :string]`. If you need the `%c`-tagged string,
+there is a new entry [:formatted :string-with-format-specifier-tags]. Both of these nested entries are now present in all contexts (JVM, bb, cljs(node), cljs(browser)), as well as
+a vector of css style strings in [:formatted :css-styles]. The `:formatted+` entry in this map
+is now called `:formatted-with-header`. Getting this data map using (? :data ...) will most likely be deprecated in the near future, and replaced with a dedicated public function.
+
 
 ## 0.16.1
 2025-11-30
@@ -600,6 +615,13 @@ if user has `NO_COLOR` env var set to a non-black string. Closes #51.
 <br>
 
 ## Breaking changes
+
+### 0.17.0
+- In a cljs browser context, the map returned from a call such as `(? :data foo)` now always has an ANSI SGR tagged string in `[:formatted :string]`. If you need the `%c`-tagged string,
+there is a new entry [:formatted :string-with-format-specifier-tags]. Both of these nested entries are now present in all contexts (JVM, bb, cljs(node), cljs(browser)), as well as
+a vector of css style strings in [:formatted :css-styles]. The `:formatted+` entry in this map
+is now `:formatted-with-header`. Getting this data map using (? :data ...) will most likely be deprecated in the near future, and replaced with a dedicated public function.
+
 #### 0.10.0
 - Rename `:lamda-label` to `:lambda-label` in theme syntax
 
@@ -653,3 +675,4 @@ if user has `NO_COLOR` env var set to a non-black string. Closes #51.
 - Rename `fireworks.core/p*` -> `fireworks.core/p-data`
 - Rename config option `:mapkey-value-width-limit` -> `:non-coll-mapkey-length-limit`
 - Rename config option `:value-width-limit` -> `:non-coll-length-limit`
+

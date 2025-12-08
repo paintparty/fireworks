@@ -3,6 +3,8 @@
 (ns fireworks.basethemes
   (:require
    [fireworks.defs :as defs]
+   [fireworks.pp :refer [?pp]]
+   [fireworks.color]
    [fireworks.themes :as themes]))
 
 
@@ -11,17 +13,9 @@
 (def rainbow-brackets-colorscale
   {:light     
    {:x-term  {:high (apply array-map 
-                           [:neutral 241
-                            :blue    32
-                            :orange  208
-                            :green   28
-                            :purple  128])
+                           [:neutral 102 :blue 32 :orange 172 :green 71 :purple 170])
               :low  (apply array-map 
-                           [:neutral 245
-                            :blue    74
-                            :orange  179
-                            :green   106
-                            :purple  177])} 
+                           [:neutral 245 :blue 74 :orange 179 :green 106 :purple 177])} 
     :browser {:high (apply array-map 
                            [:neutral "#888888"
                             :blue    "#0098e6"
@@ -36,17 +30,9 @@
                             :purple  "#d787ff"])}}
    :dark      
    {:x-term  {:high (apply array-map 
-                           [:neutral 253
-                            :blue    81
-                            :orange  208
-                            :green   35
-                            :purple  201])
+                           [:neutral 250 :blue 38 :orange 142 :green 77 :purple 170])
               :low  (apply array-map 
-                           [:neutral 245
-                            :blue    74
-                            :orange  179
-                            :green   106
-                            :purple  177])} 
+                           [:neutral 245 :blue 67 :orange 137 :green 64 :purple 134])} 
     :browser {:high (apply array-map 
                            [:neutral "#b9bab5"
                             :blue    "#24b3cc"
@@ -61,11 +47,7 @@
                             :purple  "#ad5dd5"])}}
    :universal 
    (let [x-term (apply array-map
-                       [:neutral 247
-                        :blue    39
-                        :orange  208 
-                        :olive   40
-                        :magenta 201])
+                       [:neutral 247 :blue 39 :orange 208 :green 40 :purple 201])
          browser (apply array-map
                         [:neutral "#9e9e9e"
                          :blue    "#00afff"
@@ -77,6 +59,17 @@
       :browser {:high browser
                 :low  browser}})})
 
+
+;; Conversion from browser-hex to x256
+#_(?pp (->> rainbow-brackets-colorscale
+          :universal
+          :browser
+          :high
+          (reduce (fn [acc [k v]] 
+                    (conj acc k (fireworks.color/hexa->x256 v)))
+                  [])))
+
+
   ;;  39  "#00afff"                                            ;; blue
   ;;  40  "#00d700"                                            ;; green
   ;;  106 "#87af00"                                            ;; olive
@@ -87,6 +80,7 @@
   ;;  208 "#ff8700"                                            ;; orange
   ;;  231 "#ffffff"                                            ;; white
   ;;  247 "#9e9e9e"                                            ;; gray
+
 
 ;; Experimental, unused for now
 (def base-theme-editor-map

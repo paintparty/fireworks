@@ -16,8 +16,7 @@
    [fireworks.util :refer [spaces badge-type]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
-   #?(:cljs [fireworks.state :as state :refer [node?]]
-      :clj [fireworks.state :as state])
+   [fireworks.state :as state]
    [fireworks.util :as util]))
 
 (declare tagged-val)
@@ -743,7 +742,7 @@
                  ob]))]
     ret))
 
-(defn- gap-spaces-impl [{:keys [s k formatting-meta? theme-token-map highlighting]}]
+(defn- gap-spaces [{:keys [s k formatting-meta? theme-token-map highlighting]}]
   (if formatting-meta?
     (do (when (state/debug-tagging?)
           (println (str "\ntagging "
@@ -754,16 +753,6 @@
                        (keyword (str (name k) "?"))
                        true)))
     (tagged s (keyed [highlighting]))))
-
-(defn- gap-spaces
-  [{:keys [s k formatting-meta? theme-token-map highlighting] :as m}]
-  #?(:cljs (if node?
-             (gap-spaces-impl m)
-             ;;TODO - possibly lose this if js post-replace works?
-             (tagged s (if formatting-meta?
-                         theme-token-map
-                         (keyed [highlighting]))))
-     :clj  (gap-spaces-impl m)))
 
 (defn- reduce-map*
   [{:keys [indent

@@ -43,7 +43,7 @@
                                  {:non-coll-length-limit 33 :theme theme} {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
              formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
-"〠38;5;241〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠abcdefghijklmnopqrstuvwxyz-ab〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;241〠}〠0〠")))
+"〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠abcdefghijklmnopqrstuvwxyz-ab〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;102〠}〠0〠")))
 
 (deftest transient-set
   (is (= 
@@ -64,7 +64,7 @@
                                 ret)
              formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
-       "〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashSet〠0〠\n〠38;5;241;48;2;255;249;245〠#{〠0〠〠3;38;2;140;140;140〠〠〠...+20〠0〠〠0〠〠38;5;241;48;2;255;249;245〠}〠0〠")))
+       "〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashSet〠0〠\n〠38;5;102;48;2;255;249;245〠#{〠0〠〠3;38;2;140;140;140〠〠〠...+20〠0〠〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
      
 
 (deftest transient-map
@@ -86,7 +86,7 @@
                                 ret)
              formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
-       "〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashMap〠0〠\n〠38;5;241;48;2;255;249;245〠{〠0〠〠3;38;2;140;140;140〠 〠〠......+10〠0〠〠0〠〠38;5;241;48;2;255;249;245〠}〠0〠")))
+       "〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashMap〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠3;38;2;140;140;140〠 〠〠......+10〠0〠〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
 
 
 (deftest transient-vector
@@ -101,7 +101,7 @@
          ;; (pp/pprint 'transient-vector)
          ;; (pp/pprint (escape-sgr formatted-string))
          (!?pp (string/join (escape-sgr formatted-string))))
-       "〠3;38;2;199;104;35;48;2;255;249;245〠TransientVector〠0〠\n〠38;5;241;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠38;5;241;48;2;255;249;245〠]〠0〠")))
+       "〠3;38;2;199;104;35;48;2;255;249;245〠TransientVector〠0〠\n〠38;5;102;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠38;5;102;48;2;255;249;245〠]〠0〠")))
 
 
 
@@ -169,12 +169,12 @@
                                   escape-sgr
                                   string/join)))))))]
         (if-let [elide-branches (:elide-branches opts)]
-         (str 
-          "#?("
-          (reduce (fn [acc k] (str acc k " nil\n   ")) "" elide-branches)
-          ":clj\n   "
-          (string/join "\n   " (string/split deftest-str #"\n"))
-          ")")
+          (str 
+           "#?("
+           (reduce (fn [acc k] (str acc k " nil\n   ")) "" elide-branches)
+           ":clj\n   "
+           (string/join "\n   " (string/split deftest-str #"\n"))
+           ")")
           deftest-str)))
     @tests)))
 

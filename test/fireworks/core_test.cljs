@@ -12,7 +12,7 @@
 
 (def theme "Alabaster Light")
 
-(deftest string
+#_(deftest string
   (is (=
        (let [ret (? :data {:theme theme} "foo")] (!?pp 'p-data-basic ret))
        {:quoted-form   "foo",
@@ -35,7 +35,7 @@
                                      "color:#448C27;line-height:1.45;"
                                      "line-height:1.45;"]}})))
 
-(deftest string-with-label
+#_(deftest string-with-label
   (is (= 
        (let [ret (? :data "my-label" "foo")] (!?pp 'p-data-with-label ret))
        {:quoted-form   "foo",

@@ -23,37 +23,42 @@
 ;; -----------------------------------------------------------------------------
 #?(:cljs
    ;; In cljs, detect if env is node/deno vs browser
-   (defonce node?
-     (boolean 
-      (some->> 
-       (or (when (and (exists? js/window)
-                      (exists? js/window.document))
-             :browser)
+   (do (defonce node?
+         (boolean 
+          (some->> 
+           (or (when (and (exists? js/window)
+                          (exists? js/window.document))
+                 :browser)
 
-           (when (and (exists? js/process)
-                      (not (nil? (some-> js/process .-versions)))
-                      (not (nil? (some-> js/process .-versions .-node))))
-             :node)
+               (when (and (exists? js/process)
+                          (not (nil? (some-> js/process .-versions)))
+                          (not (nil? (some-> js/process .-versions .-node))))
+                 :node)
 
-           (when (and (identical? "object" (js/goog.typeOf js/self))
-                      (.-constructor js/self)
-                      (= (some-> js/self .-constructor .-name)
-                         "DedicatedWorkerGlobalScope"))
-             :web-worker)
+               (when (and (identical? "object" (js/goog.typeOf js/self))
+                          (.-constructor js/self)
+                          (= (some-> js/self .-constructor .-name)
+                             "DedicatedWorkerGlobalScope"))
+                 :web-worker)
 
-           (when (or (exists? js/window)
-                     (and (exists? js/navigator)
-                          (when-let [nav (.-userAgent js/navigator)]
-                            (and (identical? "object" (js/goog.typeOf nav))
-                                 (or (.includes nav "Node.js")
-                                     (.includes nav "jsdom"))))))
-             :js-dom)
+               (when (or (exists? js/window)
+                         (and (exists? js/navigator)
+                              (when-let [nav (.-userAgent js/navigator)]
+                                (and (identical? "object" (js/goog.typeOf nav))
+                                     (or (.includes nav "Node.js")
+                                         (.includes nav "jsdom"))))))
+                 :js-dom)
 
-           (when (and (exists? js/Deno)
-                      (exists? (.-version js/Deno))
-                      (exists? (some-> js/Deno .-version .-deno)))
-             :deno))
-       (contains? #{:deno :node})))))
+               (when (and (exists? js/Deno)
+                          (exists? (.-version js/Deno))
+                          (exists? (some-> js/Deno .-version .-deno)))
+                 :deno))
+           (contains? #{:deno :node}))))
+       
+       ;; Mocking node in cljs browser envs, for post-processing ansi-sgr->%c%
+       ;; Leave this as true, then remove it after all refactors that will 
+       ;; obviate the needs for most of instances of the `node?` check. 
+       (def mock-node? (atom true))))
 
 ;; -----------------------------------------------------------------------------
 ;; Detect color level support
@@ -408,7 +413,7 @@
 (def underline-style-codes-by-style
   {"straight" 1 
    "double"   2 
-   "wavy"    3 
+   "wavy"     3 
    "dotted"   4 
    "dashed"   5})  
 
@@ -442,7 +447,7 @@
     font-style  :font-style
     font-weight :font-weight
     :as         m}]
-
+  #_(?pp m)
   (let [debug? false #_(contains? #{:highlight-underlined :highlight :highlight-info :string} (:k m))
         fgc    (x->sgr fgc* :fg)
         bgc    (x->sgr bgc* :bg)
@@ -530,58 +535,28 @@
    (str "enable-terminal-truecolor? is set to false, so converting to x256 id "
         "(int) via (color/hexa->x256 v) => " v)))
 
-#_(defn color-value->hexa-wip [v]
-  (cond (string/starts-with? v "#")
-        v
-
-        (and (pos-int? v) (<= 0 v 256))
-        (get color/xterm-colors-by-id v)
-
-        :else
-        (if-let [hex (and (string? v)
-                          (some->> v
-                                   (get defs/bling-colors*)
-                                   :sgr
-                                   (get color/xterm-colors-by-id)))]
-          hex
-          "#000000")))
-
-#_(defn named-bling-color->sgr-wip [v]
-  (and (string? v)
-       (some->> v
-                (get defs/bling-colors*)
-                :sgr
-                (get color/xterm-colors-by-id))))
-
-
 (defn hexa-or-sgr
   [[k v]]
   (let [debug? false
-        f      #(if (truecolor?) 
-                  (let [ret (color/hexa->rgba v)] 
-                    (when debug? (enable-truecolor-debug-message ret))
-                    ret)
-                  (let [ret (color/hexa->x256 v)]
-                    (when debug? (disable-truecolor-debug-message ret))
-                    ret))
         x      (if (and (or (= k :color) (= k :background-color))
                         (string? v))
                  (do
                    (when debug? 
                      (println (str "(string? v) Value for " k " is " v)))
-                   #?(:cljs
-                      (if node? 
-                        (f)
-                        (do (when debug? (println (str "Returning " v)))
-                            v)) 
-                      :clj
-                      (f)))
+                   (if (truecolor?) 
+                     (let [ret (color/hexa->rgba v)] 
+                       (when debug? (enable-truecolor-debug-message ret))
+                       ret)
+                     (let [ret (color/hexa->x256 v)]
+                       (when debug? (disable-truecolor-debug-message ret))
+                       ret)))
                  v)]
     [k x]))
 
 
 (defn- fully-hydrated-map [m]
   (let [f (fn [[k v]] 
+            (when (= k :bracket) v)
             [k
              (if (map? v)
                (map-vals hexa-or-sgr v)
@@ -603,16 +578,14 @@
 
 (defn sanitize-style-map
   [m]
-  (let [ret (select-keys m defs/valid-stylemap-keys)
-        f #(let [ret* (if (false? (:enable-terminal-italics? @config)) 
-                        (dissoc ret :font-style)
-                        ret)
-                 ret  (if (false? (:enable-terminal-font-weights? @config))
-                        (dissoc ret* :font-weight)
-                        ret*)]
-             ret)]
-    #?(:cljs (if node? (f) ret)
-       :clj  (f))))
+  (let [ret  (select-keys m defs/valid-stylemap-keys)
+        ret* (if (false? (:enable-terminal-italics? @config)) 
+               (dissoc ret :font-style)
+               ret)
+        ret  (if (false? (:enable-terminal-font-weights? @config))
+               (dissoc ret* :font-weight)
+               ret*)]
+    ret))
 
 
 (defn with-line-height [m]
@@ -624,16 +597,7 @@
 
 (defn serialize-style-maps [merged]
   (map-vals (fn [[k m]] 
-              (let [m-with-k (assoc m :k k)
-                    m        (sanitize-style-map m-with-k)] 
-                #?(:cljs (if node? 
-                           ;; TODO What is real difference here?
-                           [k (m->sgr m-with-k)]
-                           (let [m (merge (with-line-height m)
-                                          (when (true? (:bold? @config)) 
-                                            {:font-weight :bold}))]
-                             [k (string/join (map kv->css2 m))]))
-                   :clj [k (m->sgr  m-with-k)])))
+              [k (m->sgr (assoc m :k k))])
             merged))
 
 
@@ -705,7 +669,6 @@
                                       (-> base :rainbow-brackets)))}))
 
 
-;; TODO - don't use xterm for bracket colors
 (defn- rainbow-brackets [mood theme]
   (let [contrast (let [x (or (:bracket-contrast theme) 
                              (:bracket-contrast @config))]
@@ -713,17 +676,14 @@
                      "high" :high
                      :high  :high
                      :low))
-        context  #?(:cljs (if node? :x-term :browser)
-                    :clj :x-term)
-        ;; TODO - Figure out best way to pull rainbow brackets from theme?
+        context  :x-term
         ret     (or (some->> theme :rainbow-brackets context rest (take-nth 2))
                     (->> basethemes/rainbow-brackets-colorscale
                          mood
                          context
                          contrast
                          vals))
-        ret      #?(:cljs (if node? (map xterm-id->sgr ret) ret)
-                    :clj (map xterm-id->sgr ret))]
+        ret     (map xterm-id->sgr ret)]
     ret))
 
 (defn valid-user-theme [theme*]
@@ -869,7 +829,6 @@
           (atom with-style-maps)))))
 
 
-
 ;; -----------------------------------------------------------------------------
 ;; Helpers for css 
 ;; -----------------------------------------------------------------------------
@@ -902,7 +861,8 @@
         m))
     {})))
 
-
+;; TODO - move to a util namespace, or in bling?
+;; TODO - Use this one to get text-decoration SGR "[0-9;(?:9|4(?::[1-5])?)]*m"
 (defn ^:public ?sgr-str [s]
   (string/replace s
                   #"\u001b\[([0-9;]*)[mK]"
@@ -912,6 +872,7 @@
                        "m"
                        "\033[0;m")))
 
+;; TODO - move to a util namespace, or in bling?
 (defn ^:public ?sgr
   "For debugging of sgr code printing.
 
@@ -940,11 +901,7 @@
         css-str (if style 
                   (let [style (sanitize-style-map style)]
                     (when (seq style)
-                      #?(:cljs (if node?
-                                 (m->sgr (map-vals hexa-or-sgr style))
-                                 (str (->> style (map kv->css2) string/join)
-                                      (line-height-css)))
-                         :clj  (m->sgr (map-vals hexa-or-sgr style)))))
+                      (m->sgr (map-vals hexa-or-sgr style))))
                   (let [highlight-class-sgr (some->> class (get @merged-theme))
                         highlight-sgr (:highlight @merged-theme)]
 

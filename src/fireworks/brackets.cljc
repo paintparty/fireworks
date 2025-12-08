@@ -2,8 +2,7 @@
   (:require [clojure.string :as string]
             [fireworks.pp :refer [?pp pprint]]
             [fireworks.defs :as defs]
-            #?(:clj [fireworks.state :as state]
-               :cljs [fireworks.state :as state :refer [node?]])
+            [fireworks.state :as state]
             [fireworks.tag :as tag :refer [style-from-theme tag! tag-reset!]]
             [fireworks.util :refer [badge-type]]))
 
@@ -73,22 +72,12 @@
                             @state/merged-theme-with-unserialized-style-maps]
                         (or (get style-maps label-type nil)
                             (get style-maps (state/metadata-token) nil))))]
-                  bgc)
-        f #(if (and bgc (vector? bgc))
+                  bgc)]
+    (if (and bgc (vector? bgc))
              (let [bgc-sgr (state/x->sgr bgc :bg)
                    color   (string/replace color #"m$" (str ";" bgc-sgr "m"))]
                color)
-             color)]
-    #?(:cljs
-       (if node? 
-         (f)
-         (str "color:" color 
-              (when bgc (str ";background-color:" bgc))
-              ";"
-              (state/line-height-css)))
-       :clj
-       (f))
-    ))
+             color)))
 
 (defn- tag-bracket!
   "Adds the appropriate style to the state/styles vector.
@@ -109,69 +98,30 @@
                       :else
                       :rainbow-brackets)
         style (or (when-not formatting-meta? (:highlighting mm)) 
-                (if (= theme-token :rainbow-brackets) 
-                  (if (:enable-rainbow-brackets? @state/config)
-                    (rainbow-bracket-mixin mm)
-                    (style-from-theme :bracket nil))
-                  (get @state/merged-theme theme-token nil)))]
+                  (if (= theme-token :rainbow-brackets) 
+                    (if (:enable-rainbow-brackets? @state/config)
+                      (rainbow-bracket-mixin mm)
+                      (style-from-theme :bracket nil))
+                    (get @state/merged-theme theme-token nil)))]
 
-    #?(:clj (when (state/debug-tagging?)
-              (println "tag-bracket! "
-                       #?(:clj (str style s "\033[0m"))
-                       "   theme-token is   "
-                       theme-token
-                       (str ",  style is:   " (state/?sgr-str style)))))
+    (when (state/debug-tagging?)
+      (println "tag-bracket! "
+               (str style s "\033[0m")
+               "   theme-token is   "
+               theme-token
+               (str ",  style is:   " (state/?sgr-str style))))
 
-    #?(:cljs (if node? 
-               style
-               ;; TODO - Could lose if post-replace works out
-               (let [style (if (:bold? @state/config)
-                             (str "font-weight:bold;" style)
-                             style)] 
-                 (when (state/debug-tagging?)
-                   (println "\n\n")
-                   (println "Debugging tag-bracket!")
-                   (println (str "bracket is: \"" s "\""))
-                   (println "bracket tag is: " t)
-                   (println "Current style is:")
-                   (pprint @state/styles)
-                   (println "Conj'ing style:")
-                   (pprint style)
-                   (println))
-                 (swap! state/styles conj style)))
-       :clj style)))
+    style))
 
 (defn- bracket!*
-  [{:keys [s t] :as m}]
-  ;; (?pp m)
-  (let [reset-theme-token (if (pos? (state/formatting-meta-level))
-                            ;; :metadata
-                            :foreground
-                            :foreground)
-        s (if (-> m
-                  :mm
-                  :user-meta
-                  :fw/hide-brackets?)
-            " "
-            s)
-        f #(if t 
-             (str (tag-bracket! m s) s (tag-reset!))
-             (str (tag-reset!) s (tag-reset!)))]
-
+  [{:keys [s t]
+    :as   m}]
+  (let [s (if (-> m :mm :user-meta :fw/hide-brackets?) " " s)]
     #_(when (state/debug-tagging?)
-      (println "\nbracket!*  " s ",  t: " t))
-
-    #?(:cljs (if node? 
-               (f)
-               (if t 
-                 (do (tag-bracket! m s)
-                     (tag-reset! reset-theme-token)
-                     (str "%c" s "%c"))
-                 (do
-                   (tag-reset! reset-theme-token)
-                   (tag-reset! reset-theme-token)
-                   (str "%c" s "%c"))))
-       :clj (f))))
+        (println "\nbracket!*  " s ",  t: " t))
+    (if t 
+      (str (tag-bracket! m s) s (tag-reset!))
+      (str (tag-reset!) s (tag-reset!)))))
 
 (defn- bracket!
   [m kw]
