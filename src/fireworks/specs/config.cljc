@@ -85,6 +85,12 @@
 (s/def ::non-coll-mapkey-length-limit
   (s/and int? #(<= 5 % non-coll-length-limit)))
 
+(s/def ::single-column-maps?
+  boolean?)
+
+(s/def ::single-column-maps-length-threshold
+  (s/and int? #(< 1 %)))
+
 (s/def ::print-level
   (s/and int? #(<= 1 % 20)))
 
