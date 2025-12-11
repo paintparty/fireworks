@@ -84,6 +84,19 @@
                                          :default nil}
    })
 
+;; TODO prune this
+(def undocumented-option-keys
+  #{:form-meta
+    :user-opts
+    :fw-fnsym
+    :mode
+    :template
+    :ns-str
+    :alias-mode
+    :label
+    :quoted-fw-form
+    :qf})
+
 ;; Option keys
 (def option-keys
   (->> options keys (into #{})))

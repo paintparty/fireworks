@@ -18,40 +18,46 @@
             #?(:clj [clojure.test :refer :all])))
 
 
+;; single-column map options
+#_(do (? {
+        ;; :single-column-maps? true
+        ;; :non-coll-mapkey-length-limit 30
+        :non-coll-mapkey-length-limit        52
+        :non-coll-length-limit               52
+        :single-column-maps-length-threshold 20}
+       {"01234567_101234567_201234567_301234567_401234567_5" "adasd"})
 
-;; (? {
-;;     ;; :single-column-maps? true
-;;     ;; :non-coll-mapkey-length-limit 30
-;;     :non-coll-mapkey-length-limit        52
-;;     :non-coll-length-limit               52
-;;     :single-column-maps-length-threshold 20}
-;;    {"01234567_101234567_201234567_301234567_401234567_5" "adasd"})
 
+    (? {
+        ;; :single-column-maps? true
+        ;; :non-coll-mapkey-length-limit 30
+        :non-coll-mapkey-length-limit        44 
+        :non-coll-length-limit               44
+        :single-column-maps-length-threshold 33}
+       {"01234567_101234567_201234567_301234567_401234567_5" "adasd"})
 
-;; (? {
-;;     ;; :single-column-maps? true
-;;     ;; :non-coll-mapkey-length-limit 30
-;;     :non-coll-mapkey-length-limit        44 
-;;     :non-coll-length-limit               44
-;;     :single-column-maps-length-threshold 33}
-;;    {"01234567_101234567_201234567_301234567_401234567_5" "adasd"})
+    (? {
+        ;; :single-column-maps? true
+        ;; :non-coll-mapkey-length-limit 30
+        :non-coll-mapkey-length-limit        44 
+        :non-coll-length-limit               44
+        :single-column-maps-length-threshold 33}
+       {"wtf" "gone"})
 
-;; (? {
-;;     ;; :single-column-maps? true
-;;     ;; :non-coll-mapkey-length-limit 30
-;;     :non-coll-mapkey-length-limit        44 
-;;     :non-coll-length-limit               44
-;;     :single-column-maps-length-threshold 33}
-;;    {"wtf" "gone"})
+    (? {
+        :single-column-maps? true
+        ;; :non-coll-mapkey-length-limit 30
+        :non-coll-mapkey-length-limit        44 
+        :non-coll-length-limit               44
+        :single-column-maps-length-threshold 33}
+       {"wtf" "gone"}))
 
 (? {
-    :single-column-maps? true
-    ;; :non-coll-mapkey-length-limit 30
-    :non-coll-mapkey-length-limit        44 
-    :non-coll-length-limit               44
-    :single-column-maps-length-threshold 33}
+    :jingle-column-maps? true
+    ;; :coll-limit          :foo
+    ;; :single-column-maps? :foo
+    }
    {"wtf" "gone"})
-
 
 
 

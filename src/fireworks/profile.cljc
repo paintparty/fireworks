@@ -4,7 +4,6 @@
    [fireworks.pp :refer (?pp)]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
-   [fireworks.util :as util]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [clojure.string :as string])

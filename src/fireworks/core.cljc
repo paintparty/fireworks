@@ -477,8 +477,7 @@
 
 (defn- reset-config+theme!
   [config-before user-opts opts]
-  (let [
-        ks               (opts-to-reset user-opts)
+  (let [ks               (opts-to-reset user-opts)
         opts-to-reset    (doseq [k ks] (reset-user-opt! k opts))]
     (when (or (diff-call-site-theme-option-keys opts-to-reset)
               (diff-from-merged-user-config config-before))
@@ -489,6 +488,58 @@
                 with-serialized-style-maps)
         (reset! state/merged-theme-with-unserialized-style-maps
                 with-style-maps)))))
+
+
+(defn- next-row
+  [prev cur other-seq]
+  (reduce
+    (fn [row [diag above other]]
+      (let [update-val (if (= other cur)
+                          diag
+                          (inc (min diag above (peek row))))]
+        (conj row update-val)))
+    [(inc (first prev))]
+    (map vector prev (next prev) other-seq)))
+
+
+(defn distance
+  "Given two words, computes levenshtein distance."
+  [seq1 seq2]
+  (cond
+    (and (empty? seq1) (empty? seq2)) 0
+    (empty? seq1) (count seq2)
+    (empty? seq2) (count seq1)
+    :else (peek
+            (reduce (fn [prev cur] (next-row prev cur seq2))
+                    (map #(identity %2) (cons nil seq2) (range))
+                    seq1))))
+
+
+(defn- spelling-distances [k]
+  (reduce (fn [acc opt] 
+            (let [n (distance (name k)
+                              (name opt))]
+              (update acc n conj opt)))
+          {}
+          config/option-keys))
+
+
+(defn- unknown-option-warning-opts [opts k]
+  (let [{:keys [line column]} (:form-meta opts)
+        distances             (spelling-distances k)
+        misspellings          (->> distances
+                                   keys
+                                   (apply min)
+                                   (get distances)
+                                   (mapv str)
+                                   (string/join "\n  "))]
+    (merge (keyed [k line column])
+           {:header     (:fw-fnsym opts)
+            :hint       misspellings
+            :hint-label "Maybe you meant:"
+            :k          k
+            :form       (:quoted-fw-form opts) 
+            :file       (:ns-str opts)})))
 
 
 (defn- reset-state!
@@ -528,7 +579,13 @@
            :magenta))
         (reset! state/config (state/merged-config)))
     ;; Reset config & potentially reset/remerge the theme
-    (reset-config+theme! config-before user-opts opts))
+    (reset-config+theme! config-before user-opts opts)
+    ;; Warn user if a non-existant config option is passed
+    (doseq [k (some-> opts keys seq )]
+      (when-not (contains? config/option-keys k)
+        (when-not (contains? config/undocumented-option-keys k)
+          (messaging/unknown-option-warning
+           (unknown-option-warning-opts opts k))))))
   
   ;; Reset the highlight state.
   ;; It may pull hightlight style from merged theme.
@@ -1217,7 +1274,6 @@
   ([mode-or-label a x]
    (let [{:keys [mode template]}
          (mode+template mode-or-label)]
-     #_(ff template)
      (case mode
        :trace
        (let [form-meta (meta &form)]

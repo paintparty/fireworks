@@ -239,14 +239,6 @@
 
 ;; For printing messages and warnings
 (def italic-tag-open #?(:cljs nil :clj "\033[3m"))
-(def gray-tag-open #?(:cljs nil :clj "\033[38;5;247m") )
-(def bold-gray-tag-open #?(:cljs nil :clj "\033[38;5;247;1m"))
-(def italic-gray-tag-open #?(:cljs nil :clj "\033[3;38;5;247m"))
-(def bold-italic-gray-tag-open #?(:cljs nil :clj "\033[3;38;5;247;1m"))
-(def orange-tag-open #?(:cljs nil :clj "\033[38;5;208m"))
-(def red-tag-open #?(:cljs nil :clj "\033[38;5;196m"))
-(def blue-tag-open #?(:cljs nil :clj "\033[38;5;39m"))
-(def bold-tag-open #?(:cljs nil :clj "\033[1m"))
 (def sgr-tag-close #?(:cljs nil :clj "\033[0;m"))
 
 

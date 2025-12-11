@@ -2,7 +2,6 @@
   (:require [clojure.string :as string]
             [clojure.main]
             [fireworks.pp :refer [?pp pprint]]
-            [fireworks.defs :as defs]
             [expound.alpha :as expound]
             [fireworks.util :as util :refer [maybe]]))
 
@@ -11,21 +10,47 @@
 ;; Compile time errors for surfacing to cljs browser console
 (def warnings-and-errors (atom []))
 
+(def warning-types
+  {::bad-option-value "Bad value:"
+   ::unknown-option   "Unknown option:"})
+
+
+(def sgr-tags 
+  {:wavy-underline        "\033[4:3m"
+   :orange-wavy-underline "\033[38;5;208;4:3m"
+   :italic                "\033[3m"
+   :gray                  "\033[38;5;247m" 
+   :bold-gray             "\033[38;5;247;1m"
+   :italic-gray           "\033[3;38;5;247m"
+   :bold-italic-gray      "\033[3;38;5;247;1m"
+   :orange                "\033[38;5;208m"
+   :red                   "\033[38;5;196m"
+   :blue                  "\033[38;5;39m"
+   :bold                  "\033[1m"
+   :sgr-tag-close         "\033[0;m"})
+
+
+(defn- sgr [k v]
+  (str (get sgr-tags k) v (:sgr-tag-close sgr-tags)))
+
+(def lb "\n\n\n")
+(def indent "  ")
+
 
 (defn bold [s]
-  (str defs/bold-tag-open s defs/sgr-tag-close))
+  (sgr :bold s ))
 
 (defn italic [s]
-  (str defs/italic-tag-open s defs/sgr-tag-close))
+  (sgr :italic s ))
 
 
 (defn block
   [{:keys [header-str block-type body]}] 
   (let [open-tag 
         (case block-type
-          :warning defs/orange-tag-open
-          :error defs/red-tag-open
-          defs/gray-tag-open)
+          :warning (:orange sgr-tags)
+          :error (:red sgr-tags)
+          (:gray sgr-tags))
 
         footer-stripe
         "╚══════════════════════════════════════════════"
@@ -45,13 +70,13 @@
          header-str
          " " header-stripe
          "\n"
-         defs/sgr-tag-close
+         (:sgr-tag-close sgr-tags)
          "\n"
          (str " " (string/join "\n " (string/split body #"\n")))
          open-tag
          "\n\n"
          footer-stripe
-         defs/sgr-tag-close
+         (:sgr-tag-close sgr-tags)
          "\n")))
 
 
@@ -117,7 +142,7 @@
                      wtf
                      loc]))))
      
-     (defn- clean-up-frames [trace first-index-of-relevant-stack-trace]
+     (defn- clean-up-frames [trace]
        (map-indexed
         (fn [i x]
           (if (vector? x)
@@ -130,36 +155,17 @@
                " "
                (remove
                 nil?
-                [#_(when (-> x meta :target?)
-                   (str defs/red-tag-open ">>>" defs/sgr-tag-close))
-                 (str defs/gray-tag-open
-                      fn-ns 
-                      (when fn-name "/")
-                      defs/sgr-tag-close
+                [(str (sgr :gray (str fn-ns (when fn-name "/")))
                       fn-name)
                  (when-not (contains? '#{invoke invokeStatic} wtf) wtf)
-                 (str defs/gray-tag-open
-                      loc
-                      defs/sgr-tag-close)
+                 (sgr :gray loc)
                  (when (-> x meta :target?)
-                   (str defs/red-tag-open "<- Probably here" defs/sgr-tag-close))])))
+                   (sgr :red "<- Probably here"))])))
             x))
         trace))))
 
-(defn summary-header-blue-italic [s]
-  (str defs/blue-tag-open
-       (italic (str s "\n"))
-       defs/sgr-tag-close))
-
-(defn summary-header-bold-gray-italic [s]
-  (str defs/bold-italic-gray-tag-open
-       (italic (str s "\n"))
-       defs/sgr-tag-close))
-
 (defn summary-header [s]
-  (str defs/italic-gray-tag-open
-       (italic (str s "\n"))
-       defs/sgr-tag-close))
+  (sgr :gray (italic (str s "\n"))))
 
 (defn stack-trace-preview
   "Creates a user-friendly stack-trace preview, limited to the frames which
@@ -209,7 +215,7 @@
                                     (some->> (maybe n pos-int?)
                                              (str "\n...+"))))
                    trace        (some-> trace (conj num-dropped))
-                   trace2       (clean-up-frames trace first-index)]
+                   trace2       (clean-up-frames trace)]
                (apply str trace2)))]
        {:formatted-string formatted-string
         :stack-trace-seq  strace})))
@@ -230,66 +236,57 @@
                    :block-type :warning 
                    :body       x})))
 
+(defn summary-section [warning-label s]
+  (str (summary-header warning-label) indent s lb))
+
+
+(defn- line-number+bad-form [{:keys [k v form line]}]
+  (str (when line 
+         (sgr :gray (str indent line " │ ")))
+       (let [bad-form (with-out-str 
+                        (pprint (or (some-> form
+                                            (util/shortened 33)
+                                            symbol)
+                                    (symbol (str k " " v)))))
+             bad-form (string/replace bad-form #"\n$" "")]
+         (sgr :wavy-underline bad-form))))
+
 
 (defn warning-or-exception-summary 
-  [{:keys [k v form line column file header block-type hint lb]}]
-  (let [line+sep (str line " │ ")]
-    (str (when hint
-           (str (summary-header "Hint:")
-                "  "
-                hint
-                lb))
-         
-         (when header
-           (str (summary-header "Raised by:")
-                "  "
-                header
-                lb))
+  [{:keys [line column file header hint hint-label] :as m}]
+  (str (some->> hint
+                (summary-section (or (maybe hint-label string?) "Hint:")))
+       
+       (some->> header
+                (summary-section "Raised by:"))
 
-         (when (and line column file)
-           (str (str (summary-header "Source:") "  " file ":" line ":" column)
-                "\n\n"
-                (when line 
-                  (str "  " defs/gray-tag-open line+sep defs/sgr-tag-close))
-                (let [bad-form (with-out-str 
-                                 (pprint (or (some-> form (util/shortened 33) symbol)
-                                             (symbol (str k " " v)))))
-                      bad-form (string/replace bad-form #"\n$" "")]
-                  (str bad-form "\n"
-                       (when line+sep (string/join "" (repeat (count line+sep) " ")))
-                       (case block-type :error defs/gray-tag-open defs/orange-tag-open)
-                       "  " (string/join "" (repeat (count bad-form) "^"))
-                       defs/sgr-tag-close))))
-         lb)))
+       (when (and line column file)
+         (summary-section 
+          "Source:"
+          (str file ":" line ":" column "\n\n" (line-number+bad-form m))))))
 
 
 (defn warning-details 
-  [{:keys [k v spec default body form]}]
-  (apply str 
-         (concat
-          (when (and form k v)
-            (let [indent "  "]
-              ["\n"
-               "Bad value:\n\n"
-               indent
-               (bold k)
-               " "
-               (bold v)
-               (str "\n"
-                    (string/join (repeat (count (str k)) " "))
-                    " ")
-               indent
-               defs/orange-tag-open
-               (string/join (repeat (count (str v)) "^"))
-               defs/sgr-tag-close
-               "\n\n\n"]))
-          [(expound/expound-str spec v {:print-specs? false})
-           (when default
-             (str "\n\n"
-                  "The default value of `"
-                  default
-                  "` will be applied."))
-           (when body (str "\n\n" body))])))
+  [{:keys [k v spec default body warning-type]
+    :or   {default ::default-unsupplied}}]
+  (let [warning-label (get warning-types warning-type)]
+    (str 
+     
+     (if (= warning-type ::bad-option-value)
+       (summary-section
+        warning-label
+        (str (bold k) " " (sgr :orange-wavy-underline (bold v))) )
+       
+       (summary-section
+        warning-label
+        (sgr :orange-wavy-underline (bold k))))
+
+     (when spec (expound/expound-str spec v {:print-specs? false}))
+
+     (when-not (= default ::default-unsupplied)
+       (str "\n\n" "The default value of `" default "` will be applied."))
+
+     (when body (str "\n\n" body)))))
 
 
 (defn bad-option-value-warning
@@ -299,26 +296,38 @@
            :block-type :warning
            :body       (str
                         (warning-or-exception-summary opts)
-                        "\n"
-                        (warning-details opts))})))
+                        (warning-details (assoc opts
+                                                :warning-type
+                                                ::bad-option-value )))})))
 
+
+(defn unknown-option-warning
+  [opts]
+  (println 
+   (block {:header-str "WARNING: Unknown option"
+           :block-type :warning
+           :body       (str
+                        (warning-details (assoc opts
+                                                :warning-type
+                                                ::unknown-option))
+                        (warning-or-exception-summary opts))})))
 
 (defn unable-to-trace [opts]
-  (let [opts
-        (merge opts 
-               {:header-str "Unable to trace form"
-                :block-type :warning
-                :form       (list '?trace (:form opts))
-                :body       (str
-                             (warning-or-exception-summary opts)    
-                             "\n"
-                             (str "fireworks.core/?trace will trace forms beginning with:\n"
-                                      "  "
-                                      (string/join "\n  "
-                                                   ['->
-                                                    'some->
-                                                    '->>
-                                                    'some->>])))})]
+  (let [body (str
+              (warning-or-exception-summary opts)    
+              "\n"
+              "fireworks.core/?trace will trace forms beginning with:\n"
+              "  "
+              (string/join "\n  "
+                           ['->
+                            'some->
+                            '->>
+                            'some->>]))
+        opts (merge opts 
+                    {:header-str "Unable to trace form"
+                     :block-type :warning
+                     :form       (list '?trace (:form opts))
+                     :body       body})]
     (println (block opts))))
 
 
@@ -387,9 +396,7 @@
                stack-trace-preview-str
                (str (when formatted-string
                       (let [[fl & rl]    (string/split formatted-string #"\n")
-                            section-head (str defs/italic-tag-open
-                                              fl
-                                              defs/sgr-tag-close)]
+                            section-head (italic fl)]
                         (str section-head
                              "\n"
                              (indented-string (string/join "\n" rl)))))
@@ -441,6 +448,7 @@
 
 (def dispatch 
   {:messaging/bad-option-value-warning bad-option-value-warning
+   :messaging/-option-warning          unknown-option-warning
    :messaging/read-file-warning        caught-exception
    :messaging/print-error              caught-exception})
 
