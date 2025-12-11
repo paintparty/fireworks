@@ -316,6 +316,7 @@
         file-info-first?
         (or (contains?
              #{[:file-info :result]
+               [:file-info :form-or-label]
                [:file-info :form-or-label :result]}
              template)
             (and label
@@ -1179,10 +1180,6 @@
   ([x] `(do (tap> ~x) ~x)))
 
 
-(declare print-thread)
-(declare thread-helper)
-(declare threading-sym)
-
 (defn- _p2-call [og-x m x+]
   (list
    'do 
@@ -1240,8 +1237,7 @@
             (fireworks.core/_p2 {:form-meta ~form-meta
                                  :ns-str    ~ns-str
                                  :qf        (quote ~tracing-form) 
-                                 :template  [:file-info :form-or-label :result]}
-                                (symbol " "))
+                                 :template  [:file-info :form-or-label]})
             ~as-let
             ~x))
 
@@ -1414,64 +1410,6 @@
                            (assoc ~cfg-opts :qf (quote ~x))
                            (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
-
-;; Threading 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO - add cond
-
-
-(defn ^{:public true}
-  print-thread
-  [{:keys [label] :as cfg-opts} quoted-forms op]
-  (?
-   :comment
-   (merge cfg-opts
-          {:threading? true
-           :label      (or label
-                           (str "("
-                                (string/join
-                                 (str "\n" (util/spaces (-> op count (+ 2))))
-                                 (cons (symbol (str op
-                                                    " "
-                                                    (first quoted-forms)))
-                                       (rest quoted-forms)))
-                                ")"))})))
-
-
-(defn- thread-helper
-  [{:keys [forms form-meta thread-sym user-opts a] :as m}]
-  (let [?-call-sym         (if (contains? #{'-> 'some->} thread-sym)
-                             'fireworks.core/?flop 
-                             'fireworks.core/?)
-        user-opts          (cond (map? user-opts)
-                                 user-opts
-                                 (map? a)
-                                 a)
-        opts               (for [frm forms]
-                             (list ?-call-sym
-                                   (merge user-opts
-                                          {:label               (str frm)
-                                           :label-length-limit  66
-                                           :margin-inline-start 4})))
-        fms                (interleave forms opts)
-        call               (cons thread-sym fms)
-        {:keys [cfg-opts]} (helper2 {:x         nil
-                                     :a         a
-                                     :&form     (:&form m)
-                                     :form-meta form-meta})
-        ;; cfg-opts           (merge cfg-opts
-        ;;                           (when (map? ) {:user-opts a}))
-        ]
-    [cfg-opts call]))
-
-
-(defn- threading-sym [x]
-  (and (list? x)
-       (< 1 (count x))
-       (let [[sym & forms] x]
-         (when (contains? #{'-> '->> 'some-> 'some->>} sym)
-           [sym forms]))))
 
 
 ;; Silencers

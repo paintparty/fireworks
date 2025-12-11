@@ -72,14 +72,9 @@
    :trace
    {:single-column-maps? true}
    (-> wtf
-       #_(->> (fireworks.core/_p2 {:qf 'wtf :template [:form-or-label :result]}))
        (assoc :bango :bongo)
-       #_(->> (fireworks.core/_p2 {:qf '(assoc :bango :bongo) :template [:form-or-label :result]}))
        (keys)
-       #_(->> (fireworks.core/_p2 {:qf 'keys :template [:form-or-label :result]}))
-       (->> (mapv #(-> % name string/upper-case)))
-       #_(->> (fireworks.core/_p2 {:qf '(mapv #(-> % name string/upper-case)) :template [:form-or-label :result]}))
-       ))
+       (->> (mapv #(-> % name string/upper-case)))))
 
 
 
