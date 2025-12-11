@@ -63,7 +63,7 @@
     }
  wtf)
 
-(? #_{
+#_(? #_{
     :single-column-maps?   true
     :format-label-as-code? true
     ;; :coll-limit          :foo

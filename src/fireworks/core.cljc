@@ -1207,6 +1207,27 @@
   (and (list? %) 
        (contains? #{'-> '->>}
                   (first %))))
+
+
+;; TODO - support :let mode
+;; (ff (-> '(let [a     1
+;;                b     2
+;;                [c d] coll
+;;                {:keys [:as]
+;;                 bong  :bong}])
+;;         (util/maybe #(and (list? %) (-> % first (= 'let))))
+;;         second
+;;         ;; TODO what if {:keys [:as :syms :strs :or]}
+;;         ;; Need to reduce map and process selectively
+;;         (->> (keep-indexed (fn [i x] (when (even? i) x)))
+;;              (mapv #(if (coll? %) (flatten (into [] %)) %))
+;;              flatten
+;;              (filter #(not (contains? #{:as :keys :syms :strs :or} %)))
+;;              (mapv #(if (keyword? %) (-> % name symbol) %))
+;;              distinct)))
+
+
+
 (defmacro ?
   ([])
   ([x]
