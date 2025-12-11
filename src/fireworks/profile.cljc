@@ -205,7 +205,7 @@
 
 
 (defn- exceeds-map-value-threshold? [k-or-v n]
-  (->> k-or-v
+  (some->> k-or-v
            meta 
            :ellipsized-char-count
            (< n)))

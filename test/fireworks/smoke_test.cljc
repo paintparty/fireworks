@@ -52,12 +52,34 @@
         :single-column-maps-length-threshold 33}
        {"wtf" "gone"}))
 
-(? {
-    :jingle-column-maps? true
+
+(def wtf {"wtf" "gone"} )
+
+#_(? {
+    :single-column-maps?   true
+    ;; :format-label-as-code? true
     ;; :coll-limit          :foo
     ;; :single-column-maps? :foo
     }
-   {"wtf" "gone"})
+ wtf)
+
+(? #_{
+    :single-column-maps?   true
+    :format-label-as-code? true
+    ;; :coll-limit          :foo
+    ;; :single-column-maps? :foo
+    }
+   :trace
+   {:single-column-maps? true}
+   (-> wtf
+       #_(->> (fireworks.core/_p2 {:qf 'wtf :template [:form-or-label :result]}))
+       (assoc :bango :bongo)
+       #_(->> (fireworks.core/_p2 {:qf '(assoc :bango :bongo) :template [:form-or-label :result]}))
+       (keys)
+       #_(->> (fireworks.core/_p2 {:qf 'keys :template [:form-or-label :result]}))
+       (->> (mapv #(-> % name string/upper-case)))
+       #_(->> (fireworks.core/_p2 {:qf '(mapv #(-> % name string/upper-case)) :template [:form-or-label :result]}))
+       ))
 
 
 

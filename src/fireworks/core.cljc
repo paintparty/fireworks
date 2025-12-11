@@ -20,7 +20,8 @@
    [fireworks.config :as config]
    [fireworks.util :as util] 
    [lasertag.core :as lasertag]
-   [fireworks.defs :as defs])
+   [fireworks.defs :as defs]
+   [clojure.walk :as walk])
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
 
@@ -912,6 +913,7 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
+  ;; (ff opts)
   (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
         config-before (when debug-config? @state/config)]
@@ -1181,7 +1183,33 @@
 (declare thread-helper)
 (declare threading-sym)
 
+(defn- _p2-call [og-x m x+]
+  (list
+   'do 
+   (list 'fireworks.core/_p2 
+         (merge {:qf                  (string/replace (str og-x)
+                                                      #"p[0-9]+__[0-9]+#" "%")
+                 :margin-inline-start 2
+                 :template            [:form-or-label :result]}
+                (when (map? m)
+                  {:user-opts m}))
+         x+)
+   x+))
 
+(defn thread-form->let-binding [m i x]
+  [(symbol (str "_" i))
+   (let [og-x x
+         x+   (if (pos? i)
+                (let [x        (if (list? x) x (list x))
+                      [f & rs] x]
+                  (concat (list f (symbol (str "_" (dec i)))) rs))
+                x)]
+     (_p2-call og-x m x+))])
+
+(defn- threading-form? [%]
+  (and (list? %) 
+       (contains? #{'-> '->>}
+                  (first %))))
 (defmacro ?
   ([])
   ([x]
@@ -1195,27 +1223,27 @@
         (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                            (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
   ([a x]
-   (let [{:keys [mode alias-mode template]}
+   (let [{:keys [mode alias-mode template] :as _m}
          (mode+template a)]
      (case mode
        :trace
-       (let [form-meta (meta &form)]
-         (if-let [[thread-sym forms] (threading-sym x)]
-           (let [[cfg-opts call]
-                 (thread-helper (assoc (keyed [forms form-meta thread-sym])
-                                       :&form
-                                       &form))]
-             `(do (fireworks.core/print-thread ~cfg-opts
-                                               (quote ~forms)
-                                               (str (quote ~thread-sym)))
-                  ~call))
-           `(do
-              (messaging/unable-to-trace
-               (merge
-                ~form-meta
-                {:type :warning
-                 :form (quote ~x)}))
-              ~x)))
+       (let [form-meta    (meta &form)
+             tracing-form (first (filter threading-form? &form))
+             [_ & rest]   tracing-form
+             as-let       (map-indexed (partial thread-form->let-binding a)
+                                       rest)
+             as-let       (list 'let
+                                (into [] (apply concat as-let))
+                                (symbol (str "_" (dec (count rest)))))
+             ns-str       (some-> *ns* ns-name str)]
+         `(do 
+            (fireworks.core/_p2 {:form-meta ~form-meta
+                                 :ns-str    ~ns-str
+                                 :qf        (quote ~tracing-form) 
+                                 :template  [:file-info :form-or-label :result]}
+                                (symbol " "))
+            ~as-let
+            ~x))
 
        :log-
        `(do #?(:cljs (if node?
@@ -1235,19 +1263,19 @@
        `(do (fireworks.core/pprint ~x)
             ~x)
 
-       (let [cfg-opts*
+       (let [cfg-opts*                             
              (when (map? a) a)
 
-             label
+             label                                 
              (or (:label cfg-opts*)
                  (cond (= mode :comment) x
                        mode              nil
                        :else             (when-not cfg-opts* a)))
 
-             truncation-flag
+             truncation-flag                       
              (when (= mode :no-truncation) false)
 
-             {:keys [log?* defd qf-nil? cfg-opts]}
+             {:keys [log?* defd qf-nil? cfg-opts]} 
              (?2-helper (keyed [mode
                                 alias-mode
                                 template 
@@ -1257,7 +1285,7 @@
                                 &form
                                 x]))]
 
-        ;;  #_(ff "?, 2-arity, cfg-opts" cfg-opts)
+         ;;  #_(ff "?, 2-arity, cfg-opts" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
                 ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)]
             (when ~defd ~x)
@@ -1276,26 +1304,23 @@
          (mode+template mode-or-label)]
      (case mode
        :trace
-       (let [form-meta (meta &form)]
-         (if-let [[thread-sym forms] (threading-sym x)]
-           (let [[cfg-opts call]
-                 (thread-helper (assoc (keyed [forms
-                                               form-meta
-                                               thread-sym
-                                               a])
-                                       :&form
-                                       &form))]
-             `(do (fireworks.core/print-thread ~cfg-opts
-                                               (quote ~forms)
-                                               (str (quote ~thread-sym)))
-                  ~call))
-           `(do
-              (messaging/unable-to-trace
-               (merge
-                ~form-meta
-                {:type :warning
-                 :form (quote ~x)}))
-              ~x)))      
+       (let [form-meta    (meta &form)
+             tracing-form (first (filter threading-form? &form))
+             [_ & rest]   tracing-form
+             as-let       (map-indexed (partial thread-form->let-binding a)
+                                       rest)
+             as-let       (list 'let
+                                (into [] (apply concat as-let))
+                                (symbol (str "_" (dec (count rest)))))
+             ns-str       (some-> *ns* ns-name str)]
+         `(do 
+            (fireworks.core/_p2 {:form-meta ~form-meta
+                                 :ns-str    ~ns-str
+                                 :qf        (quote ~tracing-form) 
+                                 :template  [:file-info :form-or-label :result]}
+                                (symbol " "))
+            ~as-let
+            ~x))      
 
        ;; Remove this? or should it be js?
        :log-
@@ -1319,13 +1344,19 @@
                    (not cfg-opts*)   a
                    :else             (when-not mode mode-or-label)))
 
-             truncation-flag
+             truncation-flag                       
              (when (= mode :no-truncation) false)
 
-             {:keys [log?* defd qf-nil? cfg-opts]}
-             (?2-helper (keyed [mode template cfg-opts* label &form x truncation-flag]))]
+             {:keys [log?* defd qf-nil? cfg-opts]} 
+             (?2-helper (keyed [truncation-flag
+                                cfg-opts* 
+                                template 
+                                label
+                                &form 
+                                mode
+                                x]))]
 
-          #_(ff "?, 3-arity" cfg-opts)
+         #_(ff "?, 3-arity" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
                 ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)] 
             (when ~defd ~x)
