@@ -529,12 +529,14 @@
 (defn- unknown-option-warning-opts [opts k]
   (let [{:keys [line column]} (:form-meta opts)
         distances             (spelling-distances k)
-        misspellings          (->> distances
-                                   keys
-                                   (apply min)
-                                   (get distances)
-                                   (mapv str)
-                                   (string/join "\n  "))]
+        lt-5?->               #(when (<  % 5) %)
+        misspellings          (some->> distances
+                                       keys
+                                       (apply min)
+                                       lt-5?->
+                                       (get distances)
+                                       (mapv str)
+                                       (string/join "\n  "))]
     (merge (keyed [k line column])
            {:header     (:fw-fnsym opts)
             :hint       misspellings
