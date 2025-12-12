@@ -264,20 +264,16 @@
           specs.config/non-coll-length-limit 
           non-coll-mapkey-length-limit)
 
+
         limit
-        (if-let [level-k (cond top-level-sev?
-                               :level-0-sev
-                               (and sev? (< depth 2))
-                               :level-1-sev)]
+        (if-let [level-k (and (not (or key? map-value?))
+                              (cond top-level-sev?
+                                    :level-0-sev
+                                    (and sev? (< depth 2))
+                                    :level-1-sev))]
           (case level-k
             :level-0-sev non-coll-result-length-limit
-            :level-1-sev (let [n    non-coll-depth-1-length-limit
-                               half (/ (dec n) 2)]
-                           
-                           (cond
-                             key?       (max non-coll-mapkey-length-limit half)
-                             map-value? (max half non-coll-length-limit)
-                             :else      n)))
+            :level-1-sev non-coll-depth-1-length-limit)
           (max (if key?
                  non-coll-mapkey-length-limit
                  non-coll-length-limit)

@@ -239,13 +239,6 @@
 
 ;; For printing messages and warnings
 (def italic-tag-open #?(:cljs nil :clj "\033[3m"))
-(def gray-tag-open #?(:cljs nil :clj "\033[38;5;244m") )
-(def bold-gray-tag-open #?(:cljs nil :clj "\033[38;5;244;1m"))
-(def italic-gray-tag-open #?(:cljs nil :clj "\033[3;38;5;244m"))
-(def bold-italic-gray-tag-open #?(:cljs nil :clj "\033[3;38;5;244;1m"))
-(def orange-tag-open #?(:cljs nil :clj "\033[38;5;208;1m"))
-(def red-tag-open #?(:cljs nil :clj "\033[38;5;196;1m"))
-(def bold-tag-open #?(:cljs nil :clj "\033[1m"))
 (def sgr-tag-close #?(:cljs nil :clj "\033[0;m"))
 
 
@@ -264,7 +257,7 @@
                   :semantic "accent"}
     "purple"     {:sgr 141}
     "magenta"    {:sgr 201}
-    "gray"       {:sgr      245
+    "gray"       {:sgr      247
                   :semantic "subtle"}
     "black"      {:sgr 16}
     "white"      {:sgr 231}]))

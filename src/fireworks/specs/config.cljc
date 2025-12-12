@@ -85,6 +85,12 @@
 (s/def ::non-coll-mapkey-length-limit
   (s/and int? #(<= 5 % non-coll-length-limit)))
 
+(s/def ::single-column-maps?
+  boolean?)
+
+(s/def ::single-column-maps-length-threshold
+  (s/and int? #(< 1 %)))
+
 (s/def ::print-level
   (s/and int? #(<= 1 % 20)))
 
@@ -110,6 +116,9 @@
   (s/nilable #(and int? 
                    (< 0 % 4))))
 
+(s/def ::print-detected-color-level?
+  boolean?)
+
 (s/def ::legacy-terminal?
   boolean?)
 
@@ -124,6 +133,8 @@
 
 ;; flesh out this spec
 (s/def ::custom-printers map?)
+
+(s/def ::print-with fn?)
 
 ;; find for highlighting related -----------------------------------------------
 (s/def ::returns-boolean

@@ -665,7 +665,7 @@
                                       ns-name
                                       str
                                       (str ":" line ":" column))
-        ns-str                (str "\033[3;34;m" ns-str "\033[0m")]
+        ns-str                (str "\033[3;38;5;39m" ns-str "\033[0m")]
     ns-str))
 
 (defn !?pp

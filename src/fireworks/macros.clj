@@ -10,13 +10,17 @@
   [clojure.edn :as edn]
   [clojure.spec.alpha :as s]))
 
+
 (def debug-config? false #_true)
+
 
 (defn- regex? [v]
   (-> v type str (= "class java.util.regex.Pattern")))
 
+
 (defn- surround-with-quotes [x]
   (str "\"" x "\""))
+
 
 (defn shortened
   "Stringifies a collection and truncates the result with ellipsis 
@@ -45,6 +49,7 @@
                    ret*)]
         ret))))
 
+
   (defn- ns+ln+col-str
     [form-meta]
     (let [{:keys [line column]} form-meta
@@ -63,6 +68,7 @@
                                   
                                   )]
       ns-str))
+
 
 (defmacro ? 
     ([x]
@@ -91,6 +97,7 @@
                   (with-out-str (pprint ~x)))))
           ~x))))
 
+
 (defmacro let-map
   "Equivalent of
    (let [a 5
@@ -101,6 +108,7 @@
         keyword-symbols (mapcat #(vector (keyword (str %)) %) keys)]
     `(let [~@kvs]
        (hash-map ~@keyword-symbols))))
+
 
 (let [transforms {:keys keyword
                   :strs str
@@ -114,6 +122,7 @@
      (let [transform (comp (partial list `quote)
                            (transforms key-type))]
        (into {} (map (juxt transform identity) vars))))))
+
 
 (def ^:private load-failure-body
   (str "Please check:"
@@ -130,12 +139,14 @@
        "\n"
        "The default Theme of \"Alabaster Light\" will be used."))
 
+
 (defn- load-edn-exception-opts
   [{:keys [file key source]}]
   {:k      key
    :v      (str "\"" source "\"")
    :header (str file "\n\nCould not open file:")
    :body   load-failure-body})
+
 
 (defn- load-edn
   "Load edn from an io/reader source (filename or io/resource)."
@@ -173,11 +184,14 @@
   (let [ret @messaging/warnings-and-errors]
     `~ret))
 
+
 (defn- env-var-color-non-empty? [s]
   (boolean (when-let [v (System/getenv s)]
              (not (string/blank? v)))))
 
+
 (def bling-mood-names-set #{"light" "dark" "medium"})
+
 
 (defmacro get-user-color-env-vars [] 
   {:env-var/no-color?    (env-var-color-non-empty? "NO_COLOR")
@@ -185,7 +199,9 @@
    :env-var/bling-mood?  (let [s (System/getenv "BLING_MOOD")]
                            (if (contains? bling-mood-names-set s)
                              s
-                             "medium"))})
+                             "medium"))
+   :env-var/debug-detect-color? (env-var-color-non-empty?
+                                 "BLING_DEBUG_DETECT_COLOR")})
 
 
 (defmacro get-user-configs
@@ -300,7 +316,7 @@
 
                     `~config))
 
-                ;; :theme entry is nil or non-existant, just return user config map
+                ;; :theme entry is nil or not supplit, just return user config
                 `~config)))))
 
     ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, or
@@ -321,9 +337,10 @@
                 "\n\n"
                 "BLING_CONFIG is not set."
                 "\n\n"
-                "BLING_MOOD env var is set to: " (or (when (contains? #{"light" "dark"} bling-mood)
-                                                       (str "\"" bling-mood "\""))
-                                                     (str "\"" bling-mood "\""))
+                "BLING_MOOD env var is set to: " 
+                (or (when (contains? #{"light" "dark"} bling-mood)
+                      (str "\"" bling-mood "\""))
+                    (str "\"" bling-mood "\""))
                 "\n\n"
                 "Returning a config of:" )
            config))
@@ -406,16 +423,16 @@
                                     (get basethemes/stock-themes
                                          "Universal Neutral"
                                          nil))
-                      opts {:v      theme*
-                            :k      ":theme"
-                            :spec   ::config/theme
-                            :header (str "[fireworks.core/_p] Invalid value "
-                                         "for :theme entry.")
-                            :body   (str "The default theme "
-                                         defs/italic-tag-open
-                                         "\"Universal Neutral\" "
-                                         defs/sgr-tag-close
-                                         "will be used instead.")}]
+                      opts   {:v      theme*
+                              :k      ":theme"
+                              :spec   ::config/theme
+                              :header (str "[fireworks.core/_p] Invalid value "
+                                           "for :theme entry.")
+                              :body   (str "The default theme "
+                                           defs/italic-tag-open
+                                           "\"Universal Neutral\" "
+                                           defs/sgr-tag-close
+                                           "will be used instead.")}]
 
                   #_(println :invalid "::" 'get-user-config-edn-dynamic)
                   (messaging/bad-option-value-warning opts)
@@ -426,7 +443,7 @@
 
                   config))
 
-              ;; :theme entry is nil or non-existant, just return user config map
+              ;; :theme entry is nil or non-existant, just return user config
               config)))))
 
     ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, we set theme to
@@ -437,23 +454,32 @@
 (def supports-color-level-1-term-re
  #"(?i)^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux")
 
-;; Logic in detect-color-level culled from  https://github.com/chalk/supports-color
-(defn- detect-color-level []
+
+;; Logic culled from https://github.com/chalk/supports-color
+(defn- detect-color-level [dbgf]
   (let [term         (System/getenv "TERM")
         term-program (System/getenv "TERM_PROGRAM")
         colorterm    (System/getenv "COLORTERM")
-        debug?       false
-        dbgf         (if debug? println identity)]
+        ci           (System/getenv "CI")]
     (cond 
-      (= "truecolor" colorterm)
-      (do (dbgf "COLORTERM=\"trucolor\", setting to 3")
-          3)
+      ci
+      (cond (contains? #{"GITHUB_ACTIONS" "GITEA_ACTIONS" "CIRCLECI"} ci)
+            (do
+              (dbgf "CI=\"" ci "\", setting to 3")
+              3)
+            ;; :else branch covers 'TRAVIS', 'APPVEYOR', 'GITLAB_CI',
+            ;; 'BUILDKITE', 'DRONE', and (= (System/getenv "CI_NAME"))
+            :else
+            (do (dbgf "CI=\"" ci "\", setting to 1")
+                1))
 
+      (= "truecolor" colorterm)
+      (do (dbgf "COLORTERM=\"truecolor\", setting to 3")
+          3)
 
       (contains? #{"xterm-ghostty" "xterm-kitty" "wezterm"} term)
       (do (dbgf (str "TERM=" term ", setting to 3"))
           3)
-
 
       (not (string/blank? term-program))
       (cond 
@@ -469,48 +495,57 @@
           2)
 
         (= term-program "Apple_Terminal")
-        (do (dbgf "Apple_Terinmal, setting to 2")
+        (do (dbgf "Apple_Terminal, setting to 2")
             2))
 
-
-      (re-find #"-256(color)?$" term)
+      (when (string? term) (re-find #"-256(color)?$" term))
       (do (dbgf (str "TERM="
-                        (re-find #"-256(color)?$" term)
-                        ", setting to 1"))
+                     (re-find #"-256(color)?$" term)
+                     ", setting to 1"))
           2)
 
-
-      (re-find supports-color-level-1-term-re term)
+      (when (string? term) (re-find supports-color-level-1-term-re term))
       (do (dbgf (str "TERM="
-                        (re-find supports-color-level-1-term-re term)
-                        ", setting to 1"))
+                     (re-find supports-color-level-1-term-re term)
+                     ", setting to 1"))
           1)
 
-
       colorterm
-      1
-
+      (do (dbgf (str "(System/getenv \"COLORTERM\") => "
+                     colorterm 
+                     ", setting to 1"))
+          1)
 
       :else
-      2
+      (do (dbgf (println "color level could not be detected, falling back to 2"))
+          2))))
 
-    ;; TODO - try to test & incorporate additional logic to deal with:
-    ;; - Azure DevOps pipelines
-    ;; - "dumb" term
-    ;; - platform win32
-    ;; - "CI" in env - 'GITHUB_ACTIONS', 'GITEA_ACTIONS', 'CIRCLECI', 'TRAVIS', 'APPVEYOR', 'GITLAB_CI', 'BUILDKITE', 'DRONE' 
-    ;; - 'TEAMCITY_VERSION' in env
-
-)))
 
 (defmacro get-detected-color-level []
-  ;; TODO - incorporate this color-level stuff into state
-  (let [{:keys [no-color? force-color?]
-         :as   m}
-        (get-user-color-env-vars)]
-    (cond force-color?
-          (detect-color-level)
-          no-color?
-          :NO_COLOR
-          :else
-          (detect-color-level))))
+  (let [{:keys [:env-var/no-color? 
+                :env-var/force-color?
+                :env-var/debug-detect-color?]} 
+        (get-user-color-env-vars)
+
+        dbgf                                                                                   
+        (if debug-detect-color?
+          #(println (str "\n"
+                         "BLING_DEBUG_DETECT_COLOR=\"true\"\n" 
+                         "Debugging "
+                         "\033[3m"
+                         "fireworks.macros/detect-color-level ...\n"
+                         "\033[0;m"
+                         % 
+                         "\n"))
+          identity)]
+    (try (cond force-color?
+               (detect-color-level dbgf)
+               no-color?
+               :NO_COLOR
+               :else
+               (detect-color-level dbgf))
+         (catch Throwable e
+           (when debug-detect-color?
+             (println e)
+             (dbgf "Error (caught), falling back to 2"))
+           2))))

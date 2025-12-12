@@ -4,7 +4,6 @@
    [fireworks.pp :refer (?pp)]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
-   [fireworks.util :as util]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [clojure.string :as string])
@@ -194,6 +193,7 @@
             val-str-len
             encapsulation-closing-bracket-len])))
 
+
 (defn- mutable-wrapper-count
   [{:keys [val-is-atom? val-is-volatile?]}]
   (cond val-is-atom?
@@ -203,13 +203,37 @@
         :else
         0))
 
+
+(defn- exceeds-map-value-threshold? [k-or-v n]
+  (some->> k-or-v
+           meta 
+           :ellipsized-char-count
+           (< n)))
+
+
+(defn force-single-column-map-layout-on-threshold-basis? 
+  [coll meta-map]
+  (boolean
+   (when (-> meta-map :map-like?)
+     (when-let [n (:single-column-maps-length-threshold @state/config)]
+       (some (fn [[k v]] 
+               (or (exceeds-map-value-threshold? k n)
+                   (exceeds-map-value-threshold? v n)))
+             coll)))))
+
+
 (defn maybe-ellipsize
   "Attaches badge and ellipsis, when appropriate.
 
    Wraps atoms and volatiles.
 
    Adds :strlen-with-badge-ellipsized entry to meta, to potentially be used for
-   formatting in fireworks.serialize/serialized."
+   formatting in fireworks.serialize/serialized.
+   
+   Potentially sets single-column-map-layout? entry in meta to true, if x is a
+   map-like? coll and any of the keys or values exceed the value of the config
+   option :single-column-maps-length-threshold.
+   "
    
   [{:keys [coll-type? ellipsized x t meta-map]}]
   (let [ret* (cond 
@@ -264,23 +288,39 @@
                     ;;                  ellipsized-char-count
                     ;;                  str-len-with-badge-ellipsized])))
                     
+                    single-column
+                    (when (force-single-column-map-layout-on-threshold-basis?
+                           ret*
+                           meta-map)
+                      {:single-column-map-layout? true})
+
+
                     meta-map            
-                    (assoc meta-map
-                           :str-len-val-ellipsized
-                           str-len-val-ellipsized
-                           :str-len-with-badge-ellipsized
-                           str-len-with-badge-ellipsized)
-                    ]
+                    (merge meta-map
+                           {:str-len-val-ellipsized
+                            str-len-val-ellipsized
+                            :str-len-with-badge-ellipsized
+                            str-len-with-badge-ellipsized}
+                           single-column)]
                 (with-meta ret* meta-map)))]
     ret))
+
+
+(defn- force-single-column-map-layout?
+  [coll]
+  (boolean (and (map? coll)
+                (:single-column-maps? @state/config))))
+
 
 (defn- some-colls-as-keys?
   [coll]
   (boolean (when (map? coll)
              (some (fn [[k _]] (coll? k)) coll))))
 
+
 (defn- user-metadata [x]
   (some-> x meta :fw/user-meta))
+
 
 (defn- some-syms-carrying-metadata-as-keys?
   [coll]
@@ -330,7 +370,7 @@
      mm
      (let [{:keys [og-x val-is-atom?]
             :as fw-truncated-meta}  (or (:fw/truncated mm)
-                                        ;;  TODO - describe why it is necessary
+                                        ;; TODO - describe why it is necessary
                                         ;; to provide this map here
                                         meta-map-mapentry-vector)
            ret   (merge 
@@ -365,7 +405,8 @@
 
                        single-column-map-layout?            
                        (or some-colls-as-keys?
-                           some-syms-carrying-metadata-as-keys?)
+                           some-syms-carrying-metadata-as-keys?
+                           (force-single-column-map-layout? x))
 
                        inline-badge?
                        (and badge
@@ -396,16 +437,26 @@
   "Reprofile to deal with map keys"
   [x meta-map f]
   (if (:map-like? meta-map) 
-    (into []
-          (map-indexed 
-           (fn [i [k v]]
-             (let [k (f k {:key?             true
-                           :associated-value v
-                           :js-map-like-key? (:js-map-like? meta-map)
-                           :index            i})
-                   v (vary-meta v assoc-in [:fw/truncated :map-value?] true)]
-               [k v]))
-           x))
+    (let [ret 
+          (into []
+                (map-indexed 
+                 (fn [i [k v]]
+                   ;;  (?pp (meta k))
+                   ;;  (?pp k)
+                   (let [k (f k {:key?             true
+                                 :associated-value v
+                                 :js-map-like-key? (:js-map-like? meta-map)
+                                 :index            i})
+                         v (vary-meta v assoc-in [:fw/truncated :map-value?] true)]
+
+                     ;;  (?pp k)
+                     ;;  (?pp (meta k))
+                     [k v]))
+                 x))
+
+          ]
+
+      ret)
     x))
 
 ;; TODO - Address the following:
