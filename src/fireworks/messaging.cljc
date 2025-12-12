@@ -194,10 +194,9 @@
                                                                      depth 
                                                                      mini-strace)
                    ;; Get all the frames up to the last index
-                   trace*       (when last-index
-                                  (->> mini-strace
-                                       (take (inc last-index))
-                                       (into [])))
+                   trace*       (some->> mini-strace
+                                         (take (inc (or last-index depth)))
+                                         (into []))
                    trace*       (if first-index
                                   (assoc trace*
                                          first-index
@@ -216,7 +215,11 @@
                                              (str "\n...+"))))
                    trace        (some-> trace (conj num-dropped))
                    trace2       (clean-up-frames trace)]
+
+               #_(?pp {:last-index        last-index
+                     :first-index       first-index})
                (apply str trace2)))]
+       #_(?pp {:formatted-string formatted-string})
        {:formatted-string formatted-string
         :stack-trace-seq  strace})))
 
@@ -341,7 +344,9 @@
 
 (def hints
   #?(:cljs
-     ()
+     nil
+     :bb
+     nil
      :clj
      {"Cannot invoke \"Object.getClass()\" because \"x\" is null" 
       {
@@ -371,12 +376,12 @@
          ;; TODO - Add stacktrace preview in bling for cljs?
          body
          :clj
-         (let [{:keys [formatted-string stack-trace-seq]}
+         (let [{:keys [formatted-string stack-trace-seq] :as m}
                (stack-trace-preview
                 {:error err
                  :regex #"^fireworks\.|^lasertag\."
                  :depth 12})
-               
+              ;;  _ (?pp m)
                hint
                (let [hints-by-error-message
                      (->> err-msg-str (get hints))
