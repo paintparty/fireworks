@@ -1072,7 +1072,80 @@
    :pp/no-file   :pp 
    })
 
-(defn- mode+template [a]
+
+(defn- _p2-call [og-x m x+ i]
+  (list
+   'do 
+   (list 
+    'when
+     true #_(if (zero? i) true x+)
+    (list 'fireworks.core/_p2 
+          (merge {:qf                  (string/replace (str og-x)
+                                                       #"p[0-9]+__[0-9]+#" "%")
+                  :margin-inline-start 2
+                  ;;  :label-color         :green
+                  :template            [:form-or-label :result]}
+                 (when (map? m)
+                   {:user-opts m}))
+          (list 'if (list 'nil? x+)
+                (list 'symbol "nil  ; <- short circuted")
+                x+)
+          ))
+   x+))
+
+(defn- thread-form->let-binding [thread-sym m i x]
+  [(symbol (str "_" i))
+   (let [og-x x
+         x+   (if (pos? i)
+                (let [x        (if (list? x) x (list x))
+                      [f & rs] x
+                      previous-binding (symbol (str "_" (dec i)))]
+                  (if (contains? #{'-> 'some->} thread-sym)
+                    (concat (list f previous-binding) rs)
+                    (list 'when previous-binding (concat x [previous-binding]))))
+                x)]
+     (_p2-call og-x m x+ i))])
+
+
+(defn- threading-form? [%]
+  (and (list? %) 
+       (contains? #{'-> '->> 'some-> 'some->>}
+                  (first %))))
+
+
+(defn- as-let* [thread-sym rest-of-threading-form a]
+  (let [as-let* (map-indexed (partial thread-form->let-binding thread-sym a)
+                             rest-of-threading-form)
+        as-let  (list 
+                 'let
+                 (into [] (apply concat as-let*))
+                 (symbol 
+                  (str "_"
+                       (dec (count rest-of-threading-form)))))]
+    as-let))
+
+
+(defn- resolve-tracing-form [&form mode]
+  (let [tracing-form                          
+        (when (= mode :trace)
+          (first (filter threading-form? &form)))
+
+        [thread-sym & rest-of-threading-form] 
+        tracing-form
+
+        mode                                  
+        (if (= mode :trace)
+          (when (some->> thread-sym
+                         (contains? #{'-> '->> 'some-> 'some->>}))
+            :trace)
+          mode)]
+    {:thread-sym             thread-sym  
+     :rest-of-threading-form rest-of-threading-form  
+     :tracing-form           tracing-form  
+     :mode                   mode}))
+
+
+(defn- mode+template [a &form]
   (let [alias-mode
         (if (contains? alias-modes a) a nil)
         
@@ -1102,10 +1175,14 @@
           ;; default-case nix?
           :trace      [:form-or-label :file-info :result]}
          mode
-         [:form-or-label :file-info :result])]
-    {:mode       mode
-     :alias-mode alias-mode
-     :template   template}))
+         [:form-or-label :file-info :result])
+        
+        m
+        (resolve-tracing-form &form mode)]
+    (merge {:mode       mode
+            :alias-mode alias-mode
+            :template   template}
+           m)))
 
 #?(:clj
    (defn- ?2-helper
@@ -1190,36 +1267,6 @@
   ([x] `(do (tap> ~x) ~x)))
 
 
-(defn- _p2-call [og-x m x+]
-  (list
-   'do 
-   (list 'fireworks.core/_p2 
-         (merge {:qf                  (string/replace (str og-x)
-                                                      #"p[0-9]+__[0-9]+#" "%")
-                 :margin-inline-start 2
-                ;;  :label-color         :green
-                 :template            [:form-or-label :result]}
-                (when (map? m)
-                  {:user-opts m}))
-         x+)
-   x+))
-
-(defn thread-form->let-binding [m i x]
-  [(symbol (str "_" i))
-   (let [og-x x
-         x+   (if (pos? i)
-                (let [x        (if (list? x) x (list x))
-                      [f & rs] x]
-                  (concat (list f (symbol (str "_" (dec i)))) rs))
-                x)]
-     (_p2-call og-x m x+))])
-
-(defn- threading-form? [%]
-  (and (list? %) 
-       (contains? #{'-> '->>}
-                  (first %))))
-
-
 ;; TODO - support :let mode
 ;; (ff (-> '(let [a     1
 ;;                b     2
@@ -1238,7 +1285,6 @@
 ;;              distinct)))
 
 
-
 (defmacro ?
   ([])
   ([x]
@@ -1251,28 +1297,33 @@
         (when ~defd ~x)
         (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
                            (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
+  ;; 2-arity, one of:
+  ;; (? :flag x)
+  ;; (? "mylabel" x)
+  ;; (? {:option ...} x)
   ([a x]
-   (let [{:keys [mode alias-mode template] :as _m}
-         (mode+template a)]
+   (let [{:keys [template
+                 thread-sym
+                 rest-of-threading-form 
+                 tracing-form
+                 mode
+                 alias-mode]
+          :as   _m}
+         (mode+template a &form)]
      (case mode
        :trace
        (let [form-meta    (meta &form)
-             tracing-form (first (filter threading-form? &form))
-             [_ & rest]   tracing-form
-             as-let       (map-indexed (partial thread-form->let-binding a)
-                                       rest)
-             as-let       (list 'let
-                                (into [] (apply concat as-let))
-                                (symbol (str "_" (dec (count rest)))))
+             as-let       (as-let* thread-sym rest-of-threading-form a)
              ns-str       (some-> *ns* ns-name str)]
+
          `(do 
             (fireworks.core/_p2 {:form-meta ~form-meta
                                  :ns-str    ~ns-str
                                  :qf        (quote ~tracing-form) 
-                                 :template  [:file-info :form-or-label]})
+                                 :template  [:file-info :form-or-label]}
+                                (symbol "  ;; tracing form ..."))
             ~as-let
             ~x))
-
        :log-
        `(do #?(:cljs (if node?
                        (fireworks.core/pprint ~x)
@@ -1327,26 +1378,29 @@
                  (if ~defd (cast-var ~defd ~cfg-opts) ~x)))
               (fireworks.core/_p2 cfg-opts# ret#)))))))
    
+  ;; 3-arity, one of:
+  ;; (? :flag "mylabel" x)
+  ;; (? "mylabel" {:option ...} x)
+  ;; (? :flag {:option ..} x)
+
   ([mode-or-label a x]
-   (let [{:keys [mode template]}
-         (mode+template mode-or-label)]
+   (let [{:keys [template
+                 thread-sym
+                 rest-of-threading-form 
+                 tracing-form
+                 mode]}
+         (mode+template mode-or-label &form)]
      (case mode
        :trace
-       (let [form-meta    (meta &form)
-             tracing-form (first (filter threading-form? &form))
-             [_ & rest]   tracing-form
-             as-let       (map-indexed (partial thread-form->let-binding a)
-                                       rest)
-             as-let       (list 'let
-                                (into [] (apply concat as-let))
-                                (symbol (str "_" (dec (count rest)))))
-             ns-str       (some-> *ns* ns-name str)]
+       (let [form-meta           (meta &form)
+             as-let              (as-let* thread-sym rest-of-threading-form a)
+             ns-str              (some-> *ns* ns-name str)]
          `(do 
             (fireworks.core/_p2 {:form-meta ~form-meta
                                  :ns-str    ~ns-str
                                  :qf        (quote ~tracing-form) 
                                  :template  [:file-info :form-or-label :result]}
-                                (symbol " "))
+                                (symbol "  ;; tracing form ..."))
             ~as-let
             ~x))      
 
@@ -1397,6 +1451,7 @@
                  ~cfg-opts
                  (if ~defd (cast-var ~defd ~cfg-opts) ~x)))
               (fireworks.core/_p2 cfg-opts# ret#))))))))
+
 
 ;; TODO - Add to docs/readme
 (defmacro ^{:public true} ?flop

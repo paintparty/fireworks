@@ -17,6 +17,102 @@
             #?(:clj [clojure.test :refer :all])))
 
 
+;; :trace mode smoke-testing
+#_(do
+(def my-map {"foo" "bar"})
+
+(defn ^:public map?->
+  "If (map? x), returns x, otherwise nil."
+  [x]
+  (when (map? x) x))
+
+(println "testing :trace with ->>")
+(? :trace
+   (->> my-map 
+        (into [])
+        flatten))
+
+(println "testing :trace with some->>, short-circuting initial")
+(? :trace
+   (some->> nil
+            (into [])
+            flatten))
+
+(println "testing :trace with some->>, short-circuting second")
+(? :trace
+   (some->> my-map
+            (into [])
+            map?->
+            flatten))
+
+(println "testing :trace with some->>, short-circuting second, 3-arity")
+(? :trace
+   {}
+   (some->> my-map
+            (into [])
+            map?->
+            flatten))
+
+(println "testing :trace with ->, 3-arity")
+(? :trace
+   {:single-column-maps? true}
+   (-> my-map
+       (assoc :bango :bongo)
+       (keys)
+       (->> (mapv #(-> % name string/upper-case)))))
+
+(println "testing :trace with ->")
+(? :trace
+   (-> my-map
+       (assoc :bango :bongo)
+       (keys)
+       (->> (mapv #(-> % name string/upper-case)))))
+
+(println "testing :trace with some->")
+(? :trace
+   (some-> my-map
+       (assoc :bango :bongo)
+       (keys)
+       (->> (mapv #(-> % name string/upper-case)))))
+
+(println "testing :trace with ->, 3-arity")
+(? :trace
+   {:single-column-maps? true}
+   (-> my-map
+       (assoc :bango :bongo)
+       (keys)
+       (->> (mapv #(-> % name string/upper-case)))))
+
+
+(println "testing :trace with normal fn, should not trace")
+(? :trace
+   (+ 1 1))
+
+(println "testing :trace with as->, 3-arity, should not trace")
+(? :trace
+   {:single-column-maps? true}
+   (as-> my-map $ 
+     (into [] $)
+     (flatten $)))
+
+(println "testing :trace with as->, 3-arity, print-with pprint, should not trace")
+(? :trace
+   {:single-column-maps? true
+    :print-with          pprint}
+   (as-> my-map $ 
+     (into [] $)
+     (flatten $)))
+
+(println "testing :trace with as->, should not trace")
+(? :trace
+   #_{:single-column-maps? true
+    ;; :print-with          pprint
+      }
+   #_{}
+   (as-> my-map $ 
+     (into [] $)
+     (flatten $)))
+)
 
 ;; Color level support smoke test
 #_(do
