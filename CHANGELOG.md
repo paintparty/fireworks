@@ -9,8 +9,24 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.18.0
+2025-12-12
+
+#### Added
+- Tracing of threading forms via `:trace` flag. [23] (https://github.com/paintparty/fireworks/issues/23)
+- `:single-column-maps?` option to force single-column map formatting. [45] (https://github.com/paintparty/fireworks/issues/45)
+- Warnings with misspelling hints are issued when non-existing option are supplied. [#4](https://github.com/paintparty/fireworks/issues/4)
+- `:print-detected-color-level` option for printing the detected color level. clj, bb, and node only.
+- Debugging/tracing of `fireworks.macros/get-detected-color-level` macro internals via `BLING_DEBUG_DETECT_COLOR`, for internal dev of the lib itself.
+
+#### Fixed
+- Logic within `fireworks.macros/get-detected-color-level` causing NullPointerException on Github actions builds. 
+
+
+
 ## 0.17.0
 2025-12-6
+
 
 <p><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this release!</sub></p>
 
