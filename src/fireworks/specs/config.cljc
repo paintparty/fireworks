@@ -134,6 +134,8 @@
 ;; flesh out this spec
 (s/def ::custom-printers map?)
 
+(s/def ::print-with fn?)
+
 ;; find for highlighting related -----------------------------------------------
 (s/def ::returns-boolean
   #(or (true? (% 1))

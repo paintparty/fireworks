@@ -80,6 +80,8 @@
                                          :default 0}
    :custom-printers                     {:spec    ::config/custom-printers
                                          :default {}}
+   :print-with                          {:spec    ::config/print-with
+                                         :default nil}
    :find                                {:spec    ::config/find
                                          :default nil}
    :when                                {:spec    ::config/when
