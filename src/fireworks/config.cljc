@@ -100,7 +100,9 @@
     :label
     :label-color
     :quoted-fw-form
-    :qf})
+    :qf
+    :elide-branches
+    :p-data?})
 
 ;; Option keys
 (def option-keys
