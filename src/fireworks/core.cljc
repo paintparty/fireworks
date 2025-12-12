@@ -573,6 +573,7 @@
     (reset! state/rainbow-level 0)
     (reset! state/top-level-value-is-sev? false)
     (reset! messaging/warnings-and-errors [])
+
     ;; Resetting config to user's config.edn merged with defaults
     (do (when state/debug-config?
           (messaging/fw-debug-report-template
@@ -580,8 +581,17 @@
            (state/merged-config)
            :magenta))
         (reset! state/config (state/merged-config)))
+
     ;; Reset config & potentially reset/remerge the theme
     (reset-config+theme! config-before user-opts opts)
+
+    ;; Maybe print detected color
+    (when (:print-detected-color-level? @state/config)
+      (println (str "\n"
+                    "fireworks.state/detected-color-level => "
+                    fireworks.state/detected-color-level
+                    "\n")))
+
     ;; Warn user if a non-existant config option is passed
     (doseq [k (some-> opts keys seq )]
       (when-not (contains? config/option-keys k)
@@ -1187,6 +1197,7 @@
          (merge {:qf                  (string/replace (str og-x)
                                                       #"p[0-9]+__[0-9]+#" "%")
                  :margin-inline-start 2
+                ;;  :label-color         :green
                  :template            [:form-or-label :result]}
                 (when (map? m)
                   {:user-opts m}))

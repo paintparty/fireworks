@@ -60,17 +60,6 @@
        ;; obviate the needs for most of instances of the `node?` check. 
        (def mock-node? (atom true))))
 
-;; -----------------------------------------------------------------------------
-;; Detect color level support
-;; -----------------------------------------------------------------------------
-
-(defonce detected-color-level
-  #?(:cljs
-     (if node?
-       (get-detected-color-level)
-       3)
-     :clj (get-detected-color-level)))
-
 ;; Internal state atoms for development debugging ------------------------
 (def rewind-counter (atom 0))
 (def debug-config? #_true false)
@@ -326,10 +315,17 @@
 
 
 ;; -----------------------------------------------------------------------------
-;; Detect truecolor support
+;; Detect color level support
 ;; -----------------------------------------------------------------------------
+
+(defonce detected-color-level
+  #?(:cljs
+     (if node? (get-detected-color-level) 3)
+     :clj (get-detected-color-level)))
+
 (defn- non-truecolor-level? [x]
   (boolean (and (int? x) (< x 3))))
+
 
 (defn truecolor?
   "Returns boolean indicating that output should use truecolor.

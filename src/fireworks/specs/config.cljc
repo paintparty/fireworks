@@ -116,6 +116,9 @@
   (s/nilable #(and int? 
                    (< 0 % 4))))
 
+(s/def ::print-detected-color-level?
+  boolean?)
+
 (s/def ::legacy-terminal?
   boolean?)
 

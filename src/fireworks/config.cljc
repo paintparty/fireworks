@@ -49,6 +49,8 @@
    :supports-color-level                {:spec           ::config/supports-color-level
                                          :default        nil
                                          :updates-theme? true}
+   :print-detected-color-level?         {:spec           ::config/print-detected-color-level?
+                                         :default        false}
    :legacy-terminal?                    {:spec           ::config/legacy-terminal?
                                          :default        false
                                          :updates-theme? true
@@ -94,6 +96,7 @@
     :ns-str
     :alias-mode
     :label
+    :label-color
     :quoted-fw-form
     :qf})
 
