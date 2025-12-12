@@ -16,8 +16,16 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
+;; single-column map smoke tests
+#_(do (? {:single-column-maps? true}
+       {:foo :bar}))
 
-;; :trace mode smoke-testing
+;; long-fn name smoke test
+#_(do (defn abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn [] nil)
+    (? {:non-coll-length-limit 33}
+       {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})) 
+
+;; :trace mode smoke testing
 #_(do
 (def my-map {"foo" "bar"})
 
