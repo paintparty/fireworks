@@ -762,8 +762,7 @@
    (let [theme*           (:theme @config) ;; TODO - should this be user-config?
          user-theme       (valid-user-theme theme*)
          theme            (resolve-theme @config user-theme)
-         theme-suffix     (?pp (some-> theme :name (string/split #" ") last))
-        ;;  theme-suffix     (?pp (some-> theme :name util/last-word))
+         theme-suffix     (some-> theme :name util/last-word)
          mood             (case theme-suffix
                             "Light"
                             :light

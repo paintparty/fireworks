@@ -74,7 +74,7 @@
                  transient?
                  (or (some->> #?(:cljs #"/" :clj #"\$")
                               (string/split classname)
-                              last)
+                              peek)
                      defs/transient-label)
 
                  :else

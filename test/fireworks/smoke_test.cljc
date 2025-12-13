@@ -36,11 +36,12 @@
      ))
 
 (def my-map {"foo" "bar"})
-(? :pp {:margin-top 0} {:x 1
-                        :y 2
-                        :z {:zo                44
-                            :zz                55
-                            :aafasdfasdfadsfds "asdfsdfsdfasdfsdfkjsadl;fkjsadlfjasdlfjsaldfjsda"}})
+#_(? {:single-column-maps? true
+    :margin-top          0} {:x 1
+                             :y 2
+                             :z {:zo                44
+                                 :zz                55
+                                 :aafasdfasdfadsfds "asdfsdfsdfasdfsdfkjsadl;fkjsadlfjasdlfjsaldfjsda"}})
 
 #_(? :trace
    (with-meta 
@@ -51,7 +52,7 @@
 
 
 ;; single-column map smoke tests
-#_(do (? {:single-column-maps? true}
+(do (? {:single-column-maps? true}
        {:foo :bar}))
 
 

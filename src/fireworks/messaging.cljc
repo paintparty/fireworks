@@ -79,7 +79,6 @@
          (:sgr-tag-close sgr-tags)
          "\n")))
 
-
 #?(:clj
    (do 
      (defn- bad-options-to-stack-trace-preview-warning [error]
@@ -106,7 +105,6 @@
         not legit, use the depth."
        [regex depth mini-strace]
        (if (= java.util.regex.Pattern (type regex))
-         ;; TODO - perf - use transduction here
          (some->> mini-strace
                   (keep-indexed
                    (fn [i [f]]
@@ -122,7 +120,6 @@
         match"
        [regex depth mini-strace]
        (if (= java.util.regex.Pattern (type regex))
-         ;; TODO - perf - use transduction here
          (first (keep-indexed
                  (fn [i [f]]
                    (when (re-find regex (str f))
