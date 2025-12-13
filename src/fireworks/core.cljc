@@ -1229,12 +1229,14 @@
     (list 'let
           let-bindings
           (list 'fireworks.core/_p2 
-                (merge {:margin-inline-start 2
+                (merge {:margin-inline-start 1
                         :template            [:result]}
                        (when (map? a)
                          {:user-opts (assoc a :let-bindings? true)}))
-                (list 'fireworks.core/str-keys-vec->syms-array-map 
-                      bindings-to-trace)))))
+                (list 'with-meta
+                      (list 'fireworks.core/str-keys-vec->syms-array-map 
+                            bindings-to-trace)
+                      {:fw/hide-brackets? true})))))
 
 
 (defn- thread-form->let-binding [thread-sym m i x]
@@ -1467,13 +1469,15 @@
                                  :ns-str    ~ns-str
                                  :qf        (quote ~tracing-form) 
                                  :template  [:file-info :form-or-label :result]}
-                                (symbol (str "\n  ;; "
+                                (symbol (str "\n  "
                                              (if ~bindings?
-                                               "let bindings as map"
+                                               "let bindings"
                                                (str "tracing " (quote ~thread-sym))))))
             ~as-let
             (println)
-            (fireworks.core/_p2 {:template  [:result]} ~x)
+            (fireworks.core/_p2 {:template  [:result] 
+                                 :user-opts {:margin-bottom 1}}
+                                ~x)
             ~x))
        :log-
        `(do #?(:cljs (if node?
@@ -1556,14 +1560,16 @@
                                  :ns-str    ~ns-str
                                  :qf        (quote ~tracing-form) 
                                  :template  [:file-info :form-or-label :result]}
-                                (symbol (str "\n  ;; "
+                                (symbol (str "\n  "
                                              (if ~bindings?
-                                               "let bindings:"
+                                               "let bindings"
                                                (str "tracing "
                                                     (quote ~thread-sym))) )))
             ~as-let
             (println)
-            (fireworks.core/_p2 {:template  [:result]} ~x)
+            (fireworks.core/_p2 {:template  [:result] 
+                                 :user-opts {:margin-bottom 1}}
+                                ~x)
             ~x))      
 
        ;; Remove this? or should it be js?
