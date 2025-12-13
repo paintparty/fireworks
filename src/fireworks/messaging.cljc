@@ -196,7 +196,7 @@
                    ;; Get all the frames up to the last index
                    trace*       (some->> mini-strace
                                          (take (inc (or last-index depth)))
-                                         (into []))
+                                         vec)
                    trace*       (if first-index
                                   (assoc trace*
                                          first-index

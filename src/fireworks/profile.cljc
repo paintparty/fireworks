@@ -438,7 +438,7 @@
   [x meta-map f]
   (if (:map-like? meta-map) 
     (let [ret 
-          (into []
+          (vec
                 (map-indexed 
                  (fn [i [k v]]
                    ;;  (?pp (meta k))

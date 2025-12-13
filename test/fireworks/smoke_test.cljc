@@ -18,7 +18,7 @@
 
 
 ;; let bindings smoke test
-(? :trace 
+#_(? :trace 
    {:theme "Alabaster Dark"} 
    (let [foo                                         1
          bar                                         2
@@ -36,10 +36,16 @@
      ))
 
 (def my-map {"foo" "bar"})
-(? :trace
+(? :pp {:margin-top 0} {:x 1
+                        :y 2
+                        :z {:zo                44
+                            :zz                55
+                            :aafasdfasdfadsfds "asdfsdfsdfasdfsdfkjsadl;fkjsadlfjasdlfjsaldfjsda"}})
+
+#_(? :trace
    (with-meta 
      (->> my-map 
-          (into [])
+          vec
           flatten)
      {:fw/hide-brackets? true}))
 
@@ -67,19 +73,19 @@
 (println "hn\n---------- testing :trace with ->>")
 (? :trace
    (->> my-map 
-        (into [])
+        vec
         flatten))
 
 (println "\n\n---------- testing :trace with some->>, short-circuting initial")
 (? :trace
    (some->> nil
-            (into [])
+            vec
             flatten))
 
 (println "\n\n---------- testing :trace with some->>, short-circuting second")
 (? :trace
    (some->> my-map
-            (into [])
+            vec
             map?->
             flatten))
 
@@ -87,7 +93,7 @@
 (? :trace
    {}
    (some->> my-map
-            (into [])
+            vec
             map?->
             flatten))
 
@@ -130,7 +136,7 @@
 (? :trace
    {:single-column-maps? true}
    (as-> my-map $ 
-     (into [] $)
+     (vec $)
      (flatten $)))
 
 (println "\n\ntesting :trace with as->, 3-arity, print-with pprint, should not trace")
@@ -138,7 +144,7 @@
    {:single-column-maps? true
     :print-with          pprint}
    (as-> my-map $ 
-     (into [] $)
+     (vec $)
      (flatten $)))
 
 (println "\n\ntesting :trace with as->, should not trace")
@@ -148,7 +154,7 @@
       }
    #_{}
    (as-> my-map $ 
-     (into [] $)
+     (vec $)
      (flatten $)))
 )
 

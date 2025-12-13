@@ -42,7 +42,7 @@
                                v (.-value item)]]
                      [k
                       (cond (= k "style") (inline-style->map v)
-                            (= k "class") (into [] (string/split v " "))
+                            (= k "class") (vec (string/split v " "))
                             :else         v)]))))))
 
      
@@ -105,7 +105,7 @@
   (let [
         ;; First we need to check if collection is both not map-like and 
         ;; comprised only of map entries. If this is the case it is most likely
-        ;; the result of something like `(into [] {:a "a" :b "b"})`, and we need
+        ;; the result of something like `(vec {:a "a" :b "b"})`, and we need
         ;; to treat all elements in the coll as 2-el vectors (not map-entries),
         ;; in the subsequent nested calls to `truncate`. This is done by passing
         ;; a value of `true` for the :map-entry-in-non-map? option. 
@@ -117,7 +117,7 @@
                       (every? #(-> % map-entry?))))     
 
         ret
-        (let [taken (->> x (take coll-limit) (into []))
+        (let [taken (->> x (take coll-limit) vec)
               x-is-set? (set? x)]
           (mapv (fn [i]
                   (let [nth-taken (nth taken i nil)]

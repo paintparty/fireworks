@@ -813,7 +813,7 @@
         [string-with-format-specifier-tags & css-styles] 
         (->> string
              fireworks.browser/ansi-sgr-string->browser-dev-console-array
-             (into []))]
+             vec)]
 
     (keyed [string
             string-with-format-specifier-tags 
@@ -1268,7 +1268,7 @@
                              rest-of-threading-form)
         as-let  (list 
                  'let
-                 (into [] (apply concat as-let*))
+                 (vec (apply concat as-let*))
                  (symbol 
                   (str "_"
                        (dec (count rest-of-threading-form)))))]

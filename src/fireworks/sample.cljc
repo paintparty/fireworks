@@ -430,7 +430,7 @@
              (reduce (fn [acc [k v]] (conj acc k v))
                      []
                      coll))
-      (into [] coll))))
+      (vec coll))))
 
 
 (defn show-everything 
