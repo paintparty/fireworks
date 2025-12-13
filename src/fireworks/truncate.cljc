@@ -8,7 +8,7 @@
             [fireworks.order :refer [seq->sorted-map]]
             [fireworks.profile :as profile]
             [fireworks.state :as state]
-            [fireworks.util :as util :refer [maybe]]))
+            [fireworks.util :as util :refer [maybe-> maybe->>]]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -77,7 +77,7 @@
          (into (array-map)
                (reduce (fn [acc k]
                          (if (some-> k
-                                     (maybe string?)
+                                     (maybe-> string?)
                                      (string/starts-with? "closure_uid_"))
                            (do (vreset! uid-entry? true)
                                acc)

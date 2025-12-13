@@ -19,11 +19,11 @@
 
 ;; let bindings smoke test
 (? :trace 
-   {}
+   {:theme "Alabaster Dark"} 
    (let [foo                                         1
          bar                                         2
          [a [d e] :as abs]                           [:a [:d :e]]
-         {:keys              [x y]
+         #_#_{:keys              [x y]
           {bee :zo
            gee :zz} :z
           :as                m} {:x 1
@@ -31,8 +31,17 @@
                                  :z {:zo                44
                                      :zz                55
                                      :aafasdfasdfadsfds "asdfsdfsdfasdfsdfkjsadl;fkjsadlfjasdlfjsaldfjsda"}}]
-     (+ bee gee)))
+     [a d]
+     #_(+ bee gee)
+     ))
 
+(def my-map {"foo" "bar"})
+(? :trace
+   (with-meta 
+     (->> my-map 
+          (into [])
+          flatten)
+     {:fw/hide-brackets? true}))
 
 
 ;; single-column map smoke tests

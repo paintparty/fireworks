@@ -3,7 +3,7 @@
             [clojure.main]
             [fireworks.pp :refer [?pp pprint]]
             [expound.alpha :as expound]
-            [fireworks.util :as util :refer [maybe]]))
+            [fireworks.util :as util :refer [maybe->]]))
 
 (defrecord FireworksThrowable [err err-x err-opts])
 
@@ -174,7 +174,7 @@
   [{:keys [error regex depth header]}]
   #?(:clj
      (let [strace 
-           (some->> (maybe error #(instance? Exception %)) .getStackTrace seq)
+           (some->> (maybe-> error #(instance? Exception %)) .getStackTrace seq)
 
            formatted-string
            (if-not strace
@@ -185,7 +185,7 @@
              ;; Create a formatted string of of the stack trace, clean it up and
              ;; make it easier to read
              (let [strace-len   (count strace)
-                   depth        (or (maybe depth pos-int?) 7)
+                   depth        (or (maybe-> depth pos-int?) 7)
                    mini-strace  (mini-trace depth strace)
                    last-index   (last-index-of-relevant-stack-trace regex
                                                                     depth 
@@ -211,7 +211,7 @@
                                          (into with-header))
                    num-dropped  (when trace
                                   (let [n (- (or strace-len 0) (or len 0))]
-                                    (some->> (maybe n pos-int?)
+                                    (some->> (maybe-> n pos-int?)
                                              (str "\n...+"))))
                    trace        (some-> trace (conj num-dropped))
                    trace2       (clean-up-frames trace)]
@@ -258,7 +258,7 @@
 (defn warning-or-exception-summary 
   [{:keys [line column file header hint hint-label] :as m}]
   (str (some->> hint
-                (summary-section (or (maybe hint-label string?) "Hint:")))
+                (summary-section (or (maybe-> hint-label string?) "Hint:")))
        
        (some->> header
                 (summary-section "Raised by:"))

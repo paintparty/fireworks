@@ -86,6 +86,17 @@
           (pred x))
     x))
 
+(defn ^:public maybe->
+  "If `(= (pred x) true)`, returns x, otherwise nil.
+   Useful in a `clojure.core/some->` threading form."
+  [x pred]
+  (when (true? (pred x)) x))
+
+(defn ^:public maybe->>
+  "If (= (pred x) true), returns x, otherwise nil.
+   Useful in a `clojure.core/some->>` threading form."
+  [pred x]
+  (when (true? (pred x)) x))
 
 (defn tag-map*
   ([x]
