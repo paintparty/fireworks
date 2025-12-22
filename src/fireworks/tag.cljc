@@ -58,6 +58,7 @@
        
        (str result)))))
 
+;; TODO - If neutral theme, don't tag
 (defn tag!
   ([t]
    (tag! t nil))

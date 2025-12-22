@@ -52,7 +52,7 @@
 
 
 ;; single-column map smoke tests
-(do (? {:single-column-maps? true}
+#_(do (? {:single-column-maps? true}
        {:foo :bar}))
 
 
