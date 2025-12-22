@@ -4,7 +4,7 @@
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
    [fireworks.browser]
-   [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
+   [fireworks.pp :as fireworks.pp]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
@@ -340,7 +340,7 @@
                        log?]))]
     
     ;; TODO Change this to (= mode :data)
-     ;; TODO - Change if post-replace works - cljs stuff below
+    ;; TODO - Change if post-replace works - cljs stuff below
     (if  p-data?
       ;; If p-data, return a map of preformatted values
       (merge
@@ -813,7 +813,7 @@
         [string-with-format-specifier-tags & css-styles] 
         (->> string
              fireworks.browser/ansi-sgr-string->browser-dev-console-array
-             (into []))]
+             vec)]
 
     (keyed [string
             string-with-format-specifier-tags 
@@ -1095,6 +1095,154 @@
           ))
    x+))
 
+;; cc-destructure fn from Snitch - https://github.com/AbhinavOmprakash/snitch
+
+(defn- cc-destructure
+  "A slightly modified version of clj and cljs' destructure to
+  work with clj and cljs.
+
+  This is used to help setup let-bindings for tracing with the :trace flag"
+  [bindings]
+  (let [bents (partition 2 bindings)
+        pb (fn pb
+             [bvec b v]
+             (let [pvec
+                   (fn [bvec b val]
+                     (let [gvec (gensym "vec__")
+                           gseq (gensym "seq__")
+                           gfirst (gensym "first__")
+                           has-rest (some #{'&} b)]
+                       (loop [ret (let [ret (conj bvec gvec val)]
+                                    (if has-rest
+                                      (conj ret gseq (list `seq gvec))
+                                      ret))
+                              n 0
+                              bs b
+                              seen-rest? false]
+                         (if (seq bs)
+                           (let [firstb (first bs)]
+                             (cond
+                               (= firstb '&) (recur (pb ret (second bs) gseq)
+                                                    n
+                                                    (nnext bs)
+                                                    true)
+                               (= firstb :as) (pb ret (second bs) gvec)
+                               :else (if seen-rest?
+                                       (throw #?(:clj (new Exception "Unsupported binding form, only :as can follow & parameter")
+                                                 :cljs (new js/Error "Unsupported binding form, only :as can follow & parameter")))
+                                       (recur (pb (if has-rest
+                                                    (conj ret
+                                                          gfirst `(~'first ~gseq)
+                                                          gseq `(~'next ~gseq))
+                                                    ret)
+                                                  firstb
+                                                  (if has-rest
+                                                    gfirst
+                                                    (list `~'nth gvec n nil)))
+                                              (inc n)
+                                              (next bs)
+                                              seen-rest?))))
+                           ret))))
+                   pmap
+                   (fn [bvec b v]
+                     (let [gmap (gensym "map__")
+                           gmapseq (with-meta gmap {:tag 'clojure.lang.ISeq})
+                           defaults (:or b)]
+                       (loop [ret (-> bvec (conj gmap) (conj v)
+                                      (conj gmap) (conj `(~'if (~'seq? ~gmap)
+                                                               (~'apply ~'hash-map (~'seq ~gmapseq))
+                                                               ~gmap))
+                                      ((fn [ret]
+                                         (if (:as b)
+                                           (conj ret (:as b) gmap)
+                                           ret))))
+                              bes (let [transforms
+                                        (reduce
+                                          (fn [transforms mk]
+                                            (if (keyword? mk)
+                                              (let [mkns (namespace mk)
+                                                    mkn (name mk)]
+                                                (cond (= mkn "keys") (assoc transforms mk #(keyword (or mkns (namespace %)) (name %)))
+                                                      (= mkn "syms") (assoc transforms mk #(list `quote (symbol (or mkns (namespace %)) (name %))))
+                                                      (= mkn "strs") (assoc transforms mk str)
+                                                      :else transforms))
+                                              transforms))
+                                          {}
+                                          (keys b))]
+                                    (reduce
+                                      (fn [bes entry]
+                                        (reduce #(assoc %1 %2 ((val entry) %2))
+                                                (dissoc bes (key entry))
+                                                ((key entry) bes)))
+                                      (dissoc b :as :or)
+                                      transforms))]
+                         (if (seq bes)
+                           (let [bb (key (first bes))
+                                 bk (val (first bes))
+                                 local (if #?(:clj  (instance? clojure.lang.Named bb)
+                                              :cljs (implements? INamed bb))
+                                         (with-meta (symbol nil (name bb)) (meta bb))
+                                         bb)
+                                 bv (if (contains? defaults local)
+                                      (list 'get gmap bk (defaults local))
+                                      (list 'get gmap bk))]
+                             (recur (if (ident? bb)
+                                      (-> ret (conj local bv))
+                                      (pb ret bb bv))
+                                    (next bes)))
+                           ret))))]
+               (cond
+                 (symbol? b) (-> bvec (conj b) (conj v))
+                 (vector? b) (pvec bvec b v)
+                 (map? b) (pmap bvec b v)
+                 :else (throw
+                         #?(:clj (new Exception (str "Unsupported binding form: " b))
+                            :cljs (new js/Error (str "Unsupported binding form: " b)))))))
+        process-entry (fn [bvec b] (pb bvec (first b) (second b)))]
+    (if (every? symbol? (map first bents))
+      bindings
+      (if-let [kwbs (seq (filter #(keyword? (first %)) bents))]
+        (throw
+          #?(:clj (new Exception (str "Unsupported binding key: " (ffirst kwbs)))
+             :cljs (new js/Error (str "Unsupported binding key: " (ffirst kwbs)))))
+        (reduce process-entry [] bents)))))
+
+
+(defn ^:public str-keys-vec->syms-array-map 
+  [coll]
+  (->> coll
+       (partition 2)
+       (reduce (fn [acc [k v]]
+                  (conj acc (symbol k) v)) 
+               [])
+       (apply array-map)))
+
+
+(defn- prep-bindings [let-bindings a]
+  (let [bindings-to-trace
+        (reduce
+         (fn [acc [binding value]] 
+           (if (->> binding
+                    str
+                    (re-find #"__[0-9]+$"))
+             acc
+             (conj acc (str binding) value)))
+         []
+         (partition 2 let-bindings))]
+
+    (list 'let
+          let-bindings
+          (list 'fireworks.core/_p2 
+                (merge {:margin-inline-start 1
+                        :template            [:result]}
+                       (when (map? a)
+                         {:user-opts (assoc a :let-bindings? true)}))
+                (list 'with-meta
+                      (list 'fireworks.core/str-keys-vec->syms-array-map 
+                            bindings-to-trace)
+                      {:fw/hide-brackets? true})))))
+
+
 (defn- thread-form->let-binding [thread-sym m i x]
   [(symbol (str "_" i))
    (let [og-x x
@@ -1114,13 +1262,17 @@
        (contains? #{'-> '->> 'some-> 'some->>}
                   (first %))))
 
+(defn- let-form? [%]
+  (and (list? %) 
+       (contains? #{'let}
+                  (first %))))
 
 (defn- as-let* [thread-sym rest-of-threading-form a]
   (let [as-let* (map-indexed (partial thread-form->let-binding thread-sym a)
                              rest-of-threading-form)
         as-let  (list 
                  'let
-                 (into [] (apply concat as-let*))
+                 (vec (apply concat as-let*))
                  (symbol 
                   (str "_"
                        (dec (count rest-of-threading-form)))))]
@@ -1130,19 +1282,29 @@
 (defn- resolve-tracing-form [&form mode]
   (let [tracing-form                          
         (when (= mode :trace)
-          (first (filter threading-form? &form)))
+          (or (first (filter threading-form? &form))
+              (first (filter let-form? &form))))
+
+        [sym] 
+        tracing-form
 
         [thread-sym & rest-of-threading-form] 
-        tracing-form
+        (when-not (= sym 'let) tracing-form)
+
+        [_ let-bindings] 
+        (when (= sym 'let) tracing-form)
+
+        let-bindings 
+        (some-> let-bindings cc-destructure)
 
         mode                                  
         (if (= mode :trace)
-          (when (some->> thread-sym
-                         (contains? #{'-> '->> 'some-> 'some->>}))
+          (when (some->> sym (contains? #{'-> '->> 'some-> 'some->> 'let}))
             :trace)
           mode)]
     {:thread-sym             thread-sym  
      :rest-of-threading-form rest-of-threading-form  
+     :let-bindings           let-bindings    
      :tracing-form           tracing-form  
      :mode                   mode}))
 
@@ -1259,10 +1421,12 @@
 ;   AAAAAAA                   AAAAAAAPPPPPPPPPP          IIIIIIIIII
                                                               
 
+
 (defmacro config!
   "Resets the value of fireworks.state/config-overrides"
   [m]
   (reset! state/config-overrides m))
+
 
 (defmacro ?> 
   "Passes value to clojure.core/tap> and returns value."
@@ -1289,6 +1453,7 @@
    (let [{:keys [template
                  thread-sym
                  rest-of-threading-form 
+                 let-bindings
                  tracing-form
                  mode
                  alias-mode]
@@ -1296,17 +1461,27 @@
          (mode+template a &form)]
      (case mode
        :trace
-       (let [form-meta    (meta &form)
-             as-let       (as-let* thread-sym rest-of-threading-form a)
-             ns-str       (some-> *ns* ns-name str)]
+       (let [form-meta (meta &form)
+             ns-str    (some-> *ns* ns-name str)
+             bindings? (boolean let-bindings)
+             as-let    (if bindings?
+                         (prep-bindings let-bindings a)
+                         (as-let* thread-sym rest-of-threading-form a))]
 
          `(do 
             (fireworks.core/_p2 {:form-meta ~form-meta
                                  :ns-str    ~ns-str
                                  :qf        (quote ~tracing-form) 
-                                 :template  [:file-info :form-or-label]}
-                                (symbol "  ;; tracing form ..."))
+                                 :template  [:file-info :form-or-label :result]}
+                                (symbol (str "\n  "
+                                             (if ~bindings?
+                                               "let bindings"
+                                               (str "tracing " (quote ~thread-sym))))))
             ~as-let
+            (println)
+            (fireworks.core/_p2 {:template  [:result] 
+                                 :user-opts {:margin-bottom 1}}
+                                ~x)
             ~x))
        :log-
        `(do #?(:cljs (if node?
@@ -1371,21 +1546,34 @@
    (let [{:keys [template
                  thread-sym
                  rest-of-threading-form 
+                 let-bindings
                  tracing-form
                  mode]}
          (mode+template mode-or-label &form)]
      (case mode
        :trace
-       (let [form-meta           (meta &form)
-             as-let              (as-let* thread-sym rest-of-threading-form a)
-             ns-str              (some-> *ns* ns-name str)]
+       (let [form-meta (meta &form)
+             ns-str    (some-> *ns* ns-name str)
+             bindings? (boolean let-bindings)
+             as-let    (if bindings?
+                         (prep-bindings let-bindings a)
+                         (as-let* thread-sym rest-of-threading-form a))]
+
          `(do 
             (fireworks.core/_p2 {:form-meta ~form-meta
                                  :ns-str    ~ns-str
                                  :qf        (quote ~tracing-form) 
                                  :template  [:file-info :form-or-label :result]}
-                                (symbol "  ;; tracing form ..."))
+                                (symbol (str "\n  "
+                                             (if ~bindings?
+                                               "let bindings"
+                                               (str "tracing "
+                                                    (quote ~thread-sym))) )))
             ~as-let
+            (println)
+            (fireworks.core/_p2 {:template  [:result] 
+                                 :user-opts {:margin-bottom 1}}
+                                ~x)
             ~x))      
 
        ;; Remove this? or should it be js?
@@ -1422,7 +1610,7 @@
                                 mode
                                 x]))]
 
-         #_(ff "?, 3-arity" cfg-opts)
+        ;;  (ff "?, 3-arity" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
                 ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)] 
             (when ~defd ~x)

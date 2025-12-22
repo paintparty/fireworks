@@ -16,14 +16,51 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
+
+;; let bindings smoke test
+#_(? :trace 
+   {:theme "Alabaster Dark"} 
+   (let [foo                                         1
+         bar                                         2
+         [a [d e] :as abs]                           [:a [:d :e]]
+         #_#_{:keys              [x y]
+          {bee :zo
+           gee :zz} :z
+          :as                m} {:x 1
+                                 :y 2
+                                 :z {:zo                44
+                                     :zz                55
+                                     :aafasdfasdfadsfds "asdfsdfsdfasdfsdfkjsadl;fkjsadlfjasdlfjsaldfjsda"}}]
+     [a d]
+     #_(+ bee gee)
+     ))
+
+(def my-map {"foo" "bar"})
+#_(? {:single-column-maps? true
+    :margin-top          0} {:x 1
+                             :y 2
+                             :z {:zo                44
+                                 :zz                55
+                                 :aafasdfasdfadsfds "asdfsdfsdfasdfsdfkjsadl;fkjsadlfjasdlfjsaldfjsda"}})
+
+#_(? :trace
+   (with-meta 
+     (->> my-map 
+          vec
+          flatten)
+     {:fw/hide-brackets? true}))
+
+
 ;; single-column map smoke tests
 #_(do (? {:single-column-maps? true}
        {:foo :bar}))
+
 
 ;; long-fn name smoke test
 #_(do (defn abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn [] nil)
     (? {:non-coll-length-limit 33}
        {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})) 
+
 
 ;; :trace mode smoke testing
 #_(do
@@ -34,34 +71,34 @@
   [x]
   (when (map? x) x))
 
-(println "testing :trace with ->>")
+(println "hn\n---------- testing :trace with ->>")
 (? :trace
    (->> my-map 
-        (into [])
+        vec
         flatten))
 
-(println "testing :trace with some->>, short-circuting initial")
+(println "\n\n---------- testing :trace with some->>, short-circuting initial")
 (? :trace
    (some->> nil
-            (into [])
+            vec
             flatten))
 
-(println "testing :trace with some->>, short-circuting second")
+(println "\n\n---------- testing :trace with some->>, short-circuting second")
 (? :trace
    (some->> my-map
-            (into [])
+            vec
             map?->
             flatten))
 
-(println "testing :trace with some->>, short-circuting second, 3-arity")
+(println "\n\n---------- testing :trace with some->>, short-circuting second, 3-arity")
 (? :trace
    {}
    (some->> my-map
-            (into [])
+            vec
             map?->
             flatten))
 
-(println "testing :trace with ->, 3-arity")
+(println "\n\n---------- testing :trace with ->, 3-arity")
 (? :trace
    {:single-column-maps? true}
    (-> my-map
@@ -69,21 +106,21 @@
        (keys)
        (->> (mapv #(-> % name string/upper-case)))))
 
-(println "testing :trace with ->")
+(println "\n\n---------- testing :trace with ->")
 (? :trace
    (-> my-map
        (assoc :bango :bongo)
        (keys)
        (->> (mapv #(-> % name string/upper-case)))))
 
-(println "testing :trace with some->")
+(println "\n\n---------- testing :trace with some->")
 (? :trace
    (some-> my-map
        (assoc :bango :bongo)
        (keys)
        (->> (mapv #(-> % name string/upper-case)))))
 
-(println "testing :trace with ->, 3-arity")
+(println "\n\n---------- testing :trace with ->, 3-arity")
 (? :trace
    {:single-column-maps? true}
    (-> my-map
@@ -92,33 +129,33 @@
        (->> (mapv #(-> % name string/upper-case)))))
 
 
-(println "testing :trace with normal fn, should not trace")
+(println "\n\n---------- testing :trace with normal fn, should not trace")
 (? :trace
    (+ 1 1))
 
-(println "testing :trace with as->, 3-arity, should not trace")
+(println "\n\n---------- testing :trace with as->, 3-arity, should not trace")
 (? :trace
    {:single-column-maps? true}
    (as-> my-map $ 
-     (into [] $)
+     (vec $)
      (flatten $)))
 
-(println "testing :trace with as->, 3-arity, print-with pprint, should not trace")
+(println "\n\ntesting :trace with as->, 3-arity, print-with pprint, should not trace")
 (? :trace
    {:single-column-maps? true
     :print-with          pprint}
    (as-> my-map $ 
-     (into [] $)
+     (vec $)
      (flatten $)))
 
-(println "testing :trace with as->, should not trace")
+(println "\n\ntesting :trace with as->, should not trace")
 (? :trace
    #_{:single-column-maps? true
     ;; :print-with          pprint
       }
    #_{}
    (as-> my-map $ 
-     (into [] $)
+     (vec $)
      (flatten $)))
 )
 

@@ -1,14 +1,13 @@
 (ns ^:dev/always fireworks.truncate
   (:require #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.macros :refer [keyed]])
-            [fireworks.pp :rename {?pp ?}]
             [clojure.string :as string]
             [fireworks.specs.config :as specs.config]
             [fireworks.ellipsize :as ellipsize]
             [fireworks.order :refer [seq->sorted-map]]
             [fireworks.profile :as profile]
             [fireworks.state :as state]
-            [fireworks.util :as util :refer [maybe]]))
+            [fireworks.util :as util :refer [maybe-> maybe->>]]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -42,7 +41,7 @@
                                v (.-value item)]]
                      [k
                       (cond (= k "style") (inline-style->map v)
-                            (= k "class") (into [] (string/split v " "))
+                            (= k "class") (vec (string/split v " "))
                             :else         v)]))))))
 
      
@@ -77,7 +76,7 @@
          (into (array-map)
                (reduce (fn [acc k]
                          (if (some-> k
-                                     (maybe string?)
+                                     (maybe-> string?)
                                      (string/starts-with? "closure_uid_"))
                            (do (vreset! uid-entry? true)
                                acc)
@@ -105,7 +104,7 @@
   (let [
         ;; First we need to check if collection is both not map-like and 
         ;; comprised only of map entries. If this is the case it is most likely
-        ;; the result of something like `(into [] {:a "a" :b "b"})`, and we need
+        ;; the result of something like `(vec {:a "a" :b "b"})`, and we need
         ;; to treat all elements in the coll as 2-el vectors (not map-entries),
         ;; in the subsequent nested calls to `truncate`. This is done by passing
         ;; a value of `true` for the :map-entry-in-non-map? option. 
@@ -117,7 +116,7 @@
                       (every? #(-> % map-entry?))))     
 
         ret
-        (let [taken (->> x (take coll-limit) (into []))
+        (let [taken (->> x (take coll-limit) vec)
               x-is-set? (set? x)]
           (mapv (fn [i]
                   (let [nth-taken (nth taken i nil)]

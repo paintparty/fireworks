@@ -1,9 +1,9 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
-            [clojure.main]
-            [fireworks.pp :refer [?pp pprint]]
+            [fireworks.pp :refer [pprint]]
             [expound.alpha :as expound]
-            [fireworks.util :as util :refer [maybe]]))
+            [fireworks.util :as util :refer [maybe->]]
+            #?(:clj [clojure.main])))
 
 (defrecord FireworksThrowable [err err-x err-opts])
 
@@ -79,7 +79,6 @@
          (:sgr-tag-close sgr-tags)
          "\n")))
 
-
 #?(:clj
    (do 
      (defn- bad-options-to-stack-trace-preview-warning [error]
@@ -106,7 +105,6 @@
         not legit, use the depth."
        [regex depth mini-strace]
        (if (= java.util.regex.Pattern (type regex))
-         ;; TODO - perf - use transduction here
          (some->> mini-strace
                   (keep-indexed
                    (fn [i [f]]
@@ -122,7 +120,6 @@
         match"
        [regex depth mini-strace]
        (if (= java.util.regex.Pattern (type regex))
-         ;; TODO - perf - use transduction here
          (first (keep-indexed
                  (fn [i [f]]
                    (when (re-find regex (str f))
@@ -174,7 +171,7 @@
   [{:keys [error regex depth header]}]
   #?(:clj
      (let [strace 
-           (some->> (maybe error #(instance? Exception %)) .getStackTrace seq)
+           (some->> (maybe-> error #(instance? Exception %)) .getStackTrace seq)
 
            formatted-string
            (if-not strace
@@ -185,7 +182,7 @@
              ;; Create a formatted string of of the stack trace, clean it up and
              ;; make it easier to read
              (let [strace-len   (count strace)
-                   depth        (or (maybe depth pos-int?) 7)
+                   depth        (or (maybe-> depth pos-int?) 7)
                    mini-strace  (mini-trace depth strace)
                    last-index   (last-index-of-relevant-stack-trace regex
                                                                     depth 
@@ -196,7 +193,7 @@
                    ;; Get all the frames up to the last index
                    trace*       (some->> mini-strace
                                          (take (inc (or last-index depth)))
-                                         (into []))
+                                         vec)
                    trace*       (if first-index
                                   (assoc trace*
                                          first-index
@@ -211,15 +208,11 @@
                                          (into with-header))
                    num-dropped  (when trace
                                   (let [n (- (or strace-len 0) (or len 0))]
-                                    (some->> (maybe n pos-int?)
+                                    (some->> (maybe-> n pos-int?)
                                              (str "\n...+"))))
                    trace        (some-> trace (conj num-dropped))
                    trace2       (clean-up-frames trace)]
-
-               #_(?pp {:last-index        last-index
-                     :first-index       first-index})
                (apply str trace2)))]
-       #_(?pp {:formatted-string formatted-string})
        {:formatted-string formatted-string
         :stack-trace-seq  strace})))
 
@@ -258,7 +251,7 @@
 (defn warning-or-exception-summary 
   [{:keys [line column file header hint hint-label] :as m}]
   (str (some->> hint
-                (summary-section (or (maybe hint-label string?) "Hint:")))
+                (summary-section (or (maybe-> hint-label string?) "Hint:")))
        
        (some->> header
                 (summary-section "Raised by:"))

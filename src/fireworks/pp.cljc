@@ -1,3 +1,7 @@
+;; TODO - Experiment with adding shortened semantics for custom objects
+;;      - Consistent multi-line maps
+;;      - Justified values via cljfmt
+
 (ns fireworks.pp
   "A pretty-printer for Clojure data structures.
 

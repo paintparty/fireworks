@@ -1,3 +1,7 @@
+;; TODO - only support new named color system
+
+;; TODO - preprocess these to be flat and support ansi-sgr, save compute that happens in state
+
 (ns fireworks.themes)
 
 

@@ -123,6 +123,7 @@
       (str (tag-bracket! m s) s (tag-reset!))
       (str (tag-reset!) s (tag-reset!)))))
 
+
 (defn- bracket!
   [m kw]
   (let [mm      (-> m :coll meta)
@@ -145,10 +146,9 @@
 
                   :else              
                   cb)
-        bracket (bracket!* {:s  s
-                            :t  t
-                            :mm mm})]
+        bracket (bracket!* {:s s :t t :mm mm})]
     bracket))
+
 
 (defn closing-bracket!
   [m]
@@ -156,11 +156,13 @@
   (let [cb (bracket! m :closing)]
     cb))
 
+
 (defn opening-bracket!
   [m]
-  (let [ob         (bracket! m :opening)]
+  (let [ob (bracket! m :opening)]
     (swap! state/rainbow-level inc)
     ob))
+
 
 (defn closing-angle-bracket! 
   "This is for when collections are encapsulated in a mutable construct such as

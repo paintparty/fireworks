@@ -74,7 +74,7 @@
                  transient?
                  (or (some->> #?(:cljs #"/" :clj #"\$")
                               (string/split classname)
-                              last)
+                              peek)
                      defs/transient-label)
 
                  :else
@@ -438,7 +438,7 @@
   [x meta-map f]
   (if (:map-like? meta-map) 
     (let [ret 
-          (into []
+          (vec
                 (map-indexed 
                  (fn [i [k v]]
                    ;;  (?pp (meta k))

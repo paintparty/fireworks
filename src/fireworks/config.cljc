@@ -90,7 +90,9 @@
 
 ;; TODO prune this
 (def undocumented-option-keys
-  #{:form-meta
+  #{:fw/log?
+    :log?
+    :form-meta
     :user-opts
     :fw-fnsym
     :mode
