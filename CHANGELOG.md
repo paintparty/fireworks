@@ -9,6 +9,17 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.19.0
+2025-12-21
+
+#### Added
+- Tracing of `let` forms via `:trace` flag. [11] (https://github.com/paintparty/fireworks/issues/11)
+
+#### Fixed
+- False warnings for `:log` and `:fw/log` when passing `:pp` flag.
+- Reported exception in cljs context, from cljc file -- renamed `:?pp` not being refered.
+
+
 ## 0.18.0
 2025-12-12
 
