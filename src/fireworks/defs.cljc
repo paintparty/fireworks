@@ -44,31 +44,33 @@
 
 
 (def base-syntax-tokens
-  (merge {:string        :string
-          :number        :constant
-          :keyword       :constant
-          :boolean       :constant
-          :nil           :constant
-          :symbol        :definition
-          :regex         :string
-          :def           :definition
-          :local         :definition
-          :local-binding :definition
-          :function      :definition
-          :class         :definition
-          :datatype      :definition
-          :record        :definition
-          :multimethod   :definition
-          :uuid          :string
-          :inst          :string
-          :js-object-key :foreground
-          :nan           :constant
-          :infinity      :constant
-          :-infinity     :constant
+  (merge {:string                    :string
+          :number                    :constant
+          :keyword                   :constant
+          :boolean                   :constant
+          :nil                       :constant
+          :symbol                    :definition
+          :regex                     :string
+          :def                       :definition
+          :local                     :definition
+          :local-binding             :definition
+          :function                  :definition
+          :class                     :definition
+          :datatype                  :definition
+          :record                    :definition
+          :multimethod               :definition
+          :uuid                      :string
+          :inst                      :string
+          :js-object-key             :foreground
+          :nan                       :constant
+          :infinity                  :constant
+          :-infinity                 :constant
+          :escaped-double-quote-char :foreground
+          :string-delimiter          :string
           }
          
           ;;  Experimental, not working yet 
-          {
+         {
             ;;  :square-bracket  :bracket
             ;;  :curly-bracket   :bracket
             ;;  :round-bracket   :bracket

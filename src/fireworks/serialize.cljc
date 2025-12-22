@@ -107,10 +107,7 @@
            :display?     true
            :highlighting highlighting})
 
-        ;; State mutation start  ---------------------------------------------
-        
-        ;; The next set of bindings mutate state/styles.
-        ;; They must happen in the following order:
+        ;; The next set of bindings:
         
         ;; user-metadata-map-block (displays user-meta above value), optional
         ;; atom-opening,  optional
@@ -183,8 +180,7 @@
         (do (?pp x)
             (tag! theme-tag highlighting))
 
-        ;; Additional tagging (and atom mutation) happens within
-        ;; fireworks.serialize/add-truncation-annotation!
+        ;; Additional tagging happens within fireworks.serialize/add-truncation-annotation!
         chars-dropped-syntax 
         (add-truncation-annotation! m)
 
@@ -218,7 +214,7 @@
             ;; color of metadata background.
             (str " " inline-offset ret)))
 
-        ;; Atom mutation end  ------------------------------------------------
+        ;; Additional tagging end  ---------------------------------------------
         
         
         
@@ -241,43 +237,27 @@
          ;; positioned inline, to left of value 
          badge-tagged
 
+
          ;; The self-evaluating value
+         (when (= t :string) (str (tag! :string-delimiter) "\"" (tag-reset!)))
+
          main-entity-tag
          ;; (some-> num-chars-dropped pos?)
-         (or (if (= t :string)
-              ;; Use foreground color for escaped double quotes, to make them pop
-              (str "\""
-                   (string/replace (subs s 1 (-> s count dec dec))
-                                   #"\""
-                                   (str (tag! :foreground)
-                                        "\""
-                                        main-entity-tag))
-                   "\"")
-              s)
+         (or (when s
+               (if (= t :string)
+                 (string/replace (subs s 1 (-> s count dec))
+                                 #"\""
+                                 (str (tag! :escaped-double-quote-char)
+                                      "\""
+                                      main-entity-tag-reset
+                                      main-entity-tag))
+                 s))
              fn-display-name)
-         chars-dropped-syntax
          main-entity-tag-reset
+         chars-dropped-syntax
 
+         (when (= t :string) (str (tag! :string-delimiter) "\"" (tag-reset!)))
          
-        ;;  ;; So that the double quotes around string are distinct color
-        ;;  (when (= t :string)
-        ;;    (str (tag! :annotation) "\"" main-entity-tag-reset))
-
-        ;;  ;; The self-evaluating value
-        ;;  main-entity-tag
-        ;;  (if s
-        ;;    (if (= t :string)
-        ;;      (subs s 1 (max 1 (-> s count dec dec)))
-        ;;      s)
-        ;;    fn-display-name)
-        ;;  main-entity-tag-reset
-        ;;  chars-dropped-syntax
-
-        ;;  ;; So that the double quotes around string are distinct color
-        ;;  (when (= t :string)
-        ;;    "\"")
-
-
 
          ;; Conditional fn-args, positioned inline, to right of value 
          fn-args-tagged         
@@ -305,7 +285,7 @@
                       (keyed [main-entity-tag
                               chars-dropped-syntax
                               main-entity-tag-reset]))]
-    (?pp locals)
+    #_(?pp locals)
     ret))
 
 

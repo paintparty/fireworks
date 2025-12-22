@@ -354,8 +354,12 @@
                                 :eval-label {:color            "#9ac2d6"
                                              :background-color "#2b4c69"
                                              :font-style       :italic}}
-                      :syntax  {:number        {:color "#8fb8cc"}
-                                :js-object-key {:color "#888888"}}
+                      :syntax  {:number                    {:color "#8fb8cc"}
+                                :js-object-key             {:color "#888888"}
+                                :escaped-double-quote-char :string
+                                ;; :string-delimiter          :constant
+                                :string-delimiter          :constant
+                                }
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red

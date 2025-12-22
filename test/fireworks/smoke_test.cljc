@@ -16,6 +16,12 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
+(? {"my string key" "foo \"bar\" baz\""
+    :abcdef         :gold})
+
+;; (? {:non-coll-result-length-limit 15} (symbol "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz"))
+(? {:non-coll-result-length-limit 15} "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz")
+
 
 ;; let bindings smoke test
 #_(? :trace 
