@@ -178,8 +178,10 @@
         (when (state/debug-tagging?)
           (println "\nsev!   tagging " s " with " theme-tag))
 
+        ;; This is where value's tag gets created
         main-entity-tag                  
-        (tag! theme-tag highlighting)
+        (do (?pp x)
+            (tag! theme-tag highlighting))
 
         ;; Additional tagging (and atom mutation) happens within
         ;; fireworks.serialize/add-truncation-annotation!
@@ -241,9 +243,41 @@
 
          ;; The self-evaluating value
          main-entity-tag
-         (or s fn-display-name)
+         ;; (some-> num-chars-dropped pos?)
+         (or (if (= t :string)
+              ;; Use foreground color for escaped double quotes, to make them pop
+              (str "\""
+                   (string/replace (subs s 1 (-> s count dec dec))
+                                   #"\""
+                                   (str (tag! :foreground)
+                                        "\""
+                                        main-entity-tag))
+                   "\"")
+              s)
+             fn-display-name)
          chars-dropped-syntax
          main-entity-tag-reset
+
+         
+        ;;  ;; So that the double quotes around string are distinct color
+        ;;  (when (= t :string)
+        ;;    (str (tag! :annotation) "\"" main-entity-tag-reset))
+
+        ;;  ;; The self-evaluating value
+        ;;  main-entity-tag
+        ;;  (if s
+        ;;    (if (= t :string)
+        ;;      (subs s 1 (max 1 (-> s count dec dec)))
+        ;;      s)
+        ;;    fn-display-name)
+        ;;  main-entity-tag-reset
+        ;;  chars-dropped-syntax
+
+        ;;  ;; So that the double quotes around string are distinct color
+        ;;  (when (= t :string)
+        ;;    "\"")
+
+
 
          ;; Conditional fn-args, positioned inline, to right of value 
          fn-args-tagged         
@@ -271,6 +305,7 @@
                       (keyed [main-entity-tag
                               chars-dropped-syntax
                               main-entity-tag-reset]))]
+    (?pp locals)
     ret))
 
 
