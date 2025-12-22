@@ -1,9 +1,9 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
-            [clojure.main]
-            [fireworks.pp :refer [?pp pprint]]
+            [fireworks.pp :refer [pprint]]
             [expound.alpha :as expound]
-            [fireworks.util :as util :refer [maybe->]]))
+            [fireworks.util :as util :refer [maybe->]]
+            #?(:clj [clojure.main])))
 
 (defrecord FireworksThrowable [err err-x err-opts])
 
@@ -212,11 +212,7 @@
                                              (str "\n...+"))))
                    trace        (some-> trace (conj num-dropped))
                    trace2       (clean-up-frames trace)]
-
-               #_(?pp {:last-index        last-index
-                     :first-index       first-index})
                (apply str trace2)))]
-       #_(?pp {:formatted-string formatted-string})
        {:formatted-string formatted-string
         :stack-trace-seq  strace})))
 
