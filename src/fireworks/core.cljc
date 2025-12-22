@@ -4,7 +4,7 @@
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
    [fireworks.browser]
-   [fireworks.pp :as fireworks.pp :refer [?pp] :rename {?pp ff}]
+   [fireworks.pp :as fireworks.pp]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
@@ -340,7 +340,7 @@
                        log?]))]
     
     ;; TODO Change this to (= mode :data)
-     ;; TODO - Change if post-replace works - cljs stuff below
+    ;; TODO - Change if post-replace works - cljs stuff below
     (if  p-data?
       ;; If p-data, return a map of preformatted values
       (merge
@@ -1095,9 +1095,13 @@
           ))
    x+))
 
-(defn cc-destructure
+;; cc-destructure fn from Snitch - https://github.com/AbhinavOmprakash/snitch
+
+(defn- cc-destructure
   "A slightly modified version of clj and cljs' destructure to
-  work with clj and cljs."
+  work with clj and cljs.
+
+  This is used to help setup let-bindings for tracing with the :trace flag"
   [bindings]
   (let [bents (partition 2 bindings)
         pb (fn pb
@@ -1606,7 +1610,7 @@
                                 mode
                                 x]))]
 
-         #_(ff "?, 3-arity" cfg-opts)
+        ;;  (ff "?, 3-arity" cfg-opts)
          `(let [cfg-opts# (assoc ~cfg-opts :qf (if ~qf-nil? nil (quote ~x)))
                 ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)] 
             (when ~defd ~x)

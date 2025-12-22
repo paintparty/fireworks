@@ -1,7 +1,6 @@
 (ns ^:dev/always fireworks.truncate
   (:require #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.macros :refer [keyed]])
-            [fireworks.pp :rename {?pp ?}]
             [clojure.string :as string]
             [fireworks.specs.config :as specs.config]
             [fireworks.ellipsize :as ellipsize]
