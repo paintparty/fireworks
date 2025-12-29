@@ -428,7 +428,9 @@
                           (str-len-with-badge badge val-is-atom? x)
 
                           {:some-elements-carry-user-metadata? 
-                           (some-elements-carry-user-metadata? x)}))]
+                           (boolean 
+                            (when (:display-metadata? @state/config)
+                              (some-elements-carry-user-metadata? x)))}))]
         (when (coll? x) ret)
         ret))))
 

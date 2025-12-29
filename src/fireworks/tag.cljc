@@ -1,6 +1,6 @@
 (ns ^:dev/always fireworks.tag
   (:require [clojure.string :as string]
-            [fireworks.pp :refer [?pp pprint]]
+            [fireworks.pp :refer [pprint]]
             [fireworks.state :as state :refer [?sgr]]))
 
 
