@@ -1090,7 +1090,8 @@
                  (when (map? m)
                    {:user-opts m}))
           (list 'if (list 'nil? x+)
-                (list 'symbol "nil  ; <- short circuted")
+                ;; TODO - figure out annotation styling here
+                (list 'symbol "nil  \033[38;5;244;3m; <- short circuited\033[m")
                 x+)
           ))
    x+))
