@@ -177,8 +177,7 @@
 
         ;; This is where value's tag gets created
         main-entity-tag                  
-        (do (?pp x)
-            (tag! theme-tag highlighting))
+        (tag! theme-tag highlighting)
 
         ;; Additional tagging happens within fireworks.serialize/add-truncation-annotation!
         chars-dropped-syntax 
@@ -449,6 +448,9 @@
         metadata-position
         (:metadata-position @state/config)
 
+        display-metadata?
+        (:display-metadata? @state/config)
+
         ;; This is where multi-line for collections is determined
         ;; _ (?pp (select-keys meta-map [:str-len-with-badge-ellipsized
         ;;                               :str-len-val-ellipsized
@@ -460,28 +462,35 @@
         (some->> badge (contains? defs/inline-badges) not)
 
         user-meta-above?
-        (boolean (and user-meta
-                      (contains? #{:block "block"}
-                                 metadata-position)))
-        ;; _ (?pp meta-map)
+        (boolean (and user-meta (contains? #{:block "block"} metadata-position)))
+        ;;  _ (?pp meta-map)
+        
         multi-line?  
-        (or (and user-meta
-                 (contains? #{:inline "inline"} 
-                            metadata-position))
-            (and user-meta?
-                 (contains? #{:inline "inline"} 
-                            metadata-position))
-            some-elements-carry-user-metadata?
+        (or (and display-metadata?
+                 user-meta 
+                 (contains? #{:inline "inline"} metadata-position))
+            (and display-metadata?
+                 user-meta?
+                 (contains? #{:inline "inline"} metadata-position))
+            (and display-metadata?
+                 some-elements-carry-user-metadata?)
             (some-elements-have-block-level-badges? coll)
             (boolean 
              (when (< 1 coll-count)
                (or single-column-map-layout?
-                   (< (:single-line-coll-length-limit @state/config)
-                      (or (if badge-above?
-                            val-str-len        ;; <- should this be str-len-val-ellipsized?
-                            str-len-with-badge ;; <- should this be str-len-with-val-ellipsized?
-                            )
-                          0))))))
+                   (let [strlen-greater-than-limit? 
+                         (< (:single-line-coll-length-limit @state/config)
+                            (or (if badge-above?
+                                  val-str-len        ;; <- should this be str-len-val-ellipsized?
+                                  str-len-with-badge ;; <- should this be str-len-with-val-ellipsized?
+                                  )
+                                0))]
+                     (or strlen-greater-than-limit?
+                         (when display-metadata?
+                           (some #(when (meta %) %)
+                                 (tree-seq coll? seq (:og-x meta-map))))))))))
+
+        ;; _ (when-not multi-line? (?pp meta-map))
 
         ;; This is where indenting for multi-line collections is determined
         num-indent-spaces-for-t
