@@ -1,13 +1,12 @@
 ;; Unstructured sandbox for smoke testing
 
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? !? ?> !?>]]
+  (:require [fireworks.core :refer [? !? ?> !?> pprint]]
             [fireworks.themes :as themes]
             [fireworks.state]
             [fireworks.color]
             [clojure.string :as string]
             [fireworks.pp :as pp]
-            [clojure.pprint :refer [pprint print-table]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
             [fireworks.sample :as sample]
@@ -16,11 +15,12 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
-(? {"my string key" "foo \"bar\" baz\""
+
+#_(? {"my string key" "foo \"bar\" baz\""
     :abcdef         :gold})
 
 ;; (? {:non-coll-result-length-limit 15} (symbol "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz"))
-(? {:non-coll-result-length-limit 15} "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz")
+#_(? {:non-coll-result-length-limit 15} "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz")
 
 
 ;; let bindings smoke test
