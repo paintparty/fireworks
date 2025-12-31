@@ -417,7 +417,7 @@
                 ;; str-len-val-ellipsized
                 ;; str-len-with-badge
                 val-str-len
-                ;; badge-str-len
+                badge-str-len
                 single-column-map-layout?
                 str-len-with-badge
                 :fw/user-meta-map? ; <- maybe this is redundant? also exists as unq kw user-meta in this map. Maybe change unq key to user-metadata-map?, or val-is-user-metadata-map?
@@ -502,10 +502,8 @@
 
 
         indent       
-        (or (when-not (or badge-above?
-                          user-meta-above?) 
-              (some->> badge 
-                       count
+        (or (when-not (or badge-above? user-meta-above?) 
+              (some->> badge-str-len
                        ;; dec
                        (+ (or indent 0))))
             indent)
@@ -549,6 +547,7 @@
                 metadata-position
                 user-meta-above?
                 val-is-volatile?
+                badge-str-len
                 let-bindings?
                 val-is-atom?   
                 highlighting
@@ -561,7 +560,7 @@
                 record?
                 indent
                 badge])]
-      ret))
+    ret))
 
 
 (defn- user-metadata-map-block
@@ -579,8 +578,7 @@
 (defn- user-metadata-map-inline
   [{:keys [user-meta
            metadata-position
-           mutable-opening-encapsulation
-           badge
+           mutable-opening-encapsulation-str
            coll
            indent*]}]
   (when (and (:display-metadata? @state/config)
@@ -591,19 +589,23 @@
           inline-offset (tagged (spaces (dec offset))
                                 {:theme-token (state/metadata-token)})
           ret           (formatted* 
-                          user-meta
-                          {:user-meta?
-                           true
-                           :indent 
-                           (let [ob (str mutable-opening-encapsulation
-                                         badge
-                                         (some-> coll
-                                                 meta
-                                                 brackets-by-type
-                                                 first))
-
-                                 indent+ob
-                                 (+ (or (count ob) 0) indent*)]
+                         user-meta
+                         {:user-meta?
+                          true
+                          :indent 
+                          (let [ob        
+                                (str mutable-opening-encapsulation-str
+                                     (some-> coll
+                                             meta
+                                             brackets-by-type
+                                             first))
+                                
+                                indent+ob 
+                                (+ (or (count ob) 0)
+                                   indent*
+                                   (or (when mutable-opening-encapsulation-str
+                                         1)
+                                       0))]
                             (+ indent+ob offset))})]
       (swap! state/*formatting-meta-level dec)
       (str " " inline-offset ret))))
@@ -617,14 +619,25 @@
                 val-is-atom?
                 highlighting
                 let-bindings?
+                badge-str-len
                 val-is-volatile?
                 annotation-newline]
          :as m} 
         (reduce-coll-profile coll indent*)
-
+        
         ;; Mutable-wrapper opening made here
-        mutable-opening-encapsulation
+        mutable-opening-encapsulation-str
         (when (or val-is-atom? val-is-volatile?) 
+          (if val-is-atom? defs/atom-label defs/volatile-label))
+
+        mutable-opening-encapsulation
+        (some-> mutable-opening-encapsulation-str
+                (str defs/encapsulation-opening-bracket)
+                (tagged {:theme-token (if val-is-atom? 
+                                        :atom-wrapper 
+                                        :volatile-wrapper)}))
+
+        #_(when (or val-is-atom? val-is-volatile?) 
           (tagged (str (if val-is-atom? defs/atom-label defs/volatile-label)
                        defs/encapsulation-opening-bracket) 
                   {:theme-token (if val-is-atom? :atom-wrapper :volatile-wrapper)}))
@@ -650,21 +663,22 @@
              annotation-newline
              (opening-bracket! (keyed [coll record? let-bindings? highlighting]))
              #_(if highlighting
-               ;; Change this - move logic down in to opening bracket!
-               (str #_(tag! {} highlighting)
-                    (opening-bracket! (keyed [coll record? let-bindings?]))
-                    #_(tag-reset!))
-               (opening-bracket! (keyed [coll record? let-bindings?])))
+                 ;; Change this - move logic down in to opening bracket!
+                 (str #_(tag! {} highlighting)
+                  (opening-bracket! (keyed [coll record? let-bindings?]))
+                      #_(tag-reset!))
+                 (opening-bracket! (keyed [coll record? let-bindings?])))
              (when (-> coll meta :too-deep?)
                (tagged "#" {:theme-token :max-print-level-label})))
         
         user-metadata-map-inline
-        (user-metadata-map-inline (keyed [mutable-opening-encapsulation
-                                  metadata-position
-                                  user-meta
-                                  indent*
-                                  badge
-                                  coll]))
+        (user-metadata-map-inline (keyed [mutable-opening-encapsulation-str
+                                          metadata-position
+                                          user-meta
+                                          indent*
+                                          badge
+                                          badge-str-len
+                                          coll]))
 
         ob
         (str ob* (some-> user-metadata-map-inline
@@ -1001,15 +1015,15 @@
    (let [truncated  (truncate/truncate {:path       []
                                         :depth      0
                                         :user-meta? user-meta?} source)
-        ;;  truncated  (path-walker truncated)
-        ;;  custom-printed truncated
+         ;;  truncated  (path-walker truncated)
+         ;;  custom-printed truncated
          ;; TODO - revisit this custom printing stuff
          ;; custom-printed (if (:evaled-form? opts)
          ;;                  truncated
          ;;                  (walk/postwalk printers/custom truncated))
          profiled   (walk/prewalk profile/profile truncated)
          serialized (serialized profiled indent)
-        ;;  len            (-> profiled meta :str-len-with-badge)
+         ;;  len            (-> profiled meta :str-len-with-badge)
          ]
 
 
