@@ -313,6 +313,9 @@
 
 ;;;; For dealing with collections
 
+
+;;;; Num-dropped-syntax start --------------------------------------------------
+
 (defn- leading-space
   [m]
   (if (:single-column-map-layout? m) 
@@ -325,14 +328,28 @@
 (defn- map-key-ghost 
   [{:keys [too-deep? max-keylen]}]
   (when-not too-deep?
-                             (string/join
-                              (repeat (if (some-> max-keylen pos?)
-                                        (min 3 max-keylen)
-                                        3)
-                                      "."))))
+    (string/join
+     (repeat (if (some-> max-keylen pos?)
+               (min 3 max-keylen)
+               3)
+             "."))))
+
+(defn- spaces-between-kv [max-keylen too-deep? map-key-ghost]
+  (spaces (if too-deep?
+            0
+            (let [max-keylen+space (inc max-keylen)]
+              (- max-keylen+space
+                 (count map-key-ghost))))))
+
+(defn- kv-spacing-str [m max-keylen too-deep?]
+  (let [map-key-ghost     (map-key-ghost m)
+        spaces-between-kv (spaces-between-kv max-keylen
+                                             too-deep?
+                                             map-key-ghost)]
+    (str map-key-ghost spaces-between-kv)))
 
 
-(defn- num-dropped-annotation!
+(defn- num-dropped-annotation
   [{:keys [indent
            too-deep?
            max-keylen
@@ -343,41 +360,27 @@
   (let [num-dropped-syntax (str (when-not too-deep? defs/ellipsis)
                                 "+"
                                 num-dropped)
-        map-key-ghost      (map-key-ghost m)
         coll-is-map?       (boolean max-keylen)
-        spaces-between-kv  (when coll-is-map?
-                             (let [max-keylen+space (inc max-keylen)]
-                               (spaces (if too-deep?
-                                         0
-                                         (- max-keylen+space
-                                            (count map-key-ghost))))))
         num-indent-chars   indent      
         indent-chars       (spaces num-indent-chars)      
-        extra*             (let [leading+indent (str (leading-space m)
-                                                     (when multi-line?
-                                                       indent-chars))]
-                             (if coll-is-map?
-                               (str leading+indent
-                                    (tag! {} highlighting)
-                                    map-key-ghost
-                                    spaces-between-kv
-                                    num-dropped-syntax
-                                    (tag-reset!)
-                                    )
-                               (str leading+indent
-                                    (tag! {} highlighting)
-                                     num-dropped-syntax
-                                     spaces-between-kv
-                                    (tag-reset!)
-                                    )))]
+        leading+indent     (str (leading-space m)
+                                (when multi-line? indent-chars))
+        kv-spacing-str     (when coll-is-map?
+                             (kv-spacing-str m max-keylen too-deep?))
+        extra              (str leading+indent
+                                (tag! {} highlighting)
+                                kv-spacing-str
+                                num-dropped-syntax
+                                (tag-reset!))]
 
     (when (state/debug-tagging?)
-      (println "\nnum-dropped-annotion! : tagging " extra* " with " :ellipsis))
+      (println "\nnum-dropped-annotion! : tagging " extra " with " :ellipsis))
 
     (if highlighting 
-      extra*
-      (str (tag! :ellipsis) extra* (tag-reset!)))))
+      extra
+      (str (tag! :ellipsis) extra (tag-reset!)))))
 
+;;;; Num-dropped-syntax end ----------------------------------------------------
 
 (defn- stringified-bracketed-coll-with-num-dropped-syntax! 
   "This is where the stringified coll (with formatting and escaped style tags)
@@ -386,16 +389,16 @@
    how many entries were dropped. This will be something like \"...+5\".
    This value is displayed, in the last position of the collection."
 
-  [{:keys [ob ret num-dropped let-bindings? highlighting] :as m}]
+  [{:keys [ob ret num-dropped] :as m}]
   (let [extra (when (some-> num-dropped pos?)
-                (num-dropped-annotation! m))
-        cb    (closing-bracket! m)
-              #_(if highlighting
-                (str (tag! {} highlighting) (closing-bracket! m) (tag-reset!))
-                (closing-bracket! m))
-        cb2   (closing-angle-bracket! m)
-        ret   (str ob ret extra cb cb2)]
-    ret))
+                (num-dropped-annotation m)) ;<- mutates?
+        cb    (closing-bracket! m) ;<- mutates state for rainbow brackets
+        cb2   (closing-angle-bracket! m)]
+    (str ob
+         ret
+         extra
+         cb
+         cb2)))
 
 
 (defn- el-with-block-level-badge [x]
@@ -686,99 +689,73 @@
                                       {:theme-token :foreground}))))]
     (assoc m :ob ob :record? record?)))
 
+(defn- coll-sep 
+  "Provides the correct separator for items in coll, based on whether they are
+   an native collection type, whether they are multiline etc."
+  [{:keys [t js-typed-array? single-column-map-layout? separator]}
+   idx]
+  (let [value-in-mapentry? (and single-column-map-layout? (odd? idx))
+        maybe-comma        (when (or js-typed-array?
+                                     (contains? #{:js-array :js-set} t))
+                             ",")]
+    ;; Check this (does id get separator twice)?
+    (str (if value-in-mapentry? separator maybe-comma)
+         separator)))
 
+(defn- coll-sep-tagged
+  [{:keys [highlighting multi-line?] :as m} idx]
+  (let [formatting-meta? (pos? (state/formatting-meta-level)) 
+        theme-token      (if formatting-meta? 
+                           (state/metadata-token)
+                           :foreground)
+        opts             (merge
+                          {:theme-token theme-token}
+                          (when-not (or multi-line? formatting-meta?)
+                            {:highlighting highlighting}))]
+    (tagged (coll-sep m idx) opts)))
+
+(defn- reduce-coll-inner 
+  [{:keys [indent
+           multi-line?
+           separator
+           coll-count]
+    :as m}
+   idx
+   v]
+  (let [val-props
+        (meta v)
+
+        tagged-val
+        (tagged-val (keyed [v val-props indent multi-line? separator]))]
+
+    (str tagged-val
+         (when-not (= coll-count (inc idx)) 
+           (coll-sep-tagged m idx)))))
+
+
+;; Should we use a StringBuilder construct here in jvm?
+;; What about cljs - just push to an array?
 (defn- reduce-coll
   [coll indent*]
-  (let [{:keys [t
-                highlighting
-                js-typed-array?
-                truncated-coll-size                  ;; <- remove?
-                some-colls-as-keys?                  ;; <- remove?
-                single-column-map-layout?
-                some-syms-carrying-metadata-as-keys? ;; <- remove?
-                ]
-         :as   meta-map}
+  (let [{:keys [single-column-map-layout?]
+         :as   coll-meta}
         (meta coll) 
 
         coll                
         (if single-column-map-layout?
-          (with-meta (sequence cat coll) meta-map)
+          (with-meta (sequence cat coll) coll-meta)
           coll)
 
-        {:keys [ob         
-                indent 
-                separator
-                too-deep?      ; <-remove
-                coll-count
-                num-dropped    ; <-remove
-                multi-line?
-                let-bindings?  ; <-remove
-                ]
-         :as profile+ob}
-        (profile+ob coll indent*)
+        coll-meta+
+        (merge coll-meta (profile+ob coll indent*))                 
 
-        formatting-meta?
-        (pos? (state/formatting-meta-level))
-
-        ret                 
+        ret
         (string/join
-         (map-indexed
-          (fn [idx v]
-            (let [val-props
-                  (meta v)
+         (map-indexed (partial reduce-coll-inner coll-meta+)
+                      coll))]
+    (stringified-bracketed-coll-with-num-dropped-syntax!
+     (assoc coll-meta+ :coll coll :ret ret))))
 
-                  tagged-val
-                  (tagged-val (keyed [v
-                                      val-props
-                                      indent
-                                      multi-line?
-                                      separator]))
-
-                  value-in-mapentry?
-                  (and single-column-map-layout? (odd? idx))
-
-                  maybe-comma
-                  (when (or js-typed-array?
-                            (contains? #{:js-array :js-set} t))
-                    ",")
-
-                  separator
-                  (str (if value-in-mapentry? separator maybe-comma)
-                       separator)
-
-                  ret         
-                  (str
-                   tagged-val
-                   (when-not (= coll-count (inc idx)) 
-                     (if multi-line?
-                       (tagged separator {:theme-token :foreground})
-                       (if (pos? (state/formatting-meta-level))
-                         (tagged separator
-                                 {:theme-token (state/metadata-token)})
-                         (tagged separator 
-                                 (merge {:theme-token :foreground}
-                                        (when-not formatting-meta?
-                                          {:highlighting highlighting})))))))]
-              ret))
-          coll))
-        
-        ret                 
-        (stringified-bracketed-coll-with-num-dropped-syntax!
-         ;; TODO - use (merge meta-map profile+ob (keyed [...]))
-         (keyed [some-syms-carrying-metadata-as-keys? ;; <-remove?
-                 single-column-map-layout?
-                 truncated-coll-size                  ;; <-remove?
-                 some-colls-as-keys?                  ;; <-remove?
-                 let-bindings?                        ;; <-remove?
-                 highlighting
-                 num-dropped                          ;; <-remove?
-                 multi-line?
-                 too-deep?                            ;; <-remove?
-                 indent
-                 coll
-                 ret
-                 ob]))]
-    ret))
 
 (defn- gap-spaces [{:keys [s k formatting-meta? theme-token-map highlighting]}]
   (if formatting-meta?
@@ -913,7 +890,7 @@
         {:keys [map-like?
                 single-column-map-layout?
                 coll-type?]}                         
-         val-props
+        val-props
         
         ;; TODO - why is this named source-is-scalar?
         source-is-scalar?
@@ -929,7 +906,11 @@
         (reduce-map v indent))
 
       coll-type?
-      (reduce-coll v indent)
+      (let [r (reduce-coll v indent)] 
+        (println v)
+        (println r)
+        (println "\n")
+        r)
 
       :else
       (:escaped (sev! (merge val-props
@@ -941,16 +922,17 @@
 
 (defn serialized
   [v indent]
-  (let [ret (str (when-not (pos? (state/formatting-meta-level))
-                   (some-> indent util/spaces))
-                 (tagged-val {:v         v
-                              :indent    indent 
-                              :val-props (meta v)}))]
-    ret))
+  (str (when-not (pos? (state/formatting-meta-level))
+         (some-> indent util/spaces))
+       (tagged-val {:v         v
+                    :indent    indent 
+                    :val-props (meta v)})))
+
 
 (defn augment-meta [form path new-form]
   (with-meta new-form
     (assoc-in (meta form) [:fw/truncated :path] path)))
+
 
 (defn path-walker
   "Walks a potentially nested data structure that is the result of

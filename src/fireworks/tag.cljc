@@ -59,6 +59,7 @@
        (str result)))))
 
 ;; TODO - If neutral theme, don't tag
+;; TODO - rename to sgr-tag, as it does not side effect anymore 
 (defn tag!
   ([t]
    (tag! t nil))
@@ -78,6 +79,7 @@
 
 (def sgr-closing-tag-str "\033[0m")
 
+;; TODO - remove this and just use sgr-closing-tag-str, rename to sgr-reset-tag
 (defn tag-reset!
   ([]
    (tag-reset! :foreground))

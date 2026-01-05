@@ -79,9 +79,9 @@
                color)
              color)))
 
+;; TODO - change name
 (defn- tag-bracket!
-  "Adds the appropriate style to the state/styles vector.
-   Rainbow parens by default.
+  "Rainbow parens by default.
    Function args vector not included in rainbow parens."
   [{:keys [t mm]} s]
   (let [formatting-meta? (pos? (state/formatting-meta-level))
