@@ -12,9 +12,89 @@
   {:author "Eero Helenius"
    :license "MIT"
    :git/url "https://github.com/eerohele/pp.git"}
-  (:require [fireworks.util :as util])
+  (:require [fireworks.util :as util]
+            [lasertag.core :as lasertag]
+            [clojure.string :as string])
+  #?(:clj (:import [clojure.lang Compiler]))
   #?(:cljs (:require-macros 
             [fireworks.pp :refer [?pp]])))
+
+
+;; Colors ----------------------------------------------------------------------
+(def sgr-codes-by-color
+  {:red        196
+   :orange     172
+   :yellow     178
+   :olive      106
+   :green      76
+   :blue       75
+   :purple     141
+   :magenta    171 ;; 201
+   :gray       247
+   :black      16
+   :white      231})
+
+(def colors-by-tag
+  {:keyword  :purple
+   :string   :olive
+   :number   :orange
+   :symbol   :blue
+   :nil      :yellow
+   :boolean  :yellow
+   :atom     :yellow
+   :class    :blue
+   :function :blue
+   })
+
+(defn- cljc-atom?
+  [x]
+  #?(:cljs (= cljs.core/Atom (type x))
+     :clj  (= clojure.lang.Atom (type x))))
+
+#_(defn tags-by-type [x]
+  (cond (keyword? x)
+        :keyword
+        (string? x)
+        :string
+        (number? x)
+        :number
+        (boolean? x)
+        :boolean
+        (nil? x)
+        :nil
+        (symbol? x)
+        :symbol
+        (fn? x)
+        :function
+        (cljc-atom? x)
+        :atom
+        #?(:cljs nil :clj (class? x))
+        #?(:cljs nil :clj :class)))
+
+
+(defn- colorized [s k]
+  (if-let [sgr (when-let [k (if #?(:cljs (= :cljs.core/Atom k)
+                                   :clj  (= :clojure.lang.Atom k))
+                              :atom
+                              k)]
+                 (some-> k colors-by-tag sgr-codes-by-color))]
+    (let [s (cond (nil? s)
+                  "nil"
+                  (fn? s)
+                  (symbol 
+                   #?(:cljs
+                      s
+                      :clj
+                      (-> s class .getName Compiler/demunge)))
+                  :else
+                  s)
+          ;; object? (string/starts-with? (str s) "#object")
+          s (if (= k :string) (str "\"" s "\"") s)]
+      (symbol (str "\033[38;5;" sgr "m" s "\033[m")))
+    s))
+
+;; -----------------------------------------------------------------------------
+
 
 #?(:clj (set! *warn-on-reflection* true))
 
@@ -86,6 +166,20 @@
   #?(:clj (.write ^java.io.Writer writer ^String s)
      :cljs (-write writer s)))
 
+(def esc "\u001b\\[")
+(def sgr-text-decoration-base
+  "(?:9|4(?::[1-5])?)")
+(def sgr-freeform
+  (str "(?:[0-9]|;|" sgr-text-decoration-base ")*m"))
+(def sgr-re (re-pattern (str esc sgr-freeform)))
+(defn sgr-count
+  "Given a string containing ANSI SGR tags, returns the character count of the
+   ANSI SGR tags"
+  [s]
+  (some->> s
+           (re-seq sgr-re)
+           (reduce (fn [n s] (+ n (count s))) 0)))
+
 (defn ^:private strlen
   "Given a string, return the length of the string.
 
@@ -108,7 +202,8 @@
     (reify CountKeepingWriter
       (write [_ s]
         (write-into writer ^String s)
-        (vswap! c #(+ % (strlen ^String s)))
+        ;; Added sgr-count
+        (vswap! c #(+ % (- (strlen ^String s) (or (sgr-count s) 0))))
         nil)
       (remaining [_]
         (- max-width @c))
@@ -342,16 +437,22 @@
   "Given a CountKeepingWriter, a form, and an options map, return a keyword
   indicating a printing mode (:linear or :miser)."
   [writer form opts]
-  (let [reserve-chars (:reserve-chars opts)
-        s (print-linear form opts)]
+  (let [reserve-chars   (:reserve-chars opts)
+        s               (print-linear form opts)
+        s-len           (strlen s)
+        sgr-count       (or (sgr-count s) 0)
+        len-minus-sgr   (- s-len sgr-count)
+        remaining-count (remaining writer)
+        mode            (if (<= len-minus-sgr (- remaining-count reserve-chars))
+                          :linear
+                          :miser)]
+    #_(println [(str "s") s-len sgr-count len-minus-sgr remaining-count reserve-chars mode])
     ;; If, after (possibly) reserving space for any closing delimiters of
     ;; ancestor S-expressions, there's enough space to print the entire
     ;; form in linear style on this line, do so.
     ;;
     ;; Otherwise, print the form in miser style.
-    (if (<= (strlen s) (- (remaining writer) reserve-chars))
-      :linear
-      :miser)))
+    mode))
 
 (defn ^:private write-sep
   "Given a CountKeepingWriter and a printing mode, print a separator (a
@@ -412,7 +513,6 @@
     (let [[^String o form] (open-delim+form this)
           mode (print-mode writer this opts)
           opts (pprint-opts o opts)]
-
       ;; Print possible meta
       (pprint-meta form writer opts mode)
 
@@ -438,7 +538,11 @@
                   (write writer (:indentation opts)))
 
                 (let [f (first form)
-                      n (next form)]
+                      n (next form)
+                      tag   (when (not (coll? f)) (lasertag/tag f))
+                      f     (if (:coloriz opts)
+                              (some->> tag (colorized f))
+                              f)]
                   (if (empty? n)
                     ;; This is the last child, so reserve an additional
                     ;; slot for the closing delimiter of the parent
@@ -457,11 +561,25 @@
   [this writer opts]
   (if (meets-print-level? (:level opts))
     (write writer "#")
-    (let [k (key this)
-          opts (update opts :level inc)]
+    (let [k     (if (:colorize opts)
+                  (let [[k*]  this
+                        k-str (key this)
+                        tag   (when (not (coll? k*)) (lasertag/tag k*))
+                        k     (or (some->> tag (colorized k-str))
+                                  k-str)]
+                    k)
+                  (key this))
+          opts  (update opts :level inc)]
       (-pprint k writer opts)
 
-      (let [v (val this)
+      (let [v    (if (:colorize opts)
+                   (let [[_ v*] this
+                         v-str  (val this)
+                         tag    (when (not (coll? v*)) (lasertag/tag v*))
+                         v      (or (some->> tag (colorized v-str))
+                                    v-str)]
+                     v)
+                   (val this))
             ;; If, after writing the map entry key, there's enough space to
             ;; write the val on the same line, do so. Otherwise, write
             ;; indentation followed by val on the following line.
