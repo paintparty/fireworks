@@ -907,9 +907,6 @@
 
       coll-type?
       (let [r (reduce-coll v indent)] 
-        (println v)
-        (println r)
-        (println "\n")
         r)
 
       :else

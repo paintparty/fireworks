@@ -40,10 +40,11 @@
 (deftest long-fn-name
   (is (= 
        (let [ret              (? :data
-                                 {:non-coll-length-limit 33 :theme theme} {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
+                                 {:non-coll-length-limit 33
+                                  :theme                 theme} {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
              formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
-"〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠abcdefghijklmnopqrstuvwxyz-a〠3;38;2;140;140;140〠...〠0〠〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;102〠}〠0〠")))
+       "〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠abcdefghijklmnopqrstuvwxyz-a〠0〠〠3;38;2;140;140;140〠...〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;102〠}〠0〠")))
 
 (deftest transient-set
   (is (= 
@@ -193,7 +194,8 @@
              "\n\n"
              basic-tapping-macros-tests
              "\n\n"
-             deftests-string)
+             deftests-string
+             )
         :append false))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -202,8 +204,8 @@
 
 ;; Toggle this true / false to generate tests 
 
-(def write-tests? false)
-;; (def write-tests? true)
+;; (def write-tests? false)
+(def write-tests? true)
 
 ;; Toggle this true / false to see the output
 ;; Visual mode does not yet work when running bb tests

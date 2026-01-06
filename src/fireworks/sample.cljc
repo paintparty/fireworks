@@ -345,7 +345,17 @@
 
    "Abstractions"
    (array-map
-    :atom             (qc (atom 1))
+    :atom             (qc (atom {:red     196
+                                 :orange  172
+                                 :yellow  178
+                                 :olive   106
+                                 :green   76
+                                 :blue    75
+                                 :purple  141
+                                 :magenta 171 ;; 201
+                                 :gray    247
+                                 :black   16
+                                 :white   231}))
     ;; :date             my-date
     :volatile!        (volatile! 1)
     :transient-vector (transient [1 2 3 4])
