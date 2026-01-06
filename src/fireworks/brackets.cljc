@@ -3,7 +3,7 @@
             [fireworks.pp :refer [?pp pprint]]
             [fireworks.defs :as defs]
             [fireworks.state :as state]
-            [fireworks.tag :as tag :refer [style-from-theme tag! tag-reset!]]
+            [fireworks.tag :as tag :refer [style-from-theme sgr-tag sgr-reset-tag]]
             [fireworks.util :refer [badge-type]]))
 
 (defn brackets-by-type
@@ -80,7 +80,7 @@
              color)))
 
 ;; TODO - change name
-(defn- tag-bracket!
+(defn- tag-bracket
   "Rainbow parens by default.
    Function args vector not included in rainbow parens."
   [{:keys [t mm]} s]
@@ -105,7 +105,7 @@
                     (get @state/merged-theme theme-token nil)))]
 
     (when (state/debug-tagging?)
-      (println "tag-bracket! "
+      (println "tag-bracket "
                (str style s "\033[0m")
                "   theme-token is   "
                theme-token
@@ -113,18 +113,18 @@
 
     style))
 
-(defn- bracket!*
+(defn- bracket*
   [{:keys [s t]
     :as   m}]
   (let [s (if (-> m :mm :user-meta :fw/hide-brackets?) " " s)]
     #_(when (state/debug-tagging?)
-        (println "\nbracket!*  " s ",  t: " t))
+        (println "\nbracket*  " s ",  t: " t))
     (if t 
-      (str (tag-bracket! m s) s (tag-reset!))
-      (str (tag-reset!) s (tag-reset!)))))
+      (str (tag-bracket m s) s sgr-reset-tag)
+      (str sgr-reset-tag s sgr-reset-tag))))
 
 
-(defn- bracket!
+(defn- bracket
   [m kw]
   (let [mm      (-> m :coll meta)
         t       (:t mm)
@@ -134,7 +134,7 @@
                   :else            t)
         [ob cb] (brackets-by-type mm)  
         s       (cond 
-                  ;; TODO - maybe move this bracket up to bracket!*
+                  ;; TODO - maybe move this bracket up to bracket*
                   (:let-bindings? m)
                   " "
 
@@ -146,25 +146,25 @@
 
                   :else              
                   cb)
-        bracket (bracket!* {:s s :t t :mm mm})]
+        bracket (bracket* {:s s :t t :mm mm})]
     bracket))
 
 
 (defn closing-bracket!
   [m]
   (swap! state/rainbow-level dec)
-  (let [cb (bracket! m :closing)]
+  (let [cb (bracket m :closing)]
     cb))
 
 
 (defn opening-bracket!
   [m]
-  (let [ob (bracket! m :opening)]
+  (let [ob (bracket m :opening)]
     (swap! state/rainbow-level inc)
     ob))
 
 
-(defn closing-angle-bracket! 
+(defn closing-angle-bracket 
   "This is for when collections are encapsulated in a mutable construct such as
    an atom or volatile, so they can be printed like `Atom<[1 2 3]>`"
   [m]
@@ -173,10 +173,10 @@
     (when (or val-is-atom? val-is-volatile?)
       (let [k (if val-is-atom? :atom-wrapper :volatile-wrapper)]
         (when (state/debug-tagging?)
-          (println "fireworks.brackets/closing-angle-bracket! \ntagging "
+          (println "fireworks.brackets/closing-angle-bracket \ntagging "
                    defs/encapsulation-closing-bracket
                    " with " 
                    k))
-        (str (tag! k)
+        (str (sgr-tag k)
              defs/encapsulation-closing-bracket
-             (tag-reset!))))))
+             sgr-reset-tag)))))

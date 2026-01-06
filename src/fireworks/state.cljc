@@ -934,6 +934,12 @@
 
 (def *formatting-meta-level (atom 0))
 
+(defn meta-level-inc! []
+  (swap! *formatting-meta-level inc))
+
+(defn meta-level-dec! []
+  (swap! *formatting-meta-level dec))
+
 (defn formatting-meta-level []
   @*formatting-meta-level)
 

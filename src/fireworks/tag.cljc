@@ -1,6 +1,5 @@
 (ns ^:dev/always fireworks.tag
-  (:require [clojure.string :as string]
-            [fireworks.pp :refer [pprint]]
+  (:require [fireworks.pp :refer [pprint]]
             [fireworks.state :as state :refer [?sgr]]))
 
 
@@ -60,9 +59,9 @@
 
 ;; TODO - If neutral theme, don't tag
 ;; TODO - rename to sgr-tag, as it does not side effect anymore 
-(defn tag!
+(defn sgr-tag
   ([t]
-   (tag! t nil))
+   (sgr-tag t nil))
   ([t highlighting]
    (let [metadata-*? (contains? #{:metadata :metadata-key} t)
          coerced-tag (cond
@@ -77,22 +76,22 @@
        (?sgr s))
      s)))
 
-(def sgr-closing-tag-str "\033[0m")
+(def sgr-reset-tag "\033[0m")
 
 ;; TODO - remove this and just use sgr-closing-tag-str, rename to sgr-reset-tag
-(defn tag-reset!
+(defn reset-tag
   ([]
-   (tag-reset! :foreground))
+   (reset-tag :foreground))
   ([theme-token]
    (when (state/debug-tagging?)
-     (println "tag/tag-reset! with \\\033[0m"))
-   sgr-closing-tag-str))
+     (println "tag/reset-tag with \\\033[0m"))
+   sgr-reset-tag))
 
-(defn tag-entity! 
+(defn tag-entity 
   ([x t]
-   (tag-entity! x t nil))
+   (tag-entity x t nil))
   ([x t highlighting]
-   (str (tag! t) x (tag-reset!))))
+   (str (sgr-tag t) x sgr-reset-tag)))
 
 (defn tagged
    ([s]
@@ -111,8 +110,8 @@
                    (vector? s))
                display?)
 
-      (let [opening-tag (tag! theme-token highlighting)
-            closing-tag (tag-reset!)
+      (let [opening-tag (sgr-tag theme-token highlighting)
+            closing-tag sgr-reset-tag
             ret         (str opening-tag s closing-tag)]
 
         (when (state/debug-tagging?)

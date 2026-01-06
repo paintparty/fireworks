@@ -8,15 +8,15 @@
     :as brackets
     :refer [closing-bracket! 
             opening-bracket!
-            closing-angle-bracket!
+            closing-angle-bracket
             brackets-by-type]]
    [clojure.string :as string]
    [fireworks.defs :as defs]
-   [fireworks.tag :as tag :refer [tag! tag-reset! tagged]]
+   [fireworks.tag :as tag :refer [sgr-tag reset-tag sgr-reset-tag tagged]]
    [fireworks.util :refer [spaces badge-type]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
-   [fireworks.state :as state]
+   [fireworks.state :as state :refer [meta-level-inc! meta-level-dec!]]
    [fireworks.util :as util]))
 
 (declare tagged-val)
@@ -39,7 +39,8 @@
                :seq}
              k))
 
-(defn add-truncation-annotation! 
+
+(defn truncation-annotation 
   [{:keys [num-chars-dropped t truncate-fn-name? top-level-sev?]
     :as m}]
   (when (or truncate-fn-name?
@@ -54,14 +55,15 @@
                       defs/ellipsis)]
 
       (when (state/debug-tagging?)
-        (println "\nserialize/add-truncation-annotation:  tagging \""
+        (println "\nserialize/truncation-annotation-annotation:  tagging \""
                  s 
                  "\" with " 
                  theme-tag ))
 
       (if top-level-sev?
         s
-        (str (tag! theme-tag) s (tag-reset!))))))
+        (str (sgr-tag theme-tag) s sgr-reset-tag)))))
+
 
 (defn sev-user-meta-position-match? [user-meta position]
   (and (:display-metadata? @state/config)
@@ -73,8 +75,7 @@
 
 
 (defn sev!
-  "Creates a string with the properly placed \"%c\" (or sgr) formatting tags.
-   The tag! and tag-reset! fns mutate the styles atom for syntax coloring."
+  "Creates a string with the properly placed \"%c\" (or sgr) formatting tags."
   [{:keys [x
            s
            t
@@ -101,13 +102,13 @@
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
 
-        mutable-tagging-opts
+        mutable-tagging-opts                                                    ;; TODO - Rename to not use mutable
         (when (or val-is-atom? val-is-volatile?)
           {:theme-token  (if val-is-atom? :atom-wrapper :volatile-wrapper)
            :display?     true
            :highlighting highlighting})
 
-        ;; The next set of bindings:
+        ;; The next set of bindings:                                            ;; break these into helper fns?
         
         ;; user-metadata-map-block (displays user-meta above value), optional
         ;; atom-opening,  optional
@@ -120,12 +121,13 @@
         ;; atom-closing, optional
         ;; user-metadata-map-block (displays user-meta inline, after value), optional
         
-        user-metadata-map-block-tagged
+        user-metadata-map-block-tagged                                          
         (when (sev-user-meta-position-match? user-meta :block)
-          (swap! state/*formatting-meta-level inc)
+          
+          (meta-level-inc!)
           (let [ret (formatted* user-meta {:indent     indent
                                            :user-meta? true})]
-            (swap! state/*formatting-meta-level dec)
+            (meta-level-dec!)
             ret))
         
         user-metadata-map-block-tagged-separator
@@ -152,15 +154,14 @@
                                 :literal-label)})
 
         theme-tag
-        (cond
-          number-type?
-          :number
-          js-map-like-key?
-          :js-object-key
-          encapsulated?
-          :string
-          :else
-          t)
+        (cond number-type?
+              :number
+              js-map-like-key?
+              :js-object-key
+              encapsulated?
+              :string
+              :else
+              t)
 
         theme-tag
         (let [meta-level (state/formatting-meta-level)]
@@ -177,28 +178,29 @@
 
         ;; This is where value's tag gets created
         main-entity-tag                  
-        (tag! theme-tag highlighting)
+        (sgr-tag theme-tag highlighting)
 
-        ;; Additional tagging happens within fireworks.serialize/add-truncation-annotation!
+        ;; Additional tagging happens within fireworks.serialize/truncation-annotation
         chars-dropped-syntax 
-        (add-truncation-annotation! m)
+        (truncation-annotation m)
 
         main-entity-tag-reset            
-        (tag-reset! (if (pos? (state/formatting-meta-level))
-                      (state/metadata-token)
-                      :foreground))
+        (reset-tag (if (pos? (state/formatting-meta-level))
+                     (state/metadata-token)
+                     :foreground))
 
         fn-args-tagged
-        (tagged fn-args {:theme-token :function-args :highlighting highlighting})
+        (tagged fn-args {:theme-token  :function-args
+                         :highlighting highlighting})
 
         atom-closing-bracket-tagged
-
         (some->> mutable-tagging-opts 
                  (tagged defs/encapsulation-closing-bracket))
 
         user-metadata-map-inline-tagged
         (when (sev-user-meta-position-match? user-meta :inline)
-          (swap! state/*formatting-meta-level inc)
+          
+          (meta-level-inc!)
           (let [offset        defs/metadata-position-inline-offset
                 inline-offset (tagged (spaces (dec offset))
                                       {:theme-token (state/metadata-token)})
@@ -208,7 +210,8 @@
                                                offset
                                                (or ellipsized-char-count 0))
                                 :user-meta? true})]
-            (swap! state/*formatting-meta-level dec)
+            
+            (meta-level-dec!)
             ;; TODO - figure out how to create left arrow char with foreground
             ;; color of metadata background.
             (str " " inline-offset ret)))
@@ -238,7 +241,7 @@
 
 
          ;; The self-evaluating value
-         (when (= t :string) (str (tag! :string-delimiter) "\"" (tag-reset!)))
+         (when (= t :string) (str (sgr-tag :string-delimiter) "\"" sgr-reset-tag))
 
          main-entity-tag
          ;; (some-> num-chars-dropped pos?)
@@ -246,7 +249,7 @@
                (if (= t :string)
                  (string/replace (subs s 1 (-> s count dec))
                                  #"\""
-                                 (str (tag! :escaped-double-quote-char)
+                                 (str (sgr-tag :escaped-double-quote-char)
                                       "\""
                                       main-entity-tag-reset
                                       main-entity-tag))
@@ -255,7 +258,7 @@
          main-entity-tag-reset
          chars-dropped-syntax
 
-         (when (= t :string) (str (tag! :string-delimiter) "\"" (tag-reset!)))
+         (when (= t :string) (str (sgr-tag :string-delimiter) "\"" sgr-reset-tag))
          
 
          ;; Conditional fn-args, positioned inline, to right of value 
@@ -279,12 +282,13 @@
                 escaped
                 x 
                 s
-                t])
-        locals (merge ret
+                t])]
+
+    #_(?pp 'locals
+           (merge ret
                       (keyed [main-entity-tag
                               chars-dropped-syntax
-                              main-entity-tag-reset]))]
-    #_(?pp locals)
+                              main-entity-tag-reset])))
     ret))
 
 
@@ -325,6 +329,7 @@
       (when-not (some-> m :truncated-coll-size zero?)
         (when-not (:too-deep? m) " ")))))
 
+
 (defn- map-key-ghost 
   [{:keys [too-deep? max-keylen]}]
   (when-not too-deep?
@@ -334,12 +339,14 @@
                3)
              "."))))
 
+
 (defn- spaces-between-kv [max-keylen too-deep? map-key-ghost]
   (spaces (if too-deep?
             0
             (let [max-keylen+space (inc max-keylen)]
               (- max-keylen+space
                  (count map-key-ghost))))))
+
 
 (defn- kv-spacing-str [m max-keylen too-deep?]
   (let [map-key-ghost     (map-key-ghost m)
@@ -368,19 +375,20 @@
         kv-spacing-str     (when coll-is-map?
                              (kv-spacing-str m max-keylen too-deep?))
         extra              (str leading+indent
-                                (tag! {} highlighting)
+                                (sgr-tag {} highlighting)
                                 kv-spacing-str
                                 num-dropped-syntax
-                                (tag-reset!))]
+                                sgr-reset-tag)]
 
     (when (state/debug-tagging?)
       (println "\nnum-dropped-annotion! : tagging " extra " with " :ellipsis))
 
     (if highlighting 
       extra
-      (str (tag! :ellipsis) extra (tag-reset!)))))
+      (str (sgr-tag :ellipsis) extra sgr-reset-tag))))
 
 ;;;; Num-dropped-syntax end ----------------------------------------------------
+
 
 (defn- stringified-bracketed-coll-with-num-dropped-syntax! 
   "This is where the stringified coll (with formatting and escaped style tags)
@@ -393,7 +401,7 @@
   (let [extra (when (some-> num-dropped pos?)
                 (num-dropped-annotation m)) ;<- mutates?
         cb    (closing-bracket! m) ;<- mutates state for rainbow brackets
-        cb2   (closing-angle-bracket! m)]
+        cb2   (closing-angle-bracket m)]
     (str ob
          ret
          extra
@@ -413,23 +421,24 @@
        seq
        boolean))
 
+
 (defn- reduce-coll-profile
   [coll indent*]
   (let [{:keys [some-elements-carry-user-metadata?  
+                single-column-map-layout?
                 ;; str-len-with-badge-ellipsized
                 ;; str-len-val-ellipsized
                 ;; str-len-with-badge
-                val-str-len
-                badge-str-len
-                single-column-map-layout?
                 str-len-with-badge
                 :fw/user-meta-map? ; <- maybe this is redundant? also exists as unq kw user-meta in this map. Maybe change unq key to user-metadata-map?, or val-is-user-metadata-map?
                 val-is-volatile?
                 :fw/user-meta ; <- maybe this is redundant? also exists as unq kw in this map. Maybe change unq key to user-metadata-map
+                badge-str-len
                 js-map-like?         
                 val-is-atom?
                 highlighting
                 num-dropped
+                val-str-len
                 user-meta?
                 too-deep?
                 set-like?
@@ -446,7 +455,7 @@
         (when (seq user-meta) user-meta)
 
         coll-count
-        (count coll)
+        (count coll) ; <- TODO - don't we already know this from lasertag/tag-map? 
 
         metadata-position
         (:metadata-position @state/config)
@@ -493,6 +502,7 @@
                            (some #(when (meta %) %)
                                  (tree-seq coll? seq (:og-x meta-map))))))))))
 
+
         ;; _ (when-not multi-line? (?pp meta-map))
 
         ;; This is where indenting for multi-line collections is determined
@@ -500,9 +510,7 @@
         (if (or set-like? user-meta-map? (= t :js/Set)) 2 1)
 
         indent       
-        (+ (or indent* 0)
-           num-indent-spaces-for-t)
-
+        (+ (or indent* 0) num-indent-spaces-for-t)
 
         indent       
         (or (when-not (or badge-above? user-meta-above?) 
@@ -573,10 +581,13 @@
   (when (and (:display-metadata? @state/config)
              user-meta
              (contains? #{:block "block"} metadata-position))
-    (swap! state/*formatting-meta-level inc)
+    
+    (meta-level-inc!)
     (let [ret (formatted* user-meta {:user-meta? true :indent indent*})]
-      (swap! state/*formatting-meta-level dec)
+      
+      (meta-level-dec!)
       ret)))
+
 
 (defn- user-metadata-map-inline
   [{:keys [user-meta
@@ -587,7 +598,8 @@
   (when (and (:display-metadata? @state/config)
                    (seq user-meta)
                    (contains? #{:inline "inline"} metadata-position))
-    (swap! state/*formatting-meta-level inc)
+    
+    (meta-level-inc!)
     (let [offset        defs/metadata-position-inline-offset
           inline-offset (tagged (spaces (dec offset))
                                 {:theme-token (state/metadata-token)})
@@ -610,9 +622,12 @@
                                          1)
                                        0))]
                             (+ indent+ob offset))})]
-      (swap! state/*formatting-meta-level dec)
+      
+      (meta-level-dec!)
       (str " " inline-offset ret))))
 
+
+;; TODO - break ob into its own fn
 (defn- profile+ob
   [coll indent*]
   (let [{:keys [badge
@@ -666,10 +681,10 @@
              annotation-newline
              (opening-bracket! (keyed [coll record? let-bindings? highlighting]))
              #_(if highlighting
-                 ;; Change this - move logic down in to opening bracket!
-                 (str #_(tag! {} highlighting)
+                 ;; Change this - move logic down in to opening bracket
+                 (str #_(sgr-tag {} highlighting)
                   (opening-bracket! (keyed [coll record? let-bindings?]))
-                      #_(tag-reset!))
+                      #_sgr-reset-tag)
                  (opening-bracket! (keyed [coll record? let-bindings?])))
              (when (-> coll meta :too-deep?)
                (tagged "#" {:theme-token :max-print-level-label})))
@@ -687,7 +702,10 @@
         (str ob* (some-> user-metadata-map-inline
                          (str (tagged separator
                                       {:theme-token :foreground}))))]
+
+    ;; TODO - isn't record alreay in m?
     (assoc m :ob ob :record? record?)))
+
 
 (defn- coll-sep 
   "Provides the correct separator for items in coll, based on whether they are
@@ -702,6 +720,7 @@
     (str (if value-in-mapentry? separator maybe-comma)
          separator)))
 
+
 (defn- coll-sep-tagged
   [{:keys [highlighting multi-line?] :as m} idx]
   (let [formatting-meta? (pos? (state/formatting-meta-level)) 
@@ -713,6 +732,7 @@
                           (when-not (or multi-line? formatting-meta?)
                             {:highlighting highlighting}))]
     (tagged (coll-sep m idx) opts)))
+
 
 (defn- reduce-coll-inner 
   [{:keys [indent
@@ -802,10 +822,10 @@
 
         spaces-after-key
         (let [num-extra (if multi-line?
-                          (- (or max-keylen 0) (or key-char-count 0))
+                          (- (or max-keylen 0)
+                             (or key-char-count 0))
                           0)
-              s         (when (some-> num-extra pos?) 
-                          (spaces num-extra))
+              s         (when (some-> num-extra pos?) (spaces num-extra))
               k         :spaces-after-key]
           (gap-spaces (assoc gap-spaces-opts :s s :k k)))
 
@@ -887,9 +907,7 @@
   (let [t                          
         (or t (:t val-props))
 
-        {:keys [map-like?
-                single-column-map-layout?
-                coll-type?]}                         
+        {:keys [map-like? single-column-map-layout? coll-type?]}                         
         val-props
         
         ;; TODO - why is this named source-is-scalar?
@@ -984,6 +1002,9 @@
    (formatted* source nil))
   ;; user-meta? when the value being formatted is a user meta map
   ;; TODO - Maybe change :user-meta? to :value-is-user-meta-map?
+  ;; TODO - Maybe this second argument should be the place where all state that
+  ;;        is related to formatting lives and use volatiles instead of atoms?
+  ;;        It would need to be passed down and thru
   ([source {:keys [indent user-meta?]
             :or   {indent (or @state/margin-inline-start 0)}
             :as   opts}]

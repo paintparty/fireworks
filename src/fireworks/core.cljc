@@ -90,13 +90,13 @@
                     (string/join
                      "\n"
                      (map
-                      #(str (tag/tag-entity!
+                      #(str (tag/tag-entity
                              (str indent-spaces %)
                              label-entity-tag)
-                            (tag/tag-reset!))
+                            (tag/reset-tag))
                       (string/split label #"\n")))
 
-                    (tag/tag-entity!
+                    (tag/tag-entity
                      (util/shortened label
                                      (resolve-label-length label-length-limit))
                      label-entity-tag))]
@@ -118,7 +118,7 @@
                     :eval-form)
                   
                   shortened
-                  (tag/tag-entity! 
+                  (tag/tag-entity 
                    (if (:format-label-as-code? @state/config)
                      (-> qf
                          (pprint {:max-width 33})
@@ -148,7 +148,7 @@
                                  col :column} form-meta]
                        (str ns-str ":" ln ":" col)))
         file-info  (some-> file-info*
-                           (tag/tag-entity! :file-info))]
+                           (tag/tag-entity :file-info))]
    [file-info* file-info]))
 
 
@@ -203,7 +203,7 @@
                       log?
                       threading?)
           ;; TODO - is the space before the newline necessary?
-          (tag/tag-entity! " \n" :result-header))
+          (tag/tag-entity " \n" :result-header))
 
         ;; TODO - Remove if post-replace works - cljs stuff below
         css-count*
