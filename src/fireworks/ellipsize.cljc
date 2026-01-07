@@ -57,6 +57,7 @@
            fn-args
            js-built-in-function?
            js-built-in-method-of
+           java-lang-class?
            badge
            lambda?]
     :as   m}]
@@ -76,9 +77,10 @@
                                        (str "."))
                                fn-name)
                           (str (when (:display-namespaces? @state/config)
-                                 (some-> fn-ns (str "/")))
+                                 (some-> fn-ns
+                                         (str (if java-lang-class? "." "/"))))
                                fn-name))
-        fn-args         (fn-args* fn-args)
+        fn-args         (if java-lang-class? nil (fn-args* fn-args))
         diff            (budge-diff nm fn-args)
 
 
@@ -127,8 +129,8 @@
         ;; Finally, calculate the final ellipsized-char-count. This count
         ;; should never exceed the :non-coll-length-limit, or the
         ;; :map-key-length-limit, from @state/config.
-
-                           
+        
+        
         ecc             (+ (ellipsized-char-count badge
                                                   (str fn-display-name)
                                                   trunc-name?) ;; <-- TODO - maybe fix fn sig
@@ -328,6 +330,5 @@
         ;;                 exceeds?
         ;;                 inline-badge-count
         ;;                 s
-        ;;                 atom-wrap-count
         ;;                 ellipsized-char-count])))
           ret)))))
