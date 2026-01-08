@@ -67,8 +67,8 @@
         budge-diff      (partial budge-diff limit (mutable-wrapper-count m))
         
 
-        ;; Construct the fn display name with proper js/built-in prefix
-        ;; and optional namespace + possibly shortened fn-args vector.
+        ;; Construct the function display name with proper js/built-in prefix
+        ;; and optional namespace + possibly shortened function args fn-args vector.
         ;; Then use budge-diff to see if it is over budget.
         interop-prefix  (if js-built-in-function? "js/" nil)
         nm              (if js-built-in-function?
@@ -80,7 +80,10 @@
                                  (some-> fn-ns
                                          (str (if java-lang-class? "." "/"))))
                                fn-name))
-        fn-args         (if java-lang-class? nil (fn-args* fn-args))
+        fn-args         (if (or java-lang-class?
+                                (contains? (:all-tags m) :built-in))
+                          nil
+                          (fn-args* fn-args))
         diff            (budge-diff nm fn-args)
 
 
