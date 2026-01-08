@@ -540,7 +540,7 @@
                 (let [f (first form)
                       n (next form)
                       tag   (when (not (coll? f)) (lasertag/tag f))
-                      f     (if (:coloriz opts)
+                      f     (if (:colorize opts)
                               (some->> tag (colorized f))
                               f)]
                   (if (empty? n)
