@@ -111,7 +111,9 @@
              (set/rename-keys {:tag :t}))]
      (merge tag-map
             (when (contains? all-tags :carries-meta) {:carries-meta? true})
-            (when (contains? all-tags :coll-type) {:coll-type? true})
+            (when (or (contains? all-tags :coll-type) ;<- deprecate in lasertag
+                      (contains? all-tags :coll-like))
+              {:coll-type? true})
             (when (contains? all-tags :map-like) {:map-like? true})
             (when (contains? all-tags :set-like) {:set-like? true})
             (when (contains? all-tags :transient) {:transient? true})
