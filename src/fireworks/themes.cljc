@@ -355,10 +355,10 @@
                                              :background-color "#2b4c69"
                                              :font-style       :italic}}
                       :syntax  {:number                    {:color "#8fb8cc"}
-                                :js-object-key             {:color "#888888"}
+                                :nil                       {:color "#a9a9a9"}
+                                :js-object-key             {:color "#a9a9a9"}
                                 :escaped-double-quote-char :string
-                                ;; :string-delimiter          :constant
-                                :string-delimiter          :constant
+                                :string-delimiter          {:color "#bfbf69"}
                                 }
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label

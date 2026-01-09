@@ -68,6 +68,9 @@
 
                  (and (not= t :js/Object)
                       (or (contains? all-tags :js-map-like-object)
+                          (and (contains? all-tags :js)
+                               (contains? all-tags :object)
+                               (contains? all-tags :instance-of-built-in))
                           (contains? all-tags :js-typed-array)))
                  (str "js/" classname)
                  

@@ -97,6 +97,7 @@
            js-map-like-key?
            num-chars-dropped
            str-len-with-badge
+           theme-token-override
            ellipsized-char-count]
     :as m}]
   (let [encapsulated?
@@ -170,7 +171,7 @@
               (if key?
                 (if l2? :metadata-key2 :metadata-key)
                 (if l2? :metadata2 :metadata)))
-            theme-tag))
+            (or theme-token-override theme-tag)))
 
         _ 
         (when (state/debug-tagging?)
@@ -1025,7 +1026,6 @@
          serialized (serialized profiled indent)
          ;;  len            (-> profiled meta :str-len-with-badge)
          ]
-
 
     ;; for debugging path info
     #_(walk/postwalk (fn [x]
