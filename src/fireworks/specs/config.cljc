@@ -165,7 +165,16 @@
 
 (s/def ::when any?)
 
-(s/def ::fireworks-user-config
+(s/def ::dissoc-metadata-keys vector?)
+
+(s/def ::multi-line-metadata? boolean?)
+
+(s/def ::single-line-metadata-max-length pos-int?)
+
+(s/def ::quote-symbols? boolean?)
+
+
+#_(s/def ::fireworks-user-config
   (s/and map?
          (s/keys :opt-un [::line-height 
                           ::enable-terminal-italics? 

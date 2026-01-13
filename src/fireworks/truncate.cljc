@@ -375,7 +375,8 @@
                      (= x 'js/undefined))
                 (symbol "undefined")
 
-                (and (= t :symbol)
+                (and (:quote-symbols? @state/config)
+                     (= t :symbol)
                      ;; check that is is not a js-object key such as `'a':`
                      (not (when (:key? m) (re-find #"'[^\']+':$" (str x)))))
                 (symbol (str "'" x))
@@ -479,6 +480,7 @@
         ;; TODO - Use this instead of what is happening in fireworks.profile
         ;; mm*
         ;; (with-badge-and-ellipsized x kv? mm*)
+
         meta-to-attach
         (merge {:fw/truncated mm*
                 :fw/user-meta #?(:cljs user-meta

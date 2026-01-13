@@ -49,8 +49,8 @@
    :supports-color-level                {:spec           ::config/supports-color-level
                                          :default        nil
                                          :updates-theme? true}
-   :print-detected-color-level?         {:spec           ::config/print-detected-color-level?
-                                         :default        false}
+   :print-detected-color-level?         {:spec    ::config/print-detected-color-level?
+                                         :default false}
    :legacy-terminal?                    {:spec           ::config/legacy-terminal?
                                          :default        false
                                          :updates-theme? true
@@ -86,6 +86,14 @@
                                          :default nil}
    :when                                {:spec    ::config/when
                                          :default nil}
+   :dissoc-metadata-keys                {:spec    ::config/dissoc-metadata-keys
+                                         :default nil}
+   :single-line-metadata-max-length     {:spec    ::config/single-line-metadata-max-length
+                                         :default 66}
+   :multi-line-metadata?                {:spec    ::config/multi-line-metadata?
+                                         :default true}
+   :quote-symbols?                      {:spec    ::config/quote-symbols?
+                                         :default false}
    })
 
 ;; TODO prune this

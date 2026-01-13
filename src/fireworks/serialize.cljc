@@ -206,7 +206,7 @@
                 inline-offset (tagged (spaces (dec offset))
                                       {:theme-token (state/metadata-token)})
                 ret           (formatted*
-                               user-meta
+                               (dissoc user-meta :__loc :__meta-loc)
                                {:indent     (+ indent
                                                offset
                                                (or ellipsized-char-count 0))
@@ -457,7 +457,7 @@
 
         coll-count
         (count coll) ; <- TODO - don't we already know this from lasertag/tag-map? 
-
+        
         metadata-position
         (:metadata-position @state/config)
 
@@ -479,33 +479,35 @@
         ;;  _ (?pp meta-map)
         
         multi-line?  
-        (or (and display-metadata?
-                 user-meta 
-                 (contains? #{:inline "inline"} metadata-position))
-            (and display-metadata?
-                 user-meta?
-                 (contains? #{:inline "inline"} metadata-position))
-            (and display-metadata?
-                 some-elements-carry-user-metadata?)
-            (some-elements-have-block-level-badges? coll)
-            (boolean 
-             (when (< 1 coll-count)
-               (or single-column-map-layout?
-                   (let [strlen-greater-than-limit? 
-                         (< (:single-line-coll-length-limit @state/config)
-                            (or (if badge-above?
-                                  val-str-len        ;; <- should this be str-len-val-ellipsized?
-                                  str-len-with-badge ;; <- should this be str-len-with-val-ellipsized?
-                                  )
-                                0))]
-                     (or strlen-greater-than-limit?
-                         (when display-metadata?
-                           (some #(when (meta %) %)
-                                 (tree-seq coll? seq (:og-x meta-map))))))))))
+        (when-not (and user-meta?
+                       (false? (:multi-line-metadata? @state/config)))
+          (or (and display-metadata?
+                   user-meta 
+                   (contains? #{:inline "inline"} metadata-position))
+              (and display-metadata?
+                   user-meta?
+                   (contains? #{:inline "inline"} metadata-position))
+              (and display-metadata?
+                   some-elements-carry-user-metadata?)
+              (some-elements-have-block-level-badges? coll)
+              (boolean 
+               (when (< 1 coll-count)
+                 (or single-column-map-layout?
+                     (let [strlen-greater-than-limit? 
+                           (< (:single-line-coll-length-limit @state/config)
+                              (or (if badge-above?
+                                    val-str-len        ;; <- should this be str-len-val-ellipsized?
+                                    str-len-with-badge ;; <- should this be str-len-with-val-ellipsized?
+                                    )
+                                  0))]
+                       (or strlen-greater-than-limit?
+                           (when display-metadata?
+                             (some #(when (meta %) %)
+                                   (tree-seq coll? seq (:og-x meta-map)))))))))))
 
 
         ;; _ (when-not multi-line? (?pp meta-map))
-
+        
         ;; This is where indenting for multi-line collections is determined
         num-indent-spaces-for-t
         (if (or set-like? user-meta-map? (= t :js/Set)) 2 1)
@@ -575,6 +577,10 @@
     ret))
 
 
+(defn- formatted-user-meta [user-meta indent*]
+  (formatted* (apply dissoc user-meta (:dissoc-metadata-keys @state/config))
+                          {:user-meta? true :indent indent*}))
+
 (defn- user-metadata-map-block
   [indent*
    metadata-position
@@ -584,8 +590,7 @@
              (contains? #{:block "block"} metadata-position))
     
     (meta-level-inc!)
-    (let [ret (formatted* user-meta {:user-meta? true :indent indent*})]
-      
+    (let [ret (formatted-user-meta user-meta indent*)]
       (meta-level-dec!)
       ret)))
 
@@ -597,32 +602,26 @@
            coll
            indent*]}]
   (when (and (:display-metadata? @state/config)
-                   (seq user-meta)
-                   (contains? #{:inline "inline"} metadata-position))
+             (seq user-meta)
+             (contains? #{:inline "inline"} metadata-position))
     
     (meta-level-inc!)
     (let [offset        defs/metadata-position-inline-offset
           inline-offset (tagged (spaces (dec offset))
                                 {:theme-token (state/metadata-token)})
-          ret           (formatted* 
-                         user-meta
-                         {:user-meta?
-                          true
-                          :indent 
-                          (let [ob        
-                                (str mutable-opening-encapsulation-str
-                                     (some-> coll
-                                             meta
-                                             brackets-by-type
-                                             first))
-                                
-                                indent+ob 
-                                (+ (or (count ob) 0)
-                                   indent*
-                                   (or (when mutable-opening-encapsulation-str
-                                         1)
-                                       0))]
-                            (+ indent+ob offset))})]
+          ob            (str mutable-opening-encapsulation-str
+                             (some-> coll
+                                     meta
+                                     brackets-by-type
+                                     first))
+          
+          indent+ob     (+ (or (count ob) 0)
+                           indent*
+                           (or (when mutable-opening-encapsulation-str
+                                 1)
+                               0))
+          ret           (formatted-user-meta user-meta
+                                             (+ indent+ob offset))]
       
       (meta-level-dec!)
       (str " " inline-offset ret))))
@@ -911,12 +910,11 @@
         {:keys [map-like? single-column-map-layout? coll-type?]}                         
         val-props
         
-        ;; TODO - why is this named source-is-scalar?
-        source-is-scalar?
+        source-is-nil?
         (nil? t)]
     
     (cond
-      source-is-scalar?
+      source-is-nil?
       v
       
       map-like?

@@ -358,8 +358,7 @@
                                 :nil                       {:color "#a9a9a9"}
                                 :js-object-key             {:color "#a9a9a9"}
                                 :escaped-double-quote-char :string
-                                :string-delimiter          {:color "#bfbf69"}
-                                }
+                                :string-delimiter          {:color "#bfbf69"}}
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
