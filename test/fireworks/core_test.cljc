@@ -11,7 +11,6 @@
    [fireworks.config :as config]
    [clojure.test :refer [deftest is]]))
 
-
 ;; TODO - augment write-test-ns function to also write to testbb dir, but without
 ;; the problematic namespaces
 
@@ -31,8 +30,25 @@
 ;; - :find highlighting with :pred in all highlighting variations
 ;; - :find highlighting with :path in all highlighting variations
 
-(declare visual-mode?)
-(declare theme)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Options
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Toggle this true / false to generate tests 
+
+;; (def write-tests? false)
+(def write-tests? true)
+
+;; Toggle this true / false to see the output
+;; Visual mode does not yet work when running bb tests
+;; (def visual-mode? false)
+(def visual-mode? true)
+
+;; Change the theme here (probably don't want to do this)
+(def theme "Alabaster Light")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defn abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn [] nil)
 
@@ -198,24 +214,6 @@
              )
         :append false))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Options
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Toggle this true / false to generate tests 
-
-(def write-tests? false)
-;; (def write-tests? true)
-
-;; Toggle this true / false to see the output
-;; Visual mode does not yet work when running bb tests
-(def visual-mode? false)
-;; (def visual-mode? true)
-
-;; Change the theme here (probably don't want to do this)
-(def theme "Alabaster Light")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn write-tests-ns!
   "This updates/generates 2 test suite namespaces and writes them to
@@ -228,34 +226,32 @@
    set `fireworks.core-test/write-tests?` to `true`, save this file, then run
    `lein test`. Then set `fireworks.core-test/write-tests?` back to `false`."
   []
-  (let [cljc-test-ns-form
-        (with-out-str 
-          (pprint '(ns fireworks.test-suite 
-                     (:require 
-                      [clojure.string :as string]
-                      [fireworks.test-util :refer [escape-sgr]]
-                      [fireworks.core :refer [? !? ?> !?>]]
-                      [fireworks.config]
-                      [fireworks.demo]
-                      [fireworks.sample :as sample] 
-                      [fireworks.smoke-test] 
-                      [clojure.test :refer [deftest is]]))))
+  (let [cljc-test-ns-form (with-out-str 
+                            (pprint '(ns fireworks.test-suite 
+                                       (:require 
+                                        [clojure.string :as string]
+                                        [fireworks.test-util :refer [escape-sgr]]
+                                        [fireworks.core :refer [? !? ?> !?>]]
+                                        [fireworks.sample :as sample] 
+                                        [clojure.test :refer [deftest is]]))))
 
-        bb-test-ns-form
-        (with-out-str 
-          (pprint '(ns fireworks.bb-test
-                     (:require
-                      [clojure.string :as string]
-                      [fireworks.test-util :refer [escape-sgr]]
-                      [fireworks.core :refer [? !? ?> !?>]]
-                      [fireworks.sample :as sample]
-                      [clojure.test :refer [deftest is]]) )))
+        bb-test-ns-form   (with-out-str 
+                                    ;; use cons
+                            (pprint '(ns fireworks.bb-test
+                                       (:require
+                                        [clojure.string :as string]
+                                        [fireworks.test-util :refer [escape-sgr]]
+                                        [fireworks.core :refer [? !? ?> !?>]]
+                                        [fireworks.config]
+                                        [fireworks.sample :as sample]
+                                        [clojure.test :refer [deftest is]]) )))
 
-        s
-        (deftests-str)]
+        s                 (deftests-str)]
 
-   (spit-test-ns! "./test/fireworks/test_suite.cljc" cljc-test-ns-form s) 
-   (spit-test-ns! "./testbb/fireworks/bb_test.cljc" bb-test-ns-form s)))
+    #?(:bb
+       (spit-test-ns! "./testbb/fireworks/bb_test.cljc" bb-test-ns-form s)
+       :clj
+       (spit-test-ns! "./test/fireworks/test_suite.cljc" cljc-test-ns-form s))))
 
 (deftest+ custom-vector-datatype
   {:theme          theme
@@ -369,5 +365,8 @@
 
 ;; Call this from script or uncomment here to regenerate test suite
 (when write-tests? 
-  (println "--- Writing new fireworks.test_suite namespace --------------------")
+  (println #?(:bb
+              "--- Writing new bbtest namespace --------------------"
+              :clj
+              "--- Writing new fireworks.test_suite namespace --------------------"))
   (write-tests-ns!))

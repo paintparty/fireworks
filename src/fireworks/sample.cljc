@@ -17,7 +17,12 @@
 ;; Definitions to use in samples -----------------------------------------------
 
 #?(:bb
-   []
+   (do 
+     (def custom-vector-datatype nil)
+     (def custom-map-datatype nil)
+
+     (def vector-with-custom-datatypes 
+       []))
    :clj
    (do 
      (deftype CustomMap [m]

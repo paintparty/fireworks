@@ -81,6 +81,7 @@
                                          (str (if java-lang-class? "." "/"))))
                                fn-name))
         fn-args         (if (or java-lang-class?
+                                ;; add check if cljs fn
                                 (contains? (:all-tags m) :built-in))
                           nil
                           (fn-args* fn-args))

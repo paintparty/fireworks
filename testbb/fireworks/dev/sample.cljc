@@ -1,4 +1,4 @@
 (require 
  '[fireworks.core :refer [?]])
 
-(? {:foo :bar})
+(println "generating tests from babashka")
