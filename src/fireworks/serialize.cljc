@@ -141,8 +141,10 @@
 
         atom-tagged
         (some->> mutable-tagging-opts
-                 (tagged (str (if val-is-volatile? defs/volatile-label defs/atom-label)
-                              defs/encapsulation-opening-bracket)))
+                 (tagged (str (if val-is-volatile? 
+                                defs/volatile-label 
+                                defs/atom-label)
+                              #_defs/encapsulation-opening-bracket)))
 
         badge-tagged
         (tagged badge
@@ -195,8 +197,9 @@
                          :highlighting highlighting})
 
         atom-closing-bracket-tagged
-        (some->> mutable-tagging-opts 
-                 (tagged defs/encapsulation-closing-bracket))
+        nil
+        #_(some->> mutable-tagging-opts 
+                   (tagged defs/encapsulation-closing-bracket))
 
         user-metadata-map-inline-tagged
         (when (sev-user-meta-position-match? user-meta :inline)
@@ -267,7 +270,7 @@
 
          ;; Conditional `Atom`, closing parts,
          ;; positioned inline, to right of value 
-         atom-closing-bracket-tagged
+         #_atom-closing-bracket-tagged
 
          ;; Optional, conditional metadata of coll element
          ;; positioned inline, to right of element
@@ -402,12 +405,13 @@
   (let [extra (when (some-> num-dropped pos?)
                 (num-dropped-annotation m)) ;<- mutates?
         cb    (closing-bracket! m) ;<- mutates state for rainbow brackets
-        cb2   (closing-angle-bracket m)]
+        ;; cb2   (closing-angle-bracket m)
+        ]
     (str ob
          ret
          extra
          cb
-         cb2)))
+         #_cb2)))
 
 
 (defn- el-with-block-level-badge [x]
@@ -527,7 +531,7 @@
                  (+ (or (count (str (if val-is-atom?
                                       defs/atom-label
                                       defs/volatile-label)
-                                    defs/encapsulation-opening-bracket))
+                                    #_defs/encapsulation-opening-bracket))
                         0)
                     indent)
                  indent)
@@ -650,7 +654,7 @@
 
         mutable-opening-encapsulation
         (some-> mutable-opening-encapsulation-str
-                (str defs/encapsulation-opening-bracket)
+                #_(str defs/encapsulation-opening-bracket)
                 (tagged {:theme-token (if val-is-atom? 
                                         :atom-wrapper 
                                         :volatile-wrapper)}))

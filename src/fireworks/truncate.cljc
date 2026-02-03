@@ -297,7 +297,9 @@
    x]
   (let [val-is-atom?         (cljc-atom? x)
         val-is-volatile?     (volatile? x) 
-        x                    (if (or val-is-atom? val-is-volatile?) @x x)
+        x                    (if (or val-is-atom? val-is-volatile?)
+                               (with-meta {:status :ready :val @x} (meta x))
+                               x)
         kv?                  (boolean (when-not map-entry-in-non-map? (map-entry? x)))
         tag-map              (when-not kv? (util/tag-map* x))
         x                    (or (container-for-unknown-coll-size tag-map)
