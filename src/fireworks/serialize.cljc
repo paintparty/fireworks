@@ -74,7 +74,7 @@
                   (:metadata-position @state/config))))
 
 
-(defn sev!
+(defn sev
   "Creates a string with the properly placed \"%c\" (or sgr) formatting tags."
   [{:keys [x
            s
@@ -177,7 +177,7 @@
 
         _ 
         (when (state/debug-tagging?)
-          (println "\nsev!   tagging " s " with " theme-tag))
+              (println "\nsev   tagging " s " with " theme-tag))
 
         ;; This is where value's tag gets created
         main-entity-tag                  
@@ -193,8 +193,9 @@
                      :foreground))
 
         fn-args-tagged
-        (tagged fn-args {:theme-token  :function-args
-                         :highlighting highlighting})
+        (tagged fn-args
+                {:theme-token  :function-args
+                 :highlighting highlighting})
 
         atom-closing-bracket-tagged
         nil
@@ -820,7 +821,7 @@
 
         {escaped-key    :escaped
          key-char-count :ellipsized-char-count}
-        (sev! (merge key-props {:indent indent}))
+        (sev (merge key-props {:indent indent}))
 
         theme-token-map
         {:theme-token (state/metadata-token)}
@@ -938,7 +939,7 @@
         r)
 
       :else
-      (:escaped (sev! (merge val-props
+      (:escaped (sev (merge val-props
                              (keyed [indent
                                      multi-line?
                                      separator
