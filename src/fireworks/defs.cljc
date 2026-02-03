@@ -194,7 +194,8 @@
           :nan                                          :constant
           :infinity                                     :constant
           :-infinity                                    :constant
-          :escaped-double-quote-char                    :foreground
+          :escaped-double-quote-char                    :annotation
+          :escape-char                                  :string
           :string-delimiter                             :string
 
           ;; regex-related

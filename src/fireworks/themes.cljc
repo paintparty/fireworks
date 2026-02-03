@@ -543,6 +543,7 @@
                                        :nil                       {:color "#a9a9a9"}
                                        :js-object-key             {:color "#a9a9a9"}
                                        :escaped-double-quote-char :string
+                                       :escape-char               {:color (bling-css-color :dark-gray)}
                                        :string-delimiter          {:color "#bfbf69"}}
                                       (highlighted-regex-syntax regex-syntax-dark))
                       :printer {:file-info        :annotation

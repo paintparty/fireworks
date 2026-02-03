@@ -255,7 +255,11 @@
                (cond (= t :string)
                      (string/replace (subs s 1 (-> s count dec))
                                      #"\""
-                                     (str (sgr-tag :escaped-double-quote-char)
+                                     ;; Maybe we should add this at an earlier stage
+                                     (str (sgr-tag :escape-char)
+                                          "\\\\"
+                                          main-entity-tag-reset
+                                          (sgr-tag :escaped-double-quote-char)
                                           "\""
                                           main-entity-tag-reset
                                           main-entity-tag))

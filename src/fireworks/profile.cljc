@@ -168,6 +168,15 @@
         val-str-len
         (or (-> x str count) 0)
 
+        ;; If we add the escape chars to string at an early stage, maybe we can
+        ;; remove this
+        val-str-len
+        (if (and (pos? val-str-len)
+                 (-> x meta :fw/truncated :t (= :string)))
+          (+ val-str-len 
+             (or (some->> x str (re-seq #"\"") count) 0))
+          val-str-len)
+
         ;; This currently only checks encapsulation-closing-bracket-len,
         ;; maybe don't need this.
         encapsulation-closing-bracket-len
@@ -183,13 +192,13 @@
            encapsulation-closing-bracket-len)]
 
     #_(when-not (not (coll? x)) #_@state/formatting-form-to-be-evaled?
-      (?pp
-       (keyed [str-len-with-badge
-               val-str-len
-               badge-str-len
-               x
-               encapsulation-closing-bracket-len
-               ])))
+                (?pp
+                 (keyed [str-len-with-badge
+                         val-str-len
+                         badge-str-len
+                         x
+                         encapsulation-closing-bracket-len
+                         ])))
 
     (keyed [str-len-with-badge
             badge-str-len
@@ -235,9 +244,7 @@
    
    Potentially sets single-column-map-layout? entry in meta to true, if x is a
    map-like? coll and any of the keys or values exceed the value of the config
-   option :single-column-maps-length-threshold.
-   "
-   
+   option :single-column-maps-length-threshold."
   [{:keys [coll-type? ellipsized x t meta-map]}]
   (let [ret* (cond 
                coll-type?

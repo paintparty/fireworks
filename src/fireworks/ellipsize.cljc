@@ -295,6 +295,16 @@
                                           (len badge))
                                         0)
               stringified-len       (count stringified)
+
+              ;; If we add the escape chars to string at an early stage, maybe we can
+              ;; remove this
+              num-double-quotes     (when (= t :string)
+                                      (some->> stringified
+                                               (re-seq #"\"")
+                                               count
+                                               (- 2)
+                                               abs))
+              stringified-len       (+ stringified-len (or num-double-quotes 0))
               char-len              (+ (or stringified-len 0)
                                        (mutable-wrapper-count m)
                                        inline-badge-count)
@@ -324,15 +334,15 @@
 
 
 
-        ;;  (when key?
-        ;;    (?pp stringified)
-        ;;    (?pp (keyed [#_m
-        ;;                 t
-        ;;                 stringified
-        ;;                 stringified-len
-        ;;                 num-chars-over
-        ;;                 exceeds?
-        ;;                 inline-badge-count
-        ;;                 s
-        ;;                 ellipsized-char-count])))
+          ;;  (when key?
+          ;;    (?pp stringified)
+          ;;    (?pp (keyed [#_m
+          ;;                 t
+          ;;                 stringified
+          ;;                 stringified-len
+          ;;                 num-chars-over
+          ;;                 exceeds?
+          ;;                 inline-badge-count
+          ;;                 s
+          ;;                 ellipsized-char-count])))
           ret)))))
