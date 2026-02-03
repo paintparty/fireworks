@@ -36,6 +36,7 @@
 
 (s/def ::color-value 
   (s/or 
+   :nil     nil?
    :css-hex ::css-hex
    :xterm-color-id ::xterm-color-id
    :bling-color-name bling-color-names-set))
