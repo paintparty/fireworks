@@ -164,7 +164,7 @@
 
 (defn- regex-char-seq-with-ansi-sgr-tags [%]
   (let [sp                          (string/split % #"")
-        char-range-indexes          (re-seq-indexes #"[a-zA-z]-[a-zA-z]" %)
+        char-range-indexes          (re-seq-indexes #"[a-zA-Z]-[a-zA-Z]" %)
         number-range-indexes        (re-seq-indexes #"[0-9]-[0-9]" %)
         not-any-of-indexes          (re-seq-indexes-with-capture-groups #"(\[\^)" %)
         group-mods-indexes          (re-seq-indexes-with-capture-groups #"(\(\?(?:\:|\=|\!|\<\=|\<\!|\<[^\>]*\>))[^\)]*" %)
@@ -289,6 +289,7 @@
                          (string/split s escapes-re))      
         leaved     (util/interleave-all split escaped)
         nesting    (atom [])]
+    (?pp leaved)
     (reduce (partial with-groups-highlighted nesting)
             ""
             (apply concat leaved))))
