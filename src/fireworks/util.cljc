@@ -123,3 +123,37 @@
             #?(:cljs (merge (when (object? x) {:js-object? true})
                             (when (array? x) {:js-array? true})))))))
 
+(defn re-seq-with-index 
+"Example usage
+ (re-seq-with-index #\"\\d+\" \"abc123def456ghi\")
+ => [{:match \"123\", :start 3, :end 6}
+     {:match \"456\", :start 9, :end 12}]"
+  [pattern string]
+  #?(:cljs
+     (let [matcher (re-pattern pattern)]
+       (loop [matches    []
+              last-index 0]
+         (let [match (.exec matcher string)]
+           (if (and match (>= (.-index match) last-index))
+             (recur (conj matches {:match  (first match)
+                                   :start  (.-index match)
+                                   :end    (+ (.-index match) (count (first match)))
+                                   :groups (vec (rest match))})
+                    (+ (.-index match) (count (first match))))
+             matches))))
+     :clj
+     (let [matcher (re-matcher pattern string)]
+       (loop [matches []]
+         (if (.find matcher)
+           (recur (conj matches {:match (.group matcher)
+                                 :start (.start matcher)
+                                 :end   (.end matcher)}))
+           matches)))))
+
+(defn interleave-all [& colls]
+  (lazy-seq
+    (when (some seq colls)
+      (concat (keep first colls)
+              (apply interleave-all (map rest colls))))))
+
+(interleave-all [:a :b :c] [1 2])
