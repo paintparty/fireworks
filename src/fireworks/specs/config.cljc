@@ -109,6 +109,9 @@
 (s/def ::enable-rainbow-brackets?
   boolean?)
 
+(s/def ::regex-theme
+  #{:color :neutral "color" "neutral"})
+
 (s/def ::bracket-contrast
   #{:high :low "high" "low"})
 

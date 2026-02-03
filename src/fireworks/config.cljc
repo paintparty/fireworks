@@ -40,6 +40,8 @@
                                          :default false}
    :metadata-position                   {:spec    ::config/metadata-position
                                          :default "inline"}
+   :regex-theme                         {:spec    ::config/regex-theme
+                                         :default :neutral}                         
    :enable-rainbow-brackets?            {:spec           ::config/enable-rainbow-brackets?
                                          :default        true
                                          :updates-theme? true}

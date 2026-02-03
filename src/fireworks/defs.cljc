@@ -3,6 +3,135 @@
 ;; Tokens must be present in one of the maps below in order to pick up
 ;; styling specified in theme.
 ;; Style props also need to be registered in valid-stylemap-keys
+(def bling-colors
+  {:red            {:sgr       196
+                    :css       "#ff0000"
+                    :semantic  "negative"
+                    :sgr-dark  124
+                    :sgr-light 203
+                    :css-dark  "#af0000"
+                    :css-light "#ff5f5f"}
+   :medium-red     {:sgr 196
+                    :css "#ff0000"}
+   :dark-red       {:sgr 124
+                    :css "#af0000"}
+   :light-red      {:sgr 203
+                    :css "#ff5f5f"}
+   :orange         {:sgr       172
+                    :css       "#d78700"
+                    :semantic  "warning"
+                    :sgr-dark  166
+                    :sgr-light 208
+                    :css-dark  "#d75f00"
+                    :css-light "#ff8700"}
+   :medium-orange  {:sgr 172
+                    :css "#d78700"}
+   :dark-orange    {:sgr 166
+                    :css "#d75f00"}
+   :light-orange   {:sgr 208
+                    :css "#ff8700"}
+   :yellow         {:sgr       178
+                    :css       "#d7af00"
+                    :sgr-dark  136
+                    :sgr-light 220
+                    :css-dark  "#af8700"
+                    :css-light "#ffd700"}
+   :medium-yellow  {:sgr 178
+                    :css "#d7af00"}
+   :dark-yellow    {:sgr 136
+                    :css "#af8700"}
+   :light-yellow   {:sgr 220
+                    :css "#ffd700"}
+   :olive          {:sgr       106
+                    :css       "#87af00"
+                    :sgr-dark  100
+                    :sgr-light 143
+                    :css-dark  "#878700"
+                    :css-light "#afaf5f"}
+   :medium-olive   {:sgr 106
+                    :css "#87af00"}
+   :dark-olive     {:sgr 100
+                    :css "#878700"}
+   :light-olive    {:sgr 143
+                    :css "#afaf5f"}
+   :green          {:sgr       40
+                    :css       "#00d700"
+                    :semantic  "positive"
+                    :sgr-dark  28
+                    :sgr-light 82
+                    :css-dark  "#008700"
+                    :css-light "#5fff00"}
+   :medium-green   {:sgr 40
+                    :css "#00d700"}
+   :dark-green     {:sgr 28
+                    :css "#008700"}
+   :light-green    {:sgr 82
+                    :css "#5fff00"}
+   :blue           {:sgr       39
+                    :css       "#00afff"
+                    :semantic  "accent"
+                    :sgr-dark  26
+                    :sgr-light 81
+                    :css-dark  "#005fd7"
+                    :css-light "#5fd7ff"}
+   :medium-blue    {:sgr 39
+                    :css "#00afff"}
+   :dark-blue      {:sgr 26
+                    :css "#005fd7"}
+   :light-blue     {:sgr 81
+                    :css "#5fd7ff"}
+   :purple         {:sgr       141
+                    :css       "#af87ff"
+                    :sgr-dark  129
+                    :sgr-light 147
+                    :css-dark  "#af00ff"
+                    :css-light "#afafff"}
+   :medium-purple  {:sgr 141
+                    :css "#af87ff"}
+   :dark-purple    {:sgr 129
+                    :css "#af00ff"}
+   :light-purple   {:sgr 147
+                    :css "#afafff"}
+   :magenta        {:sgr       201
+                    :css       "#ff00ff"
+                    :sgr-dark  163
+                    :sgr-light 213
+                    :css-dark  "#d700af"
+                    :css-light "#ff87ff"}
+   :medium-magenta {:sgr 201
+                    :css "#ff00ff"}
+   :dark-magenta   {:sgr 163
+                    :css "#d700af"}
+   :light-magenta  {:sgr 213
+                    :css "#ff87ff"}
+   :gray           {:sgr       247
+                    :css       "#9e9e9e"
+                    :semantic  "subtle"
+                    :sgr-dark  244
+                    :sgr-light 249
+                    :css-dark  "#808080"
+                    :css-light "#b2b2b2"}
+   :medium-gray    {:sgr 247
+                    :css "#9e9e9e"}
+   :dark-gray      {:sgr 244
+                    :css "#808080"}
+   :light-gray     {:sgr 249
+                    :css "#b2b2b2"}
+   :black          {:sgr       16
+                    :css       "#000000"
+                    :sgr-dark  16
+                    :sgr-light 16
+                    :css-dark  nil
+                    :css-light nil}
+   :white          {:sgr       231
+                    :css       "#ffffff"
+                    :sgr-dark  231
+                    :sgr-light 231
+                    :css-dark  nil
+                    :css-light nil}})
+
+(defn bling-css-color [k]
+  (-> k bling-colors :css))
 
 (def base-classes
   {:foreground                   nil ;; -> foreground
@@ -44,29 +173,114 @@
 
 
 (def base-syntax-tokens
-  (merge {:string                    :string
-          :number                    :constant
-          :keyword                   :constant
-          :boolean                   :constant
-          :nil                       :constant
-          :symbol                    :definition
-          :regex                     :string
-          :def                       :definition
-          :local                     :definition
-          :local-binding             :definition
-          :function                  :definition
-          :class                     :definition
-          :datatype                  :definition
-          :record                    :definition
-          :multimethod               :definition
-          :uuid                      :string
-          :inst                      :string
-          :js-object-key             :foreground
-          :nan                       :constant
-          :infinity                  :constant
-          :-infinity                 :constant
-          :escaped-double-quote-char :foreground
-          :string-delimiter          :string
+  (merge {:string                                       :string
+          :number                                       :constant
+          :keyword                                      :constant
+          :boolean                                      :constant
+          :nil                                          :constant
+          :symbol                                       :definition
+          :regex                                        :string
+          :def                                          :definition
+          :local                                        :definition
+          :local-binding                                :definition
+          :function                                     :definition
+          :class                                        :definition
+          :datatype                                     :definition
+          :record                                       :definition
+          :multimethod                                  :definition
+          :uuid                                         :string
+          :inst                                         :string
+          :js-object-key                                :foreground
+          :nan                                          :constant
+          :infinity                                     :constant
+          :-infinity                                    :constant
+          :escaped-double-quote-char                    :foreground
+          :string-delimiter                             :string
+
+          ;; regex-related
+          :regex.quantifier                             :foreground
+          :regex.numeric-quantifier                     :foreground
+          :regex.group-mods                             :foreground
+          :regex.any-of-delimeter                       :foreground
+          :regex.group-delimeter                        :foreground
+          :regex.not-any-of-delimeter                   :foreground 
+          :regex.anchor                                 :foreground    
+          :regex.character-range                        :foreground                                        
+          :regex.special-character                      :foreground                                        
+          :regex.escape-backslash                       :foreground
+          :regex.number-range                           :foreground                                          
+          :regex.character                              :foreground
+          :regex.alternation                            :foreground
+
+          :regex.quantifier.neutral                     :foreground
+          :regex.numeric-quantifier.neutral             :foreground
+          :regex.group-mods.neutral                     :foreground
+          :regex.any-of-delimeter.neutral               :foreground
+          :regex.group-delimeter.neutral                :foreground
+          :regex.not-any-of-delimeter.neutral           :foreground 
+          :regex.anchor.neutral                         :foreground    
+          :regex.character-range.neutral                :foreground                                        
+          :regex.special-character.neutral              :foreground                                        
+          :regex.escape-backslash.neutral               :foreground
+          :regex.number-range.neutral                   :foreground                                          
+          :regex.character.neutral                      :foreground
+          :regex.alternation.neutral                    :foreground
+
+          :regex.quantifier.in-group                    :foreground
+          :regex.numeric-quantifier.in-group            :foreground
+          :regex.group-mods.in-group                    :foreground
+          :regex.any-of-delimeter.in-group              :foreground
+          :regex.group-delimeter.in-group               :foreground
+          :regex.not-any-of-delimeter.in-group          :foreground
+          :regex.anchor.in-group                        :foreground
+          :regex.character-range.in-group               :foreground
+          :regex.special-character.in-group             :foreground
+          :regex.escape-backslash.in-group              :foreground
+          :regex.number-range.in-group                  :foreground
+          :regex.character.in-group                     :foreground
+          :regex.alternation.in-group                   :foreground
+
+          :regex.quantifier.in-any-of                   :foreground
+          :regex.numeric-quantifier.in-any-of           :foreground
+          :regex.group-mods.in-any-of                   :foreground
+          :regex.any-of-delimeter.in-any-of             :foreground
+          :regex.group-delimeter.in-any-of              :foreground
+          :regex.not-any-of-delimeter.in-any-of         :foreground 
+          :regex.anchor.in-any-of                       :foreground    
+          :regex.character-range.in-any-of              :foreground                                        
+          :regex.special-character.in-any-of            :foreground                                        
+          :regex.escape-backslash.in-any-of             :foreground
+          :regex.number-range.in-any-of                 :foreground                                          
+          :regex.character.in-any-of                    :foreground
+          :regex.alternation.in-any-of                  :foreground
+
+          :regex.quantifier.in-any-of.neutral           :foreground
+          :regex.numeric-quantifier.in-any-of.neutral   :foreground
+          :regex.group-mods.in-any-of.neutral           :foreground
+          :regex.any-of-delimeter.in-any-of.neutral     :foreground
+          :regex.group-delimeter.in-any-of.neutral      :foreground
+          :regex.not-any-of-delimeter.in-any-of.neutral :foreground 
+          :regex.anchor.in-any-of.neutral               :foreground    
+          :regex.character-range.in-any-of.neutral      :foreground                                        
+          :regex.special-character.in-any-of.neutral    :foreground                                        
+          :regex.escape-backslash.in-any-of.neutral     :foreground
+          :regex.number-range.in-any-of.neutral         :foreground                                          
+          :regex.character.in-any-of.neutral            :foreground
+          :regex.alternation.in-any-of.neutral          :foreground
+
+          :regex.quantifier.in-group.neutral            :foreground
+          :regex.numeric-quantifier.in-group.neutral    :foreground
+          :regex.group-mods.in-group.neutral            :foreground
+          :regex.any-of-delimeter.in-group.neutral      :foreground
+          :regex.group-delimeter.in-group.neutral       :foreground
+          :regex.not-any-of-delimeter.in-group.neutral  :foreground
+          :regex.anchor.in-group.neutral                :foreground
+          :regex.character-range.in-group.neutral       :foreground
+          :regex.special-character.in-group.neutral     :foreground
+          :regex.escape-backslash.in-group.neutral      :foreground
+          :regex.number-range.in-group.neutral          :foreground
+          :regex.character.in-group.neutral             :foreground
+          :regex.alternation.in-group.neutral           :foreground
           }
          
           ;;  Experimental, not working yet 
@@ -138,6 +352,7 @@
    :seq-bracket           :bracket
    :lazy-seq-bracket      :bracket
    :max-print-level-label :annotation
+
    })
 
 (def all-base-printer-tokens (into #{} (keys base-printer-tokens)))
@@ -285,3 +500,5 @@
            "FileList"
            "TouchList"
            "DataTransferItemList"})))
+
+

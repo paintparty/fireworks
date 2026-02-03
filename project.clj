@@ -5,11 +5,13 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :source-paths ["src"
                  ;; for local dev
-                 ;;  "../lasertag/src"
+                  "../lasertag/src"
+                  #_"../../community/pp/src"
                  ]
-  :dependencies [[org.clojure/clojure "1.10.3"]
+  :dependencies [[org.clojure/clojure "1.12.4"]
                  [expound "0.9.0"]
-                 [io.github.paintparty/lasertag "0.11.6"]]
+                 #_[me.flowthing/pp "2024-11-13.77"]
+                 [io.github.paintparty/lasertag "0.11.7"]]
   :repl-options {:init-ns fireworks.core}
   :deploy-repositories [["clojars" {:url           "https://clojars.org/repo"
                                     :sign-releases false}]])

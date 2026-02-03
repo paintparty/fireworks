@@ -2,9 +2,8 @@
 ;; This is reqd by specs
 (ns fireworks.basethemes
   (:require
-   [fireworks.defs :as defs]
-   [fireworks.pp :refer [?pp]]
    [fireworks.color]
+   [fireworks.defs :as defs :refer [bling-css-color]]
    [fireworks.themes :as themes]))
 
 
@@ -161,7 +160,7 @@
   ;; to the values defined in the :classes entry 
   {:classes          (merge defs/base-classes
                             {
-                            ;;d :foreground     {:color "#585858"}
+                             ;;d :foreground     {:color "#585858"}
                              :bracket                      {:color "#888888"}
 
                              :comment                      :annotation
@@ -233,7 +232,9 @@
                              })
 
    ;; TODO - I don't think these currently merge if we were to use maps
-   :syntax           defs/base-syntax-tokens
+   :syntax           (merge defs/base-syntax-tokens
+                            
+                            )
    :printer          defs/base-printer-tokens})
 
 
@@ -311,6 +312,7 @@
              }
    :syntax  defs/base-syntax-tokens
    :printer defs/base-printer-tokens})
+
 
 
 (def stock-themes
