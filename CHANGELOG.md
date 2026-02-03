@@ -9,6 +9,51 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.20.0
+2026-2-02
+
+#### Added
+- Tracing of `let` forms via `:trace` flag. [11](https://github.com/paintparty/fireworks/issues/11)
+- "Short-circuited" annotation to printings from tracing forms
+- Theme token for `:escaped-double-quotes` [93](https://github.com/paintparty/fireworks/issues/93)
+- Theme token for `:string-delimiter` [111](https://github.com/paintparty/fireworks/issues/111)
+- Theme token for `:js/undefined` [99](https://github.com/paintparty/fireworks/issues/99)
+- Added basic color support for `pp/pprint`[110](https://github.com/paintparty/fireworks/issues/110)
+- Internal `coll-like` tag
+e98edcad2a2db2322b164a3c1df3e5a95bbff980
+- More support for JS built-ins a17d8be1776874028f6e032f96802cd53f63bf6f
+- More options
+   - `:dissoc-metadata-keys`           
+   - `:single-line-metadata-max-length`
+   - `:multi-line-metadata?`           
+   - `:quote-symbols?`                
+- Allow `nil` value in theme token `:color` entry
+- Experimental support for theming of printed regexes [#109](https://github.com/paintparty/fireworks/issues/109)
+
+
+#### Changed
+- Updated Lasertag dep for better perf
+- Removed fn-args-vector syntax from JS built-ins ae95c8246028f874851e6f2cb1c4a88e60352ba0
+- Refactors 172a1d83c15fc63100b566d8b2d4b4664c4aac3f
+- Updated tests
+- Atoms and volatiles are now displayed like:
+```Clojure
+(? (atom :foo))
+;; Atom{:status :ready :value :foo}
+
+(? (volatile :foo))
+;; Volatile{:status :ready :value :foo}
+```
+
+
+#### Fixed
+- False warnings for `:log` and `:fw/log` when passing `:pp` flag.
+- Multi-line formatting based on conditional metadata display
+- Fix inline metadata map indentation when a tagged badge is present
+
+<br>
+<br>
+
 ## 0.19.0
 2025-12-21
 
@@ -17,8 +62,10 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 #### Fixed
 - False warnings for `:log` and `:fw/log` when passing `:pp` flag.
-- Reported exception in cljs context, from cljc file -- renamed `:?pp` not being refered.
+- Reported exception in cljs context, from cljc file -- renamed `:?pp` not being referred.
 
+<br>
+<br>
 
 ## 0.18.0
 2025-12-12
@@ -33,7 +80,8 @@ For a list of breaking changes, check [here](#breaking-changes)
 #### Fixed
 - Logic within `fireworks.macros/get-detected-color-level` causing NullPointerException on Github actions builds. 
 
-
+<br>
+<br>
 
 ## 0.17.0
 2025-12-6
@@ -56,6 +104,8 @@ there is a new entry [:formatted :string-with-format-specifier-tags]. Both of th
 a vector of css style strings in [:formatted :css-styles]. The `:formatted+` entry in this map
 is now called `:formatted-with-header`. Getting this data map using (? :data ...) will most likely be deprecated in the near future, and replaced with a dedicated public function.
 
+<br>
+<br>
 
 ## 0.16.1
 2025-11-30
