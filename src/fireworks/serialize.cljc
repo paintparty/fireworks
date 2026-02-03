@@ -245,24 +245,31 @@
 
 
          ;; The self-evaluating value
-         (when (= t :string) (str (sgr-tag :string-delimiter) "\"" sgr-reset-tag))
+         (when (= t :string)
+           (str (sgr-tag :string-delimiter) "\"" sgr-reset-tag))
 
          main-entity-tag
          ;; (some-> num-chars-dropped pos?)
          (or (when s
-               (if (= t :string)
-                 (string/replace (subs s 1 (-> s count dec))
-                                 #"\""
-                                 (str (sgr-tag :escaped-double-quote-char)
-                                      "\""
-                                      main-entity-tag-reset
-                                      main-entity-tag))
-                 s))
+               (cond (= t :string)
+                     (string/replace (subs s 1 (-> s count dec))
+                                     #"\""
+                                     (str (sgr-tag :escaped-double-quote-char)
+                                          "\""
+                                          main-entity-tag-reset
+                                          main-entity-tag))
+
+                     (= t :regex)
+                     (tag/colorized-regex s)
+
+                     :else
+                     s))
              fn-display-name)
          main-entity-tag-reset
          chars-dropped-syntax
 
-         (when (= t :string) (str (sgr-tag :string-delimiter) "\"" sgr-reset-tag))
+         (when (= t :string) 
+           (str (sgr-tag :string-delimiter) "\"" sgr-reset-tag))
          
 
          ;; Conditional fn-args, positioned inline, to right of value 
