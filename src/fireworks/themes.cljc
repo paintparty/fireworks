@@ -340,7 +340,7 @@
                       :comment    {:color      "#DFDF8E"
                                    :font-style :italic}
                       :constant   {:color "#b696b5"}
-                      :definition {:color "#71ADE7"}
+                      :definition {:color "#6eabed"}
                       :annotation {:color      "#a3a3a3ff"
                                    :font-style :italic}
                       :metadata   {:color            "#ae849b"
@@ -356,7 +356,7 @@
                                    :font-style       :italic
                                    :background-color "#00345c"}}
             :syntax  (merge {:js-object-key {:color "#b2b2b2"}
-                             :number        {:color "#6392c5"}}
+                             :number        {:color "#6eabed"}}
                             (highlighted-regex-syntax regex-syntax-dark))
             :printer {:file-info        :annotation
                       :eval-label       :eval-label
