@@ -879,9 +879,7 @@
   [s]
   ;; TODO - try to figure out way you can preserve the color in the output,
   ;; which would help even more for debugging.
-  (some-> s 
-          ?sgr-str
-          println)
+  (some-> s ?sgr-str println)
   s)
 
 

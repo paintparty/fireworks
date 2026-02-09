@@ -291,14 +291,21 @@
           :else
           (list (symbol "...")))))
 
+
 (defn- truncation-profile
   [{:keys [path depth map-entry-in-non-map?]
     :as   m*}
    x]
   (let [val-is-atom?         (cljc-atom? x)
         val-is-volatile?     (volatile? x) 
-        x                    (if (or val-is-atom? val-is-volatile?)
-                               (with-meta {:status :ready :val @x} (meta x))
+        multi-line-string?   (boolean (and (string? x) (re-find #"\n" x)))
+        x                    (cond
+                               (or val-is-atom? val-is-volatile?)
+                               (with-meta {:status :ready
+                                           :val    @x} (meta x))
+                               multi-line-string?
+                               (-> x (string/split #"\n") vec)
+                               :else
                                x)
         kv?                  (boolean (when-not map-entry-in-non-map? (map-entry? x)))
         tag-map              (when-not kv? (util/tag-map* x))
@@ -324,6 +331,8 @@
                    x])
            tag-map
            (some->> theme-token-override (hash-map :theme-token-override))
+           (when multi-line-string?
+             {:multi-line-string-collection? true})
            {:user-meta      user-meta
             :og-x           x
             :uid-entry?     (volatile! false)

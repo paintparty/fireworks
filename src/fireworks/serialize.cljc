@@ -75,7 +75,7 @@
 
 
 (defn sev
-  "Creates a string with the properly placed \"%c\" (or sgr) formatting tags."
+  "Creates a string with ansi-sgr formatting tags."
   [{:keys [x
            s
            t
@@ -442,6 +442,7 @@
 (defn- reduce-coll-profile
   [coll indent*]
   (let [{:keys [some-elements-carry-user-metadata?  
+                multi-line-string-collection?
                 single-column-map-layout?
                 ;; str-len-with-badge-ellipsized
                 ;; str-len-val-ellipsized
@@ -492,12 +493,14 @@
 
         user-meta-above?
         (boolean (and user-meta (contains? #{:block "block"} metadata-position)))
-        ;;  _ (?pp meta-map)
+        
+        ;; _ (?pp meta-map)
         
         multi-line?  
         (when-not (and user-meta?
                        (false? (:multi-line-metadata? @state/config)))
-          (or (and display-metadata?
+          (or multi-line-string-collection?
+              (and display-metadata?
                    user-meta 
                    (contains? #{:inline "inline"} metadata-position))
               (and display-metadata?
@@ -572,7 +575,8 @@
              @state/let-bindings?)
 
         ret          
-        (keyed [str-len-with-badge     
+        (keyed [multi-line-string-collection?
+                str-len-with-badge     
                 annotation-newline 
                 metadata-position
                 user-meta-above?
@@ -655,11 +659,12 @@
                 let-bindings?
                 badge-str-len
                 val-is-volatile?
-                annotation-newline]
+                annotation-newline
+                multi-line-string-collection?]
          :as m} 
         (reduce-coll-profile coll indent*)
         
-        ;; Mutable-wrapper opening made here
+        ;; Mutable-wrapper opening made here - nix this?
         mutable-opening-encapsulation-str
         (when (or val-is-atom? val-is-volatile?) 
           (if val-is-atom? defs/atom-label defs/volatile-label))
@@ -695,7 +700,11 @@
              badge
              (some-> user-metadata-map-block (str (when badge " ")))
              annotation-newline
-             (opening-bracket! (keyed [coll record? let-bindings? highlighting]))
+             (opening-bracket! (keyed [coll
+                                       record?
+                                       let-bindings?
+                                       highlighting
+                                       multi-line-string-collection?]))
              #_(if highlighting
                  ;; Change this - move logic down in to opening bracket
                  (str #_(sgr-tag {} highlighting)

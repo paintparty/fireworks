@@ -84,8 +84,12 @@
   "Rainbow parens by default.
    Function args vector not included in rainbow parens."
   [{:keys [t mm]} s]
+  
   (let [formatting-meta? (pos? (state/formatting-meta-level))
         theme-token (cond
+                      (-> mm :multi-line-string-collection?)
+                      :string-delimiter
+
                       (-> mm :user-meta :fw/hide-brackets?)
                       nil
 
@@ -137,6 +141,9 @@
                   ;; TODO - maybe move this bracket up to bracket*
                   (:let-bindings? m)
                   " "
+
+                  (:multi-line-string-collection? m)
+                  "\""
 
                   (= kw :opening)    
                   ob

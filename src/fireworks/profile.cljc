@@ -471,6 +471,15 @@
       ret)
     x))
 
+(defn multi-line-string-meta* [x k v]
+  (vary-meta x assoc-in [:fw/truncated k] v))
+
+(defn multi-line-string-meta [x]
+  (-> x
+      (multi-line-string-meta* :multi-line-string-line? true)
+      (multi-line-string-meta* :t :symbol)
+      (multi-line-string-meta* :theme-token-override :string)))
+
 ;; TODO - Address the following:
 ;; - Is one of :user-meta and :fw/user-meta redundant?
 ;; - Is :str-len-with-badge-ellipsized redundant?
@@ -569,6 +578,11 @@
            x
            (re-profile x meta-map profile)
            
+           x
+           (if (:multi-line-string-collection? meta-map)
+             (mapv multi-line-string-meta x)
+             x)
+
            {:keys [coll-type? t]}
            meta-map
 

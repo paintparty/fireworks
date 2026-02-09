@@ -4,7 +4,7 @@
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
    [fireworks.browser]
-   [fireworks.pp :as fireworks.pp]
+   [fireworks.pp :as fireworks.pp :refer [?pp]]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
@@ -603,9 +603,7 @@
   
   ;; Reset the highlight state.
   ;; It may pull hightlight style from merged theme.
-  (reset! state/highlight
-          (some->> find-vals 
-                   state/highlight-style))
+  (reset! state/highlight (some->> find-vals state/highlight-style))
   #_(reset! state/rewind-counter 0))
           
 

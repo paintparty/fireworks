@@ -289,7 +289,6 @@
                          (string/split s escapes-re))      
         leaved     (util/interleave-all split escaped)
         nesting    (atom [])]
-    (?pp leaved)
     (reduce (partial with-groups-highlighted nesting)
             ""
             (apply concat leaved))))
