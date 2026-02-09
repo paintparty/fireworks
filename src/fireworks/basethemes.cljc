@@ -259,7 +259,7 @@
                                             :text-decoration-line  :underline
                                             :text-decoration-style :wavy}
 
-             :highlight-error              {:background-color "#800000"
+             :highlight-error              {:background-color "#670013"
                                             :color            "#ffe0e0"
                                             :font-weight      :bold}
 
@@ -271,8 +271,8 @@
                                             :background-color "#0000e0"
                                             :font-weight      :bold}
 
-             :highlight-error-underlined   {:background-color      "#800000"
-                                            :color                 "#ffe0e0"
+             :highlight-error-underlined   {:background-color "#800018"
+                                            :color            "#670013"
                                             :font-weight           :bold
                                             :text-decoration-line  :underline
                                             :text-decoration-style :wavy}
