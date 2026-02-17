@@ -6,7 +6,9 @@
    [fireworks.state :as state]
    [fireworks.specs.config :as specs.config]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
-   #?(:clj [fireworks.macros :refer [keyed]])))
+   #?(:clj [fireworks.macros :refer [keyed]])
+  ;;  #?(:clj [clojure.math])
+ ))
 
 (defn- len
   [x]
@@ -303,7 +305,10 @@
                                                (re-seq #"\"")
                                                count
                                                (- 2)
-                                               abs))
+                                               #?(:cljs
+                                                  js/Math.abs
+                                                  :clj
+                                                  Math/abs)))
               stringified-len       (+ stringified-len (or num-double-quotes 0))
               char-len              (+ (or stringified-len 0)
                                        (mutable-wrapper-count m)
