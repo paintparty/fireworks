@@ -1050,6 +1050,17 @@
          ;;  len            (-> profiled meta :str-len-with-badge)
          ]
 
+    ;; For adding line-based undline decor such as "^^^^"
+    ;; 1) Look for specific style signature based on class like :error-highlight
+    ;; 2) Find line index and char index of first match
+    ;; 3) Calculate row end
+    ;; 4) Insert decoration line with ^^^^^^^ based on theme
+    ;; 5) Add theme token in themes
+    ;; 
+    
+     
+
+
     ;; for debugging path info
     #_(walk/postwalk (fn [x]
                      (println)
