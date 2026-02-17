@@ -13,6 +13,9 @@
    :bold?                               {:spec           ::config/bold
                                          :default        false
                                          :updates-theme? true}
+   
+   ;; Change to scalar-*-print-length ------------------------------------------
+
    :coll-limit                          {:spec    ::config/coll-limit
                                          :default 33}
    :single-line-coll-length-limit       {:spec    ::config/single-line-coll-length-limit
@@ -25,6 +28,9 @@
                                          :default 33}
    :non-coll-mapkey-length-limit        {:spec    ::config/non-coll-mapkey-length-limit
                                          :default 20}
+   ;; --------------------------------------------------------------------------
+
+
    :single-column-maps?                 {:spec    ::config/single-column-maps?
                                          :default false}
    :single-column-maps-length-threshold {:spec    ::config/single-column-maps-length-threshold
@@ -70,6 +76,10 @@
    :line-height                         {:spec           ::config/line-height
                                          :default        1.45
                                          :updates-theme? true}
+
+
+   ;; Change to label-print-length ---------------------------------------------
+
    :label-length-limit                  {:spec    ::config/label-length-limit
                                          :default 44}
    :format-label-as-code?               {:spec    ::config/format-label-as-code?
