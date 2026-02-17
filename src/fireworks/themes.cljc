@@ -355,8 +355,12 @@
                       :eval-label {:color            "#85b7e5"
                                    :font-style       :italic
                                    :background-color "#00345c"}}
-            :syntax  (merge {:js-object-key {:color "#b2b2b2"}
-                             :number        {:color "#6eabed"}}
+            :syntax  (merge {:js-object-key             {:color "#b2b2b2"}
+                             :number                    {:color "#6eabed"}
+                             :escaped-double-quote-char :string
+                             :escape-char               {:color (bling-css-color :dark-gray)}
+                             :string-delimiter          {:color "#d28c6d"}
+                             }
                             (highlighted-regex-syntax regex-syntax-dark))
             :printer {:file-info        :annotation
                       :eval-label       :eval-label
@@ -372,6 +376,7 @@
                                          :background-color "#e5f1fa"
                                          :outline          "2px solid #e5f1fa"
                                          :font-style       :italic}
+                      :ellipsis         {:color "#d28c6d"}
                       :function-args    {:color "#999999"}
                       :atom-wrapper     :label}}})
 
@@ -544,7 +549,8 @@
                                        :js-object-key             {:color "#a9a9a9"}
                                        :escaped-double-quote-char :string
                                        :escape-char               {:color (bling-css-color :dark-gray)}
-                                       :string-delimiter          {:color "#bfbf69"}}
+                                       :string-delimiter          {:color "#bfbf69"}
+                                       }
                                       (highlighted-regex-syntax regex-syntax-dark))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
