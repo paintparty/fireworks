@@ -8,7 +8,7 @@
                   "../lasertag/src"
                   #_"../../community/pp/src"
                  ]
-  :dependencies [[org.clojure/clojure "1.12.4"]
+  :dependencies [[org.clojure/clojure "1.11.1"]
                  [expound "0.9.0"]
                  #_[me.flowthing/pp "2024-11-13.77"]
                  [io.github.paintparty/lasertag "0.11.7"]]
