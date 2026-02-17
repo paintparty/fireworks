@@ -2,11 +2,10 @@
   (:require
    #?(:cljs [cljs.js]) ;; [lambdaisland.ansi :as ansi]
    #?(:cljs [lasertag.cljs-interop])
-   [clojure.datafy :refer [datafy]]
    [clojure.pprint]
    [fireworks.core :refer [!? ?]]
    [fireworks.util :as util]
-   [me.flowthing.pp :as pp]
+  ;;  [me.flowthing.pp :as pp]
    [lasertag.core :refer [tag-map]])
             
   #?(:cljs
