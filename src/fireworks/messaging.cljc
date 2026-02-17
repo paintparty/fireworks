@@ -1,5 +1,6 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
+            ;; [fireworks.pp :refer [pprint ?pp] :rename {?pp ?}]
             [fireworks.pp :refer [pprint]]
             [expound.alpha :as expound]
             [fireworks.util :as util :refer [maybe->]]
@@ -53,10 +54,14 @@
           (:gray sgr-tags))
 
         footer-stripe
-        "╚══════════════════════════════════════════════"
+        #_"╚══════════════════════════════════════════════"
+        "└──────────────────────────────────────────────"
+        #_"╰──────────────────────────────────────────────"
 
         header-stripe-start
-        "╔═ "
+        #_"╔═ "
+        "┌─ "
+        #_"╭─ "
 
         header-stripe
         (string/join (repeat (- (count footer-stripe)
@@ -162,7 +167,7 @@
         trace))))
 
 (defn summary-header [s]
-  (sgr :gray (italic (str s "\n"))))
+  (sgr :neutral (italic (str s "\n"))))
 
 (defn stack-trace-preview
   "Creates a user-friendly stack-trace preview, limited to the frames which
@@ -233,7 +238,7 @@
                    :body       x})))
 
 (defn summary-section [warning-label s]
-  (str (summary-header warning-label) indent s lb))
+  (str "  " (summary-header warning-label) indent s lb))
 
 
 (defn- line-number+bad-form [{:keys [k v form line]}]
@@ -300,7 +305,7 @@
 (defn unknown-option-warning
   [opts]
   (println 
-   (block {:header-str "WARNING: Unknown option"
+   (block {:header-str "WARNING ─────────────────── fireworks.core/?"
            :block-type :warning
            :body       (str
                         (warning-details (assoc opts
