@@ -7,12 +7,12 @@
 (ns fireworks.themes 
   (:require
    [fireworks.defs :as defs :refer [bling-css-color]]
-   [fireworks.pp :refer [?pp]]))
+   #_[fireworks.pp :refer [?pp]]))
 
 
 
 (def regex-syntax-neutral
-  {:regex.character            {:font-weight :bold}
+  {:regex.character            {:font-weight :normal}
    :regex.quantifier           {}
    :regex.numeric-quantifier   {}
    :regex.group-mods           {}
@@ -53,7 +53,7 @@
    :regex.alternation          {}
    }
 
-  {:regex.character            {:color nil :font-weight :bold}
+  {:regex.character            {:color nil :font-weight :normal}
    :regex.quantifier           {:color (bling-css-color :dark-blue)}
    :regex.numeric-quantifier   {:color (bling-css-color :dark-blue)}
    :regex.group-mods           {:color (bling-css-color :dark-blue)}
@@ -70,7 +70,7 @@
 
 
 (def regex-syntax-dark
-  {:regex.character            {:font-weight :bold}
+  {:regex.character            {:font-weight :normal}
    :regex.quantifier           {:color (bling-css-color :medium-green)}
    :regex.numeric-quantifier   {:color (bling-css-color :medium-green)}
    :regex.group-mods           {:color (bling-css-color :medium-green)}
