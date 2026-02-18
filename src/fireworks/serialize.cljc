@@ -2,7 +2,7 @@
   (:require
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
-   [fireworks.pp :refer [?pp pprint]]
+  ;;  [fireworks.pp :refer [?pp pprint]]
    [fireworks.truncate :as truncate]
    [fireworks.brackets
     :as brackets
@@ -41,7 +41,7 @@
 
 
 (defn truncation-annotation 
-  [{:keys [num-chars-dropped t truncate-fn-name? top-level-sev?]
+  [{:keys [num-chars-dropped t truncate-fn-name? top-level-sev? highlighting]
     :as m}]
   (when (or truncate-fn-name?
             (some-> num-chars-dropped pos?))
@@ -62,7 +62,7 @@
 
       (if top-level-sev?
         s
-        (str (sgr-tag theme-tag) s sgr-reset-tag)))))
+        (str (sgr-tag theme-tag highlighting) s sgr-reset-tag)))))
 
 
 (defn sev-user-meta-position-match? [user-meta position]
@@ -177,7 +177,7 @@
 
         _ 
         (when (state/debug-tagging?)
-              (println "\nsev   tagging " s " with " theme-tag))
+          (println "\nsev   tagging " s " with " theme-tag))
 
         ;; This is where value's tag gets created
         main-entity-tag                  
@@ -185,7 +185,7 @@
 
         ;; Additional tagging happens within fireworks.serialize/truncation-annotation
         chars-dropped-syntax 
-        (truncation-annotation m)
+        (truncation-annotation m #_(assoc m :highlighting highlighting))
 
         main-entity-tag-reset            
         (reset-tag (if (pos? (state/formatting-meta-level))
@@ -247,7 +247,7 @@
 
          ;; The self-evaluating value
          (when (= t :string)
-           (str (sgr-tag :string-delimiter) "\"" sgr-reset-tag))
+           (str (sgr-tag :string-delimiter highlighting) "\"" sgr-reset-tag))
 
          main-entity-tag
          ;; (some-> num-chars-dropped pos?)
@@ -274,7 +274,7 @@
          chars-dropped-syntax
 
          (when (= t :string) 
-           (str (sgr-tag :string-delimiter) "\"" sgr-reset-tag))
+           (str (sgr-tag :string-delimiter highlighting) "\"" sgr-reset-tag))
          
 
          ;; Conditional fn-args, positioned inline, to right of value 
