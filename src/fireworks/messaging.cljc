@@ -187,7 +187,7 @@
              ;; Create a formatted string of of the stack trace, clean it up and
              ;; make it easier to read
              (let [strace-len   (count strace)
-                   depth        (or (maybe-> depth pos-int?) 7)
+                   depth        (or (maybe-> depth pos-int?) 21)
                    mini-strace  (mini-trace depth strace)
                    last-index   (last-index-of-relevant-stack-trace regex
                                                                     depth 
@@ -378,7 +378,7 @@
                (stack-trace-preview
                 {:error err
                  :regex #"^fireworks\.|^lasertag\."
-                 :depth 12})
+                 :depth 21})
               ;;  _ (?pp m)
                hint
                (let [hints-by-error-message
