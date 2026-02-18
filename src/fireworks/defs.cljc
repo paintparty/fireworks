@@ -130,8 +130,12 @@
                     :css-dark  nil
                     :css-light nil}})
 
+;; To do - change to use name and lookup by string
 (defn bling-css-color [k]
   (-> k bling-colors :css))
+
+(defn bling-sgr-color [k]
+  (-> k bling-colors :sgr))
 
 (def base-classes
   {:foreground                   nil ;; -> foreground
@@ -460,6 +464,7 @@
 (def sgr-tag-close #?(:cljs nil :clj "\033[0;m"))
 
 
+;; To do - eliminate this, use bling-colors
 (def bling-colors*
   (apply
    array-map
@@ -503,3 +508,29 @@
            "DataTransferItemList"})))
 
 
+(def highlight-error-dark
+  {:background-color "#670013"
+   :color            "#ffe0e0"
+   :font-weight      :bold})
+
+
+(def highlight-error-light
+  {:background-color "#ffdbdb"
+   :color            "#660000"
+   :font-weight      :bold})
+
+(def highlight-universal
+  {:background-color "#8a8a8a"
+   :color            "#ffffff"
+   :font-weight      :bold})
+
+;; These need to be updated if above maps change! -----------------------------
+(def highlight-error-dark-sgr
+"\033[38;2;255;224;224;1;48;2;103;0;19m")
+
+(def highlight-error-light-sgr
+"\033[38;2;102;0;0;1;48;2;255;219;219m" )
+
+(def highlight-universal-sgr
+"\033[38;2;255;255;255;1;48;2;138;138;138m")
+;; -----------------------------------------------------------------------------
