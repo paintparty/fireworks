@@ -596,6 +596,12 @@
               [k (m->sgr (assoc m :k k))])
             merged))
 
+(defn ^:public style-map->sgr [m]
+  (->> m
+       sanitize-style-map
+       with-line-height
+       (map-vals hexa-or-sgr)
+       m->sgr))
 
 (defn- hydrated-classes [base theme]
   (let [tokens  (:tokens theme)
