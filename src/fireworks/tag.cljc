@@ -2,7 +2,8 @@
   (:require
    [fireworks.util :as util]
    [clojure.string :as string]
-   [fireworks.pp :refer [pprint ?pp]]
+   [fireworks.pp :refer [pprint]]
+  ;;  [fireworks.pp :refer [pprint ?pp] :rename {?pp ?}]
    [fireworks.state :as state :refer [?sgr]]))
 
 
@@ -54,6 +55,7 @@
            m (or (f t) (f :foreground))
 
            result (if highlighting-is-a-map?
+                    ;; TODO - use state/style-map->sgr
                     (let [m (state/sanitize-style-map highlighting)
                           m (state/with-line-height m)
                           m (state/map-vals state/hexa-or-sgr m)]
@@ -140,8 +142,10 @@
 
 
 (defn- re-seq-indexes-with-capture-groups 
-  [re s]
-  (let [vc (reduce (fn [vc {:keys [match start]
+  [re s k]
+  (let [debug? false #_(and (= k :group-mods-indexes)
+                    (= s "#\"((?:(?!"))
+        vc (reduce (fn [vc {:keys [match start]
                             :as   m}]
                      (let [[_ needle]        (re-find re match)
                            start-plus-needle (+ start (count needle))
@@ -162,13 +166,15 @@
 
 (defrecord RegexPart [s theme-token escaped?])
 
+
 (defn- regex-char-seq-with-ansi-sgr-tags [%]
   (let [sp                          (string/split % #"")
         char-range-indexes          (re-seq-indexes #"[a-zA-Z]-[a-zA-Z]" %)
         number-range-indexes        (re-seq-indexes #"[0-9]-[0-9]" %)
-        not-any-of-indexes          (re-seq-indexes-with-capture-groups #"(\[\^)" %)
-        group-mods-indexes          (re-seq-indexes-with-capture-groups #"(\(\?(?:\:|\=|\!|\<\=|\<\!|\<[^\>]*\>))[^\)]*" %)
-        numeric-quantifiers-indexes (re-seq-indexes-with-capture-groups #"(.\{[0-9]+(?:,|,[0-9]+)?})" %)
+        not-any-of-indexes          (re-seq-indexes-with-capture-groups #"(\[\^)" % :not-any-of-indexes)
+        ;; TODO test this group mods thing more thoroughly
+        group-mods-indexes          (re-seq-indexes-with-capture-groups #"(\(\?(?:\:|\=|\!|\<\=|\<\!|\<[^\>]*\>))[^\)\(]*" % :group-mods-indexes)
+        numeric-quantifiers-indexes (re-seq-indexes-with-capture-groups #"(.\{[0-9]+(?:,|,[0-9]+)?})" % :numeric-quantifiers-indexes)
         with-ansi-sgr-tags          (map-indexed 
                                      (fn [i s]
                                        (let [token  
