@@ -106,6 +106,8 @@
 ;; The only things that should be specified here are:
 ;; :foreground, :bracket, :comment, :annotation, :highlight.
 
+;; TODO -  :highlight-error
+
 (def base-theme-universal*
   ;; Any single keywords (as vals) in all the maps below refer
   ;; to the values defined in the :classes entry 
@@ -113,9 +115,7 @@
                             {:comment                      :annotation
                              :annotation                   {:color      "#9f9f9f"
                                                             :font-style :italic}
-                             :highlight                    {:background-color "#8a8a8a"
-                                                            :color            "#ffffff"
-                                                            :font-weight      :bold}
+                             :highlight                    defs/highlight-universal
                              :highlight-underlined         {:background-color      "#8a8a8a"
                                                             :color                 "#ffffff"
                                                             :font-weight           :bold
@@ -155,6 +155,7 @@
    :syntax           defs/base-syntax-tokens
    :printer          defs/base-printer-tokens})
 
+
 (def base-theme-light*
   ;; Any single keywords (as vals) in all the maps below refer
   ;; to the values defined in the :classes entry 
@@ -180,9 +181,7 @@
                                                             :text-decoration-line  :underline
                                                             :text-decoration-style :wavy }
 
-                             :highlight-error              {:background-color "#ffdbdb"
-                                                            :color            "#660000"
-                                                            :font-weight      :bold }
+                             :highlight-error              defs/highlight-error-light
 
                              :highlight-warning            {:background-color "#ffdea8"
                                                             :color            "#754800"
@@ -259,9 +258,7 @@
                                             :text-decoration-line  :underline
                                             :text-decoration-style :wavy}
 
-             :highlight-error              {:background-color "#670013"
-                                            :color            "#ffe0e0"
-                                            :font-weight      :bold}
+             :highlight-error              defs/highlight-error-dark
 
              :highlight-warning            {:background-color "#6b4200"
                                             :color            "#ffe4b8"
