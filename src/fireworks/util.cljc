@@ -156,4 +156,6 @@
       (concat (keep first colls)
               (apply interleave-all (map rest colls))))))
 
-(interleave-all [:a :b :c] [1 2])
+(defn insert-at [vc i elem]
+  (into (conj (subvec vc 0 i) elem)
+        (subvec vc i)))
