@@ -291,6 +291,17 @@
           :else
           (list (symbol "...")))))
 
+(defn- adjusted-indentation [s]
+  (let [re #"\n( +)"
+        n  (some->> s
+                    str
+                    (re-seq re)
+                    (group-by #(count (second %)))
+                    keys
+                    (apply min))
+        f  (fn [[a]] (str "\n" (subs a (inc n))))
+        s  (string/replace s re f)]
+    s))
 
 (defn- truncation-profile
   [{:keys [path depth map-entry-in-non-map?]
@@ -304,7 +315,10 @@
                                (with-meta {:status :ready
                                            :val    @x} (meta x))
                                multi-line-string?
-                               (-> x (string/split #"\n") vec)
+                               (-> x
+                                   adjusted-indentation
+                                   (string/split #"\n")
+                                   vec)
                                :else
                                x)
         kv?                  (boolean (when-not map-entry-in-non-map? (map-entry? x)))
