@@ -602,7 +602,7 @@
            (unknown-option-warning-opts opts k))))))
   
   ;; Reset the highlight state.
-  ;; It may pull hightlight style from merged theme.
+  ;; It may pull highlight style from merged theme.
   (reset! state/highlight (some->> find-vals state/highlight-style))
   #_(reset! state/rewind-counter 0))
           

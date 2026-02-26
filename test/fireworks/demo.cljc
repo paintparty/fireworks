@@ -215,10 +215,10 @@
 
 ;; Find --------------------------
      
-;; Find and hightlight a specific value
+;; Find and highlight a specific value
      (!? {:find {:pred #(= 2 %)}} sample)
 
-;; Find and hightlight multiple values
+;; Find and highlight multiple values
      (!?
       {:find [{:pred #(= 2 %)}
               {:pred  #(= 1 %)
