@@ -10,7 +10,8 @@
             [fireworks.config :as config]
             [fireworks.defs :as defs]
             [fireworks.messaging :as messaging]
-            [fireworks.pp :refer [?pp pprint]]
+            ;; [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
+            [fireworks.pp :refer [pprint]]
             [fireworks.specs.config :as config.specs]
             [fireworks.specs.theme :as theme]
             [fireworks.specs.tokens :as tokens]
@@ -860,6 +861,10 @@
         (with-bling-color->sgr m k v)
         "color"
         (with-bling-color->sgr m k v)
+        "font-weight"
+        (assoc m :font-weight v)
+        "font-style"
+        (assoc m :font-weight v)
         m))
     {})))
 
@@ -902,8 +907,9 @@
                   (let [style (sanitize-style-map style)]
                     (when (seq style)
                       (m->sgr (map-vals hexa-or-sgr style))))
-                  (let [highlight-class-sgr (some->> class (get @merged-theme))
-                        highlight-sgr (:highlight @merged-theme)]
+                  (let [highlight-class-sgr (some->> class 
+                                                     (get @merged-theme))
+                        highlight-sgr       (:highlight @merged-theme)]
 
                     #_(do 
                       (println 'highlight-sgr)
