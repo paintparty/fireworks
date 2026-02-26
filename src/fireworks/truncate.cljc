@@ -291,7 +291,7 @@
           :else
           (list (symbol "...")))))
 
-(defn- adjusted-indentation [s]
+(defn- ml-str-with-adjusted-indentation [s]
   (let [re #"\n( +)"
         n  (some->> s
                     str
@@ -303,22 +303,44 @@
         s  (string/replace s re f)]
     s))
 
+(defn- ml-str 
+  {:doc "Takes a multi-line string like and normalizes the indentation.
+         Useful for multi-line strings that nested inside data structures,
+         because some editors automatically format these for readability, but
+         the resulting strings have unexpected indentations on lines after the
+         first."
+   :examples '[{:desc "String as map entry value"
+                :forms [[(ml-str "Line one
+                                  Line two
+                                  Line three
+                                    - Line four")
+                         
+                         "Line one\nLine two\nLine three\n  - Line four"]]}]}
+  [s]
+  (ml-str-with-adjusted-indentation s))
+
+(defn- ml-string? [x]
+  (boolean (and (string? x) (re-find #"\n" x))))
+
+(defn- ml-str->vec [s]
+  (-> s
+      ml-str
+      (string/split #"\n")
+      vec))
+
 (defn- truncation-profile
   [{:keys [path depth map-entry-in-non-map?]
     :as   m*}
    x]
   (let [val-is-atom?         (cljc-atom? x)
         val-is-volatile?     (volatile? x) 
-        multi-line-string?   (boolean (and (string? x) (re-find #"\n" x)))
+        multi-line-string?   (ml-string? x)
         x                    (cond
                                (or val-is-atom? val-is-volatile?)
                                (with-meta {:status :ready
                                            :val    @x} (meta x))
                                multi-line-string?
-                               (-> x
-                                   adjusted-indentation
-                                   (string/split #"\n")
-                                   vec)
+                               (ml-str->vec x)
                                :else
                                x)
         kv?                  (boolean (when-not map-entry-in-non-map? (map-entry? x)))
