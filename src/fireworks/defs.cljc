@@ -139,7 +139,7 @@
 
 (def base-classes
   {:foreground                   nil ;; -> foreground
-   :background                   nil 
+   :background                   nil
    :bracket                      :foreground
    :string                       :foreground
    :comment                      :foreground
@@ -150,8 +150,8 @@
    :metadata2                    :foreground
 
    :highlight                    :foreground ;; default bg-color, inherited by [:printer :find]
-   
-   :highlight-error              :foreground ;; default bg-color, inherited by [:printer :hightlight-errror]
+
+   :highlight-error              :foreground ;; default bg-color, inherited by [:printer :highlight-errror]
    :highlight-warning            :foreground
    :highlight-info               :foreground
 
@@ -163,14 +163,14 @@
 
    :label                        :foreground ;; literal labels, type labels, atom wrappers, etc.
    :eval-label                   :foreground ;; literal labels, type labels, atom wrappers, etc.
-   
+
    ;; This is hack, fix it
    :eval-label-red               :foreground ;; literal labels, type labels, atom wrappers, etc.
    :eval-label-green             :foreground ;; literal labels, type labels, atom wrappers, etc.
    :eval-label-blue              :foreground ;; literal labels, type labels, atom wrappers, etc.
-   
-  ;; Experimental, not working yet
-  ;;  :modifier   :foreground ;; earmuffs, deref, unused-arg, whitespace
+
+   ;; Experimental, not working yet
+   ;;  :modifier   :foreground ;; earmuffs, deref, unused-arg, whitespace
    })
 
 (def all-base-classes (into #{} (keys base-classes)))
@@ -208,12 +208,12 @@
           :regex.group-mods                             :foreground
           :regex.any-of-delimeter                       :foreground
           :regex.group-delimeter                        :foreground
-          :regex.not-any-of-delimeter                   :foreground 
-          :regex.anchor                                 :foreground    
-          :regex.character-range                        :foreground                                        
-          :regex.special-character                      :foreground                                        
+          :regex.not-any-of-delimeter                   :foreground
+          :regex.anchor                                 :foreground
+          :regex.character-range                        :foreground
+          :regex.special-character                      :foreground
           :regex.escape-backslash                       :foreground
-          :regex.number-range                           :foreground                                          
+          :regex.number-range                           :foreground
           :regex.character                              :foreground
           :regex.alternation                            :foreground
 
@@ -222,12 +222,12 @@
           :regex.group-mods.neutral                     :foreground
           :regex.any-of-delimeter.neutral               :foreground
           :regex.group-delimeter.neutral                :foreground
-          :regex.not-any-of-delimeter.neutral           :foreground 
-          :regex.anchor.neutral                         :foreground    
-          :regex.character-range.neutral                :foreground                                        
-          :regex.special-character.neutral              :foreground                                        
+          :regex.not-any-of-delimeter.neutral           :foreground
+          :regex.anchor.neutral                         :foreground
+          :regex.character-range.neutral                :foreground
+          :regex.special-character.neutral              :foreground
           :regex.escape-backslash.neutral               :foreground
-          :regex.number-range.neutral                   :foreground                                          
+          :regex.number-range.neutral                   :foreground
           :regex.character.neutral                      :foreground
           :regex.alternation.neutral                    :foreground
 
@@ -250,12 +250,12 @@
           :regex.group-mods.in-any-of                   :foreground
           :regex.any-of-delimeter.in-any-of             :foreground
           :regex.group-delimeter.in-any-of              :foreground
-          :regex.not-any-of-delimeter.in-any-of         :foreground 
-          :regex.anchor.in-any-of                       :foreground    
-          :regex.character-range.in-any-of              :foreground                                        
-          :regex.special-character.in-any-of            :foreground                                        
+          :regex.not-any-of-delimeter.in-any-of         :foreground
+          :regex.anchor.in-any-of                       :foreground
+          :regex.character-range.in-any-of              :foreground
+          :regex.special-character.in-any-of            :foreground
           :regex.escape-backslash.in-any-of             :foreground
-          :regex.number-range.in-any-of                 :foreground                                          
+          :regex.number-range.in-any-of                 :foreground
           :regex.character.in-any-of                    :foreground
           :regex.alternation.in-any-of                  :foreground
 
@@ -264,12 +264,12 @@
           :regex.group-mods.in-any-of.neutral           :foreground
           :regex.any-of-delimeter.in-any-of.neutral     :foreground
           :regex.group-delimeter.in-any-of.neutral      :foreground
-          :regex.not-any-of-delimeter.in-any-of.neutral :foreground 
-          :regex.anchor.in-any-of.neutral               :foreground    
-          :regex.character-range.in-any-of.neutral      :foreground                                        
-          :regex.special-character.in-any-of.neutral    :foreground                                        
+          :regex.not-any-of-delimeter.in-any-of.neutral :foreground
+          :regex.anchor.in-any-of.neutral               :foreground
+          :regex.character-range.in-any-of.neutral      :foreground
+          :regex.special-character.in-any-of.neutral    :foreground
           :regex.escape-backslash.in-any-of.neutral     :foreground
-          :regex.number-range.in-any-of.neutral         :foreground                                          
+          :regex.number-range.in-any-of.neutral         :foreground
           :regex.character.in-any-of.neutral            :foreground
           :regex.alternation.in-any-of.neutral          :foreground
 
@@ -285,26 +285,24 @@
           :regex.escape-backslash.in-group.neutral      :foreground
           :regex.number-range.in-group.neutral          :foreground
           :regex.character.in-group.neutral             :foreground
-          :regex.alternation.in-group.neutral           :foreground
-          }
-         
-          ;;  Experimental, not working yet 
-         {
-            ;;  :square-bracket  :bracket
-            ;;  :curly-bracket   :bracket
-            ;;  :round-bracket   :bracket
-            ;;  :map-bracket     :bracket
-            ;;  :set-bracket     :bracket
-            ;;  :list-bracket    :bracket
-            ;;  :js-badge      :annotation
-            ;;  :record-badge  :annotation
-            ;;  :atom-badge    :annotation
-          
-            ;;  ;; advanced
-            ;;  :earmuff       :modifier
-            ;;  :deref         :modifier
-            ;;  :unused-arg    :modifier
-            ;;  :whitespace    :modifier
+          :regex.alternation.in-group.neutral           :foreground}
+
+         ;;  Experimental, not working yet 
+         {;;  :square-bracket  :bracket
+          ;;  :curly-bracket   :bracket
+          ;;  :round-bracket   :bracket
+          ;;  :map-bracket     :bracket
+          ;;  :set-bracket     :bracket
+          ;;  :list-bracket    :bracket
+          ;;  :js-badge      :annotation
+          ;;  :record-badge  :annotation
+          ;;  :atom-badge    :annotation
+
+          ;;  ;; advanced
+          ;;  :earmuff       :modifier
+          ;;  :deref         :modifier
+          ;;  :unused-arg    :modifier
+          ;;  :whitespace    :modifier
           }))
 
 (def all-base-syntax-tokens (into #{} (keys base-syntax-tokens)))
@@ -332,7 +330,7 @@
    ;; Should this be find in output? or just :highlight?
    :find-in-output        :highlight
 
-   :highlight-error              :highlight-error ;; default bg-color, inherited by [:printer :hightlight-errror]
+   :highlight-error              :highlight-error ;; default bg-color, inherited by [:printer :highlight-errror]
    :highlight-warning            :highlight-warning
    :highlight-info               :highlight-info
 
@@ -356,9 +354,7 @@
                            :margin-block-end :0.5em}
    :seq-bracket           :bracket
    :lazy-seq-bracket      :bracket
-   :max-print-level-label :annotation
-
-   })
+   :max-print-level-label :annotation})
 
 (def all-base-printer-tokens (into #{} (keys base-printer-tokens)))
 
@@ -376,7 +372,7 @@
             :text-shadow
             :text-decoration-line
             :text-decoration-style
-            :font-style 
+            :font-style
             :font-size
             :font-weight
             :border-radius
@@ -405,7 +401,7 @@
 
 (def kv-gap 1)
 
- ;; number of spaces between value and metadata
+;; number of spaces between value and metadata
 (def metadata-position-inline-offset 5)
 
 (def mysterious-fn-args '[])
@@ -507,17 +503,90 @@
            "TouchList"
            "DataTransferItemList"})))
 
+(def highlight-dark
+  {:color            "#ffffff"
+   :background-color "#0000e0"
+   :font-weight      :bold})
+
+(def highlight-underlined-dark
+  {:color                 "#ffffff"
+   :background-color      "#0000e0"
+   :font-weight           :bold
+   :text-decoration-line  :underline
+   :text-decoration-style :wavy})
+
+(def highlight-warning-dark
+  {:background-color "#6b4200"
+   :color            "#ffe4b8"
+   :font-weight      :bold})
+
+(def highlight-warning-underlined-dark
+  {:background-color      "#6b4200"
+   :color                 "#ffe4b8"
+   :font-weight           :bold
+   :text-decoration-line  :underline
+   :text-decoration-style :wavy})
 
 (def highlight-error-dark
   {:background-color "#670013"
    :color            "#ffe0e0"
    :font-weight      :bold})
 
+(def highlight-error-underlined-dark
+  {:background-color      "#670013"
+   :color                 "#ffe0e0"
+   :font-weight           :bold
+   :text-decoration-line  :underline
+   :text-decoration-style :wavy})
+
+(def highlight-light                    
+  {:background-color "#ffee00"
+   :color            "#003c5c"
+   :font-weight      :bold})
+
+(def highlight-underlined-light         
+  {:background-color      "#ffee00"
+   :font-weight           :bold
+   :text-decoration-line  :underline
+   :text-decoration-style :wavy})
+
+(def highlight-warning-light            
+  {:background-color "#ffdea8"
+   :color            "#754800"
+   :font-weight      :bold})
+
+(def highlight-info-light               
+  highlight-light)
 
 (def highlight-error-light
   {:background-color "#ffdbdb"
    :color            "#660000"
    :font-weight      :bold})
+
+(def highlight-error-underlined-light   
+  {:background-color      "#ffdbdb"
+   :color                 "#660000"
+   :font-weight           :bold
+   :text-decoration-line  :underline
+   :text-decoration-style :wavy})
+
+(def highlight-warning-underlined-light 
+  {:background-color      "#ffdea8"
+   :color                 "#754800"
+   :font-weight           :bold
+   :text-decoration-line  :underline
+   :text-decoration-style :wavy})
+
+(def highlight-info-underlined-light    
+  {:background-color      "#d6efff"
+   :color                 "#003c5c"
+   :font-weight           :bold
+   :text-decoration-line  :underline
+   :text-decoration-style :wavy})
+
+
+
+
 
 (def highlight-universal
   {:background-color "#8a8a8a"
@@ -526,11 +595,26 @@
 
 ;; These need to be updated if above maps change! -----------------------------
 (def highlight-error-dark-sgr
-"\033[38;2;255;224;224;1;48;2;103;0;19m")
+  "\033[38;2;255;224;224;1;48;2;103;0;19m")
 
 (def highlight-error-light-sgr
-"\033[38;2;102;0;0;1;48;2;255;219;219m" )
+  "\033[38;2;102;0;0;1;48;2;255;219;219m")
 
 (def highlight-universal-sgr
-"\033[38;2;255;255;255;1;48;2;138;138;138m")
+  "\033[38;2;255;255;255;1;48;2;138;138;138m")
 ;; -----------------------------------------------------------------------------
+
+(def highlight-classes
+  {:highlight-dark                     highlight-dark
+   :highlight-underlined-dark          highlight-dark
+   :highlight-warning-dark             highlight-warning-dark
+   :highlight-warning-underlined-dark  highlight-warning-underlined-dark
+   :highlight-error-dark               highlight-error-dark
+   :highlight-error-underlined-dark    highlight-error-underlined-dark
+   :highlight-light                    highlight-light
+   :highlight-warning-light            highlight-warning-light
+   :highlight-warning-underlined-light highlight-warning-underlined-light
+   :highlight-error-light              highlight-error-light
+   :highlight-error-underlined-light   highlight-error-underlined-light
+   :highlight-universal                highlight-universal})
+
