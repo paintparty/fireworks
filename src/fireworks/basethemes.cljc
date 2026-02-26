@@ -248,60 +248,26 @@
                                             :font-style :italic}
              :metadata                     {:color       "#999999"
                                             :text-shadow "0 0 2px #003538"}
-             :highlight                    {:color            "#ffffff"
-                                            :background-color "#0000e0"
-                                            :font-weight      :bold}
-             
-             :highlight-underlined         {:color                 "#ffffff"
-                                            :background-color      "#0000e0"
-                                            :font-weight           :bold
-                                            :text-decoration-line  :underline
-                                            :text-decoration-style :wavy}
-
+             :highlight                    defs/highlight-dark
+             :highlight-underlined         defs/highlight-underlined-dark
              :highlight-error              defs/highlight-error-dark
-
-             :highlight-warning            {:background-color "#6b4200"
-                                            :color            "#ffe4b8"
-                                            :font-weight      :bold}
-
-             :highlight-info               {:color            "#eae5ff"
-                                            :background-color "#0000e0"
-                                            :font-weight      :bold}
-
-             :highlight-error-underlined   {:background-color      "#670013"
-                                            :color                 "#ffe0e0"
-                                            :font-weight           :bold
-                                            :text-decoration-line  :underline
-                                            :text-decoration-style :wavy}
-
-             :highlight-warning-underlined {:background-color      "#6b4200"
-                                            :color                 "#ffe4b8"
-                                            :font-weight           :bold
-                                            :text-decoration-line  :underline
-                                            :text-decoration-style :wavy}
-
-             :highlight-info-underlined    {:color                 "#eae5ff"
-                                            :background-color      "#0000e0"
-                                            :font-weight           :bold
-                                            :text-decoration-line  :underline
-                                            :text-decoration-style :wavy}
-
+             :highlight-warning            defs/highlight-warning-dark
+             :highlight-info               defs/highlight-dark
+             :highlight-error-underlined   defs/highlight-error-underlined-dark
+             :highlight-warning-underlined defs/highlight-warning-underlined-dark
+             :highlight-info-underlined    defs/highlight-underlined-dark
              :label                        {:color            "#a3a3a3"
                                             :background-color "#333333"
                                             :text-shadow      "0 0 2px #000000"
                                             :font-style       :italic}
-             
-             
              :eval-label-red               {:color            "#e47f8eff"
                                             :font-style       :italic
                                             :text-shadow      "0 0 2px #003d6b"
                                             :background-color "#4a040eff"}
-
              :eval-label-green             {:color            "#49ca49ff"
                                             :font-style       :italic
                                             :text-shadow      "0 0 2px #003d6b"
                                             :background-color "#044301ff"}
-
              :eval-label-blue              {:color            "#85b7e5"
                                             :font-style       :italic
                                             :text-shadow      "0 0 2px #003d6b"
