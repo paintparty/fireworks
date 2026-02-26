@@ -324,9 +324,18 @@
 
 (defn- some-colls-as-keys?
   [coll]
-  (boolean (when (map? coll)
-             (some (fn [[k _]] (coll? k)) coll))))
+  (when (map? coll)
+    (when-let [key-colls (seq (filter (fn [[k _]] (coll? k)) coll))]
+      {:some-colls-as-keys?
+       true
 
+       ;; TODO - need a try/catch here?
+       :some-multi-line-colls-as-keys? 
+       (boolean (some #(-> % 
+                           str
+                           count
+                           (> (:non-coll-mapkey-length-limit @state/config)))
+                      key-colls))})))
 
 (defn- user-metadata [x]
   (some-> x meta :fw/user-meta))
@@ -407,14 +416,15 @@
 
            ;; TODO - make dedicated badge fn?
            badge (annotation-badge ret)
-           ret   (let [some-colls-as-keys?                  
+           ret   (let [{:keys [some-colls-as-keys?
+                               some-multi-line-colls-as-keys?]}                  
                        (some-colls-as-keys? x)
 
                        some-syms-carrying-metadata-as-keys?
                        (some-syms-carrying-metadata-as-keys? x)
 
                        single-column-map-layout?            
-                       (or some-colls-as-keys?
+                       (or some-multi-line-colls-as-keys?
                            some-syms-carrying-metadata-as-keys?
                            (force-single-column-map-layout? x))
 
@@ -425,6 +435,7 @@
                           badge
                           (when badge {:inline-badge? inline-badge?})
                           (keyed [some-colls-as-keys?
+                                  some-multi-line-colls-as-keys?
                                   some-syms-carrying-metadata-as-keys?
                                   single-column-map-layout?])
 

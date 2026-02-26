@@ -2,7 +2,7 @@
   (:require
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
-  ;;  [fireworks.pp :refer [?pp pprint]]
+   [fireworks.pp :refer [?pp pprint]]
    [fireworks.truncate :as truncate]
    [fireworks.brackets
     :as brackets
@@ -17,9 +17,12 @@
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [fireworks.state :as state :refer [meta-level-inc! meta-level-dec!]]
-   [fireworks.util :as util]))
+   [fireworks.util :as util]
+   [fireworks.ansi :as ansi]))
 
 (declare tagged-val)
+
+(declare tagged-key)
 
 (declare reduce-map)                                                                             
 
@@ -481,12 +484,6 @@
         display-metadata?
         (:display-metadata? @state/config)
 
-        ;; This is where multi-line for collections is determined
-        ;; _ (?pp (select-keys meta-map [:str-len-with-badge-ellipsized
-        ;;                               :str-len-val-ellipsized
-        ;;                               :str-len-with-badge
-        ;;                               :val-str-len
-        ;;                               :badge-str-len]))
         
         badge-above?
         (some->> badge (contains? defs/inline-badges) not)
@@ -496,13 +493,16 @@
         
         ;; _ (?pp meta-map)
         
+        ;; This is where multi-line for collections is determined
+        ;; _ (?pp (select-keys meta-map [:str-len-with-badge-ellipsized
+        ;;                               :str-len-val-ellipsized
+        ;;                               :str-len-with-badge
+        ;;                               :val-str-len
+        ;;                               :badge-str-len]))
         multi-line?  
         (when-not (and user-meta?
                        (false? (:multi-line-metadata? @state/config)))
           (or multi-line-string-collection?
-              (and display-metadata?
-                   user-meta 
-                   (contains? #{:inline "inline"} metadata-position))
               (and display-metadata?
                    user-meta?
                    (contains? #{:inline "inline"} metadata-position))
@@ -511,6 +511,7 @@
               (some-elements-have-block-level-badges? coll)
               (boolean 
                (when (< 1 coll-count)
+                 ;; This is where multi-line for maps is determined
                  (or single-column-map-layout?
                      (let [strlen-greater-than-limit? 
                            (< (:single-line-coll-length-limit @state/config)
@@ -541,7 +542,6 @@
                        (+ (or indent 0))))
             indent)
 
-        ;; Add support for volatile! encapsulation
         indent (if (and (or val-is-atom? val-is-volatile?) (not badge-above?))
                  (+ (or (count (str (if val-is-atom?
                                       defs/atom-label
@@ -823,7 +823,7 @@
            multi-line?
            highlighting]}
   idx
-  [_ v]]
+  [k v]]
   (let [[key-props val-props]
         (nth untokenized idx)
 
@@ -834,7 +834,18 @@
 
         {escaped-key    :escaped
          key-char-count :ellipsized-char-count}
-        (sev (merge key-props {:indent indent}))
+        ;; New hack for small colls-as-keys that are not single-line
+        (if (coll? k)
+          (when-let [tk (tagged-key 
+                         (keyed [k
+                                 indent
+                                 key-props
+                                 separator
+                                 multi-line?
+                                 max-keylen]))]
+            {:escaped               tk
+             :ellipsized-char-count (ansi/adjusted-char-count tk)})
+          (sev (merge key-props {:indent indent})))
 
         theme-token-map
         {:theme-token (state/metadata-token)}
@@ -899,8 +910,11 @@
 
         max-keylen
         (or (some->> untokenized
-                     (mapv #(-> % first :ellipsized-char-count))
+                     (mapv #(or (some-> % first :ellipsized-char-count)
+                                ;; For mapkeys that are small collections
+                                (some-> % first :x str count)))
                      seq
+                     ;; possibly remove nil?
                      (apply max))
             0)
 
@@ -918,6 +932,45 @@
                         ret
                         max-keylen])))]
      ret))
+
+;; maybe a short coll as key
+(defn- tagged-key
+  [{:keys [key-props
+           t
+           indent
+           multi-line?
+           separator
+           max-keylen]
+    coll-as-key :k
+    :as m}]
+  (let [t                          
+        (or t (:t key-props))
+
+        {:keys [map-like? single-column-map-layout? coll-type?]}                         
+        key-props
+        
+        source-is-nil?
+        (nil? t)]
+    
+    (cond
+      source-is-nil?
+      coll-as-key
+      
+      map-like?
+      (if single-column-map-layout?
+        (reduce-coll coll-as-key indent)
+        (reduce-map coll-as-key indent))
+
+      coll-type?
+      (let [r (reduce-coll coll-as-key indent)] 
+        r)
+
+      :else
+      (:escaped (sev (merge key-props
+                            (keyed [indent
+                                    multi-line?
+                                    separator
+                                    max-keylen])))))))
 
 
 (defn- tagged-val
