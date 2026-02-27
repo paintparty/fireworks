@@ -994,10 +994,10 @@
 
       :else
       (:escaped (sev (merge val-props
-                             (keyed [indent
-                                     multi-line?
-                                     separator
-                                     max-keylen])))))))
+                            (keyed [indent
+                                    multi-line?
+                                    separator
+                                    max-keylen])))))))
 
 
 (defn serialized

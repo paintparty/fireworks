@@ -100,8 +100,6 @@
                                          :default nil}
    :dissoc-metadata-keys                {:spec    ::config/dissoc-metadata-keys
                                          :default nil}
-   :single-line-metadata-max-length     {:spec    ::config/single-line-metadata-max-length
-                                         :default 66}
    :multi-line-metadata?                {:spec    ::config/multi-line-metadata?
                                          :default true}
    :quote-symbols?                      {:spec    ::config/quote-symbols?

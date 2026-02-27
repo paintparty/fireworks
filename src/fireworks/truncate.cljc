@@ -251,12 +251,43 @@
      :clj
      (truncate-iterable m x)))
 
-
+(defn- truncated-val-in-meta [x]
+  (if (coll? x)
+    (let [s (cond (map? x)
+                  "{...}"
+                  (set? x)
+                  "#{...}"
+                  (seq? x)
+                  "(...)"
+                  :else
+                  "[...]")]
+      (symbol s))
+    (if (or (string? x) (keyword? x) (number? x)) 
+      (if (-> x str count (> 10))
+        (let [s (-> x str (subs 0 7) (str "..."))]
+          (symbol (if (string? x) (str "\"" s "\"") s)))
+        x)
+      x)))
 
 (defn- value-meta [x]
   (when-let [m (meta x)] 
     (when-not (and (list? x) (= '(:line :column) (keys m)))
-      m)))
+      (if-not (:multi-line-metadata? @state/config)
+        (let [num-dropped (when (< 1 (count m)) (-> m count dec))]
+          (if num-dropped
+            (let [[k v]          (->> m first)
+                  k              (truncated-val-in-meta k)
+                  v              (truncated-val-in-meta v)
+                  first-kv       [k v]
+                  dropped-key    (symbol "")
+                  dropped-syntax (symbol (str "...+" num-dropped))]
+              (apply array-map 
+                     (conj first-kv
+                           dropped-key
+                           dropped-syntax)))
+            m))
+        m))))
+
 
 (defn- resolve-coll-limit []
   (if (false? (:truncate? @state/config))

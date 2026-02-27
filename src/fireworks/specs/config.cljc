@@ -172,8 +172,6 @@
 
 (s/def ::multi-line-metadata? boolean?)
 
-(s/def ::single-line-metadata-max-length pos-int?)
-
 (s/def ::quote-symbols? boolean?)
 
 
