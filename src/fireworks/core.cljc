@@ -107,27 +107,29 @@
           (when qf
             ;; TODO - Confirm that toggling this state doesn't matter, remove it
             (reset! state/formatting-form-to-be-evaled? true)
-            (let [form-entity-tag
-                  (case (some-> opts :label-color util/as-str)
-                    "green"
-                    :eval-form-green
-                    "blue"
-                    :eval-form-blue
-                    "red"
-                    :eval-form-red
-                    :eval-form)
-                  
-                  shortened
-                  (tag/tag-entity 
-                   (if (:format-label-as-code? @state/config)
-                     (-> qf
-                         (pprint {:max-width 33})
-                         with-out-str
-                         (string/replace #"\n+$" ""))
-                     (util/shortened qf
-                                     (resolve-label-length label-length-limit)))
-                   form-entity-tag) 
-                  ret       shortened]
+            (let [form-entity-tag (case (some-> opts :label-color util/as-str)
+                                    "green"
+                                    :eval-form-green
+                                    "blue"
+                                    :eval-form-blue
+                                    "red"
+                                    :eval-form-red
+                                    :eval-form)
+                  format-anons    #(string/replace %
+                                                   #"p([0-9])__[0-9]+\#" 
+                                                   (fn [[_ n]] (str "%" n)))
+                  shortened       (if (:format-label-as-code? @state/config)
+                                    (-> qf
+                                        (pprint {:max-width 33})
+                                        with-out-str
+                                        (string/replace #"\n+$" "")
+                                        format-anons)
+                                    (?pp (util/shortened
+                                          (-> qf str format-anons)
+                                          (resolve-label-length
+                                           label-length-limit))))
+                  tagged          (tag/tag-entity shortened form-entity-tag) 
+                  ret             tagged]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it
               (reset! state/formatting-form-to-be-evaled? false)
               (str indent-spaces ret))))]
@@ -152,6 +154,7 @@
    [file-info* file-info]))
 
 
+;; TODO - remove syntax around order mattering 
 (defn- file-info-and-eval-label
   "file-info and eval lable get tagged, so order matters."
   [{:keys [file-info-first? label?] :as opts}]
