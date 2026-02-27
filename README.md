@@ -961,7 +961,6 @@ For your own theme, you do not need to dictate every value that is present in th
                                       :background-color "#e5f1fa"
                                       :outline          "2px solid #e5f1fa"
                                       :font-style       :italic}
-                      :function-args {:color "#999999"}
                       :atom-wrapper  :label}}})
 ```
 
@@ -974,8 +973,7 @@ The simplest way to make a theme is to just start experimenting within any names
  {:name "Foo Dark" ;; Required. Name validated with: #"^[A-Z][^\t\n\r]+ (:?Dark|Light)$"
   :mood "dark"     ;; Required. "light" or "dark"
   :theme {:classes {:string {:color "#c7e62e"}}
-          :syntax  {:js-object-key {:color "#888888"}}
-          :printer {:function-args {:color "#bb8f44"}}}})
+          :syntax  {:js-object-key {:color "#888888"}}}})
 
 ;; And then just try it out with some kind of sample value like this:
 (? {:theme my-theme}

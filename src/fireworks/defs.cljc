@@ -311,7 +311,6 @@
 (def base-printer-tokens
   {:comment               :comment
    :foreground            :foreground
-   :function-args         :bracket
    :literal-label         :label
    :type-label            :label
    :lambda-label           :label
@@ -403,10 +402,6 @@
 
 ;; number of spaces between value and metadata
 (def metadata-position-inline-offset 5)
-
-(def mysterious-fn-args '[])
-
-(def truncated-fn-args '[...])
 
 (def ellipsis "...")
 

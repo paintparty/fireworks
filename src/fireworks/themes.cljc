@@ -278,8 +278,7 @@
                                                 :font-style :italic}
                         :reader-macro          :annotation
                         :js-object-key         :foreground
-                        :printer/file-info     :annotation
-                        :printer/function-args :annotation}}
+                        :printer/file-info     :annotation}}
 
 (def alabaster-light
   {:name   "Alabaster Light"
@@ -323,7 +322,6 @@
                                          :background-color "#e5f1fa"
                                          :outline          "2px solid #e5f1fa"
                                          :font-style       :italic}
-                      :function-args    {:color "#999999"}
                       :atom-wrapper     :label}}})
 
 
@@ -377,7 +375,6 @@
                                          :outline          "2px solid #e5f1fa"
                                          :font-style       :italic}
                       :ellipsis         {:color "#d28c6d"}
-                      :function-args    {:color "#999999"}
                       :atom-wrapper     :label}}})
 
 
@@ -422,7 +419,6 @@
                                          :background-color "#e5f1fa"
                                          :outline          "2px solid #e5f1fa"
                                          :font-style       :italic}
-                      :function-args    {:color "#999999"}
                       :atom-wrapper     :label }}})
 
 
@@ -468,8 +464,7 @@
                                          :text-shadow      "0 0 2px #ffffff"
                                          :background-color "#e5f1fa"
                                          :outline          "2px solid #e5f1fa"
-                                         :font-style       :italic}
-                      :function-args    {:color "#b3b3b3"}}}})
+                                         :font-style       :italic}}}})
 
 
 (def zenburn-light
@@ -515,7 +510,6 @@
                                                    :background-color "#e5f1fa"
                                                    :outline          "2px solid #e5f1fa"
                                                    :font-style       :italic}
-                                :function-args    {:color "#9e9e9e"}
                                 :atom-wrapper     :label}}})
 
 
@@ -612,7 +606,6 @@
                                                 :background-color  "#e5f1fa"
                                                 :outline           "2px solid #e5f1fa"
                                                 :font-style        :italic}
-                                :function-args {:color "#9e9e9e"}
                                 :atom-wrapper  :label}}})
 
 
@@ -709,7 +702,6 @@
                                                     :background-color "#e5f1fa"
                                                     :outline          "2px solid #e5f1fa"
                                                     :font-style       :italic}
-                                 :function-args    {:color "#999999"}
                                  :atom-wrapper     :label} }})
 
 
@@ -760,7 +752,7 @@
    :tokens           {:syntax  (merge {:js-object-key {:color "#888888"}}
                                       regex-syntax-neutral
                                       #_(highlighted-regex-syntax regex-syntax-neutral))
-                      :printer {:file-info     {:font-style :italic }
+                      :printer {:file-info        {:font-style :italic }
                                 ;; TODO maybe these values should be :classes/eval-label
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -770,8 +762,7 @@
                                 :eval-form-red    :eval-label-red
                                 :eval-form-green  :eval-label-green
                                 :eval-form-blue   :eval-label-blue
-                                :comment       {:font-style :italic}
-                                :function-args {:color "#9e9e9e"}}}})
+                                :comment          {:font-style :italic}}}})
 
 (def universal
   {:name   "Universal"
@@ -802,8 +793,7 @@
                             (highlighted-regex-syntax regex-syntax-minimal))
 
             :printer {:file-info     :annotation
-                      :comment       {:font-style :italic}
-                      :function-args {:color "#9e9e9e"}}}})
+                      :comment       {:font-style :italic}}}})
 
 (def alabaster-light-legacy
   {:name   "Alabaster Light"
@@ -842,5 +832,4 @@
                                       :background-color "#e5f1fa"
                                       :outline          "2px solid #e5f1fa"
                                       :font-style       :italic}
-                      :function-args {:color "#999999"}
                       :atom-wrapper  :label}}})

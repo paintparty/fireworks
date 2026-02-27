@@ -86,7 +86,6 @@
            sev?
            badge
            indent
-           fn-args
            all-tags
            separator
            max-keylen
@@ -120,8 +119,6 @@
         ;; value tag
         ;; num-chars-dropped-syntax
         ;; value tag-reset 
-        ;; fn-args-tag, optional
-        ;; fn-args-tag reset, optional
         ;; atom-closing, optional
         ;; user-metadata-map-block (displays user-meta inline, after value), optional
         
@@ -194,11 +191,6 @@
         (reset-tag (if (pos? (state/formatting-meta-level))
                      (state/metadata-token)
                      :foreground))
-
-        fn-args-tagged
-        (tagged fn-args
-                {:theme-token  :function-args
-                 :highlighting highlighting})
 
         atom-closing-bracket-tagged
         nil
@@ -279,10 +271,6 @@
          (when (= t :string) 
            (str (sgr-tag :string-delimiter highlighting) "\"" sgr-reset-tag))
          
-
-         ;; Conditional fn-args, positioned inline, to right of value 
-         fn-args-tagged         
-
          ;; Conditional `Atom`, closing parts,
          ;; positioned inline, to right of value 
          #_atom-closing-bracket-tagged

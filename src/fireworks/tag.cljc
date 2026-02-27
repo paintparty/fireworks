@@ -8,8 +8,7 @@
 
 
 (def tagtype->theme-key
-  {:fn-args  :function-args
-   :defmulti :function
+  {:defmulti :function
    :class    :function})
 
 
@@ -116,7 +115,6 @@
              theme-token :foreground}
       :as m}]
 
-    ;; s is always a string or vector (in the case of fn-args)
     (when (and (or (string? s)
                    (symbol? s)
                    (vector? s)

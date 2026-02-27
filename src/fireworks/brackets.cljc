@@ -96,9 +96,6 @@
                       formatting-meta?
                       (state/metadata-token)
 
-                      (= t :fn-args)
-                      t
-
                       :else
                       :rainbow-brackets)
         style (or (when-not formatting-meta? (:highlighting mm)) 

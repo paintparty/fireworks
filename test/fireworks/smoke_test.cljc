@@ -696,8 +696,7 @@
         :theme {:name   "MyCustomTheme Dark"
                 :tokens {:classes {:string {:color "#ff0000"}
                                    :comment {:color "#ff00cc"}}
-                         :syntax  {:js-object-key {:color "#888888"}}
-                         :printer {:function-args {:color "#bb8f44"}}}}}
+                         :syntax  {:js-object-key {:color "#888888"}}}}}
        {:string "string"}))
 
 
