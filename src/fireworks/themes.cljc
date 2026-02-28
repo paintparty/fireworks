@@ -335,6 +335,7 @@
    :langs  ["Clojure" "ClojureScript" "Babashka"]
    :tokens {:classes {:background {:background-color "#0e1415"}
                       :string     {:color "#8cbd7a"}
+                      :number     {:color "#6eabed"}
                       :comment    {:color      "#DFDF8E"
                                    :font-style :italic}
                       :constant   {:color "#b696b5"}
@@ -354,7 +355,8 @@
                                    :font-style       :italic
                                    :background-color "#00345c"}}
             :syntax  (merge {:js-object-key             {:color "#b2b2b2"}
-                             :number                    {:color "#6eabed"}
+                             :number                    :number
+                             :decimal                   :number
                              :escaped-double-quote-char :string
                              :escape-char               {:color (bling-css-color :dark-gray)}
                              :string-delimiter          {:color "#d28c6d"}
@@ -431,6 +433,7 @@
                       :foreground {:color "#bfbfbf"}
                       :string     {:color "#78ba78"}
                       :constant   {:color "#c0a1bf"}
+                      :number     {:color "#afaf87"}
                       :definition {:color "#80a3ea"}
                       :comment    {:color      "#e1d084"
                                    :font-style :italic}
@@ -448,7 +451,8 @@
                       :eval-label {:color            "#9ac2d6"
                                    :background-color "#2b4c69"
                                    :font-style       :italic}}
-            :syntax  (merge {:number        {:color "#afaf87"}
+            :syntax  (merge {:number        :number
+                             :decimal       :decimal
                              :js-object-key {:color "#888888"}}
                             (highlighted-regex-syntax regex-syntax-dark))
             :printer {:file-info        :annotation
@@ -520,6 +524,7 @@
    :bracket-contrast "low"
    :tokens           {:classes {:background {:background-color "#3f3f3f"}
                                 :string     {:color "#dc8f8f"}
+                                :number     {:color "#8fb8cc"}
                                 :constant   {:color "#8cc08c"}
                                 :definition {:color "#bfbf69"}
                                 :comment    {:color      "#76d5fe"
@@ -538,7 +543,8 @@
                                 :eval-label {:color            "#9ac2d6"
                                              :background-color "#2b4c69"
                                              :font-style       :italic}}
-                      :syntax  (merge {:number                    {:color "#8fb8cc"}
+                      :syntax  (merge {:number                    :number
+                                       :decimal                   :number
                                        :nil                       {:color "#a9a9a9"}
                                        :js-object-key             {:color "#a9a9a9"}
                                        :escaped-double-quote-char :string
@@ -568,6 +574,7 @@
                                 :foreground {:color "#657b83"}
                                 :constant   {:color "#657b83"}
                                 :string     {:color "#2aa198"}
+                                :number     {:color "#af5f5f"}
                                 ;; :string     {:color "#859900"}
                                 :definition {:color "#268bd2"}
                                 ;; :definition {:color "#268bd2"}
@@ -588,7 +595,8 @@
                                 :eval-label {:color            "#6c71c4"
                                              :background-color "#eef3ec"
                                              :font-style       :italic}}
-                      :syntax  (merge {:number        {:color "#af5f5f"}
+                      :syntax  (merge {:number        :number
+                                       :decimal       :number
                                        :boolean       {:color "#b58900"}
                                        :js-object-key {:color "#888888"}}
                                       (highlighted-regex-syntax regex-syntax-light))
@@ -601,12 +609,12 @@
                                 :eval-form-red    :eval-label-red
                                 :eval-form-green  :eval-label-green
                                 :eval-form-blue   :eval-label-blue
-                                :comment       {:color             "#00ffff"
-                                                :text-shadow       "0 0 2px #ffffff"
-                                                :background-color  "#e5f1fa"
-                                                :outline           "2px solid #e5f1fa"
-                                                :font-style        :italic}
-                                :atom-wrapper  :label}}})
+                                :comment          {:color            "#00ffff"
+                                                   :text-shadow      "0 0 2px #ffffff"
+                                                   :background-color "#e5f1fa"
+                                                   :outline          "2px solid #e5f1fa"
+                                                   :font-style       :italic}
+                                :atom-wrapper     :label}}})
 
 
 (def solarized-dark 
@@ -618,6 +626,7 @@
                                 :foreground {:color "#999999"}
                                 :bracket    {:color "#808080"}
                                 :string     {:color "#33a3a3"}
+                                :number     {:color "#bf6986"}
                                 :constant   {:color "#8f8f8f"}
                                 :definition {:color "#5289cc"}
                                 :comment    {:color      "#ee63b4"
@@ -634,7 +643,8 @@
                                 :eval-label {:color            "#659bdc"
                                              :background-color "#263d5a"
                                              :font-style       :italic}}
-                      :syntax  (merge {:number        {:color "#bf6986"}
+                      :syntax  (merge {:number        :number
+                                       :decimal       :number
                                        :js-object-key {:color "#888888"}}
                                       (highlighted-regex-syntax 
                                        regex-syntax-dark))
@@ -661,6 +671,10 @@
    :bracket-contrast "high"
    :tokens            {:classes {:background {:background-color "#fff"}
                                  :string     {:color "#1386bf"}
+                                 :number     {
+                                              :color "#cc3d9c"
+                                              ;; :color "#a7ebaaff" ; <- for testing level-2 color support
+                                              }
                                  :constant   {:color "#8545e6"}
                                  :definition {:color "#178c54"}
                                  :annotation {:color      "#a6a6a6"
@@ -682,10 +696,8 @@
                                               ;; :background-color "#edfdfdff" ; <- for testing level-2 color support
                                               }}
 
-                       :syntax  (merge {:number        {
-                                                        :color "#cc3d9c"
-                                                        ;;  :color "#a7ebaaff" ; <- for testing level-2 color support
-                                                        }
+                       :syntax  (merge {:number        :number
+                                        :decimal       :number
                                         :js-object-key {:color "#888888"}}
                                        (highlighted-regex-syntax regex-syntax-light))
                        :printer {:file-info        :annotation
@@ -712,6 +724,7 @@
    :bracket-contrast "high"
    :tokens           {:classes {:background {:background-color "#2d2a2e"}
                                 :string     {:color "#ccb43e"}
+                                :number     {:color "#14bcd2"}
                                 :constant   {:color "#cc99ff"}
                                 :definition {:color "#4fc94f"}
                                 :annotation {:color      "#999999"
@@ -730,7 +743,8 @@
                                 :eval-label {:color            "#85b7e5"
                                              :font-style       :italic
                                              :background-color "#00345c"}}
-                      :syntax  (merge {:number        {:color "#14bcd2"}
+                      :syntax  (merge {:number        :number
+                                       :decimal       :number
                                        :js-object-key {:color "#888888"}}
                                       (highlighted-regex-syntax regex-syntax-dark))
                       :printer {:file-info        :annotation

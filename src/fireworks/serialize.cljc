@@ -246,25 +246,35 @@
 
          main-entity-tag
          ;; (some-> num-chars-dropped pos?)
-         (or (when s
-               (cond (= t :string)
-                     (string/replace (subs s 1 (-> s count dec))
-                                     #"\""
-                                     ;; Maybe we should add this at an earlier stage
-                                     (str (sgr-tag :escape-char)
-                                          "\\\\"
-                                          main-entity-tag-reset
-                                          (sgr-tag :escaped-double-quote-char)
-                                          "\""
-                                          main-entity-tag-reset
-                                          main-entity-tag))
+         (do
+           (or (when s
+                 (cond (= t :string)
+                       (string/replace (subs s 1 (-> s count dec))
+                                       #"\""
+                                       ;; Maybe we should add this at an earlier stage
+                                       (str (sgr-tag :escape-char)
+                                            "\\\\"
+                                            main-entity-tag-reset
+                                            (sgr-tag :escaped-double-quote-char)
+                                            "\""
+                                            main-entity-tag-reset
+                                            main-entity-tag))
 
-                     (= t :regex)
-                     (tag/colorized-regex s)
+                       (= t :regex)
+                       (tag/colorized-regex s)
 
-                     :else
-                     s))
-             fn-display-name)
+                       (and (= t :number) (float? (:og-x m)))
+                       (let [[integral-part decimal-part] (string/split s #"\.")]
+                         (str (sgr-tag :number)
+                              integral-part "."
+                              main-entity-tag-reset
+                              (sgr-tag :decimal)
+                              decimal-part
+                              main-entity-tag-reset))
+
+                       :else
+                       s))
+               fn-display-name))
          main-entity-tag-reset
          chars-dropped-syntax
 

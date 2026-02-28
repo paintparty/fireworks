@@ -142,6 +142,7 @@
    :background                   nil
    :bracket                      :foreground
    :string                       :foreground
+   :number                       :foreground
    :comment                      :foreground
    :constant                     :foreground ;; numbers, symbols, keywords, boolean values
    :definition                   :foreground ;; global definitions
@@ -179,6 +180,7 @@
 (def base-syntax-tokens
   (merge {:string                                       :string
           :number                                       :constant
+          :decimal                                      :constant
           :keyword                                      :constant
           :boolean                                      :constant
           :nil                                          :constant
