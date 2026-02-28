@@ -26,25 +26,25 @@
    :single-line-coll-print-length            {:spec    ::config/single-line-coll-print-length
                                               :default 33}
    ;;deprecated
-   :scalar-result-length-limit               {:spec        ::config/scalar-result-print-length
+   :non-coll-result-length-limit             {:spec        ::config/scalar-result-print-length
                                               :deprecated? true
                                               :default     444}
    :scalar-result-print-length               {:spec    ::config/scalar-result-print-length
                                               :default 444}
    ;;deprecated
-   :scalar-1-length-limit                    {:spec        ::config/scalar-depth-1-print-length
+   :non-coll-depth-1-length-limit            {:spec        ::config/scalar-depth-1-print-length
                                               :deprecated? true
                                               :default     69}
    :scalar-depth-1-print-length              {:spec    ::config/scalar-depth-1-print-length
                                               :default 69}
    ;;deprecated
-   :scalar-length-limit                      {:spec        ::config/scalar-print-length
+   :non-coll-length-limit                    {:spec        ::config/scalar-print-length
                                               :deprecated? true
                                               :default     33}
    :scalar-print-length                      {:spec    ::config/scalar-print-length
                                               :default 33}
    ;;deprecated
-   :scalar-mapkey-length-limit               {:spec        ::config/scalar-mapkey-print-length
+   :non-coll-mapkey-length-limit             {:spec        ::config/scalar-mapkey-print-length
                                               :deprecated? true
                                               :default     20}
    :scalar-mapkey-print-length               {:spec    ::config/scalar-mapkey-print-length

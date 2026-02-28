@@ -14,7 +14,7 @@
 
 ;; Upper bound of scalar-print-lengths get set here
 (def scalar-print-length
-  1000)
+  10000)
 
 (def print-length
   1000)
