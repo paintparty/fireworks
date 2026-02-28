@@ -170,6 +170,8 @@
 
 (s/def ::dissoc-metadata-keys vector?)
 
+(s/def ::select-metadata-keys vector?)
+
 (s/def ::multi-line-metadata? boolean?)
 
 (s/def ::quote-symbols? boolean?)

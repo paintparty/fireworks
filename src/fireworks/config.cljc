@@ -100,6 +100,8 @@
                                          :default nil}
    :dissoc-metadata-keys                {:spec    ::config/dissoc-metadata-keys
                                          :default nil}
+   :select-metadata-keys                {:spec    ::config/select-metadata-keys
+                                         :default nil}
    :multi-line-metadata?                {:spec    ::config/multi-line-metadata?
                                          :default true}
    :quote-symbols?                      {:spec    ::config/quote-symbols?

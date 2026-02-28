@@ -586,8 +586,17 @@
 
 
 (defn- formatted-user-meta [user-meta indent*]
-  (formatted* (apply dissoc user-meta (:dissoc-metadata-keys @state/config))
-                          {:user-meta? true :indent indent*}))
+  (formatted* (let [dissoced 
+                    (apply dissoc
+                           user-meta
+                           (:dissoc-metadata-keys @state/config))
+                    ks       (:select-metadata-keys @state/config)
+                    selected (if (seq ks)
+                               (select-keys dissoced ks)
+                               dissoced)]
+                selected)
+              {:user-meta? true
+               :indent     indent*}))
 
 (defn- user-metadata-map-block
   [indent*
