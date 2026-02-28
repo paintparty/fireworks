@@ -12,16 +12,16 @@
 (s/def ::edn-file-path 
   (s/and string? #(re-find #"\.edn$" %)))
 
-;; Upper bound of non-coll-length-limits get set here
-(def non-coll-length-limit
+;; Upper bound of scalar-print-lengths get set here
+(def scalar-print-length
   1000)
 
-(def coll-limit
+(def print-length
   1000)
 
 ;; TODO - Should this be 1?
-(s/def ::fw-coll-limit
-  (s/and int? #(<= 2 % coll-limit)))
+(s/def ::fw-print-length
+  (s/and int? #(<= 1 % print-length)))
 
 ;; This is for the theme entry in a fireworks config .edn
 ;; It can be either
@@ -46,7 +46,7 @@
 
 (s/def ::truncate boolean?)
 
-(s/def ::label-length-limit
+(s/def ::label-print-length
   (s/and int? #(<= 10 % 100)))
 
 (s/def ::format-label-as-code?
@@ -64,31 +64,31 @@
 (s/def ::margin-inline-start
   (s/and int? #(<= 0 % 100)))
 
-(s/def ::single-line-coll-length-limit
+(s/def ::single-line-coll-print-length
   (s/and int? #(<= 2 % 200)))
 
-(s/def ::coll-limit
-  ::fw-coll-limit)
+(s/def ::print-length
+  ::fw-print-length)
 
-(s/def ::non-coll-extended-length-limit
-  (s/and int? #(<= 10 % non-coll-length-limit)))
+(s/def ::scalar-extended-print-length
+  (s/and int? #(<= 10 % scalar-print-length)))
 
-(s/def ::non-coll-result-length-limit
-  ::non-coll-extended-length-limit)
+(s/def ::scalar-result-print-length
+  ::scalar-extended-print-length)
 
-(s/def ::non-coll-depth-1-length-limit
-  ::non-coll-extended-length-limit)
+(s/def ::scalar-depth-1-print-length
+  ::scalar-extended-print-length)
 
-(s/def ::non-coll-length-limit
-  (s/and int? #(<= 10 % non-coll-length-limit)))
+(s/def ::scalar-print-length
+  (s/and int? #(<= 10 % scalar-print-length)))
 
-(s/def ::non-coll-mapkey-length-limit
-  (s/and int? #(<= 5 % non-coll-length-limit)))
+(s/def ::scalar-mapkey-print-length
+  (s/and int? #(<= 5 % scalar-print-length)))
 
 (s/def ::single-column-maps?
   boolean?)
 
-(s/def ::single-column-maps-length-threshold
+(s/def ::single-column-map-print-length-threshold
   (s/and int? #(< 1 %)))
 
 (s/def ::print-level
@@ -97,7 +97,7 @@
 (s/def ::metadata-print-level
   (s/and int? #(<= 1 % 10)))
 
-(s/def ::display-namespaces? 
+(s/def ::display-fn-namespaces? 
   boolean?)
 
 (s/def ::display-metadata?
@@ -175,27 +175,3 @@
 (s/def ::multi-line-metadata? boolean?)
 
 (s/def ::quote-symbols? boolean?)
-
-
-#_(s/def ::fireworks-user-config
-  (s/and map?
-         (s/keys :opt-un [::line-height 
-                          ::enable-terminal-italics? 
-                          ::non-coll-result-length-limit
-                          ::non-coll-depth-1-length-limit
-                          ::non-coll-mapkey-length-limit 
-                          ::non-coll-length-limit 
-                          ::display-namespaces? 
-                          ::enable-rainbow-brackets? 
-                          ::enable-terminal-truecolor? 
-                          ::print-level 
-                          ::theme 
-                          ::metadata-print-level 
-                          ::coll-limit 
-                          ::display-metadata? 
-                          ::metadata-position 
-                          ::bracket-contrast
-                          ::custom-printers
-                          ;; TODO test this
-                          ::find
-                          ])))

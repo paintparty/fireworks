@@ -13,34 +13,51 @@
    :bold?                               {:spec           ::config/bold
                                          :default        false
                                          :updates-theme? true}
-   
-   ;; Change to scalar-*-print-length ------------------------------------------
-
-   :coll-limit                          {:spec    ::config/coll-limit
+   ;;deprecated
+   :coll-limit                          {:spec        ::config/print-length
+                                         :deprecated? true
+                                         :default     33}
+   :print-length                        {:spec    ::config/print-length
                                          :default 33}
-   :single-line-coll-length-limit       {:spec    ::config/single-line-coll-length-limit
-                                         :default 33}
-   :non-coll-result-length-limit        {:spec    ::config/non-coll-result-length-limit
-                                         :default 444}
-   :non-coll-depth-1-length-limit       {:spec    ::config/non-coll-depth-1-length-limit
-                                         :default 69}
-   :non-coll-length-limit               {:spec    ::config/non-coll-length-limit
-                                         :default 33}
-   :non-coll-mapkey-length-limit        {:spec    ::config/non-coll-mapkey-length-limit
-                                         :default 20}
-   ;; --------------------------------------------------------------------------
-
-
+   ;;deprecated
+   :single-line-coll-length-limit       {:spec        ::config/single-line-coll-print-length
+                                         :deprecated? true
+                                         :default     33}
+   :single-line-coll-print-length       {:spec        ::config/single-line-coll-print-length
+                                         :default     33}
+   ;;deprecated
+   :non-coll-result-length-limit        {:spec        ::config/scalar-result-print-length
+                                         :deprecated? true
+                                         :default     444}
+   :scalar-result-print-length          {:spec        ::config/scalar-result-print-length
+                                         :default     444}
+   ;;deprecated
+   :non-coll-1-length-limit             {:spec        ::config/scalar-depth-1-print-length
+                                         :deprecated? true
+                                         :default     69}
+   :scalar-depth-1-print-length         {:spec        ::config/scalar-depth-1-print-length
+                                         :default     69}
+   ;;deprecated
+   :non-coll-length-limit               {:spec        ::config/scalar-print-length
+                                         :deprecated? true
+                                         :default     33}
+   :scalar-print-length                 {:spec        ::config/scalar-print-length
+                                         :default     33}
+   ;;deprecated
+   :non-coll-mapkey-length-limit        {:spec        ::config/scalar-mapkey-print-length
+                                         :deprecated? true
+                                         :default     20}
+   :scalar-mapkey-print-length          {:spec        ::config/scalar-mapkey-print-length
+                                         :default     20}
    :single-column-maps?                 {:spec    ::config/single-column-maps?
                                          :default false}
-   :single-column-maps-length-threshold {:spec    ::config/single-column-maps-length-threshold
+   :single-column-map-print-length-threshold {:spec    ::config/single-column-map-print-length-threshold
                                          :default 44}
    :print-level                         {:spec    ::config/print-level
                                          :default 7}
    :metadata-print-level                {:spec    ::config/metadata-print-level
                                          :default 7}
-   ;; TODO - should this be :display-fn-namespaces?
-   :display-namespaces?                 {:spec    ::config/display-namespaces?
+   :display-fn-namespaces?              {:spec    ::config/display-fn-namespaces?
                                          :default true}
    :display-metadata?                   {:spec    ::config/display-metadata?
                                          :default false}
@@ -76,11 +93,7 @@
    :line-height                         {:spec           ::config/line-height
                                          :default        1.45
                                          :updates-theme? true}
-
-
-   ;; Change to label-print-length ---------------------------------------------
-
-   :label-length-limit                  {:spec    ::config/label-length-limit
+   :label-print-length                  {:spec    ::config/label-print-length
                                          :default 44}
    :format-label-as-code?               {:spec    ::config/format-label-as-code?
                                          :default false}

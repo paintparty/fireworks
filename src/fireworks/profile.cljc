@@ -227,7 +227,7 @@
   [coll meta-map]
   (boolean
    (when (-> meta-map :map-like?)
-     (when-let [n (:single-column-maps-length-threshold @state/config)]
+     (when-let [n (:single-column-map-print-length-threshold @state/config)]
        (some (fn [[k v]] 
                (or (exceeds-map-value-threshold? k n)
                    (exceeds-map-value-threshold? v n)))
@@ -244,7 +244,7 @@
    
    Potentially sets single-column-map-layout? entry in meta to true, if x is a
    map-like? coll and any of the keys or values exceed the value of the config
-   option :single-column-maps-length-threshold."
+   option :single-column-map-print-length-threshold."
   [{:keys [coll-type? ellipsized x t meta-map]}]
   (let [ret* (cond 
                coll-type?

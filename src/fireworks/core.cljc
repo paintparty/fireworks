@@ -632,7 +632,8 @@
 (defn- print-formatted
   ([x]
    (print-formatted x nil))
-  ([{:keys [fmt log? err err-x err-opts] :as x}
+  ([{:keys [fmt log? err err-x err-opts]
+     :as   x}
     js-printing-fn]
    (if (instance? fireworks.messaging.FireworksThrowable x)
      (let [{:keys [line column file]} (:form-meta err-opts)
@@ -931,7 +932,6 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
-  ;; (ff opts)
   (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
         config-before (when debug-config? @state/config)]

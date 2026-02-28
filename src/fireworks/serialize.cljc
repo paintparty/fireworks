@@ -380,7 +380,7 @@
         leading+indent     (str (leading-space m)
                                 (when multi-line? indent-chars))
         kv-spacing-str     (when coll-is-map?
-                             (kv-spacing-str m max-keylen too-deep?))
+                             (symbol ""))
         extra              (str leading+indent
                                 (sgr-tag {} highlighting)
                                 kv-spacing-str
