@@ -570,7 +570,8 @@
 
     ;; TODO - add some observability here
     (reset! state/let-bindings? (:let-bindings? opts))
-    (reset! state/margin-inline-start (:margin-inline-start opts))
+    (reset! state/margin-inline-start (or (:margin-inline-start opts)
+                                          (:margin-left opts)))
 
     ;; TODO - lose if post-replace works
     (reset! state/styles [])

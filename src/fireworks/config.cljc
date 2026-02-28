@@ -101,6 +101,8 @@
                                               :default 1}
    :margin-top                               {:spec    ::config/margin-top
                                               :default 0}
+   :margin-left                              {:spec    ::config/margin-inline-start
+                                              :default 0}
    :margin-inline-start                      {:spec    ::config/margin-inline-start
                                               :default 0}
    :custom-printers                          {:spec    ::config/custom-printers
