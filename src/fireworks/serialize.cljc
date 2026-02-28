@@ -502,7 +502,7 @@
                  ;; This is where multi-line for maps is determined
                  (or single-column-map-layout?
                      (let [strlen-greater-than-limit? 
-                           (< (:single-line-coll-length-limit @state/config)
+                           (< (:single-line-coll-print-length @state/config)
                               (or (if badge-above?
                                     val-str-len        ;; <- should this be str-len-val-ellipsized?
                                     str-len-with-badge ;; <- should this be str-len-with-val-ellipsized?
@@ -1100,33 +1100,33 @@
          ;;  len            (-> profiled meta :str-len-with-badge)
          ]
 
-    ;; For adding line-based undline decor such as "^^^^"
-    ;; 1) Look for specific style signature based on class like :error-highlight
-    ;; 2) Find line index and char index of first match
-    ;; 3) Calculate row end
-    ;; 4) Insert decoration line with ^^^^^^^ based on theme
-    ;; 5) Add theme token in themes
-    ;; 
-    
+     ;; For adding line-based undline decor such as "^^^^"
+     ;; 1) Look for specific style signature based on class like :error-highlight
+     ;; 2) Find line index and char index of first match
+     ;; 3) Calculate row end
+     ;; 4) Insert decoration line with ^^^^^^^ based on theme
+     ;; 5) Add theme token in themes
+     ;; 
+     
      
 
 
-    ;; for debugging path info
-    #_(walk/postwalk (fn [x]
-                     (println)
-                     (pprint (-> x meta :fw/truncated (select-keys [:og-x :path]))) x)
-                   truncated)
+     ;; for debugging path info
+     #_(walk/postwalk (fn [x]
+                        (println)
+                        (pprint (-> x meta :fw/truncated (select-keys [:og-x :path]))) x)
+                      truncated)
 
-    ;; Just for debugging
-    ;;  (when (:coll-type? (meta profiled))
-    ;;      (?pp (meta profiled)))
-    ;; (?pp (meta profiled))
-    ;;  (?pp (map 
-    ;;        (fn [a b]
-    ;;          [a b])
-    ;;        (rest (string/split serialized "%c"))
-    ;;        @state/styles))
-    ;;  (?pp :serialized serialized)
-    ;;  (?pp @state/styles)
+     ;; Just for debugging
+     ;;  (when (:coll-type? (meta profiled))
+     ;;      (?pp (meta profiled)))
+     ;; (?pp (meta profiled))
+     ;;  (?pp (map 
+     ;;        (fn [a b]
+     ;;          [a b])
+     ;;        (rest (string/split serialized "%c"))
+     ;;        @state/styles))
+     ;;  (?pp :serialized serialized)
+     ;;  (?pp @state/styles)
      
      serialized)))

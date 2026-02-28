@@ -310,7 +310,7 @@ The first argument can also be a map, which supplies various [config options](#o
 ```Clojure
 (? {:label      "My label"
     :theme      "Monokai Light"
-    :coll-limit 10}
+    :print-length 10}
    x)
 ```
 
@@ -331,7 +331,7 @@ If you want to use a specific mode and also supply override config options, you 
 ;; Omits form (or custom label) and the file info.
 ;; Options map override default config options.
 ;; Returns the result
-(? :result {:coll-limit 10} x)
+(? :result {:print-length 10} x)
 
 ```
 
@@ -449,14 +449,14 @@ Reference map of options and default values, for cutting & pasting:
 {:theme                         "Alabaster Light"
  :line-height                   1.45
  :print-level                   7
- :label-length-limit            25
+ :label-print-length            25
  :format-label-as-code?         false
- :non-coll-length-limit         33
- :non-coll-mapkey-length-limit  20
- :non-coll-result-length-limit  444
- :non-coll-depth-1-length-limit 59
- :single-line-coll-length-limit 15
- :coll-limit                    15
+ :scalar-print-length         33
+ :scalar-mapkey-print-length  20
+ :scalar-result-print-length  444
+ :scalar-depth-1-print-length 59
+ :single-line-coll-print-length 15
+ :print-length                    15
  :display-namespaces?           true
  :metadata-print-level          7
  :display-metadata?             true
@@ -488,7 +488,7 @@ You can try any of the options out at the call site:
        sample)
 
       (? "The uuid will not be truncated" 
-       {:non-coll-length-limit 50}
+       {:scalar-print-length 50}
        sample)
 
       (? "The nested vector will be truncated" 
@@ -501,7 +501,7 @@ You can try any of the options out at the call site:
 You can also set them globally, in your project, at runtime:
 ```Clojure
 (fireworks.core/config! {:display-metadata?     true
-                         :non-coll-length-limit 50
+                         :scalar-print-length 50
                          :print-level           3})
 ```
 
@@ -575,14 +575,14 @@ Sets the line-height. Only takes effect in browser consoles.
 
 <br>
 
-#### **`:coll-limit`**
+#### **`:print-length`**
 Defaults to `15`<br>
 
 Sets the max length of collections.  Collections whose count are at least 2 greater than this number will be truncated. By default, Fireworks aggressively truncates collections to keep the display footprint of the printed output as short and narrow as possible.
 
 <br>
 
-#### **`:label-length-limit`**
+#### **`:label-print-length`**
 
  Defaults to `25`<br>
 
@@ -616,7 +616,7 @@ Sets the max depth of printing for nested collections.
 
 <br>
 
-#### **`:non-coll-length-limit`**
+#### **`:scalar-print-length`**
  Defaults to `33`<br>
 
 Sets the max length of things like strings, keywords, function names, etc., when they are nested more than one level deep inside a data structure. Values whose length exceeds this will be ellipsized.
@@ -624,7 +624,7 @@ Sets the max length of things like strings, keywords, function names, etc., when
 
 <br>
 
-#### **`:non-coll-mapkey-length-limit`** 
+#### **`:scalar-mapkey-print-length`** 
 Defaults to `20`<br>
 
 Sets the max length of things like strings, keywords, function names, etc., when they are used as keys in maps. Longer values will be ellipsized.
@@ -632,19 +632,19 @@ Sets the max length of things like strings, keywords, function names, etc., when
 
 <br>
 
-#### **`:non-coll-result-length-limit`**
+#### **`:scalar-result-print-length`**
 Defaults to `444`<br>
 
-Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value itself is the result of the evaluation (not nested within a data structure).
+Sets the max length of a scalarection value such as a string, keyword, function name, etc. Only applies when the value itself is the result of the evaluation (not nested within a data structure).
 
 
 <br>
 
 
-#### **`:non-coll-depth-1-length-limit`**
+#### **`:scalar-depth-1-print-length`**
 Defaults to `69`<br>
 
-Sets the max length of a non-collection value such as a string, keyword, function name, etc. Only applies when the value is nested one level deep inside the result, which would be a non-associative collection such as a vector or seq.
+Sets the max length of a scalarection value such as a string, keyword, function name, etc. Only applies when the value is nested one level deep inside the result, which would be a non-associative collection such as a vector or seq.
 
 
 <br>
@@ -684,7 +684,7 @@ Intended primarily to used at the call site when you want to turn off all trunca
 #### **`:display-namespaces?`**
 Defaults to `true`<br>
 
-Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:non-coll-length-limit` or the `:non-coll-mapkey-length-limit` (in the case of map keys).
+Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:scalar-print-length` or the `:scalar-mapkey-print-length` (in the case of map keys).
 
 <br>
 
@@ -1172,7 +1172,7 @@ Fireworks:
 
 By default, Fireworks will print the function name with the fully-qualified namespace. This can be disabled by changing the config option `:display-namespaces?` to `false`.
 
-If the fully-qualified name of the function + args vector exceeds the value of `:non-coll-length-limit`, the args will get ellipsized, the namespace will be dropped (if necessary), and the function name will be ellipsized (if necessary).
+If the fully-qualified name of the function + args vector exceeds the value of `:scalar-print-length`, the args will get ellipsized, the namespace will be dropped (if necessary), and the function name will be ellipsized (if necessary).
 
 <br>
 

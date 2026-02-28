@@ -56,7 +56,7 @@
 (deftest long-fn-name
   (is (= 
        (let [ret              (? :data
-                                 {:non-coll-length-limit 33
+                                 {:scalar-print-length 33
                                   :theme                 theme} {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
              formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
@@ -255,54 +255,54 @@
 
 (deftest+ custom-vector-datatype
   {:theme          theme
-   :coll-limit     40
+   :print-length     40
    :elide-branches #{:bb}}
   sample/custom-vector-datatype)
 
 (deftest+ custom-map-dataype
   {:theme          theme
-   :coll-limit     40
+   :print-length     40
    :elide-branches #{:bb}}
   sample/custom-map-datatype)
 
 (deftest+ custom-map-dataype
   {:theme          theme
-   :coll-limit     40
+   :print-length     40
    :elide-branches #{:bb}}
   sample/vector-with-custom-datatypes)
 
 (deftest+ user-fn-names 
   {:theme          theme
-   :coll-limit     40
+   :print-length     40
    :elide-branches #{:bb}}
   sample/user-fn-names)
 
 (deftest+ basic-samples
   {:theme      theme
-   :coll-limit 40}
+   :print-length 40}
   sample/array-map-of-everything-cljc)
 
 (deftest+ no-truncation
   {:theme      theme
    :truncate?  false
-   :coll-limit 40}
+   :print-length 40}
   (cons "adsfasdfasdfasdfasdfadsfsdfasdfadsfadsfasdfasdfasdfadsfasdfasdfsadfxxx"
          (range 50)))
 
 (deftest+ bolded
   {:theme      theme
    :bold?      true
-   :coll-limit 40}
+   :print-length 40}
   sample/array-map-of-everything-cljc)
 
-(deftest+ single-line-coll-length-limit-50-19
+(deftest+ single-line-coll-print-length-50-19
   {:theme theme
-   :single-line-coll-length-limit 50}
+   :single-line-coll-print-length 50}
   (range 14))
 
-(deftest+ single-line-coll-length-limit-50-20
+(deftest+ single-line-coll-print-length-50-20
   {:theme theme
-   :single-line-coll-length-limit 50}
+   :single-line-coll-print-length 50}
   (range 15))
 
 
@@ -331,14 +331,14 @@
    :bracket-contrast "low"}
   [[[[[]]]]])
 
-(deftest+ with-non-coll-level-1-depth-length-limit
+(deftest+ with-scalar-level-1-depth-print-length
   {:theme                         theme
-   :non-coll-depth-1-length-limit 60}
+   :scalar-depth-1-print-length 60}
   ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
 
-(deftest+ non-coll-result-length-limit
+(deftest+ scalar-result-print-length
   {:theme                         theme
-   :non-coll-result-length-limit 44}
+   :scalar-result-print-length 44}
   "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
 
 
@@ -347,7 +347,7 @@
 (do 
   (deftest+ java-interop-types
     {:theme      theme
-     :coll-limit 100}
+     :print-length 100}
     sample/interop-types )
 
   (deftest+ java-util-hashmap

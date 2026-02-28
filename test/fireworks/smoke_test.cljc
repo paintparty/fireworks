@@ -19,8 +19,8 @@
 #_(? {"my string key" "foo \"bar\" baz\""
     :abcdef         :gold})
 
-;; (? {:non-coll-result-length-limit 15} (symbol "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz"))
-#_(? {:non-coll-result-length-limit 15} "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz")
+;; (? {:scalar-result-print-length 15} (symbol "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz"))
+#_(? {:scalar-result-print-length 15} "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz")
 
 
 ;; let bindings smoke test
@@ -65,7 +65,7 @@
 
 ;; long-fn name smoke test
 #_(do (defn abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn [] nil)
-    (? {:non-coll-length-limit 33}
+    (? {:scalar-print-length 33}
        {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})) 
 
 
@@ -355,9 +355,9 @@
 {:theme                        "Alabaster Light"
  :line-height                  1.45
  :print-level                  7
- :non-coll-length-limit        33
- :non-coll-mapkey-length-limit 20
- :coll-limit                   15
+ :scalar-print-length        33
+ :scalar-mapkey-print-length 20
+ :print-length                   15
  :display-namespaces?          true
  :metadata-print-level         7
  :display-metadata?            true
@@ -426,22 +426,22 @@
        :string))
 
 
-(!? {:coll-limit 100
+(!? {:print-length 100
      :theme      "Alabaster Light"
      :label      "Clojure(Script) Values"}
     sample/array-map-of-multiline-formatting-cljc)
 
-(!? {:coll-limit 100
+(!? {:print-length 100
      :theme      "Alabaster Light"
      :label      "Clojure(Script) Values, with extras"
      :find {:pred #(= :tag %)}}
     (sample/vec-of-everything-cljc-with-extras))
 
-(!? {:coll-limit 100
+(!? {:print-length 100
      :label      "JVM Clojure Values"}
     sample/interop-types)
 
-(!? {:coll-limit 100
+(!? {:print-length 100
      :label      "JVM Clojure Values with extras"}
     sample/vec-of-interop-types-with-extras)
 
@@ -633,13 +633,13 @@
     (? {:label "theme Alabaster Light" :theme "Alabaster Light"}
        (atom [[1 2 3] "abcdefghijk"]))
 
-    ;; :non-coll-length-limit
-    (? {:label :non-coll-length-limit :non-coll-length-limit 20}
+    ;; :scalar-print-length
+    (? {:label :scalar-print-length :scalar-print-length 20}
        "abcdefghijklmnopqrstuvwxyz")
 
 
-    ;; :non-coll-mapkey-length-limit
-    (? {:label :non-coll-mapkey-length-limit :non-coll-mapkey-length-limit         20}
+    ;; :scalar-mapkey-print-length
+    (? {:label :scalar-mapkey-print-length :scalar-mapkey-print-length         20}
        {"abcdefghijklmnopqrstuvwxyz" [1 2 3]})
 
     (? {:label :display-namespaces? :display-namespaces?        true}

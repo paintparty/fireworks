@@ -334,7 +334,7 @@
        (boolean (some #(-> % 
                            str
                            count
-                           (> (:non-coll-mapkey-length-limit @state/config)))
+                           (> (:scalar-mapkey-print-length @state/config)))
                       key-colls))})))
 
 (defn- user-metadata [x]
@@ -513,7 +513,7 @@
    - Adjusted string length
 
    Example:
-   (? {:coll-limit 5} (with-meta (range 8) {:foo :bar}))
+   (? {:print-length 5} (with-meta (range 8) {:foo :bar}))
 
    ^{:og-x                                 '(0 1 2 3 4 5 6 7),
      :some-colls-as-keys?                  false,
@@ -533,7 +533,7 @@
      :some-syms-carrying-metadata-as-keys? false,
      :all-tags                             #{:coll :seq},
      :str-len-with-badge                   11,
-     :coll-limit                           5,
+     :print-length                           5,
      :some-elements-carry-user-metadata?   false,
      :fw/user-meta                         {:foo :bar},
      :coll-size-adjust                     8,

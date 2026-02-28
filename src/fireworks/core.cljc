@@ -49,18 +49,18 @@
 ;   FFFFFFFFFFF           
 
 
-(defn resolve-label-length [label-length-limit]
-  (or (when (s/valid? ::specs.config/label-length-limit
-                      label-length-limit)
-        label-length-limit)
-      (:label-length-limit @state/config)
+(defn resolve-label-length [label-print-length]
+  (or (when (s/valid? ::specs.config/label-print-length
+                      label-print-length)
+        label-print-length)
+      (:label-print-length @state/config)
       (-> config/options
-          :label-length-limit
+          :label-print-length
           :default)))
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
-   {:keys [label-length-limit]} :user-opts
+   {:keys [label-print-length]} :user-opts
     :as opts}]
   (let [indent-spaces
         (or (some-> @state/margin-inline-start
@@ -98,7 +98,7 @@
 
                     (tag/tag-entity
                      (util/shortened label
-                                     (resolve-label-length label-length-limit))
+                                     (resolve-label-length label-print-length))
                      label-entity-tag))]
               (str indent-spaces label))))
 
@@ -127,7 +127,7 @@
                                     (util/shortened
                                      (-> qf str format-anons)
                                      (resolve-label-length
-                                      label-length-limit)))
+                                      label-print-length)))
                   tagged          (tag/tag-entity shortened form-entity-tag) 
                   ret             tagged]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it

@@ -102,7 +102,7 @@
                     v))])))
 
      (defn- js-obj->array-map 
-       [{:keys [coll-limit 
+       [{:keys [print-length 
                 depth 
                 uid-entry? 
                 classname 
@@ -116,7 +116,7 @@
                keys*                    (if js-map?
                                           (js/Array.from (.keys x)) 
                                           (.keys js/Object x))
-               keys                     (take coll-limit keys*)
+               keys                     (take print-length keys*)
                built-in-non-constructor (cond (= og-x js/Math) 'js/Math
                                               (= og-x js/Atomics) 'js/Atomics
                                               (= og-x js/JSON) 'js/JSON 
@@ -132,7 +132,7 @@
 (declare truncate)
 
 (defn- truncate-iterable
-  [{:keys [coll-limit
+  [{:keys [print-length
            array-map?
            transient?
            map-like?
@@ -153,11 +153,11 @@
         (and (not map-like?)
              (some->> x
                       seq
-                      (take (min 50 coll-limit))
+                      (take (min 50 print-length))
                       (every? #(-> % map-entry?))))     
 
         ret
-        (let [taken (->> x (take coll-limit) vec)
+        (let [taken (->> x (take print-length) vec)
               x-is-set? (set? x)]
           (mapv (fn [i]
                   (let [nth-taken (nth taken i nil)]
@@ -214,7 +214,7 @@
                      js-array?
                      coll-size
                      og-x
-                     coll-limit]}
+                     print-length]}
              m]
          (cond
            dom-node-type
@@ -228,12 +228,12 @@
               (truncate {:depth (inc depth)
                          :path  path}
                         (aget x i)))
-            (range (min coll-limit coll-size)))
+            (range (min print-length coll-size)))
 
            (contains? all-tags :js-set)
            (->> x
                 js/Array.from
-                (take coll-limit)
+                (take print-length)
                 (mapv (partial truncate {:depth (inc depth)
                                          :path  path})))
 
@@ -289,10 +289,10 @@
         m))))
 
 
-(defn- resolve-coll-limit []
+(defn- resolve-print-length []
   (if (false? (:truncate? @state/config))
-    specs.config/coll-limit
-    (:coll-limit @state/config)))
+    specs.config/print-length
+    (:print-length @state/config)))
 
 
 (defn- reify-if-transient [x tag-map]
@@ -304,7 +304,7 @@
         (= t :set)
         #{}
         :else
-        (for [n (take (resolve-coll-limit) (range (count x)))]
+        (for [n (take (resolve-print-length) (range (count x)))]
           (nth x n))))
     x))
 
@@ -403,8 +403,8 @@
            {:user-meta      user-meta
             :og-x           x
             :uid-entry?     (volatile! false)
-            :coll-limit     (if too-deep? 0 
-                                (resolve-coll-limit))
+            :print-length     (if too-deep? 0 
+                                (resolve-print-length))
             :array-map?     (contains? (:all-tags tag-map) :array-map)
             :top-level-sev? (and sev? (zero? depth))}))) 
 
@@ -494,7 +494,7 @@
 ;; of that value changes.
 (defn truncate
   "Example:
-   (? {:coll-limit 5} (with-meta (range 8) {:foo :bar}))
+   (? {:print-length 5} (with-meta (range 8) {:foo :bar}))
    
    Assuming x is a (contrived) coll limit of 8, fireworks.truncate/truncate
    gets called recursively, and all coll types are converted to vectors.
@@ -513,7 +513,7 @@
                     :too-deep?           false,
                     :coll-size           8,
                     :all-tags            #{:coll :seq},
-                    :coll-limit          5,
+                    :print-length          5,
                     :coll-size-adjust    8,
                     :sev?                false,
                     :num-dropped         3,
@@ -564,7 +564,9 @@
                 :fw/user-meta #?(:cljs user-meta
                                  :bb (remove-sci-lang-type-metadata user-meta mm*)
                                  :clj user-meta)}
-               (some->> m* :user-meta? (hash-map :fw/user-meta-map?)))]
+               (some->> m*
+                        :user-meta? 
+                        (hash-map :fw/user-meta-map?)))]
     (with-meta truncated-x meta-to-attach)))
 
 

@@ -100,7 +100,7 @@
 ;;                :tokens {:classes {...}
 ;;                         :syntax  {...}
 ;;                         :printer {...}}
-;;  :coll-limit  33
+;;  :print-length  33
 ;;  :line-height 1.45
 ;;  ...}
 

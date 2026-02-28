@@ -42,7 +42,7 @@
     :as   m}]
   (let [;; Create `budge-diff` partial, which will be used to calculate
         ;; the difference between the length of the fn name (at a given
-        ;; stage of shortening) and the (:non-coll-length-limit @state/config).
+        ;; stage of shortening) and the (:scalar-print-length @state/config).
         
         budge-diff      (partial budge-diff limit)
         
@@ -95,8 +95,8 @@
 
 
         ;; Finally, calculate the final ellipsized-char-count. This count
-        ;; should never exceed the :non-coll-length-limit, or the
-        ;; :map-key-length-limit, from @state/config.
+        ;; should never exceed the :scalar-print-length, or the
+        ;; :map-key-print-length, from @state/config.
         
         
         ecc             (ellipsized-char-count badge
@@ -132,7 +132,7 @@
 
 
 (defn- stringified 
-  "Stringifies self-evaluating values (non-colls). 
+  "Stringifies self-evaluating values (scalars). 
    Wraps in appropriate quotes, when appropriate."
   [x t m]
   (let [s* (case t
@@ -188,7 +188,7 @@
    regexes, keywords, #insts, fns, etc.
    
    Truncation is based on the following:
-   - `:non-coll-mapkey-length-limit `or `:non-coll-length-limit` from config
+   - `:scalar-mapkey-print-length `or `:scalar-print-length` from config
    - Optional inline badge length e.g `#js `
    - Optional atom or volatile encapsulation e.g. `Atom<42>`"
   [x 
@@ -203,35 +203,35 @@
            top-level-sev?]
     :as   m}]
 
-  (let [{:keys [non-coll-depth-1-length-limit
-                non-coll-result-length-limit
-                non-coll-mapkey-length-limit
-                non-coll-length-limit
+  (let [{:keys [scalar-depth-1-print-length
+                scalar-result-print-length
+                scalar-mapkey-print-length
+                scalar-print-length
                 truncate?]}
         @state/config
 
         no-truncation?
         (false? truncate?)
 
-        non-coll-length-limit
+        scalar-print-length
         (if no-truncation?
-          specs.config/non-coll-length-limit
-          non-coll-length-limit)
+          specs.config/scalar-print-length
+          scalar-print-length)
 
-        non-coll-depth-1-length-limit
+        scalar-depth-1-print-length
         (if no-truncation?
-          specs.config/non-coll-length-limit
-          non-coll-depth-1-length-limit)
+          specs.config/scalar-print-length
+          scalar-depth-1-print-length)
 
-        non-coll-result-length-limit
+        scalar-result-print-length
         (if no-truncation? 
-          specs.config/non-coll-length-limit 
-          non-coll-result-length-limit)
+          specs.config/scalar-print-length 
+          scalar-result-print-length)
 
-        non-coll-mapkey-length-limit
+        scalar-mapkey-print-length
         (if no-truncation? 
-          specs.config/non-coll-length-limit 
-          non-coll-mapkey-length-limit)
+          specs.config/scalar-print-length 
+          scalar-mapkey-print-length)
 
 
         limit
@@ -241,11 +241,11 @@
                                     (and sev? (< depth 2))
                                     :level-1-sev))]
           (case level-k
-            :level-0-sev non-coll-result-length-limit
-            :level-1-sev non-coll-depth-1-length-limit)
+            :level-0-sev scalar-result-print-length
+            :level-1-sev scalar-depth-1-print-length)
           (max (if key?
-                 non-coll-mapkey-length-limit
-                 non-coll-length-limit)
+                 scalar-mapkey-print-length
+                 scalar-print-length)
                (or limit 0)))]
     
     (if (:ellipsized-char-count m)

@@ -72,7 +72,7 @@
      (range 20)
 
 ;; Large collections are always truncated for
-;; printing. This :coll-limit value can be
+;; printing. This :print-length value can be
 ;; tweaked in your config or at the call site.
      (range 42)
 

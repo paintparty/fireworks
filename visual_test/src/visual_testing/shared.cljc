@@ -61,7 +61,7 @@
                               :b 2
                               :c 3})))
 
-       #_(? {:coll-limit  200
+       #_(? {:print-length  200
              :label       "Clojure(Script) values"
              :label-color :blue
            ;;  :bold?       true
@@ -70,7 +70,7 @@
             everything
             #_(select-keys everything [:atom]))
 
-       #_(? {:coll-limit  200
+       #_(? {:print-length  200
              :label       "Clojure(Script) values"
              :label-color :red
              :bold?       true
@@ -139,7 +139,7 @@
        
        
        
-       #_(? {:coll-limit 200
+       #_(? {:print-length 200
              :label      "ClojureScript interop types"}
             sample/interop-types)
 
@@ -201,24 +201,24 @@
         :label "Universal Neutral"} everything))
   
   #_(do 
-    (println "\n:label-length-limit of 10")
-    (? {:label-length-limit 10} (str "1234567890" "abcdefghijklmnopqrstuvwxyz"))
+    (println "\n:label-print-length of 10")
+    (? {:label-print-length 10} (str "1234567890" "abcdefghijklmnopqrstuvwxyz"))
 
-    (println "\n:label-length-limit of 50")
-    (? {:label-length-limit 50} (str "1234567890"
+    (println "\n:label-print-length of 50")
+    (? {:label-print-length 50} (str "1234567890"
                                      "abcdefghijklmnopqrstuvwxyz"
                                      "ABCDEFGHIJKLMNOP"))
 
-    (println "\n:single-line-coll-length-limit of 10")
-    (? {:single-line-coll-length-limit 10} (range 4))
+    (println "\n:single-line-coll-print-length of 10")
+    (? {:single-line-coll-print-length 10} (range 4))
 
-    (println "\n:single-line-coll-length-limit of 10")
-    (? {:single-line-coll-length-limit 10} (range 5))
+    (println "\n:single-line-coll-print-length of 10")
+    (? {:single-line-coll-print-length 10} (range 5))
 
-    (println "\n:single-line-coll-length-limit of 50")
-    (? {:single-line-coll-length-limit 50} (range 19))
+    (println "\n:single-line-coll-print-length of 50")
+    (? {:single-line-coll-print-length 50} (range 19))
 
-    (println "\n:single-line-coll-length-limit of 50")
-    (? {:single-line-coll-length-limit 50} (range 20)))
+    (println "\n:single-line-coll-print-length of 50")
+    (? {:single-line-coll-print-length 50} (range 20)))
 
   nil)
