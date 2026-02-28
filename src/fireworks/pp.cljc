@@ -540,7 +540,7 @@
                 (let [f (first form)
                       n (next form)
                       tag   (when (not (coll? f)) (lasertag/tag f))
-                      f     (if (:colorize opts)
+                      f     (if (:colorize? opts)
                               (some->> tag (colorized f))
                               f)]
                   (if (empty? n)
@@ -561,7 +561,7 @@
   [this writer opts]
   (if (meets-print-level? (:level opts))
     (write writer "#")
-    (let [k     (if (:colorize opts)
+    (let [k     (if (:colorize? opts)
                   (let [[k*]  this
                         k-str (key this)
                         tag   (when (not (coll? k*)) (lasertag/tag k*))
@@ -572,7 +572,7 @@
           opts  (update opts :level inc)]
       (-pprint k writer opts)
 
-      (let [v    (if (:colorize opts)
+      (let [v    (if (:colorize? opts)
                    (let [[_ v*] this
                          v-str  (val this)
                          tag    (when (not (coll? v*)) (lasertag/tag v*))

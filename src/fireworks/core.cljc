@@ -124,10 +124,10 @@
                                         with-out-str
                                         (string/replace #"\n+$" "")
                                         format-anons)
-                                    (?pp (util/shortened
-                                          (-> qf str format-anons)
-                                          (resolve-label-length
-                                           label-length-limit))))
+                                    (util/shortened
+                                     (-> qf str format-anons)
+                                     (resolve-label-length
+                                      label-length-limit)))
                   tagged          (tag/tag-entity shortened form-entity-tag) 
                   ret             tagged]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it
@@ -662,28 +662,32 @@
        #?(:cljs (if node? (termf x) (js-printing-fn x))
           :clj (termf x))))))
 
-(defn- try-pp [x]
-  (try (pprint x)
-       #?(:clj
-          (catch Throwable e
-            (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)]
-              (messaging/unable-to-print-warning
-               "fireworks.core/?"
-               (str (messaging/italic "Problem:\n")
-                    "  " 
-                    "Unable to print value with pprint."
-                    "\n\n\n"
-                    (messaging/italic "Cause:\n")
-                    "  "
-                    coll-size
-                    "\n\n\n"
-                    (messaging/italic "Value class:\n")
-                    "  "
-                    classname)))))))
+(defn- try-pp 
+  ([x]
+   (try-pp x nil))
+  ([x opts]
+   (try (pprint x opts)
+        #?(:clj
+           (catch Throwable e
+             (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)]
+               (messaging/unable-to-print-warning
+                "fireworks.core/?"
+                (str (messaging/italic "Problem:\n")
+                     "  " 
+                     "Unable to print value with pprint."
+                     "\n\n\n"
+                     (messaging/italic "Cause:\n")
+                     "  "
+                     coll-size
+                     "\n\n\n"
+                     (messaging/italic "Value class:\n")
+                     "  "
+                     classname))))))))
 
 (defn- _pp* [user-opts x]
+  #_(println "_pp*" user-opts)
   (print (margin-block-str user-opts :margin-top))
-  (try-pp x)
+  (try-pp x user-opts) 
   ;; Extra line after pprint result
   (print (margin-block-str user-opts :margin-bottom))
   x)
