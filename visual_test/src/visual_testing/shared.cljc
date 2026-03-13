@@ -209,16 +209,16 @@
                                      "abcdefghijklmnopqrstuvwxyz"
                                      "ABCDEFGHIJKLMNOP"))
 
-    (println "\n:single-line-coll-print-length of 10")
-    (? {:single-line-coll-print-length 10} (range 4))
+    (println "\n:single-line-coll-max-length of 10")
+    (? {:single-line-coll-max-length 10} (range 4))
 
-    (println "\n:single-line-coll-print-length of 10")
-    (? {:single-line-coll-print-length 10} (range 5))
+    (println "\n:single-line-coll-max-length of 10")
+    (? {:single-line-coll-max-length 10} (range 5))
 
-    (println "\n:single-line-coll-print-length of 50")
-    (? {:single-line-coll-print-length 50} (range 19))
+    (println "\n:single-line-coll-max-length of 50")
+    (? {:single-line-coll-max-length 50} (range 19))
 
-    (println "\n:single-line-coll-print-length of 50")
-    (? {:single-line-coll-print-length 50} (range 20)))
+    (println "\n:single-line-coll-max-length of 50")
+    (? {:single-line-coll-max-length 50} (range 20)))
 
   nil)

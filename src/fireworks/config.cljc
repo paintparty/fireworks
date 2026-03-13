@@ -13,50 +13,36 @@
    :bold?                                    {:spec           ::config/bold
                                               :default        false
                                               :updates-theme? true}
-   ;;deprecated
-   :coll-limit                               {:spec        ::config/print-length
-                                              :deprecated? true
-                                              :default     33}
+
+   ;; Controls how many items are printed in a coll before truncation
    :print-length                             {:spec    ::config/print-length
                                               :default 33}
-   ;;deprecated
-   :single-line-coll-length-limit            {:spec        ::config/single-line-coll-print-length
-                                              :deprecated? true
-                                              :default     33}
-   :single-line-coll-print-length            {:spec    ::config/single-line-coll-print-length
+   
+   ;; The strlen limit of a single-line coll, before truncation
+   :single-line-coll-max-length              {:spec    ::config/single-line-coll-max-length
                                               :default 33}
-   ;;deprecated
-   :non-coll-result-length-limit             {:spec        ::config/scalar-result-print-length
-                                              :deprecated? true
-                                              :default     444}
-   :scalar-result-print-length               {:spec    ::config/scalar-result-print-length
+
+   :scalar-result-max-length                 {:spec    ::config/scalar-result-max-length
                                               :default 444}
-   ;;deprecated
-   :non-coll-depth-1-length-limit            {:spec        ::config/scalar-depth-1-print-length
-                                              :deprecated? true
-                                              :default     69}
-   :scalar-depth-1-print-length              {:spec    ::config/scalar-depth-1-print-length
+   :scalar-depth-1-max-length                {:spec    ::config/scalar-depth-1-max-length
                                               :default 69}
-   ;;deprecated
-   :non-coll-length-limit                    {:spec        ::config/scalar-print-length
-                                              :deprecated? true
-                                              :default     33}
    :scalar-print-length                      {:spec    ::config/scalar-print-length
                                               :default 33}
-   ;;deprecated
-   :non-coll-mapkey-length-limit             {:spec        ::config/scalar-mapkey-print-length
-                                              :deprecated? true
-                                              :default     20}
+
+   ;; Change this to max-length
    :scalar-mapkey-print-length               {:spec    ::config/scalar-mapkey-print-length
                                               :default 20}
    :single-column-maps?                      {:spec    ::config/single-column-maps?
                                               :default false}
+
+   ;; Change this to :single-column-map-threshold 
    :single-column-map-print-length-threshold {:spec    ::config/single-column-map-print-length-threshold
                                               :default 44}
+
    :print-level                              {:spec    ::config/print-level
                                               :default 7}
    :metadata-print-level                     {:spec    ::config/metadata-print-level
-                                              :default 7}
+                                              :default 4}
    :display-fn-namespaces?                   {:spec    ::config/display-fn-namespaces?
                                               :default true}
    :display-metadata?                        {:spec    ::config/display-metadata?
@@ -93,6 +79,7 @@
    :line-height                              {:spec           ::config/line-height
                                               :default        1.45
                                               :updates-theme? true}
+   ;; Change to max-length
    :label-print-length                       {:spec    ::config/label-print-length
                                               :default 44}
    :format-label-as-code?                    {:spec    ::config/format-label-as-code?
@@ -105,8 +92,6 @@
                                               :default 0}
    :margin-inline-start                      {:spec    ::config/margin-inline-start
                                               :default 0}
-   :custom-printers                          {:spec    ::config/custom-printers
-                                              :default {}}
    :print-with                               {:spec    ::config/print-with
                                               :default nil}
    :find                                     {:spec    ::config/find

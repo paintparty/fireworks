@@ -16,11 +16,48 @@
             #?(:clj [clojure.test :refer :all])))
 
 
+#_#?(:clj
+   #_(pprint (tag-map (byte 0)))
+   (do
+     ;;  (? (tag "hi"))               
+     ;;  (? (tag :hi))                
+     ;;  (? (tag #"^hi$"))             
+     ;;  (? (tag true))               
+     ;;  (? (tag 'mysym))              
+     ;;  (? (tag +))              
+     ;;  (? (tag nil))                
+     ;;  (? (tag [1 2 3]))            
+     ;;  (? (tag #{1 3 2}))           
+     ;;  (? (tag {:a 2
+     ;;           :b 3}))       
+     ;;  (? (tag (map inc (range 3))))
+     ;;  (? (tag (range 3)))          
+     ;;  (? (tag '(:a :b :c)))         
+     ;;  (? (tag ##Inf))
+     ;;  (? (tag ##-Inf))
+     ;;  (? (tag ##NaN))
+     ;;  (? (tag 1/3))
+
+
+    ;;  (println (type (byte 0)))
+     (? (tag-map (byte 0)))
+     (? (tag-map (short 3)))
+     (? (tag-map 23.44))
+     (? (tag-map 1M))
+     (? (tag-map 1))
+     (? (tag-map (float 1.5)))
+     (? (tag-map (java.math.BigInteger. "171")))
+
+    ;;  (? (tag (char 96)))
+    ;;  (? (tag (java.util.Date.)))
+    ;;  (? (tag java.util.Date))
+     ))
+
 #_(? {"my string key" "foo \"bar\" baz\""
     :abcdef         :gold})
 
-;; (? {:scalar-result-print-length 15} (symbol "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz"))
-#_(? {:scalar-result-print-length 15} "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz")
+;; (? {:scalar-result-max-length 15} (symbol "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz"))
+#_(? {:scalar-result-max-length 15} "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz")
 
 
 ;; let bindings smoke test

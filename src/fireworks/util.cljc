@@ -117,7 +117,7 @@
             (when (contains? all-tags :map-like) {:map-like? true})
             (when (contains? all-tags :set-like) {:set-like? true})
             (when (contains? all-tags :transient) {:transient? true})
-            (when (contains? all-tags :number-type) {:number-type? true})
+            (when (contains? all-tags :number) {:number-type? true})
             (when (contains? all-tags :java-lang-class) {:java-lang-class? true})
             (when (contains? all-tags :java-util-class) {:java-util-class? true})
             #?(:cljs (merge (when (object? x) {:js-object? true})

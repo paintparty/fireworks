@@ -36,8 +36,8 @@
 
 ;; Toggle this true / false to generate tests 
 
-(def write-tests? false)
-;; (def write-tests? true)
+;; (def write-tests? false)
+(def write-tests? true)
 
 ;; Toggle this true / false to see the output
 ;; Visual mode does not yet work when running bb tests
@@ -57,10 +57,11 @@
   (is (= 
        (let [ret              (? :data
                                  {:scalar-print-length 33
-                                  :theme                 theme} {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
+                                  :theme               theme}
+                                 {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
              formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
-       "〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠abcdefghijklmnopqrstuvwxyz-a〠0〠〠3;38;2;140;140;140〠...〠0〠〠38;2;153;153;153〠[]〠0〠〠38;5;102〠}〠0〠")))
+       "〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠abcdefghijklmnopqrstuvwxyz-abc〠0〠〠3;38;2;140;140;140〠...〠0〠〠38;5;102〠}〠0〠")))
 
 (deftest transient-set
   (is (= 
@@ -103,7 +104,7 @@
                                 ret)
              formatted-string (-> ret :formatted :string)]
          (!?pp (string/join (escape-sgr formatted-string))))
-       "〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashMap〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠3;38;2;140;140;140〠 〠〠......+10〠0〠〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+       "〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashMap〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠3;38;2;140;140;140〠 〠〠...+10〠0〠〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
 
 
 (deftest transient-vector
@@ -297,12 +298,12 @@
 
 (deftest+ single-line-coll-print-length-50-19
   {:theme theme
-   :single-line-coll-print-length 50}
+   :single-line-coll-max-length 50}
   (range 14))
 
 (deftest+ single-line-coll-print-length-50-20
   {:theme theme
-   :single-line-coll-print-length 50}
+   :single-line-coll-max-length 50}
   (range 15))
 
 
@@ -333,12 +334,12 @@
 
 (deftest+ with-scalar-level-1-depth-print-length
   {:theme                         theme
-   :scalar-depth-1-print-length 60}
+   :scalar-depth-1-max-length 60}
   ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
 
-(deftest+ scalar-result-print-length
+(deftest+ scalar-result-max-length
   {:theme                         theme
-   :scalar-result-print-length 44}
+   :scalar-result-max-length 44}
   "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
 
 

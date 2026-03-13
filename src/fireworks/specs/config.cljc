@@ -64,7 +64,7 @@
 (s/def ::margin-inline-start
   (s/and int? #(<= 0 % 100)))
 
-(s/def ::single-line-coll-print-length
+(s/def ::single-line-coll-max-length
   (s/and int? #(<= 2 % 200)))
 
 (s/def ::print-length
@@ -73,10 +73,10 @@
 (s/def ::scalar-extended-print-length
   (s/and int? #(<= 10 % scalar-print-length)))
 
-(s/def ::scalar-result-print-length
+(s/def ::scalar-result-max-length
   ::scalar-extended-print-length)
 
-(s/def ::scalar-depth-1-print-length
+(s/def ::scalar-depth-1-max-length
   ::scalar-extended-print-length)
 
 (s/def ::scalar-print-length

@@ -512,7 +512,7 @@
                  ;; This is where multi-line for maps is determined
                  (or single-column-map-layout?
                      (let [strlen-greater-than-limit? 
-                           (< (:single-line-coll-print-length @state/config)
+                           (< (:single-line-coll-max-length @state/config)
                               (or (if badge-above?
                                     val-str-len        ;; <- should this be str-len-val-ellipsized?
                                     str-len-with-badge ;; <- should this be str-len-with-val-ellipsized?

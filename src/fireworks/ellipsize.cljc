@@ -203,8 +203,8 @@
            top-level-sev?]
     :as   m}]
 
-  (let [{:keys [scalar-depth-1-print-length
-                scalar-result-print-length
+  (let [{:keys [scalar-depth-1-max-length
+                scalar-result-max-length
                 scalar-mapkey-print-length
                 scalar-print-length
                 truncate?]}
@@ -218,15 +218,15 @@
           specs.config/scalar-print-length
           scalar-print-length)
 
-        scalar-depth-1-print-length
+        scalar-depth-1-max-length
         (if no-truncation?
           specs.config/scalar-print-length
-          scalar-depth-1-print-length)
+          scalar-depth-1-max-length)
 
-        scalar-result-print-length
+        scalar-result-max-length
         (if no-truncation? 
           specs.config/scalar-print-length 
-          scalar-result-print-length)
+          scalar-result-max-length)
 
         scalar-mapkey-print-length
         (if no-truncation? 
@@ -241,8 +241,8 @@
                                     (and sev? (< depth 2))
                                     :level-1-sev))]
           (case level-k
-            :level-0-sev scalar-result-print-length
-            :level-1-sev scalar-depth-1-print-length)
+            :level-0-sev scalar-result-max-length
+            :level-1-sev scalar-depth-1-max-length)
           (max (if key?
                  scalar-mapkey-print-length
                  scalar-print-length)
