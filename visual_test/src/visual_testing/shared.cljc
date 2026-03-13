@@ -201,11 +201,11 @@
         :label "Universal Neutral"} everything))
   
   #_(do 
-    (println "\n:label-print-length of 10")
-    (? {:label-print-length 10} (str "1234567890" "abcdefghijklmnopqrstuvwxyz"))
+    (println "\n:label-max-length of 10")
+    (? {:label-max-length 10} (str "1234567890" "abcdefghijklmnopqrstuvwxyz"))
 
-    (println "\n:label-print-length of 50")
-    (? {:label-print-length 50} (str "1234567890"
+    (println "\n:label-max-length of 50")
+    (? {:label-max-length 50} (str "1234567890"
                                      "abcdefghijklmnopqrstuvwxyz"
                                      "ABCDEFGHIJKLMNOP"))
 

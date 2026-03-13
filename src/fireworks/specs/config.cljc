@@ -12,8 +12,8 @@
 (s/def ::edn-file-path 
   (s/and string? #(re-find #"\.edn$" %)))
 
-;; Upper bound of scalar-print-lengths get set here
-(def scalar-print-length
+;; Upper bound of scalar-max-lengths get set here
+(def scalar-max-length
   10000)
 
 (def print-length
@@ -46,7 +46,7 @@
 
 (s/def ::truncate boolean?)
 
-(s/def ::label-print-length
+(s/def ::label-max-length
   (s/and int? #(<= 10 % 100)))
 
 (s/def ::format-label-as-code?
@@ -71,7 +71,7 @@
   ::fw-print-length)
 
 (s/def ::scalar-extended-print-length
-  (s/and int? #(<= 10 % scalar-print-length)))
+  (s/and int? #(<= 10 % scalar-max-length)))
 
 (s/def ::scalar-result-max-length
   ::scalar-extended-print-length)
@@ -79,16 +79,16 @@
 (s/def ::scalar-depth-1-max-length
   ::scalar-extended-print-length)
 
-(s/def ::scalar-print-length
-  (s/and int? #(<= 10 % scalar-print-length)))
+(s/def ::scalar-max-length
+  (s/and int? #(<= 10 % scalar-max-length)))
 
-(s/def ::scalar-mapkey-print-length
-  (s/and int? #(<= 5 % scalar-print-length)))
+(s/def ::scalar-mapkey-max-length
+  (s/and int? #(<= 5 % scalar-max-length)))
 
 (s/def ::single-column-maps?
   boolean?)
 
-(s/def ::single-column-map-print-length-threshold
+(s/def ::single-column-map-threshold
   (s/and int? #(< 1 %)))
 
 (s/def ::print-level

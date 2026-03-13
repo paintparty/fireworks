@@ -444,6 +444,8 @@
 
 (def uuid-badge "#uuid ")
 
+(def regex-badge "")
+
 (def fat-arrow "=>")
 
 ;; TODO - Implement this for js Map*

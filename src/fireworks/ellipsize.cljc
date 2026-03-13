@@ -42,7 +42,7 @@
     :as   m}]
   (let [;; Create `budge-diff` partial, which will be used to calculate
         ;; the difference between the length of the fn name (at a given
-        ;; stage of shortening) and the (:scalar-print-length @state/config).
+        ;; stage of shortening) and the (:scalar-max-length @state/config).
         
         budge-diff      (partial budge-diff limit)
         
@@ -95,7 +95,7 @@
 
 
         ;; Finally, calculate the final ellipsized-char-count. This count
-        ;; should never exceed the :scalar-print-length, or the
+        ;; should never exceed the :scalar-max-length, or the
         ;; :map-key-print-length, from @state/config.
         
         
@@ -188,7 +188,7 @@
    regexes, keywords, #insts, fns, etc.
    
    Truncation is based on the following:
-   - `:scalar-mapkey-print-length `or `:scalar-print-length` from config
+   - `:scalar-mapkey-max-length `or `:scalar-max-length` from config
    - Optional inline badge length e.g `#js `
    - Optional atom or volatile encapsulation e.g. `Atom<42>`"
   [x 
@@ -205,33 +205,33 @@
 
   (let [{:keys [scalar-depth-1-max-length
                 scalar-result-max-length
-                scalar-mapkey-print-length
-                scalar-print-length
+                scalar-mapkey-max-length
+                scalar-max-length
                 truncate?]}
         @state/config
 
         no-truncation?
         (false? truncate?)
 
-        scalar-print-length
+        scalar-max-length
         (if no-truncation?
-          specs.config/scalar-print-length
-          scalar-print-length)
+          specs.config/scalar-max-length
+          scalar-max-length)
 
         scalar-depth-1-max-length
         (if no-truncation?
-          specs.config/scalar-print-length
+          specs.config/scalar-max-length
           scalar-depth-1-max-length)
 
         scalar-result-max-length
         (if no-truncation? 
-          specs.config/scalar-print-length 
+          specs.config/scalar-max-length 
           scalar-result-max-length)
 
-        scalar-mapkey-print-length
+        scalar-mapkey-max-length
         (if no-truncation? 
-          specs.config/scalar-print-length 
-          scalar-mapkey-print-length)
+          specs.config/scalar-max-length 
+          scalar-mapkey-max-length)
 
 
         limit
@@ -244,8 +244,8 @@
             :level-0-sev scalar-result-max-length
             :level-1-sev scalar-depth-1-max-length)
           (max (if key?
-                 scalar-mapkey-print-length
-                 scalar-print-length)
+                 scalar-mapkey-max-length
+                 scalar-max-length)
                (or limit 0)))]
     
     (if (:ellipsized-char-count m)

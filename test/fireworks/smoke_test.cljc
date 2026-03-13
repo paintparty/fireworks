@@ -16,9 +16,15 @@
             #?(:clj [clojure.test :refer :all])))
 
 
-#_#?(:clj
+
+
+#?(:clj
    #_(pprint (tag-map (byte 0)))
    (do
+    ;;  (? :pp (tag-map (short 3)))
+     ;;  (? (java.util.ArrayList. [1 2 3]))
+     ;;  (? #"^abc")
+     ;;  (? #uuid "4fe5d828-6444-11e8-8222-720007e40350")
      ;;  (? (tag "hi"))               
      ;;  (? (tag :hi))                
      ;;  (? (tag #"^hi$"))             
@@ -37,20 +43,23 @@
      ;;  (? (tag ##-Inf))
      ;;  (? (tag ##NaN))
      ;;  (? (tag 1/3))
+     
 
-
-    ;;  (println (type (byte 0)))
-     (? (tag-map (byte 0)))
-     (? (tag-map (short 3)))
-     (? (tag-map 23.44))
-     (? (tag-map 1M))
-     (? (tag-map 1))
-     (? (tag-map (float 1.5)))
-     (? (tag-map (java.math.BigInteger. "171")))
-
-    ;;  (? (tag (char 96)))
-    ;;  (? (tag (java.util.Date.)))
-    ;;  (? (tag java.util.Date))
+     ;;  (println (type (byte 0)))
+     ;;  (? (tag-map (byte 0)))
+     ;;  (? (byte 0))
+     ;;  (? (tag-map (short 3)))
+     ;;  (? (tag-map 23.44))
+     ;;  (? (tag-map 1M))
+     ;;  (? (tag-map 1))
+     ;;  (? (tag-map (float 1.5)))
+     ;;  (? (tag-map (java.math.BigInteger. "171")))
+     ;;  (? (java.math.BigInteger. "171"))
+     
+     ;;  (? (tag (char 96)))
+     ;;  (? (tag-map (java.util.Date.)))
+     ;;  (? (java.util.Date.))
+     ;;  (? (tag java.util.Date))
      ))
 
 #_(? {"my string key" "foo \"bar\" baz\""
@@ -102,7 +111,7 @@
 
 ;; long-fn name smoke test
 #_(do (defn abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn [] nil)
-    (? {:scalar-print-length 33}
+    (? {:scalar-max-length 33}
        {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})) 
 
 
@@ -392,8 +401,8 @@
 {:theme                        "Alabaster Light"
  :line-height                  1.45
  :print-level                  7
- :scalar-print-length        33
- :scalar-mapkey-print-length 20
+ :scalar-max-length        33
+ :scalar-mapkey-max-length 20
  :print-length                   15
  :display-namespaces?          true
  :metadata-print-level         7
@@ -670,13 +679,13 @@
     (? {:label "theme Alabaster Light" :theme "Alabaster Light"}
        (atom [[1 2 3] "abcdefghijk"]))
 
-    ;; :scalar-print-length
-    (? {:label :scalar-print-length :scalar-print-length 20}
+    ;; :scalar-max-length
+    (? {:label :scalar-max-length :scalar-max-length 20}
        "abcdefghijklmnopqrstuvwxyz")
 
 
-    ;; :scalar-mapkey-print-length
-    (? {:label :scalar-mapkey-print-length :scalar-mapkey-print-length         20}
+    ;; :scalar-mapkey-max-length
+    (? {:label :scalar-mapkey-max-length :scalar-mapkey-max-length         20}
        {"abcdefghijklmnopqrstuvwxyz" [1 2 3]})
 
     (? {:label :display-namespaces? :display-namespaces?        true}

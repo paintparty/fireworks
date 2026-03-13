@@ -59,6 +59,12 @@
                  (= t :inst)
                  defs/inst-badge
 
+                 (= t :uuid)
+                 defs/uuid-badge
+
+                 (= t :regex)
+                 defs/regex-badge
+
                  (or java-util-class?
                      (and coll-type? java-lang-class?))
                  classname
@@ -227,7 +233,7 @@
   [coll meta-map]
   (boolean
    (when (-> meta-map :map-like?)
-     (when-let [n (:single-column-map-print-length-threshold @state/config)]
+     (when-let [n (:single-column-map-threshold @state/config)]
        (some (fn [[k v]] 
                (or (exceeds-map-value-threshold? k n)
                    (exceeds-map-value-threshold? v n)))
@@ -244,7 +250,7 @@
    
    Potentially sets single-column-map-layout? entry in meta to true, if x is a
    map-like? coll and any of the keys or values exceed the value of the config
-   option :single-column-map-print-length-threshold."
+   option :single-column-map-threshold."
   [{:keys [coll-type? ellipsized x t meta-map]}]
   (let [ret* (cond 
                coll-type?
@@ -334,7 +340,7 @@
        (boolean (some #(-> % 
                            str
                            count
-                           (> (:scalar-mapkey-print-length @state/config)))
+                           (> (:scalar-mapkey-max-length @state/config)))
                       key-colls))})))
 
 (defn- user-metadata [x]
@@ -374,7 +380,7 @@
   "Performance cheat to save a call to util-tag-map*"
   {:type          #?(:cljs cljs.core/PersistentVector
                      :clj clojure.lang.PersistentVector) 
-   :all-tags      #{:coll :vector :coll-type :carries-meta}
+   :all-tags      #{:coll :vector :coll-like :carries-meta}
    :classname     #?(:cljs "cljs.core/PersistentVector"
                      :clj "clojure.lang.PersistentVector")
    :coll-size     2

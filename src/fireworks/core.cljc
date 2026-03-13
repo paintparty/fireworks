@@ -49,18 +49,18 @@
 ;   FFFFFFFFFFF           
 
 
-(defn resolve-label-length [label-print-length]
-  (or (when (s/valid? ::specs.config/label-print-length
-                      label-print-length)
-        label-print-length)
-      (:label-print-length @state/config)
+(defn resolve-label-length [label-max-length]
+  (or (when (s/valid? ::specs.config/label-max-length
+                      label-max-length)
+        label-max-length)
+      (:label-max-length @state/config)
       (-> config/options
-          :label-print-length
+          :label-max-length
           :default)))
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
-   {:keys [label-print-length]} :user-opts
+   {:keys [label-max-length]} :user-opts
     :as opts}]
   (let [indent-spaces
         (or (some-> @state/margin-inline-start
@@ -98,7 +98,7 @@
 
                     (tag/tag-entity
                      (util/shortened label
-                                     (resolve-label-length label-print-length))
+                                     (resolve-label-length label-max-length))
                      label-entity-tag))]
               (str indent-spaces label))))
 
@@ -127,7 +127,7 @@
                                     (util/shortened
                                      (-> qf str format-anons)
                                      (resolve-label-length
-                                      label-print-length)))
+                                      label-max-length)))
                   tagged          (tag/tag-entity shortened form-entity-tag) 
                   ret             tagged]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it
@@ -670,6 +670,7 @@
   ([x opts]
    (try (pprint x opts)
         #?(:clj
+           ;; TODO - assess whether you need this and change messaging
            (catch Throwable e
              (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)]
                (messaging/unable-to-print-warning

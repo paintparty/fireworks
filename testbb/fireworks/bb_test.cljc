@@ -24,7 +24,7 @@
       (->
        (?
         :data
-        {:scalar-mapkey-print-length 20,
+        {:scalar-mapkey-max-length 20,
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
@@ -45,7 +45,7 @@
          :theme "Alabaster Light",
          :metadata-print-level 7,
          :print-length 40,
-         :label-print-length 44,
+         :label-max-length 44,
          :scalar-print-length 33,
          :multi-line-metadata? true,
          :single-line-coll-print-length 33,
@@ -78,7 +78,7 @@
       (->
        (?
         :data
-        {:scalar-mapkey-print-length 20,
+        {:scalar-mapkey-max-length 20,
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
@@ -99,7 +99,7 @@
          :theme "Alabaster Light",
          :metadata-print-level 7,
          :print-length 40,
-         :label-print-length 44,
+         :label-max-length 44,
          :scalar-print-length 33,
          :multi-line-metadata? true,
          :single-line-coll-print-length 33,
@@ -132,7 +132,7 @@
       (->
        (?
         :data
-        {:scalar-mapkey-print-length 20,
+        {:scalar-mapkey-max-length 20,
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
@@ -153,7 +153,7 @@
          :theme "Alabaster Light",
          :metadata-print-level 7,
          :print-length 40,
-         :label-print-length 44,
+         :label-max-length 44,
          :scalar-print-length 33,
          :multi-line-metadata? true,
          :single-line-coll-print-length 33,
@@ -186,7 +186,7 @@
       (->
        (?
         :data
-        {:scalar-mapkey-print-length 20,
+        {:scalar-mapkey-max-length 20,
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
@@ -207,7 +207,7 @@
          :theme "Alabaster Light",
          :metadata-print-level 7,
          :print-length 40,
-         :label-print-length 44,
+         :label-max-length 44,
          :scalar-print-length 33,
          :multi-line-metadata? true,
          :single-line-coll-print-length 33,
@@ -238,7 +238,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -259,7 +259,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 40,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -290,7 +290,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -311,7 +311,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 40,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -344,7 +344,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -365,7 +365,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 40,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -396,7 +396,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -417,7 +417,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 50,
@@ -448,7 +448,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -469,7 +469,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 50,
@@ -500,7 +500,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -521,7 +521,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -552,7 +552,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -573,7 +573,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -604,7 +604,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -625,7 +625,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -656,7 +656,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -677,7 +677,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -708,7 +708,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -729,7 +729,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -760,7 +760,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -781,7 +781,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -812,7 +812,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -833,7 +833,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -864,7 +864,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -885,7 +885,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -916,7 +916,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -937,7 +937,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 100,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -968,7 +968,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -989,7 +989,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -1020,7 +1020,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -1041,7 +1041,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,
@@ -1072,7 +1072,7 @@
    (->
     (?
      :data
-     {:scalar-mapkey-print-length 20,
+     {:scalar-mapkey-max-length 20,
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
@@ -1093,7 +1093,7 @@
       :theme "Alabaster Light",
       :metadata-print-level 7,
       :print-length 33,
-      :label-print-length 44,
+      :label-max-length 44,
       :scalar-print-length 33,
       :multi-line-metadata? true,
       :single-line-coll-print-length 33,

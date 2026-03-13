@@ -11,6 +11,8 @@
    [fireworks.config :as config]
    [clojure.test :refer [deftest is]]))
 
+;; TODO - break the sample/array-map of everything tests (bolded, basic-samples) into smaller pieces
+
 ;; TODO - augment write-test-ns function to also write to testbb dir, but without
 ;; the problematic namespaces
 
@@ -36,8 +38,8 @@
 
 ;; Toggle this true / false to generate tests 
 
-;; (def write-tests? false)
-(def write-tests? true)
+(def write-tests? false)
+;; (def write-tests? true)
 
 ;; Toggle this true / false to see the output
 ;; Visual mode does not yet work when running bb tests
@@ -56,7 +58,7 @@
 (deftest long-fn-name
   (is (= 
        (let [ret              (? :data
-                                 {:scalar-print-length 33
+                                 {:scalar-max-length 33
                                   :theme               theme}
                                  {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
              formatted-string (-> ret :formatted :string)]
@@ -295,6 +297,22 @@
    :bold?      true
    :print-length 40}
   sample/array-map-of-everything-cljc)
+
+(deftest+ volatile
+  {:theme theme}
+  (volatile! 1))
+
+(deftest+ transient-vector2
+  {:theme theme}
+  (transient [1 2 3 4]))
+
+(deftest+ transient-set2
+  {:theme theme}
+  (transient #{:a 1}))
+    
+(deftest+ transient-map2
+  {:theme theme}
+  (transient {1 2 3 4}))
 
 (deftest+ single-line-coll-print-length-50-19
   {:theme theme
