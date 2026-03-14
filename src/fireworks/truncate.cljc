@@ -395,15 +395,26 @@
                                  val-is-future?
                                  val-is-promise?
                                  val-is-delay?)
-        og-t                 (when val-is-derefable?
-                               (lasertag.core/tag x))
+        val-is-throwable?    (lasertag.core/throwable? x)
+        og-info              (when (or val-is-derefable? val-is-throwable?)
+                               (lasertag.core/tag-map x))
+        og-t                 (:tag og-info)
+        og-class             (:classname og-info)
         x                    (cond
                                val-is-derefable?
-                               (with-meta {:status :ready
-                                           :val    @x}
+                               (with-meta {:status :ready :val @x}
                                  (meta x))
+
                                multi-line-string?
                                (ml-str->vec x)
+
+                               val-is-throwable?
+                               (cond-> {"Message" (or (ex-message x)
+                                                      "No message provided")
+                                        "Cause"   (or (ex-cause x)
+                                                      "No cause provided")}
+                                 (ex-data x)
+                                 (assoc "Data" (ex-data x)))
                                :else
                                x)
         kv?                  (boolean (when-not map-entry-in-non-map?
@@ -427,6 +438,7 @@
                    val-is-atom?
                    val-is-ref?
                    too-deep?
+                   og-class
                    depth
                    og-t
                    path
