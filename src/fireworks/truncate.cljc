@@ -365,16 +365,29 @@
    x]
   (let [val-is-atom?         (cljc-atom? x)
         val-is-volatile?     (volatile? x) 
+        val-is-ref?          #?(:cljs
+                                false
+                                :clj
+                                (= (type x) clojure.lang.Ref))
+        val-is-agent?        #?(:cljs
+                                false
+                                :clj
+                                (= (type x) clojure.lang.Agent))
         multi-line-string?   (ml-string? x)
         x                    (cond
-                               (or val-is-atom? val-is-volatile?)
+                               (or val-is-atom? 
+                                   val-is-volatile? 
+                                   val-is-agent? 
+                                   val-is-ref?)
                                (with-meta {:status :ready
-                                           :val    @x} (meta x))
+                                           :val    @x}
+                                 (meta x))
                                multi-line-string?
                                (ml-str->vec x)
                                :else
                                x)
-        kv?                  (boolean (when-not map-entry-in-non-map? (map-entry? x)))
+        kv?                  (boolean (when-not map-entry-in-non-map?
+                                        (map-entry? x)))
         tag-map              (when-not kv? (util/tag-map* x))
         x                    (or (container-for-unknown-coll-size tag-map)
                                  (reify-if-transient x tag-map))
@@ -388,8 +401,10 @@
                                user-meta)]
 
     (merge m* ;; m* added for :key? and :map-value? entries
-           (keyed [val-is-atom?
-                   val-is-volatile?
+           (keyed [val-is-volatile?
+                   val-is-agent?
+                   val-is-atom?
+                   val-is-ref?
                    too-deep?
                    depth
                    path

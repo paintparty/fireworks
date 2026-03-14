@@ -166,21 +166,3 @@
   (let [ob (bracket m :opening)]
     (swap! state/rainbow-level inc)
     ob))
-
-
-(defn closing-angle-bracket 
-  "This is for when collections are encapsulated in a mutable construct such as
-   an atom or volatile, so they can be printed like `Atom<[1 2 3]>`"
-  [m]
-  ;; TODO - change names to avoid shadowing
-  (let [{:keys [val-is-atom? val-is-volatile?]} (-> m :coll meta)]
-    (when (or val-is-atom? val-is-volatile?)
-      (let [k (if val-is-atom? :atom-wrapper :volatile-wrapper)]
-        (when (state/debug-tagging?)
-          (println "fireworks.brackets/closing-angle-bracket \ntagging "
-                   defs/encapsulation-closing-bracket
-                   " with " 
-                   k))
-        (str (sgr-tag k)
-             defs/encapsulation-closing-bracket
-             sgr-reset-tag)))))

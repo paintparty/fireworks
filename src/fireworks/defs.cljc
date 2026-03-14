@@ -415,6 +415,10 @@
 
 (def volatile-label "Volatile")
 
+(def ref-label "Ref")
+
+(def agent-label "Agent")
+
 (def transient-label "Transient")
 
 (def encapsulation-opening-bracket "<")

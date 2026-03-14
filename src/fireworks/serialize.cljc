@@ -8,7 +8,6 @@
     :as brackets
     :refer [closing-bracket! 
             opening-bracket!
-            closing-angle-bracket
             brackets-by-type]]
    [clojure.string :as string]
    [fireworks.defs :as defs]
@@ -90,12 +89,14 @@
            separator
            max-keylen
            multi-line?
+           val-is-ref? 
+           val-is-agent?
            val-is-atom?
+           val-is-volatile?
            number-type?
            highlighting
            :fw/user-meta
            fn-display-name
-           val-is-volatile?
            js-map-like-key?
            num-chars-dropped
            str-len-with-badge
@@ -106,8 +107,13 @@
         (or (= t :uuid) (contains? all-tags :inst))
 
         mutable-tagging-opts                                                    ;; TODO - Rename to not use mutable
-        (when (or val-is-atom? val-is-volatile?)
-          {:theme-token  (if val-is-atom? :atom-wrapper :volatile-wrapper)
+        (when (or val-is-atom? 
+                  val-is-volatile?
+                  val-is-ref?
+                  val-is-agent?
+                  )
+          {
+          ;;  :theme-token  (if val-is-atom? :atom-wrapper :volatile-wrapper)
            :display?     true
            :highlighting highlighting})
 
@@ -418,7 +424,6 @@
   (let [extra (when (some-> num-dropped pos?)
                 (num-dropped-annotation m)) ;<- mutates?
         cb    (closing-bracket! m) ;<- mutates state for rainbow brackets
-        ;; cb2   (closing-angle-bracket m)
         ]
     (str ob
          ret
@@ -450,11 +455,13 @@
                 ;; str-len-with-badge
                 str-len-with-badge
                 :fw/user-meta-map? ; <- maybe this is redundant? also exists as unq kw user-meta in this map. Maybe change unq key to user-metadata-map?, or val-is-user-metadata-map?
-                val-is-volatile?
-                :fw/user-meta ; <- maybe this is redundant? also exists as unq kw in this map. Maybe change unq key to user-metadata-map
-                badge-str-len
-                js-map-like?         
+                :fw/user-meta
+                badge-str-len ; <- maybe this is redundant? also exists as unq kw in this map. Maybe change unq key to user-metadata-map
+                js-map-like?
+                val-is-volatile?         
+                val-is-agent?
                 val-is-atom?
+                val-is-ref?
                 highlighting
                 num-dropped
                 val-str-len
@@ -540,11 +547,19 @@
                        (+ (or indent 0))))
             indent)
 
-        indent (if (and (or val-is-atom? val-is-volatile?) (not badge-above?))
-                 (+ (or (count (str (if val-is-atom?
-                                      defs/atom-label
-                                      defs/volatile-label)
-                                    #_defs/encapsulation-opening-bracket))
+        indent (if (and (or val-is-atom? 
+                            val-is-volatile? 
+                            val-is-agent? 
+                            val-is-ref?)
+                        (not badge-above?))
+                 (+ (or (count (str (cond val-is-atom?
+                                          defs/atom-label 
+                                          val-is-volatile?
+                                          defs/volatile-label
+                                          val-is-ref?
+                                          defs/ref-label
+                                          :else
+                                          defs/agent-label)))
                         0)
                     indent)
                  indent)
@@ -578,10 +593,12 @@
                 annotation-newline 
                 metadata-position
                 user-meta-above?
-                val-is-volatile?
                 badge-str-len
                 let-bindings?
+                val-is-volatile?
                 val-is-atom?   
+                val-is-agent?   
+                val-is-ref?   
                 highlighting
                 num-dropped
                 multi-line?
@@ -662,19 +679,31 @@
                 user-meta
                 separator
                 val-is-atom?
+                val-is-ref? 
+                val-is-agent?
+                val-is-volatile?
                 highlighting
                 let-bindings?
                 badge-str-len
-                val-is-volatile?
                 annotation-newline
                 multi-line-string-collection?]
-         :as m} 
+         :as   m} 
         (reduce-coll-profile coll indent*)
         
         ;; Mutable-wrapper opening made here - nix this?
         mutable-opening-encapsulation-str
-        (when (or val-is-atom? val-is-volatile?) 
-          (if val-is-atom? defs/atom-label defs/volatile-label))
+        (when (or val-is-atom? 
+                  val-is-volatile? 
+                  val-is-agent? 
+                  val-is-ref?) 
+          (cond val-is-atom?
+                defs/atom-label 
+                val-is-volatile?
+                defs/volatile-label
+                val-is-ref?
+                defs/ref-label
+                :else
+                defs/agent-label))
 
         mutable-opening-encapsulation
         (some-> mutable-opening-encapsulation-str
@@ -682,11 +711,6 @@
                 (tagged {:theme-token (if val-is-atom? 
                                         :atom-wrapper 
                                         :volatile-wrapper)}))
-
-        #_(when (or val-is-atom? val-is-volatile?) 
-          (tagged (str (if val-is-atom? defs/atom-label defs/volatile-label)
-                       defs/encapsulation-opening-bracket) 
-                  {:theme-token (if val-is-atom? :atom-wrapper :volatile-wrapper)}))
 
         ;; Block-level badges for colls (display above coll) are made here
         badge               

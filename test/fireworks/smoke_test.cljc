@@ -36,19 +36,22 @@
      ;;  (? :pp (tag-map custom-vector-datatype))
      ;;  (? custom-vector-datatype)
      
-     (def my-ref (ref nil))
-     (def my-agent (agent 1))
-     (? (tag-map my-ref))
+     (def my-ref (ref 1))
+     (def my-agent (agent 3))
 
      (? my-ref)
-     (? (tag-map my-agent))
-
+     (? my-agent)
      (? my-atom)
-     (? (tag-map my-atom))
-
      (? my-volatile)
-     (? (tag-map my-volatile))
 
+     ;;  (? (tag-map my-agent))
+     
+     ;;  (? my-atom)
+     ;;  (? (tag-map my-atom))
+     
+     ;;  (? my-volatile)
+     ;;  (? (tag-map my-volatile))
+     
      ;;  (? :pp lt/scalar-types-set)
      ;;  (? :pp lt/literal-types-set)
      
@@ -90,8 +93,9 @@
      ;;  (? (tag-map (java.math.BigInteger. "171")))
      ;;  (? (type (java.math.BigDecimal. "173.44")))
      ;;  (? :pp (tag-map oogs))
-     (? {:display-namespaces? true} foo)
-     (? {:display-namespaces? true} (tag-map #'bar))
+     (? foo)
+     (? #'bar)
+     (? (tag-map #'bar))
      ;;  (? (java.math.BigDecimal. "173.44"))
      ;;  (? (tag (char 96)))
      ;;  (? :pp (tag-map (java.util.Date.)))
