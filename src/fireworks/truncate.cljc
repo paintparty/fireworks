@@ -9,7 +9,8 @@
    [fireworks.profile :as profile]
    [fireworks.specs.config :as specs.config]
    [fireworks.state :as state]
-   [fireworks.util :as util :refer [maybe->]]))
+   [fireworks.util :as util :refer [maybe->]]
+   [lasertag.core]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -363,8 +364,10 @@
   [{:keys [path depth map-entry-in-non-map?]
     :as   m*}
    x]
-  (let [val-is-atom?         (cljc-atom? x)
+  (let [multi-line-string?   (ml-string? x)
+        val-is-atom?         (cljc-atom? x)
         val-is-volatile?     (volatile? x) 
+        val-is-delay?        (delay? x)
         val-is-ref?          #?(:cljs
                                 false
                                 :clj
@@ -373,12 +376,29 @@
                                 false
                                 :clj
                                 (= (type x) clojure.lang.Agent))
-        multi-line-string?   (ml-string? x)
+        val-is-future?       #?(:cljs
+                                false
+                                :clj
+                                (future? x))
+        val-is-promise?      #?(:cljs
+                                false
+                                :clj
+                                (when (instance? clojure.lang.IPending x)
+                                  (when-not (or (coll? x)
+                                                val-is-future?
+                                                val-is-delay?)
+                                    true)))
+        val-is-derefable?    (or val-is-atom? 
+                                 val-is-volatile? 
+                                 val-is-agent? 
+                                 val-is-ref?
+                                 val-is-future?
+                                 val-is-promise?
+                                 val-is-delay?)
+        og-t                 (when val-is-derefable?
+                               (lasertag.core/tag x))
         x                    (cond
-                               (or val-is-atom? 
-                                   val-is-volatile? 
-                                   val-is-agent? 
-                                   val-is-ref?)
+                               val-is-derefable?
                                (with-meta {:status :ready
                                            :val    @x}
                                  (meta x))
@@ -401,12 +421,14 @@
                                user-meta)]
 
     (merge m* ;; m* added for :key? and :map-value? entries
-           (keyed [val-is-volatile?
+           (keyed [val-is-derefable?
+                   val-is-volatile?
                    val-is-agent?
                    val-is-atom?
                    val-is-ref?
                    too-deep?
                    depth
+                   og-t
                    path
                    sev?
                    kv?
@@ -418,7 +440,7 @@
            {:user-meta      user-meta
             :og-x           x
             :uid-entry?     (volatile! false)
-            :print-length     (if too-deep? 0 
+            :print-length   (if too-deep? 0 
                                 (resolve-print-length))
             :array-map?     (contains? (:all-tags tag-map) :array-map)
             :top-level-sev? (and sev? (zero? depth))}))) 

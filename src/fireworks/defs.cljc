@@ -419,6 +419,12 @@
 
 (def agent-label "Agent")
 
+(def promise-label "Promise")
+
+(def delay-label "Delay")
+
+(def future-label "Future")
+
 (def transient-label "Transient")
 
 (def encapsulation-opening-bracket "<")

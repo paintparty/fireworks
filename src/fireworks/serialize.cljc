@@ -89,10 +89,6 @@
            separator
            max-keylen
            multi-line?
-           val-is-ref? 
-           val-is-agent?
-           val-is-atom?
-           val-is-volatile?
            number-type?
            highlighting
            :fw/user-meta
@@ -106,26 +102,24 @@
   (let [encapsulated?
         (or (= t :uuid) (contains? all-tags :inst))
 
-        mutable-tagging-opts                                                    ;; TODO - Rename to not use mutable
-        (when (or val-is-atom? 
-                  val-is-volatile?
-                  val-is-ref?
-                  val-is-agent?
-                  )
-          {
-          ;;  :theme-token  (if val-is-atom? :atom-wrapper :volatile-wrapper)
-           :display?     true
-           :highlighting highlighting})
-
+        ;; mutable-tagging-opts                                                    ;; TODO - Rename to not use mutable
+        ;; (when (or val-is-atom? 
+        ;;           val-is-volatile?
+        ;;           val-is-ref?
+        ;;           val-is-agent?
+        ;;           )
+        ;;   {
+        ;;   ;;  :theme-token  (if val-is-atom? :atom-wrapper :volatile-wrapper)
+        ;;    :display?     true
+        ;;    :highlighting highlighting})
+        
         ;; The next set of bindings:                                            ;; break these into helper fns?
         
         ;; user-metadata-map-block (displays user-meta above value), optional
-        ;; atom-opening,  optional
         ;; annotation (badge), optional
         ;; value tag
         ;; num-chars-dropped-syntax
         ;; value tag-reset 
-        ;; atom-closing, optional
         ;; user-metadata-map-block (displays user-meta inline, after value), optional
         
         user-metadata-map-block-tagged                                          
@@ -145,13 +139,13 @@
                                (+ defs/kv-gap)
                                spaces))))
 
-        atom-tagged
-        (some->> mutable-tagging-opts
-                 (tagged (str (if val-is-volatile? 
-                                defs/volatile-label 
-                                defs/atom-label)
-                              #_defs/encapsulation-opening-bracket)))
-
+        ;; atom-tagged
+        ;; (some->> mutable-tagging-opts
+        ;;          (tagged (str (if val-is-volatile? 
+        ;;                         defs/volatile-label 
+        ;;                         defs/atom-label)
+        ;;                       #_defs/encapsulation-opening-bracket)))
+        
         badge-tagged
         (tagged badge
                 {:theme-token (cond
@@ -198,14 +192,8 @@
                      (state/metadata-token)
                      :foreground))
 
-        atom-closing-bracket-tagged
-        nil
-        #_(some->> mutable-tagging-opts 
-                   (tagged defs/encapsulation-closing-bracket))
-
         user-metadata-map-inline-tagged
         (when (sev-user-meta-position-match? user-meta :inline)
-          
           (meta-level-inc!)
           (let [offset        defs/metadata-position-inline-offset
                 inline-offset (tagged (spaces (dec offset))
@@ -224,8 +212,12 @@
 
         ;; Additional tagging end  ---------------------------------------------
         
-        
-        
+        string-delimiter-sgr-tag
+        (when (= t :string)
+          (sgr-tag (if (pos? (state/formatting-meta-level))
+                     (state/metadata-token)
+                     :string-delimiter)
+                   highlighting))
 
         ;; Putting all the colorization tagged bits together
         escaped              
@@ -239,8 +231,8 @@
          user-metadata-map-block-tagged-separator
          
          ;; Conditional `Atom`, positioned inline, to left of value 
-         atom-tagged
-
+         ;;  atom-tagged
+         
          ;; Conditional `badge` (for `#uuid`, or `#inst`),
          ;; positioned inline, to left of value 
          badge-tagged
@@ -248,7 +240,9 @@
 
          ;; The self-evaluating value
          (when (= t :string)
-           (str (sgr-tag :string-delimiter highlighting) "\"" sgr-reset-tag))
+           (str string-delimiter-sgr-tag
+                "\"" 
+                sgr-reset-tag))
 
          main-entity-tag
          ;; (some-> num-chars-dropped pos?)
@@ -285,7 +279,7 @@
          chars-dropped-syntax
 
          (when (= t :string) 
-           (str (sgr-tag :string-delimiter highlighting) "\"" sgr-reset-tag))
+           (str string-delimiter-sgr-tag "\"" sgr-reset-tag))
          
          ;; Conditional `Atom`, closing parts,
          ;; positioned inline, to right of value 
@@ -309,9 +303,9 @@
 
     #_(?pp 'locals
            (merge ret
-                      (keyed [main-entity-tag
-                              chars-dropped-syntax
-                              main-entity-tag-reset])))
+                  (keyed [main-entity-tag
+                          chars-dropped-syntax
+                          main-entity-tag-reset])))
     ret))
 
 
@@ -458,6 +452,7 @@
                 :fw/user-meta
                 badge-str-len ; <- maybe this is redundant? also exists as unq kw in this map. Maybe change unq key to user-metadata-map
                 js-map-like?
+                val-is-derefable?         
                 val-is-volatile?         
                 val-is-agent?
                 val-is-atom?
@@ -473,6 +468,7 @@
                 array?         
                 badge
                 depth
+                og-t
                 t]
          :as   meta-map}
         (meta coll)
@@ -550,7 +546,8 @@
         indent (if (and (or val-is-atom? 
                             val-is-volatile? 
                             val-is-agent? 
-                            val-is-ref?)
+                            val-is-ref?
+                            val-is-derefable?)
                         (not badge-above?))
                  (+ (or (count (str (cond val-is-atom?
                                           defs/atom-label 
@@ -558,8 +555,10 @@
                                           defs/volatile-label
                                           val-is-ref?
                                           defs/ref-label
+                                          val-is-agent?
+                                          defs/agent-label
                                           :else
-                                          defs/agent-label)))
+                                          (-> t name string/capitalize))))
                         0)
                     indent)
                  indent)
@@ -595,6 +594,7 @@
                 user-meta-above?
                 badge-str-len
                 let-bindings?
+                val-is-derefable?
                 val-is-volatile?
                 val-is-atom?   
                 val-is-agent?   
@@ -608,7 +608,8 @@
                 too-deep?
                 record?
                 indent
-                badge])]
+                badge
+                og-t])]
     ret))
 
 
@@ -639,7 +640,7 @@
       ret)))
 
 
-(defn- user-metadata-map-inline
+(defn- user-metadata-map-inline-for-coll
   [{:keys [user-meta
            metadata-position
            mutable-opening-encapsulation-str
@@ -666,7 +667,6 @@
                                0))
           ret           (formatted-user-meta user-meta
                                              (+ indent+ob offset))]
-      
       (meta-level-dec!)
       (str " " inline-offset ret))))
 
@@ -674,14 +674,12 @@
 ;; TODO - break ob into its own fn
 (defn- profile+ob
   [coll indent*]
-  (let [{:keys [badge
+  (let [{:keys [og-t
+                badge
                 record?
                 user-meta
                 separator
-                val-is-atom?
-                val-is-ref? 
-                val-is-agent?
-                val-is-volatile?
+                val-is-derefable?
                 highlighting
                 let-bindings?
                 badge-str-len
@@ -690,27 +688,14 @@
          :as   m} 
         (reduce-coll-profile coll indent*)
         
-        ;; Mutable-wrapper opening made here - nix this?
         mutable-opening-encapsulation-str
-        (when (or val-is-atom? 
-                  val-is-volatile? 
-                  val-is-agent? 
-                  val-is-ref?) 
-          (cond val-is-atom?
-                defs/atom-label 
-                val-is-volatile?
-                defs/volatile-label
-                val-is-ref?
-                defs/ref-label
-                :else
-                defs/agent-label))
+        (when val-is-derefable? 
+          (-> og-t name string/capitalize))
 
         mutable-opening-encapsulation
         (some-> mutable-opening-encapsulation-str
-                #_(str defs/encapsulation-opening-bracket)
-                (tagged {:theme-token (if val-is-atom? 
-                                        :atom-wrapper 
-                                        :volatile-wrapper)}))
+                ;; TODO - Add :derefable token to themes as well as one for each type of derefable 
+                (tagged {:theme-token :label}))
 
         ;; Block-level badges for colls (display above coll) are made here
         badge               
@@ -739,23 +724,24 @@
              #_(if highlighting
                  ;; Change this - move logic down in to opening bracket
                  (str #_(sgr-tag {} highlighting)
-                  (opening-bracket! (keyed [coll record? let-bindings?]))
+                      (opening-bracket! (keyed [coll record? let-bindings?]))
                       #_sgr-reset-tag)
                  (opening-bracket! (keyed [coll record? let-bindings?])))
              (when (-> coll meta :too-deep?)
                (tagged "#" {:theme-token :max-print-level-label})))
         
-        user-metadata-map-inline
-        (user-metadata-map-inline (keyed [mutable-opening-encapsulation-str
-                                          metadata-position
-                                          user-meta
-                                          indent*
-                                          badge
-                                          badge-str-len
-                                          coll]))
+        user-metadata-map-inline-for-coll
+        (user-metadata-map-inline-for-coll
+         (keyed [mutable-opening-encapsulation-str
+                 metadata-position
+                 user-meta
+                 indent*
+                 badge
+                 badge-str-len
+                 coll]))
 
         ob
-        (str ob* (some-> user-metadata-map-inline
+        (str ob* (some-> user-metadata-map-inline-for-coll
                          (str (tagged separator
                                       {:theme-token :foreground}))))]
 
