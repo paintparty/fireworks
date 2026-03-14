@@ -629,6 +629,24 @@
 ;  P::::::::P
 ;  PPPPPPPPPP
 
+(defn- maybe-unable-to-print-warning [x]
+  (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)
+        cause (if (= coll-size :lasertag.core/unknown-coll-size)
+                "Cannot determine collection size"
+                "Unknown")]
+    (messaging/unable-to-print-warning
+     "fireworks.core/?"
+     (str (messaging/italic "  Problem:\n")
+          "    " 
+          "Unable to print value."
+          "\n\n"
+          (messaging/italic "  Cause:\n")
+          "    "
+          cause
+          "\n\n"
+          (messaging/italic "  Value class:\n")
+          "    "
+          classname))))
 
 (defn- print-formatted
   ([x]
@@ -636,22 +654,25 @@
   ([{:keys [fmt log? err err-x err-opts]
      :as   x}
     js-printing-fn]
+   ;;  (?pp x)
    (if (instance? fireworks.messaging.FireworksThrowable x)
-     (let [{:keys [line column file]} (:form-meta err-opts)
-           ns-str                     (:ns-str err-opts)] 
+     (if (= (:coll-size err-opts) :lasertag.core/unknown-coll-size)
+       (maybe-unable-to-print-warning err-x)
+       (let [{:keys [line column file]} (:form-meta err-opts)
+             ns-str                     (:ns-str err-opts)] 
 
-       (messaging/caught-exception err
-                                   {:value  err-x
-                                    :type   :error
-                                    :form   (:quoted-fw-form err-opts)
-                                    :header (or (some-> err-opts :header)
-                                                (some-> err-opts :fw-fnsym))
-                                    :line   line
-                                    :column column
-                                    :file   (or file ns-str)})
-       (println 
-        (str "\nFalling back to pprint...\n\n"
-             (with-out-str (pprint err-x)))))
+         (messaging/caught-exception err
+                                     {:value  err-x
+                                      :type   :error
+                                      :form   (:quoted-fw-form err-opts)
+                                      :header (or (some-> err-opts :header)
+                                                  (some-> err-opts :fw-fnsym))
+                                      :line   line
+                                      :column column
+                                      :file   (or file ns-str)})
+         (println 
+          (str "\nFalling back to pprint...\n\n"
+               (with-out-str (pprint err-x))))))
 
      (let [termf #(do 
                     ;; If it has been formatted by fireworks, it will print here.
@@ -672,20 +693,7 @@
         #?(:clj
            ;; TODO - assess whether you need this and change messaging
            (catch Throwable e
-             (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)]
-               (messaging/unable-to-print-warning
-                "fireworks.core/?"
-                (str (messaging/italic "Problem:\n")
-                     "  " 
-                     "Unable to print value with pprint."
-                     "\n\n\n"
-                     (messaging/italic "Cause:\n")
-                     "  "
-                     coll-size
-                     "\n\n\n"
-                     (messaging/italic "Value class:\n")
-                     "  "
-                     classname))))))))
+             (maybe-unable-to-print-warning x))))))
 
 (defn- _pp* [user-opts x]
   #_(println "_pp*" user-opts)
@@ -807,9 +815,14 @@
   (messaging/->FireworksThrowable
    e
    x
-   (assoc opts
-          :header
-          "fireworks.core/formatted")))
+   (let [{:keys [coll-size all-tags]} (-> x lasertag/tag-map)]
+     (assoc opts
+            :header
+            "fireworks.core/formatted"
+            :coll-size 
+            coll-size
+            :all-tags 
+            all-tags))))
 
 
 (defn ^{:public true}
@@ -944,7 +957,7 @@
                               (catch #?(:cljs js/Object :clj Throwable)
                                      e
                                 (fw-throwable e x opts)))
-          ;; TODO - Need a better way to do the hack for threading 
+          ;; TODO - Need a better way to do threading 
           opts           (merge opts
                                 native-logging
                                 (when (some-> opts :label :threading?)

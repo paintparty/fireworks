@@ -1,6 +1,5 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
-            ;; [fireworks.pp :refer [pprint ?pp] :rename {?pp ?}]
             [fireworks.pp :refer [pprint]]
             [expound.alpha :as expound]
             [fireworks.util :as util :refer [maybe->]]
@@ -51,16 +50,16 @@
         (case block-type
           :warning (:orange sgr-tags)
           :error (:red sgr-tags)
-          (:gray sgr-tags))
+          (:neutral sgr-tags))
 
         footer-stripe
-        #_"╚══════════════════════════════════════════════"
-        "└──────────────────────────────────────────────"
+        "╚══════════════════════════════════════════════"
+        #_"└──────────────────────────────────────────────"
         #_"╰──────────────────────────────────────────────"
 
         header-stripe-start
-        #_"╔═ "
-        "┌─ "
+        "╔═ "
+        #_"┌─ "
         #_"╭─ "
 
         header-stripe
@@ -68,6 +67,7 @@
                                 (count header-str)
                                 (count header-stripe-start)
                                 1)
+                             #_"─"
                              "═"))]
     (str "\n"
          open-tag
@@ -233,8 +233,8 @@
 
 (defn unable-to-print-warning
   [s x]
-  (println (block {:header-str s
-                   :block-type :warning 
+  (println (block {:header-str (str "WARNING [" s "]")
+                  ;;  :block-type :warning 
                    :body       x})))
 
 (defn summary-section [warning-label s]
@@ -379,17 +379,16 @@
                 {:error err
                  :regex #"^fireworks\.|^lasertag\."
                  :depth 21})
-              ;;  _ (?pp m)
                hint
                (let [hints-by-error-message
                      (->> err-msg-str (get hints))
 
                      hint-by-st-frames
                      (get hints-by-error-message
-                          [[(-> stack-trace-seq first (.getClassName))
-                            (-> stack-trace-seq first (.getMethodName))]
-                           [(-> stack-trace-seq second (.getClassName))
-                            (-> stack-trace-seq second (.getMethodName))]])]
+                          [[(some-> stack-trace-seq first (.getClassName))
+                            (some-> stack-trace-seq first (.getMethodName))]
+                           [(some-> stack-trace-seq second (.getClassName))
+                            (some-> stack-trace-seq second (.getMethodName))]])]
                  hint-by-st-frames)
 
                message-from-clojure
