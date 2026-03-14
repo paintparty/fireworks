@@ -77,7 +77,8 @@
 
 
 #?(:clj
-   (do 
+   nil
+   #_(do 
      ;;  (!? :- {:a 2})
      ;;  (? :- my-record-type)
      ;;  (? (volatile! 2))

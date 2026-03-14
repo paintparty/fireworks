@@ -97,7 +97,7 @@
 (s/def ::metadata-print-level
   (s/and int? #(<= 1 % 10)))
 
-(s/def ::display-fn-namespaces? 
+(s/def ::display-namespaces? 
   boolean?)
 
 (s/def ::display-metadata?
