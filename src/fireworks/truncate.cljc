@@ -56,7 +56,7 @@
          (js-delete "target")))))
 
 
-;; Maybe this could go in Lastertag?
+;; Maybe this could go in Lasertag?
 (defn- cljc-atom?
   [x]
   #?(:cljs (= cljs.core/Atom (type x))

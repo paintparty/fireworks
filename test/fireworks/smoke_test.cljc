@@ -11,20 +11,55 @@
             [fireworks.util :as util]
             [fireworks.sample :as sample]
             [fireworks.basethemes :as basethemes]
-            [lasertag.core :refer [tag-map tag]]
+            [lasertag.core :as lt :refer [tag-map tag]]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
 
-
+(def my-atom (atom nil))
+(def my-volatile (volatile! nil))
+(defn foo [] nil)
+(def bar nil)
 
 #?(:clj
    #_(pprint (tag-map (byte 0)))
    (do
-    ;;  (? :pp (tag-map (short 3)))
-     ;;  (? (java.util.ArrayList. [1 2 3]))
-     ;;  (? #"^abc")
-     ;;  (? #uuid "4fe5d828-6444-11e8-8222-720007e40350")
+
+
+     (deftype CustomVector [vc]
+       clojure.lang.IPersistentVector
+       ;;  (count [_] (count m))
+       (assoc [this _ _] this))
+     
+     (def custom-vector-datatype (->CustomVector [:a 1 :b 3]))
+
+     ;;  (? :pp (tag-map custom-vector-datatype))
+     ;;  (? custom-vector-datatype)
+     
+     (def my-ref (ref nil))
+     (def my-agent (agent 1))
+     (? (tag-map my-ref))
+
+     (? my-ref)
+     (? (tag-map my-agent))
+
+     (? my-atom)
+     (? (tag-map my-atom))
+
+     (? my-volatile)
+     (? (tag-map my-volatile))
+
+     ;;  (? :pp lt/scalar-types-set)
+     ;;  (? :pp lt/literal-types-set)
+     
+     ;;  (? :pp (tag-map "hi"))
+     ;;  (? :pp (tag-map (short 3)))
+     ;; (? :pp (tag-map (java.util.ArrayList. [1 2 3])))
+     
+     ;; (? (java.util.ArrayList. [1 2 3]))
+     
+     ;; (? #"^abc")
+     ;; (? #uuid "4fe5d828-6444-11e8-8222-720007e40350")
      ;;  (? (tag "hi"))               
      ;;  (? (tag :hi))                
      ;;  (? (tag #"^hi$"))             
@@ -43,8 +78,6 @@
      ;;  (? (tag ##-Inf))
      ;;  (? (tag ##NaN))
      ;;  (? (tag 1/3))
-     
-
      ;;  (println (type (byte 0)))
      ;;  (? (tag-map (byte 0)))
      ;;  (? (byte 0))
@@ -54,10 +87,14 @@
      ;;  (? (tag-map 1))
      ;;  (? (tag-map (float 1.5)))
      ;;  (? (tag-map (java.math.BigInteger. "171")))
-     ;;  (? (java.math.BigInteger. "171"))
-     
+     ;;  (? (tag-map (java.math.BigInteger. "171")))
+     ;;  (? (type (java.math.BigDecimal. "173.44")))
+     ;;  (? :pp (tag-map oogs))
+     (? {:display-namespaces? true} foo)
+     (? {:display-namespaces? true} (tag-map #'bar))
+     ;;  (? (java.math.BigDecimal. "173.44"))
      ;;  (? (tag (char 96)))
-     ;;  (? (tag-map (java.util.Date.)))
+     ;;  (? :pp (tag-map (java.util.Date.)))
      ;;  (? (java.util.Date.))
      ;;  (? (tag java.util.Date))
      ))
@@ -375,24 +412,24 @@
       '(java.util.Date.)
       (java.util.Date.)]))
 
-(def lasertag-sample
-  #?(:cljs
-     ()
-     :clj
-     (reduce
-      (fn [acc [sym v]]
-        (conj acc
-              {'form              sym
-               'lasertag.core/tag (tag v)
-               'clojure.core/type (type v)}))
-      []
-      (partition 2 sample))))
+;; #_(def lasertag-sample
+;;   #?(:cljs
+;;      ()
+;;      :clj
+;;      (reduce
+;;       (fn [acc [sym v]]
+;;         (conj acc
+;;               {'form              sym
+;;                'lasertag.core/tag (tag v)
+;;                'clojure.core/type (type v)}))
+;;       []
+;;       (partition 2 sample))))
 
 
-#_(println (table [{:name 'form :title "form"}
-                   {:name 'lasertag.core/tag :title "lasertag.core/tag"}
-                   {:name 'clojure.core/type :title "clojure.core/type"}]
-                  lasertag-sample))
+;; #_(println (table [{:name 'form :title "form"}
+;;                    {:name 'lasertag.core/tag :title "lasertag.core/tag"}
+;;                    {:name 'clojure.core/type :title "clojure.core/type"}]
+;;                   lasertag-sample))
 
 ;; This is example config. If you want to run fireworks.core-test tests locally,
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
