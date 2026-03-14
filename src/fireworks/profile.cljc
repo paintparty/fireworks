@@ -27,79 +27,87 @@
 ;; Understand and doc how this works for custom types
 (defn annotation-badge
   [{:keys [t 
+           og-t
            lambda?
-           js-built-in-object?
-           js-built-in-object-name
+           og-class
            all-tags
-           java-util-class?
-           java-lang-class?
+           classname
            coll-type?
            transient?
-           classname]
-    :as m}]
+           java-util-class?
+           java-lang-class?
+           val-is-derefable?
+           js-built-in-object?
+           js-built-in-object-name]
+    :as   m}]
   (when (map? m)
-   
-   (let [t     (cond lambda?
-                     :lambda
-                     transient?
-                     :transient
-                     :else
-                     t)
+    (let [t     (cond lambda?
+                      :lambda
+                      transient?
+                      :transient
+                      :else
+                      t)
 
-         badge (cond
-                 (contains? all-tags :datatype)
-                 (:classname m)
+          badge (cond
+                  (contains? all-tags :datatype)
+                  (string/replace (:classname m) #"_" "-")
 
-                 ;; Interesting visualization in JVM Clojure
-                 ;; Labels everything, including primitives
-                 ;; Maybe this could be exposed in an option 
-                 #_(or java-util-class? java-lang-class?)
-                 #_classname
+                  ;; Interesting visualization in JVM Clojure
+                  ;; Labels everything, including primitives
+                  ;; Maybe this could be exposed in an option 
+                  #_(or java-util-class? java-lang-class?)
+                  #_classname
 
-                 (= t :inst)
-                 defs/inst-badge
+                  (= og-t :throwable)
+                  og-class
 
-                 (= t :uuid)
-                 defs/uuid-badge
+                  val-is-derefable?
+                  (some-> og-t name string/capitalize)
 
-                 (= t :regex)
-                 defs/regex-badge
+                  (= t :inst)
+                  defs/inst-badge
 
-                 (or java-util-class?
-                     (and coll-type? java-lang-class?))
-                 classname
+                  (= t :uuid)
+                  defs/uuid-badge
 
-                 js-built-in-object?
-                 (str "js/" js-built-in-object-name)
+                  (= t :regex)
+                  defs/regex-badge
 
-                 (and (not= t :js/Object)
-                      (or (contains? all-tags :js-map-like-object)
-                          (and (contains? all-tags :js)
-                               (contains? all-tags :object)
-                               (contains? all-tags :instance-of-built-in))
-                          (contains? all-tags :js-typed-array)))
-                 (str "js/" classname)
-                 
-                 transient?
-                 (or (some->> #?(:cljs #"/" :clj #"\$")
-                              (string/split classname)
-                              peek)
-                     defs/transient-label)
+                  (or java-util-class?
+                      (and coll-type? java-lang-class?))
+                  (string/replace classname #"_" "-")
 
-                 :else
-                 #?(:cljs
-                    (get {"Map"    "js/Map"
-                          "Set"    "js/Set"
-                          "Array"  "js/Array"
-                          "Object" "js/Object"}
-                         classname 
-                         nil)
-                    :clj
-                    (get badges-by-lasertag t nil)))
-         badge #?(:cljs badge
-                  :clj  (if (= t :defmulti) "Multimethod" badge))]
+                  js-built-in-object?
+                  (str "js/" js-built-in-object-name)
 
-     (when badge {:badge badge}))))
+                  (and (not= t :js/Object)
+                       (or (contains? all-tags :js-map-like-object)
+                           (and (contains? all-tags :js)
+                                (contains? all-tags :object)
+                                (contains? all-tags :instance-of-built-in))
+                           (contains? all-tags :js-typed-array)))
+                  (str "js/" classname)
+                  
+                  transient?
+                  (or (some->> #?(:cljs #"/" :clj #"\$")
+                               (string/split classname)
+                               peek)
+                      defs/transient-label)
+
+                  :else
+                  #?(:cljs
+                     (get {"Map"    "js/Map"
+                           "Set"    "js/Set"
+                           "Array"  "js/Array"
+                           "Object" "js/Object"}
+                          classname 
+                          nil)
+                     :clj
+                     (get badges-by-lasertag t nil)))
+          badge #?(:cljs badge
+                   :clj  (if (= t :defmulti) "Multimethod" badge))]
+
+      (when badge {:badge badge}))))
                          
 (defn target-path-is-ancestor-coll?
   [tp vp tp-list]
@@ -420,7 +428,6 @@
                   (some-> mm
                           (select-keys [:fw/user-meta :fw/user-meta-map?])))
 
-           ;; TODO - make dedicated badge fn?
            badge (annotation-badge ret)
            ret   (let [{:keys [some-colls-as-keys?
                                some-multi-line-colls-as-keys?]}                  

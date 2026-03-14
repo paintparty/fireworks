@@ -2,7 +2,7 @@
   (:require
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
-   [fireworks.pp :refer [?pp pprint]]
+  ;;  [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
    [fireworks.truncate :as truncate]
    [fireworks.brackets
     :as brackets
@@ -485,7 +485,6 @@
         display-metadata?
         (:display-metadata? @state/config)
 
-        
         badge-above?
         (some->> badge (contains? defs/inline-badges) not)
 
@@ -643,7 +642,6 @@
 (defn- user-metadata-map-inline-for-coll
   [{:keys [user-meta
            metadata-position
-           mutable-opening-encapsulation-str
            coll
            indent*]}]
   (when (and (:display-metadata? @state/config)
@@ -654,19 +652,14 @@
     (let [offset        defs/metadata-position-inline-offset
           inline-offset (tagged (spaces (dec offset))
                                 {:theme-token (state/metadata-token)})
-          ob            (str mutable-opening-encapsulation-str
-                             (some-> coll
+          ob            (str (some-> coll
                                      meta
                                      brackets-by-type
                                      first))
           
           indent+ob     (+ (or (count ob) 0)
-                           indent*
-                           (or (when mutable-opening-encapsulation-str
-                                 1)
-                               0))
-          ret           (formatted-user-meta user-meta
-                                             (+ indent+ob offset))]
+                           indent*)
+          ret           (formatted-user-meta user-meta (+ indent+ob offset))]
       (meta-level-dec!)
       (str " " inline-offset ret))))
 
@@ -688,16 +681,7 @@
          :as   m} 
         (reduce-coll-profile coll indent*)
         
-        mutable-opening-encapsulation-str
-        (when val-is-derefable? 
-          (-> og-t name string/capitalize))
-
-        mutable-opening-encapsulation
-        (some-> mutable-opening-encapsulation-str
-                ;; TODO - Add :derefable token to themes as well as one for each type of derefable 
-                (tagged {:theme-token :label}))
-
-        ;; Block-level badges for colls (display above coll) are made here
+        ;; Block-level badges for colls / custom data types are tagged here
         badge               
         (when badge
           (let [theme-token (badge-type badge)
@@ -712,7 +696,7 @@
         (user-metadata-map-block indent* metadata-position m)
 
         ob* 
-        (str mutable-opening-encapsulation
+        (str #_mutable-opening-encapsulation
              badge
              (some-> user-metadata-map-block (str (when badge " ")))
              annotation-newline
@@ -732,7 +716,8 @@
         
         user-metadata-map-inline-for-coll
         (user-metadata-map-inline-for-coll
-         (keyed [mutable-opening-encapsulation-str
+         (keyed [
+                ;;  mutable-opening-encapsulation-str
                  metadata-position
                  user-meta
                  indent*
