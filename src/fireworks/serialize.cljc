@@ -2,7 +2,7 @@
   (:require
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
-  ;;  [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
+   [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
    [fireworks.truncate :as truncate]
    [fireworks.brackets
     :as brackets
@@ -263,7 +263,7 @@
                        (= t :regex)
                        (tag/colorized-regex s)
 
-                       (and (= t :number) (float? (:og-x m)))
+                       (and (= t :number) (re-find #"^[0-9]+\.[0-9]+" s))
                        (let [[integral-part decimal-part] (string/split s #"\.")]
                          (str (sgr-tag :number)
                               integral-part "."
