@@ -15,7 +15,7 @@
   [s]
   (cond
     (contains? defs/inline-badges s) :literal-label 
-    (= s defs/lambda-symbol)          :lambda-label
+    (= s defs/lambda-badge)          :lambda-label
     :else                            :type-label))
 
 (defrecord Wrapper [x])
@@ -115,7 +115,6 @@
          (-> x
              (lasertag/tag-map opts)
              (set/rename-keys {:tag :t}))]
-     
      (merge tag-map
             (when (contains? all-tags :carries-meta) {:carries-meta? true})
             (when (or (contains? all-tags :coll-type) ;<- deprecate in lasertag

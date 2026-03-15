@@ -308,7 +308,6 @@
    "Functions"    
    (array-map
     :lambda            #()
-    :lambda-2-args     #(+ % %2) 
     :core-fn           juxt 
     :date-fn   #?(:cljs
                   js/Date

@@ -1,7 +1,7 @@
 (ns ^:dev/always fireworks.profile
   (:require
    [fireworks.defs :as defs]
-   [fireworks.pp :refer (?pp)]
+   [fireworks.pp :refer [?pp] :rename {?pp ?}]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
@@ -11,20 +11,8 @@
      (:import (clojure.lang PersistentVector))))
 
 
-;; TODO revist how your doing this, maybe there should be a :classname entry
-;; returned from lasertag
-(def badges-by-lasertag
-  {:js/Set      "js/Set"
-   :js/Promise  "js/Promise"
-   :js/Iterator defs/js-literal-badge
-   :js/Object   defs/js-literal-badge
-   :js/Array    defs/js-literal-badge
-   :lambda      defs/lambda-symbol
-   :transient   defs/transient-label
-   :uuid        defs/uuid-badge})
-
-
-;; Understand and doc how this works for custom types
+;; Document how this works for custom types
+;; This is where badges get determined
 (defn annotation-badge
   [{:keys [t 
            og-t
@@ -70,6 +58,9 @@
                   (= t :uuid)
                   defs/uuid-badge
 
+                  (= t :lambda)
+                  defs/lambda-badge
+
                   (= t :regex)
                   defs/regex-badge
 
@@ -80,7 +71,7 @@
                   js-built-in-object?
                   (str "js/" js-built-in-object-name)
 
-                  (and (not= t :js/Object)
+                  (and (not= t :object)
                        (or (contains? all-tags :js-map-like-object)
                            (and (contains? all-tags :js)
                                 (contains? all-tags :object)
@@ -95,15 +86,15 @@
                       defs/transient-label)
 
                   :else
-                  #?(:cljs
-                     (get {"Map"    "js/Map"
-                           "Set"    "js/Set"
-                           "Array"  "js/Array"
-                           "Object" "js/Object"}
-                          classname 
-                          nil)
-                     :clj
-                     (get badges-by-lasertag t nil)))
+                  #?(:clj
+                     nil
+                     :cljs
+                     (get {"Set"      "js/Set"
+                           "Promise"  "js/Promise"
+                           "Iterator" defs/js-literal-badge
+                           "Object"   defs/js-literal-badge
+                           "Array"    defs/js-literal-badge}
+                          classname)))
           badge #?(:cljs badge
                    :clj  (if (= t :defmulti) "Multimethod" badge))]
 
@@ -402,10 +393,12 @@
    (if (:fw/pre-profiled-mapkey mm)
      mm
      (let [{:keys [og-x val-is-atom?]
-            :as fw-truncated-meta}  (or (:fw/truncated mm)
-                                        ;; TODO - describe why it is necessary
-                                        ;; to provide this map here
-                                        meta-map-mapentry-vector)
+            :as fw-truncated-meta}  
+           (or (:fw/truncated mm)
+           ;; TODO - describe why it is necessary
+           ;; to provide this map here
+           meta-map-mapentry-vector)
+
            ret   (merge 
                   fw-truncated-meta
                   {:x    (or (:x fw-truncated-meta) x)

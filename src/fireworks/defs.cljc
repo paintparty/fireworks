@@ -444,7 +444,7 @@
 (def volatile-wrap-count
   (mutable-wrap-count volatile-label))
 
-(def lambda-symbol "λ")
+(def lambda-badge "λ")
 
 (def js-literal-badge "#js ")
 
@@ -462,7 +462,7 @@
 (def js-map-arrow "->")
 
 (def inline-badges
-  #{js-literal-badge inst-badge uuid-badge lambda-symbol})
+  #{js-literal-badge inst-badge uuid-badge lambda-badge})
 
 ;; For printing messages and warnings
 (def italic-tag-open #?(:cljs nil :clj "\033[3m"))

@@ -151,7 +151,7 @@
                 {:theme-token (cond
                                 (pos? (state/formatting-meta-level))
                                 (state/metadata-token)
-                                (= badge defs/lambda-symbol) 
+                                (= badge defs/lambda-badge) 
                                 :lambda-label 
                                 :else
                                 :literal-label)})
@@ -1125,7 +1125,7 @@
      ;; Just for debugging
      ;;  (when (:coll-type? (meta profiled))
      ;;      (?pp (meta profiled)))
-     ;; (?pp (meta profiled))
+     ;;  (? (:s (meta profiled)))
      ;;  (?pp (map 
      ;;        (fn [a b]
      ;;          [a b])

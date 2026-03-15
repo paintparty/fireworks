@@ -1,12 +1,12 @@
 (ns ^:dev/always fireworks.ellipsize
 (:require
-   [clojure.string :as string]
-   [fireworks.defs :as defs]
-   [fireworks.pp :refer [?pp]]
-   [fireworks.state :as state]
-   [fireworks.specs.config :as specs.config]
-   #?(:cljs [fireworks.macros :refer-macros [keyed]])
-   #?(:clj [fireworks.macros :refer [keyed]])
+ [clojure.string :as string]
+ [fireworks.defs :as defs]
+ [fireworks.pp :refer [?pp] :rename {?pp ?}]
+ [fireworks.state :as state]
+ [fireworks.specs.config :as specs.config]
+ #?(:cljs [fireworks.macros :refer-macros [keyed]])
+ #?(:clj [fireworks.macros :refer [keyed]])
   ;;  #?(:clj [clojure.math])
  ))
 
@@ -89,7 +89,8 @@
                                string/join 
                                symbol)
                           nm)
-        fn-display-name (when-not lambda?
+        fn-display-name (if lambda?
+                          nil #_defs/lambda-badge
                           (when-not (string/blank? (str fn-display-name))
                             fn-display-name))
 

@@ -29,42 +29,65 @@
        ;;                  :b 2
        ;;                  :c 3}))
        
-      ;;  (? #js[])
-      ;;  (? :js  (ffirst everything))
-      ;;  (? :js- (ffirst everything))
-      ;;  (? :pp  (ffirst everything))
-      ;;  (? :pp- (ffirst everything))
+       ;;  (? #js[])
+       ;;  (? :js  (ffirst everything))
+       ;;  (? :js- (ffirst everything))
+       ;;  (? :pp  (ffirst everything))
+       ;;  (? :pp- (ffirst everything))
        
 
-       (callout {:type  :info
-                 :theme :boxed}
-                (bling [:p [:red "This is red" [:bold " and bold."]]]
-                       
-                       (hifi {:a "foo"
-                              :b 2
-                              :c 3
-                              :d "asdfsadfsdfasdfasdfasdfasdffsaa"
-                              :e "asdfsadfsdfasdfasdfasdfasdffsaa"
-                              })))
+       
+       
+
+       ;; TODO fix this
+       #_(callout {:type  :info
+                   :theme :boxed}
+                  (bling [:p [:red "This is red" [:bold " and bold."]]]
+                         
+                         (hifi {:a "foo"
+                                :b 2
+                                :c 3
+                                :d "asdfsadfsdfasdfasdfasdfasdffsaa"
+                                :e "asdfsadfsdfasdfasdfasdfasdffsaa"
+                                })))
 
        #_(callout {:type  :info
-                 :theme :sideline}
-                (bling [:p [:red "This is red" [:bold " and bold."]]]
-                       [:p "Line two"]
-                       (hifi {:a "foo" :b 2 :c 3})))
+                   :theme :sideline}
+                  (bling [:p [:red "This is red" [:bold " and bold."]]]
+                         [:p "Line two"]
+                         (hifi {:a "foo" :b 2 :c 3})))
 
        #_(callout {:type        :info
-                 :label-theme :pipe}
-                (bling [:p [:red "This is red" [:bold " and bold."]]]
-                       [:p "Line two"]
-                       (hifi {:a "foo"
-                              :b 2
-                              :c 3})))
+                   :label-theme :pipe}
+                  (bling [:p [:red "This is red" [:bold " and bold."]]]
+                         [:p "Line two"]
+                         (hifi {:a "foo"
+                                :b 2
+                                :c 3})))
 
+       #_(? #uuid "4fe5d828-6444-11e8-8222-720007e40350")
+
+       #_(? (tag-map  #(inc 1)))
+
+       
+       ;;  (? {:a (new js/Promise (fn [x] x))})
+       ;;  (? {:a (new js/Set #js[1 2])})
+       ;;  (? {:a (new js/Array 1 2 3)})
+       
+       (? (tag-map #js{:a 1}))
+       (? [#js{:a 1}])
+
+
+       ;;  (? #(inc 1))
+       ;;  (? :pp (tag-map test-suite))
+       #_(? test-suite)
+
+       ;;  (? {:a #()})
+       
        #_(? {:print-length  200
              :label       "Clojure(Script) values"
              :label-color :blue
-           ;;  :bold?       true
+             ;;  :bold?       true
              :find        {:pred #(= % 3.33)}
              }
             everything
