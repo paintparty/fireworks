@@ -7,8 +7,6 @@
    [fireworks.specs.tokens :as tokens]
    [clojure.spec.alpha :as s]))
 
-(s/def ::desc
-  string?)
 
 (s/def ::name
   (s/and string?
@@ -31,5 +29,4 @@
 (s/def ::theme 
   (s/and map?
          (s/keys :req-un [::tokens/tokens
-                          ::desc
                           ::name])))
