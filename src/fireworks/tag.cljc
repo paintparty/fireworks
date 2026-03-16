@@ -285,14 +285,17 @@
 ;; All the extra regex tokens from the theme
 
 (defn colorized-regex [s]
-  (let [escapes-re #"(\\+[^\\])"
-        escaped    (->> s
-                        (re-seq escapes-re)
-                        (mapv tagged-escaped-chars))
-        split      (mapv regex-char-seq-with-ansi-sgr-tags 
-                         (string/split s escapes-re))      
-        leaved     (util/interleave-all split escaped)
-        nesting    (atom [])]
-    (reduce (partial with-groups-highlighted nesting)
-            ""
-            (apply concat leaved))))
+  #?(:cljs
+     s
+     :clj
+     (let [escapes-re #"(\\+[^\\])"
+           escaped    (->> s
+                           (re-seq escapes-re)
+                           (mapv tagged-escaped-chars))
+           split      (mapv regex-char-seq-with-ansi-sgr-tags 
+                            (string/split s escapes-re))      
+           leaved     (util/interleave-all split escaped)
+           nesting    (atom [])]
+       (reduce (partial with-groups-highlighted nesting)
+               ""
+               (apply concat leaved)))))

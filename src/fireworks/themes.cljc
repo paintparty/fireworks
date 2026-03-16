@@ -20,9 +20,9 @@
    :regex.group-delimeter      {}
    :regex.not-any-of-delimeter {} 
    :regex.anchor               {}    
-   :regex.character-range      {:font-weight :bold}                                        
-   :regex.number-range         {:font-weight :bold}                                        
-   :regex.special-character    {:font-weight :bold}
+   :regex.character-range      {:font-weight :normal}                                        
+   :regex.number-range         {:font-weight :normal}                                        
+   :regex.special-character    {:font-weight :normal}
    :regex.alternation          {}})
 
 (def regex-syntax-neutral-light
@@ -33,7 +33,8 @@
 (def regex-syntax-neutral-dark
   (assoc regex-syntax-neutral
          :regex.escape-backslash     
-         {:color (bling-css-color :dark-gray)}))
+         {:color           (bling-css-color :dark-gray)
+          :regex.character (bling-css-color :light-gray)}))
 
 
 (def regex-syntax-light
@@ -60,10 +61,10 @@
    :regex.any-of-delimeter     {:color (bling-css-color :medium-blue) #_"#b063d4" #_(bling-css-color :medium-purple) }
    :regex.group-delimeter      {:color (bling-css-color :dark-green)}
    :regex.not-any-of-delimeter {:color (bling-css-color :dark-blue)    #_"#b063d4"#_(bling-css-color :medium-purple)} 
-   :regex.anchor               {:color (bling-css-color :medium-orange) :font-weight :bold}    
-   :regex.character-range      {:font-weight :bold :color (bling-css-color :dark-blue)}                                        
-   :regex.number-range         {:font-weight :bold :color (bling-css-color :dark-blue)}                                        
-   :regex.special-character    {:color (bling-css-color :dark-purple) :font-weight :bold}
+   :regex.anchor               {:color (bling-css-color :medium-orange) :font-weight :normal}    
+   :regex.character-range      {:color (bling-css-color :dark-blue) :font-weight :normal}                                        
+   :regex.number-range         {:color (bling-css-color :dark-blue) :font-weight :normal}                                        
+   :regex.special-character    {:color (bling-css-color :dark-purple) :font-weight :normal}
    :regex.escape-backslash     {:color (bling-css-color :light-gray)}
    :regex.alternation          {:color (bling-css-color :medium-magenta)
                                 :background-color "#fae7fa"}})
@@ -78,9 +79,9 @@
    :regex.group-delimeter      {:color (bling-css-color :medium-green) }
    :regex.not-any-of-delimeter {:color (bling-css-color :medium-blue)} 
    :regex.anchor               {:color (bling-css-color :medium-orange)}    
-   :regex.character-range      {:color (bling-css-color :medium-blue) :font-weight :bold}                                        
-   :regex.number-range         {:color (bling-css-color :medium-blue) :font-weight :bold}                                        
-   :regex.special-character    {:color (bling-css-color :medium-purple) :font-weight :bold}
+   :regex.character-range      {:color (bling-css-color :medium-blue) :font-weight :normal}                                        
+   :regex.number-range         {:color (bling-css-color :medium-blue) :font-weight :normal}                                        
+   :regex.special-character    {:color (bling-css-color :medium-purple) :font-weight :normal}
    :regex.escape-backslash     {:color (bling-css-color :dark-gray)}
    :regex.alternation          {:color (bling-css-color :medium-magenta)}})
 
@@ -307,7 +308,7 @@
                                    :background-color "#f3f7feff"
                                    :font-style       :italic}}
             :syntax  (merge {:js-object-key {:color "#888888"}}
-                            (highlighted-regex-syntax regex-syntax-light))
+                            (highlighted-regex-syntax regex-syntax-neutral-light))
             :printer {:file-info        :annotation 
                       :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
@@ -348,8 +349,8 @@
                       :metadata2  {:color            "#a08a40"
                                    :text-shadow      "0 0 2px #003538"
                                    :background-color "#351d1d"}
-                      :label      {:color            "#b6a842"
-                                   :background-color "#3a2900"
+                      :label      {:color            "#a794ce"
+                                   :background-color "#2b1661"
                                    :font-style       :italic}
                       :eval-label {:color            "#85b7e5"
                                    :font-style       :italic
@@ -361,7 +362,7 @@
                              :escape-char               {:color (bling-css-color :dark-gray)}
                              :string-delimiter          {:color "#d28c6d"}
                              }
-                            (highlighted-regex-syntax regex-syntax-dark))
+                            (highlighted-regex-syntax regex-syntax-neutral-dark))
             :printer {:file-info        :annotation
                       :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
@@ -406,7 +407,7 @@
                                    :font-style       :italic}}
             :syntax  (merge {:number        {:color "#737373"}
                              :js-object-key {:color "#888888"}}
-                            (highlighted-regex-syntax regex-syntax-light))
+                            (highlighted-regex-syntax regex-syntax-neutral-light))
             :printer {:file-info        :annotation
                       :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
@@ -454,7 +455,7 @@
             :syntax  (merge {:number        :number
                              :decimal       :decimal
                              :js-object-key {:color "#888888"}}
-                            (highlighted-regex-syntax regex-syntax-dark))
+                            (highlighted-regex-syntax regex-syntax-neutral-dark))
             :printer {:file-info        :annotation
                       :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
@@ -499,7 +500,7 @@
                                              :background-color "#e8f3fd"}}
                       :syntax  (merge {:number        {:color "#3d7a99"}
                                        :js-object-key {:color "#888888"}}
-                                      (highlighted-regex-syntax regex-syntax-light))
+                                      (highlighted-regex-syntax regex-syntax-neutral-light))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -551,7 +552,7 @@
                                        :escape-char               {:color (bling-css-color :dark-gray)}
                                        :string-delimiter          {:color "#bfbf69"}
                                        }
-                                      (highlighted-regex-syntax regex-syntax-dark))
+                                      (highlighted-regex-syntax regex-syntax-neutral-dark))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -599,7 +600,8 @@
                                        :decimal       :number
                                        :boolean       {:color "#b58900"}
                                        :js-object-key {:color "#888888"}}
-                                      (highlighted-regex-syntax regex-syntax-light))
+                                      (highlighted-regex-syntax
+                                       regex-syntax-neutral-light))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -647,7 +649,7 @@
                                        :decimal       :number
                                        :js-object-key {:color "#888888"}}
                                       (highlighted-regex-syntax 
-                                       regex-syntax-dark))
+                                       regex-syntax-neutral-dark))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -699,7 +701,8 @@
                        :syntax  (merge {:number        :number
                                         :decimal       :number
                                         :js-object-key {:color "#888888"}}
-                                       (highlighted-regex-syntax regex-syntax-light))
+                                       (highlighted-regex-syntax
+                                        regex-syntax-neutral-light))
                        :printer {:file-info        :annotation
                                  :eval-label       :eval-label
                                  :eval-label-red   :eval-label-red
@@ -746,7 +749,8 @@
                       :syntax  (merge {:number        :number
                                        :decimal       :number
                                        :js-object-key {:color "#888888"}}
-                                      (highlighted-regex-syntax regex-syntax-dark))
+                                      (highlighted-regex-syntax
+                                       regex-syntax-neutral-dark))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
