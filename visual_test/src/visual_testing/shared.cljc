@@ -4,13 +4,21 @@
             [fireworks.sample :as sample :refer []]
             [bling.core :refer [print-bling bling ?sgr callout]]
             [bling.hifi :refer [hifi print-hifi]]
-            [lasertag.core :refer [tag-map]]
+            [lasertag.core :refer [tag tag-map]]
             ;; [taoensso.tufte :as tufte :refer [p profile]]
             [fireworks.core :refer [? !? ?> !?> pprint]]))
 
 (def everything sample/array-map-of-everything-cljc)
 
 ;; (tufte/add-handler! :my-console-handler (tufte/handler:console))
+(defn xy [x y] (+ x y))
+
+(defrecord MyRecordType [a b c d])
+(def my-record-type (->MyRecordType 4 8 4 5))
+
+(defmulti different-behavior (fn [x] (:x-type x)))
+(? (tag different-behavior))
+(? (tag-map different-behavior))
 
 (defn test-suite []
   #?(:cljs
@@ -18,6 +26,15 @@
      (do 
 
        (js/console.clear)
+
+       (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
+
+       ;; (? (tag my-record-type)) 
+       ;; (? (tag-map my-record-type)) 
+       
+       ;;  (? (tag different-behavior))
+       ;;  (? (tag-map different-behavior))
+       
        ;;  (js/console.log (? :data {:a "foo"
        ;;                            :b 2
        ;;                            :c 3}))
@@ -25,11 +42,12 @@
        #_(print-hifi {:a "foo"
                       :b 2
                       :c 3})
+
        ;;  (println (hifi {:a "foo"
        ;;                  :b 2
        ;;                  :c 3}))
        
-       ;;  (? #js[])
+       ;; (? #js[])
        ;;  (? :js  (ffirst everything))
        ;;  (? :js- (ffirst everything))
        ;;  (? :pp  (ffirst everything))
@@ -70,13 +88,21 @@
        #_(? (tag-map  #(inc 1)))
 
        
-       ;;  (? {:a (new js/Promise (fn [x] x))})
-       ;;  (? {:a (new js/Set #js[1 2])})
-       ;;  (? {:a (new js/Array 1 2 3)})
+      ;;  (? (volatile! {:a (new js/Promise (fn [x] x))}))
+      ;;  (? {:a (new js/Promise (fn [x] x))})
+      ;;  (? {:a (new js/Set #js[1 2])})
+      ;;  (? {:a (new js/Array 1 2 3)})
        
-       (? (tag-map #js{:a 1}))
-       (? [#js{:a 1}])
+      ;;  (? (tag-map xy))
+      ;;  #?(:cljs
+      ;;     (? (tag-map (new js/Promise (fn [x] x))))
+      ;;     :clj
+      ;;     ())
+       
 
+       ;;  (? (tag-map #js{:a 1}))
+       ;;  (? [#js{:a 1}])
+       
 
        ;;  (? #(inc 1))
        ;;  (? :pp (tag-map test-suite))

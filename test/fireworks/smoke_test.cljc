@@ -1,3 +1,8 @@
+;; Check printing for a deftype such as: fireworks.sample/MyType
+
+;; update readme
+;; update changelog
+
 ;; Unstructured sandbox for smoke testing
 
 (ns fireworks.smoke-test
@@ -15,16 +20,58 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
-
 (def my-atom (atom nil))
 (def my-volatile (volatile! nil))
-(defn foo [] nil)
+(defn foo [a b] nil)
 (def bar nil)
 
 #?(:clj
    #_(pprint (tag-map (byte 0)))
    (do
+    ;;   (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
+    ;; (? sample/interop-types)
+    ;;  (? (transient [1 2 3 "foo"]))
+    ;;  (println fireworks.sample/my-data-type)
+    ;;  (? :pp (tag-map fireworks.sample/my-data-type))
+    ;;  (? fireworks.sample/my-data-type)
+     
+     ;;  (? #'bar)
+     ;;  (? (tag-map #'bar))
+     ;;  (? (tag-map #(inc %)))
+     
+     ;;  (? (tag-map {:a "foo"}))
+     ;;  (? {:a #uuid "4fe5d828-6444-11e8-8222-720007e40350"})
+     ;;  (? foo)
+     (def my-throwable (Throwable. "something went wrong"))
+     ;;  (!? (tag-map my-throwable))
+     ;;  (? my-throwable)
+     ;;  (println my-throwable)
+     
+     ;;  (def my-assertion-error (AssertionError. "assertion error"))
+     ;;  (? (tag-map my-assertion-error))
+     ;;  (println "cause" (.getCause my-assertion-error))
+     
+     ;;  (def my-ex-info (ex-info "hey" {:a "foo"}))
+     ;;  (? (tag-map my-ex-info))
+     ;;  (println (ex-message my-ex-info))
+     ;;  (println (ex-data my-ex-info))
+     ;;  (println (.getMessage my-ex-info))
+     
+     ;;  (try
+     ;;    (throw (ex-info "Something failed" {:code 404}))
+     ;;    (catch Exception e
+     ;;      (println (.getMessage e))))  ; => "Something failed"
+     
+     (defmulti different-behavior (fn [x] (:x-type x)))
+     ;;  (? (tag different-behavior))
+     ;;  (? (tag-map different-behavior))
+     
 
+     (defrecord MyRecordType [a b c d])
+     (def my-record-type (->MyRecordType 4 8 4 5))
+     ;;  (? (tag my-record-type))
+     ;;  (? (tag-map my-record-type))
+     
 
      (deftype CustomVector [vc]
        clojure.lang.IPersistentVector
@@ -34,23 +81,44 @@
      (def custom-vector-datatype (->CustomVector [:a 1 :b 3]))
 
      ;;  (? :pp (tag-map custom-vector-datatype))
-     ;;  (? custom-vector-datatype)
+     ;; (? custom-vector-datatype)
      
      (def my-ref (ref 1))
+     ;;  (? my-ref)
+     ;;  (? (tag-map my-ref))
+     
      (def my-agent (agent 3))
-
-     (? my-ref)
-     (? my-agent)
-     (? my-atom)
-     (? my-volatile)
-
+     ;;  (? my-agent)
      ;;  (? (tag-map my-agent))
      
      ;;  (? my-atom)
      ;;  (? (tag-map my-atom))
      
-     ;;  (? my-volatile)
+     ;; (? my-volatile)
      ;;  (? (tag-map my-volatile))
+     
+
+     (def my-future (future (Thread/sleep 100) 100))
+     ;;  (? (tag-map my-future))
+     ;; (? my-future)
+     ;;  (print my-future)
+     
+
+     ;;  (def my-promise (promise))
+     ;;   ;; (? (tag-map my-promise))
+     ;;   (? my-promise)
+     ;;   ;; (print my-promise)
+     
+
+     (def my-delay (delay 100))
+     ;;  (? (tag-map my-delay))
+     ;; (? my-delay)
+     ;; (println my-delay)
+     
+     ;;  (? :pp (tag-map (seq [1 2 3])))
+     ;;  (? :pp (tag-map (repeat 3 "hi")))
+     
+     ;;  (? (tag-map (list 'a 'b 'c)))
      
      ;;  (? :pp lt/scalar-types-set)
      ;;  (? :pp lt/literal-types-set)
@@ -62,7 +130,7 @@
      ;; (? (java.util.ArrayList. [1 2 3]))
      
      ;; (? #"^abc")
-     ;; (? #uuid "4fe5d828-6444-11e8-8222-720007e40350")
+     ;;  (? #uuid "4fe5d828-6444-11e8-8222-720007e40350")
      ;;  (? (tag "hi"))               
      ;;  (? (tag :hi))                
      ;;  (? (tag #"^hi$"))             
@@ -76,6 +144,7 @@
      ;;           :b 3}))       
      ;;  (? (tag (map inc (range 3))))
      ;;  (? (tag (range 3)))          
+     ;; (? (tag-map (range 3)))          
      ;;  (? (tag '(:a :b :c)))         
      ;;  (? (tag ##Inf))
      ;;  (? (tag ##-Inf))
@@ -93,9 +162,7 @@
      ;;  (? (tag-map (java.math.BigInteger. "171")))
      ;;  (? (type (java.math.BigDecimal. "173.44")))
      ;;  (? :pp (tag-map oogs))
-     (? foo)
-     (? #'bar)
-     (? (tag-map #'bar))
+     ;;  (? foo)
      ;;  (? (java.math.BigDecimal. "173.44"))
      ;;  (? (tag (char 96)))
      ;;  (? :pp (tag-map (java.util.Date.)))
