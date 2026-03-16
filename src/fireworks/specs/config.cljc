@@ -175,3 +175,5 @@
 (s/def ::multi-line-metadata? boolean?)
 
 (s/def ::quote-symbols? boolean?)
+
+(s/def ::colorize? boolean?)

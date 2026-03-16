@@ -97,7 +97,9 @@
                                    :default true}
    :quote-symbols?                {:spec    ::config/quote-symbols?
                                    :default false}
-   })
+   ;; Only applies to :pp mode
+   :colorize?                     {:spec    ::config/colorize?
+                                   :default true}})
 
 ;; TODO prune this
 (def undocumented-option-keys
