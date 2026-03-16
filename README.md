@@ -449,13 +449,13 @@ Reference map of options and default values, for cutting & pasting:
 {:theme                         "Alabaster Light"
  :line-height                   1.45
  :print-level                   7
- :label-print-length            25
+ :label-max-length            25
  :format-label-as-code?         false
  :scalar-print-length         33
- :scalar-mapkey-print-length  20
+ :scalar-mapkey-max-length  20
  :scalar-result-print-length  444
  :scalar-depth-1-print-length 59
- :single-line-coll-print-length 15
+ :single-line-coll-max-length 15
  :print-length                    15
  :display-namespaces?           true
  :metadata-print-level          7
@@ -582,7 +582,7 @@ Sets the max length of collections.  Collections whose count are at least 2 grea
 
 <br>
 
-#### **`:label-print-length`**
+#### **`:label-max-length`**
 
  Defaults to `25`<br>
 
@@ -624,7 +624,7 @@ Sets the max length of things like strings, keywords, function names, etc., when
 
 <br>
 
-#### **`:scalar-mapkey-print-length`** 
+#### **`:scalar-mapkey-max-length`** 
 Defaults to `20`<br>
 
 Sets the max length of things like strings, keywords, function names, etc., when they are used as keys in maps. Longer values will be ellipsized.
@@ -684,7 +684,7 @@ Intended primarily to used at the call site when you want to turn off all trunca
 #### **`:display-namespaces?`**
 Defaults to `true`<br>
 
-Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:scalar-print-length` or the `:scalar-mapkey-print-length` (in the case of map keys).
+Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:scalar-print-length` or the `:scalar-mapkey-max-length` (in the case of map keys).
 
 <br>
 
@@ -1255,6 +1255,11 @@ Babashka tests:
 bb test:bb
 ```
 
+### Dev / Testing
+
+The `clj` and `bb` tests are automatically generated from `fireworks.core-test`, check out
+that namespace for details.
+
 <br>
 
 ## Status / Roadmap
@@ -1299,7 +1304,7 @@ Printing and visualization:<br>
 
 ## License
 
-Copyright © 2024-2025 Jeremiah Coyle
+Copyright © 2024-2026 Jeremiah Coyle
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at

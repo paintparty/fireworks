@@ -11,7 +11,7 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [expound "0.9.0"]
                  #_[me.flowthing/pp "2024-11-13.77"]
-                 [io.github.paintparty/lasertag "0.11.7"]]
+                 [io.github.paintparty/lasertag "0.11.6"]]
   :repl-options {:init-ns fireworks.core}
   :deploy-repositories [["clojars" {:url           "https://clojars.org/repo"
                                     :sign-releases false}]])

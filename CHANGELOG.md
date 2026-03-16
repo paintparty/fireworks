@@ -10,7 +10,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 
 ## 0.20.0
-2026-2-02
+2026-3-16
 
 #### Added
 - Tracing of `let` forms via `:trace` flag. [11](https://github.com/paintparty/fireworks/issues/11)
@@ -19,22 +19,21 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Theme token for `:string-delimiter` [111](https://github.com/paintparty/fireworks/issues/111)
 - Theme token for `:js/undefined` [99](https://github.com/paintparty/fireworks/issues/99)
 - Added basic color support for `pp/pprint`[110](https://github.com/paintparty/fireworks/issues/110)
-- Internal `coll-like` tag
-e98edcad2a2db2322b164a3c1df3e5a95bbff980
-- More support for JS built-ins a17d8be1776874028f6e032f96802cd53f63bf6f
-- More options
-   - `:dissoc-metadata-keys`           
-   - `:single-line-metadata-max-length`
-   - `:multi-line-metadata?`           
-   - `:quote-symbols?`                
+- Internal `coll-like` tag [e98edca](https://github.com/paintparty/fireworks/commits/e98edcad2a2db2322b164a3c1df3e5a95bbff980)
+- More support for JS built-ins [a17d8be](https://github.com/paintparty/fireworks/commits/a17d8be1776874028f6e032f96802cd53f63bf6f)
 - Allow `nil` value in theme token `:color` entry
 - Experimental support for theming of printed regexes [#109](https://github.com/paintparty/fireworks/issues/109)
+- Config option `:margin-left`, aliased to `:margin-inline-start`
+- Config option `:dissoc-metadata-keys`, takes a vector of keys to dissoc from printed metadata maps
+- Config option `:select-metadata-keys`, takes a vector of keys to `select-keys` from printed metadata maps                     
+- Config option `:multi-line-metadata?`, can be set to false to force single-line, potentially truncated metadata maps
+- Config option `:quote-symbols?`, can be set to `true` to add single-quote syntax to symbols
 
 
 #### Changed
 - Updated Lasertag dep for better perf
-- Removed fn-args-vector syntax from JS built-ins ae95c8246028f874851e6f2cb1c4a88e60352ba0
-- Refactors 172a1d83c15fc63100b566d8b2d4b4664c4aac3f
+- Removed fn-args-vector syntax from JS built-ins [ae95c82](https://github.com/paintparty/fireworks/commits/ae95c8246028f874851e6f2cb1c4a88e60352ba0)
+- Refactors [172a1d8](https://github.com/paintparty/fireworks/commits/172a1d83c15fc63100b566d8b2d4b4664c4aac3f)
 - Updated tests
 - Atoms and volatiles are now displayed like:
 ```Clojure
@@ -43,6 +42,16 @@ e98edcad2a2db2322b164a3c1df3e5a95bbff980
 
 (? (volatile :foo))
 ;; Volatile{:status :ready :value :foo}
+```
+- Changed the following config names:
+```Clojure
+:coll-limit                     ->  :print-length
+:single-line-coll-length-limit  ->  :single-line-coll-max-length
+:non-coll-result-length-limit   ->  :scalar-result-print-length               
+:non-coll-depth-1-length-limit  ->  :scalar-depth-1-max-length
+:non-coll-length-limit          ->  :scalar-max-length
+:non-coll-mapkey-length-limit   ->  :scalar-mapkey-max-length
+:label-max-length             ->  :label-max-length
 ```
 
 
