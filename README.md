@@ -921,7 +921,7 @@ Fireworks includes a handful of popular themes:
 <div align="center"><img src="resources/themes/dark/Neutral-Dark.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)</i></b></sub></div>
-<div align="center"><img src="resources/themes/dark/Universal-Neutral-on-dark.png" width="600px"/></div>
+<div align="center"><img src="resources/themes/dark/Universal-Neutral-On-Dark.png" width="600px"/></div>
 
 
 

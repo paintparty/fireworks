@@ -117,7 +117,7 @@
 (defn highlighted-regex-syntax 
   [m]
   (let [{:keys [in-group in-any-of in-group-neutral in-any-of-neutral]}
-        (let [neutral-light "#e0e0e0"
+        (let [neutral-light "#ebebeb"
               neutral-dark  "#393939"]
           (cond
             (= m regex-syntax-light)

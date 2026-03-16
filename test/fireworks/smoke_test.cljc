@@ -67,8 +67,8 @@
         {:margin-top        2
          :margin-bottom     2
          :display-metadata? true
-         :label             "Universal Neutral"
-         :theme             "Universal Neutral"}
+         :label             "Monokai Light"
+         :theme             "Monokai Light"}
         read-me-sample)
      (? :-
         {:margin-top    2
