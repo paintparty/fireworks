@@ -3,9 +3,6 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
-
-## Unreleased
-
 <br>
 <br>
 
@@ -13,16 +10,21 @@ For a list of breaking changes, check [here](#breaking-changes)
 2026-3-16
 
 #### Added
-- Tracing of `let` forms via `:trace` flag. [11](https://github.com/paintparty/fireworks/issues/11)
+- Improved print representation of Throwables [#122](https://github.com/paintparty/fireworks/issues/122)
+- Theme token for `:string-delimiter` [#111](https://github.com/paintparty/fireworks/issues/111)
+- Added basic color support for `pp/pprint` / `:pp` mode (experimental) [#110](https://github.com/paintparty/fireworks/issues/110)
+- Tokens for regex parts styling (experimental) [#109](https://github.com/paintparty/fireworks/issues/109) 
+- Token for decimal styling (experimental) [#106](https://github.com/paintparty/fireworks/issues/106) 
+- Option to print metadata on one line, with optional char limit. [#102](https://github.com/paintparty/fireworks/issues/102)
+- Add option to supply a ks that will filter metadata maps. [#101](https://github.com/paintparty/fireworks/issues/101)
+- Add hook for dynamically changing theme token via user metadata [#100](https://github.com/paintparty/fireworks/issues/100)
+- Tracing of `let` forms via `:trace` flag. [#11](https://github.com/paintparty/fireworks/issues/11)
 - "Short-circuited" annotation to printings from tracing forms
-- Theme token for `:escaped-double-quotes` [93](https://github.com/paintparty/fireworks/issues/93)
-- Theme token for `:string-delimiter` [111](https://github.com/paintparty/fireworks/issues/111)
-- Theme token for `:js/undefined` [99](https://github.com/paintparty/fireworks/issues/99)
-- Added basic color support for `pp/pprint`[110](https://github.com/paintparty/fireworks/issues/110)
-- Internal `coll-like` tag [e98edca](https://github.com/paintparty/fireworks/commits/e98edcad2a2db2322b164a3c1df3e5a95bbff980)
+- Theme token for `:js/undefined` [#99](https://github.com/paintparty/fireworks/issues/99)
+- Theme token for `:escaped-double-quotes` [#93](https://github.com/paintparty/fireworks/issues/93)
+- Internal `:coll-like` tag [e98edca](https://github.com/paintparty/fireworks/commits/e98edcad2a2db2322b164a3c1df3e5a95bbff980)
 - More support for JS built-ins [a17d8be](https://github.com/paintparty/fireworks/commits/a17d8be1776874028f6e032f96802cd53f63bf6f)
 - Allow `nil` value in theme token `:color` entry
-- Experimental support for theming of printed regexes [#109](https://github.com/paintparty/fireworks/issues/109)
 - Config option `:margin-left`, aliased to `:margin-inline-start`
 - Config option `:dissoc-metadata-keys`, takes a vector of keys to dissoc from printed metadata maps
 - Config option `:select-metadata-keys`, takes a vector of keys to `select-keys` from printed metadata maps                     
@@ -31,27 +33,37 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 
 #### Changed
-- Updated Lasertag dep for better perf
+- Bumped Clojure to `1.11.1` (potentially breaking)
+- If using with bb, requires `v1.12.210` or higher (potentially breaking)
+- Bumped [Lasertag](https://github.com/paintparty/lasertag) dep to `0.12.0` for better perf
+- Updated logic for reference types (internal) [#120](https://github.com/paintparty/fireworks/issues/120)
+- Badges for deferables (atoms, refs, etc) always stacked in block position [#119](https://github.com/paintparty/fireworks/issues/119)
+- Drop the trailing `[]` from print representations of functions [#117](https://github.com/paintparty/fireworks/issues/117)
+- Selective application of multi-line map formatting based on length of keys that are data structures [#116](https://github.com/paintparty/fireworks/issues/116)
+- Use `%` for anon fn args, in printing label [#114](https://github.com/paintparty/fireworks/issues/114)
+- Updated displaying strings with newlines [#113](https://github.com/paintparty/fireworks/issues/113)
 - Removed fn-args-vector syntax from JS built-ins [ae95c82](https://github.com/paintparty/fireworks/commits/ae95c8246028f874851e6f2cb1c4a88e60352ba0)
-- Refactors [172a1d8](https://github.com/paintparty/fireworks/commits/172a1d83c15fc63100b566d8b2d4b4664c4aac3f)
+- Various Refactors [172a1d8](https://github.com/paintparty/fireworks/commits/172a1d83c15fc63100b566d8b2d4b4664c4aac3f)
 - Updated tests
-- Atoms and volatiles are now displayed like:
+- Atoms volatiles are now displayed in a more idiomatic manner:
 ```Clojure
 (? (atom :foo))
-;; Atom{:status :ready :value :foo}
+Atom
+{:status :ready :value :foo}
 
 (? (volatile :foo))
-;; Volatile{:status :ready :value :foo}
+Volatile
+{:status :ready :value :foo}
 ```
-- Changed the following config names:
+- Changed the following config names (potentially breaking changes):
 ```Clojure
 :coll-limit                     ->  :print-length
 :single-line-coll-length-limit  ->  :single-line-coll-max-length
-:non-coll-result-length-limit   ->  :scalar-result-print-length               
+:non-coll-result-length-limit   ->  :scalar-result-max-length               
 :non-coll-depth-1-length-limit  ->  :scalar-depth-1-max-length
 :non-coll-length-limit          ->  :scalar-max-length
 :non-coll-mapkey-length-limit   ->  :scalar-mapkey-max-length
-:label-max-length             ->  :label-max-length
+:label-max-length               ->  :label-max-length
 ```
 
 
@@ -701,6 +713,22 @@ if user has `NO_COLOR` env var set to a non-black string. Closes #51.
 <br>
 
 ## Breaking changes
+
+### 0.20.0
+- Bumped Clojure to `1.11.1` (potentially breaking)
+
+- If using with bb, requires `v1.12.210` or higher (potentially breaking)
+
+- Changed the following config names (potentially breaking if you use custom values for any of these):
+```Clojure
+:coll-limit                     ->  :print-length
+:single-line-coll-length-limit  ->  :single-line-coll-max-length
+:non-coll-result-length-limit   ->  :scalar-result-max-length               
+:non-coll-depth-1-length-limit  ->  :scalar-depth-1-max-length
+:non-coll-length-limit          ->  :scalar-max-length
+:non-coll-mapkey-length-limit   ->  :scalar-mapkey-max-length
+:label-max-length               ->  :label-max-length
+```
 
 ### 0.17.0
 - In a cljs browser context, the map returned from a call such as `(? :data foo)` now always has an ANSI SGR tagged string in `[:formatted :string]`. If you need the `%c`-tagged string,

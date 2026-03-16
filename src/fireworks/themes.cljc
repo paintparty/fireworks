@@ -33,8 +33,20 @@
 (def regex-syntax-neutral-dark
   (assoc regex-syntax-neutral
          :regex.escape-backslash     
-         {:color           (bling-css-color :dark-gray)
-          :regex.character (bling-css-color :light-gray)}))
+         {:color (bling-css-color :dark-gray)}
+         :regex.character            {:font-weight :normal :color "#b1b1b1"}
+         :regex.quantifier           {:color "#b1b1b1"}
+         :regex.numeric-quantifier   {:color "#b1b1b1"}
+         :regex.group-mods           {:color "#b1b1b1"}
+         :regex.any-of-delimeter     {:color "#b1b1b1"}
+         :regex.group-delimeter      {:color "#b1b1b1"}
+         :regex.not-any-of-delimeter {:color "#b1b1b1"} 
+         :regex.anchor               {:color "#b1b1b1"}    
+         :regex.character-range      {:font-weight :normal :color "#b1b1b1"}                                        
+         :regex.number-range         {:font-weight :normal :color "#b1b1b1"}                                        
+         :regex.special-character    {:font-weight :normal :color "#b1b1b1"}
+         :regex.alternation          {:color "#b1b1b1"}
+         ))
 
 
 (def regex-syntax-light
@@ -345,7 +357,7 @@
                                    :font-style :italic}
                       :metadata   {:color            "#ae849b"
                                    :text-shadow      "0 0 2px #003538"
-                                   :background-color "#3a1228"}
+                                   :background-color "#2f1423"}
                       :metadata2  {:color            "#a08a40"
                                    :text-shadow      "0 0 2px #003538"
                                    :background-color "#351d1d"}

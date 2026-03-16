@@ -27,8 +27,13 @@
 
        (js/console.clear)
 
-       (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
+       (? :- '[js/decodeURI
+               js/isFinite
+               js/EvalError
+               js/Date])     
 
+      ;;  (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
+       
        ;; (? (tag my-record-type)) 
        ;; (? (tag-map my-record-type)) 
        
@@ -73,7 +78,9 @@
                    :theme :sideline}
                   (bling [:p [:red "This is red" [:bold " and bold."]]]
                          [:p "Line two"]
-                         (hifi {:a "foo" :b 2 :c 3})))
+                         (hifi {:a "foo"
+                                :b 2
+                                :c 3})))
 
        #_(callout {:type        :info
                    :label-theme :pipe}
@@ -110,19 +117,19 @@
 
        ;;  (? {:a #()})
        
-       #_(? {:print-length  200
-             :label       "Clojure(Script) values"
-             :label-color :blue
+       #_(? {:print-length 200
+             :label        "Clojure(Script) values"
+             :label-color  :blue
              ;;  :bold?       true
-             :find        {:pred #(= % 3.33)}
+             :find         {:pred #(= % 3.33)}
              }
             everything
             #_(select-keys everything [:atom]))
 
-       #_(? {:print-length  200
-             :label       "Clojure(Script) values"
-             :label-color :red
-             :bold?       true
+       #_(? {:print-length 200
+             :label        "Clojure(Script) values"
+             :label-color  :red
+             :bold?        true
              }
             (select-keys everything [:atom]))
 
@@ -189,7 +196,7 @@
        
        
        #_(? {:print-length 200
-             :label      "ClojureScript interop types"}
+             :label        "ClojureScript interop types"}
             sample/interop-types)
 
        #_(let [buffer      (new js/ArrayBuffer 8)

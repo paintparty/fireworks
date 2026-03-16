@@ -25,11 +25,61 @@
 (defn foo [a b] nil)
 (def bar nil)
 
+(def read-me-sample
+  (array-map 
+   :string
+   "Hello"
+   :string/long
+   "The quick brown fox jumped over the lazy dog"
+   :string/newlines
+   "The quick brown
+              fox jumped over
+              the lazy dog"
+   :symbol
+   'foobar
+   :symbol/meta
+   (with-meta 'foobar {:a 1})
+   :boolean 
+   true
+   :regex
+   #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$"
+   :number
+   1234
+   :fn
+   juxt
+   :lambda
+   #()
+   :brackets
+   [[[[[[]]]]]] 
+   :map
+   {:foo :bar}
+   :vector
+   [1 2 3]
+   :record
+   sample/my-record-type
+   :atom
+   (atom [1 2 3])
+   )
+  )
+
 #?(:clj
    #_(pprint (tag-map (byte 0)))
    (do
+     (? :no-file
+        {:margin-top        2
+         :margin-bottom     2
+         :display-metadata? true
+         :label             "Zenburn Dark"}
+        read-me-sample)
+     (? :-
+        {:margin-top    2
+         :margin-bottom 2}
+        '[js/decodeURI
+          js/isFinite
+          js/EvalError
+          js/Date])
     ;;   (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
-    ;; (? sample/interop-types)
+     (? :pp {:colorize? true} sample/interop-types)
     ;;  (? (transient [1 2 3 "foo"]))
     ;;  (println fireworks.sample/my-data-type)
     ;;  (? :pp (tag-map fireworks.sample/my-data-type))

@@ -86,9 +86,9 @@
 
 ## Setup
 
-Requires Clojure `1.10.3` or higher
+Requires Clojure `1.11.1` or higher
 
-If using with Babashka, requires Babashka `v1.12.196` or higher
+If using with Babashka, requires Babashka `1.12.210` or higher
 
 <br>
 
@@ -98,15 +98,20 @@ Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.19.0"]
+[io.github.paintparty/fireworks "0.20.0"]
 ```
 
 <br>
 
 ### Step 2:
 
-Import into your namespace, config, and start using:
+Require it:
+```Clojure
+(require '[lasertag.core :refer [tag tag-map]])
+```
+<br>
 
+Or import into your namespace, config, and start using:
 ```clojure
 (ns myns.core
   (:require
@@ -214,20 +219,23 @@ details.
 <br>
 <br>
 
-## Two libraries
+## Production stubs 
+Fireworks provides stubs so don't have to worry about production code that contains tapping/debugging code that you forgot to remove.
 
-In development, use the `io.github.paintparty/fireworks` library.
+For production builds, you can alias the following namespaces:
+`fireworks.core` ->  `fireworks.stubs.core`<br>
+`fireworks.pp` ->  `fireworks.stubs.pp`
 
-For production builds, use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. The API is identical to `fireworks` but the macros don't print anything - they just expand to the original form itself. This way, you don't have to worry about production code that contains tapping/debugging code that you forgot to remove.
+Alternatively, for production builds you can use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. The API is identical to `fireworks` but the macros don't print anything - they just expand to the original form itself.
 
 <br>
 <br>
 
 ## Hot-reloaded workflow
 
-Fireworks is a great fit for a hot-reloaded, tap-driven-dev style workflow.
+Fireworks is a great fit for a hot-reloaded, tap-driven workflow.
 
-For many ClojureScript projects using something like Shadow-cljs, this is the norm.
+For many ClojureScript projects using something like `shadow-cljs`, this is the norm.
 
 For this kind of workflow on JVM Clojure, there are 2 sample setups in `examples/test-refresh/` directory. One is a `deps.edn` project and the other is a Leiningen project. Both of these projects use [test-refresh](https://github.com/jakemcc/test-refresh), with the `:debug` option set to `true`.
 
@@ -895,7 +903,7 @@ Fireworks includes a handful of popular themes:
 
 
 <div align="center"><sub><b><i>Alabaster Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/themes/dark/Alabaster-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Alabaster-Dark.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Zenburn Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Zenburn-Dark.png" width="534px"/></div>
@@ -1041,7 +1049,7 @@ For theming parity between your editor and terminal emulator, this is probably n
 ```
 
 <br>
-
+<!-- 
 ### Setting the background color and font in Chrome DevTools (ClojureScript) 
 If you are using Firefox, ignore this section and follow [the instructions in the following section](#setting-the-background-color-and-font-in-firefox-developer-tools).
 
@@ -1072,7 +1080,7 @@ You can customize the font-family and background color of the dev console in **F
 
 
 <br>
-<br>
+<br> -->
 
 ## Printing conventions
 
@@ -1210,13 +1218,6 @@ Output from `js/console.log`:
 Output from Fireworks:
 
 <p align="center"><img src="resources/features/printing-built-in-functions-in-cljs.png" width="534px" /></p>
-
-
-<br>
-
-JS built-in objects such as `js/Math` or `js/JSON` which cannot be called like functions or constructors are printed like this:
-
-<p align="center"><img src="resources/features/printing-built-in-objects-in-cljs.png" width="534px" /></p>
 
 
 <br>
