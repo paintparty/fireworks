@@ -67,8 +67,8 @@
         {:margin-top        2
          :margin-bottom     2
          :display-metadata? true
-         :label             "Monokai Light"
-         :theme             "Monokai Light"}
+         :label             "Degas Light"
+         :theme             "Degas Light"}
         read-me-sample)
      (? :-
         {:margin-top    2

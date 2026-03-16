@@ -880,25 +880,25 @@ As an alternative to providing a `:pred` entry, you can target the value to be h
 Fireworks includes a handful of popular themes:
 
 <div align="center"><sub><b><i>Alabaster Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Alabaster-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Alabaster-Light.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Zenburn Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Zenburn-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Zenburn-Light.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Solarized Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Solarized-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Solarized-Light.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Monokai Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Monokai-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Monokai-Light.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Degas Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Degas-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Degas-Light.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Neutral Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Neutral-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Neutral-Light.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Universal-Neutral-On-Light.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/light/Universal-Neutral-On-Light.png" width="600px"/></div>
 
 
 
