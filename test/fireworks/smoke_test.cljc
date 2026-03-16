@@ -33,8 +33,8 @@
    "The quick brown fox jumped over the lazy dog"
    :string/newlines
    "The quick brown
-              fox jumped over
-              the lazy dog"
+    fox jumped over
+    the lazy dog"
    :symbol
    'foobar
    :symbol/meta
@@ -58,9 +58,7 @@
    :record
    sample/my-record-type
    :atom
-   (atom [1 2 3])
-   )
-  )
+   (atom [1 2 3])))
 
 #?(:clj
    #_(pprint (tag-map (byte 0)))
@@ -69,7 +67,8 @@
         {:margin-top        2
          :margin-bottom     2
          :display-metadata? true
-         :label             "Zenburn Dark"}
+         :label             "Zenburn Dark"
+         :theme             "Zenburn Dark"}
         read-me-sample)
      (? :-
         {:margin-top    2

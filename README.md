@@ -906,22 +906,22 @@ Fireworks includes a handful of popular themes:
 <div align="center"><img src="resources/themes/dark/Alabaster-Dark.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Zenburn Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/themes/dark/Zenburn-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Zenburn-Dark.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Solarized Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/themes/dark/Solarized-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Solarized-Dark.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Monokai Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/themes/dark/Monokai-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Monokai-Dark.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Degas Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/themes/dark/Degas-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Degas-Dark.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Neutral Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/themes/dark/Neutral-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Neutral-Dark.png" width="600px"/></div>
 
 <div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/themes/dark/Universal-Neutral-On-Dark.png" width="534px"/></div>
+<div align="center"><img src="resources/themes/dark/Universal-Neutral-On-Dark.png" width="600px"/></div>
 
 
 

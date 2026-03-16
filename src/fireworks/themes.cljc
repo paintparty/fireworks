@@ -550,8 +550,8 @@
                                 :metadata2  {:color            "#b596c0"
                                              :background-color "#4e3257"
                                              :text-shadow      "0 0 2px #002916"}
-                                :label      {:color            "#b49d5f"
-                                             :background-color "#524019"
+                                :label      {:color            "#c1a75e"
+                                             :background-color "#4e4633"
                                              :font-style       :italic}
                                 :eval-label {:color            "#9ac2d6"
                                              :background-color "#2b4c69"
