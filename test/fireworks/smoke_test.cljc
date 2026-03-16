@@ -67,8 +67,8 @@
         {:margin-top        2
          :margin-bottom     2
          :display-metadata? true
-         :label             "Zenburn Dark"
-         :theme             "Zenburn Dark"}
+         :label             "Universal Neutral"
+         :theme             "Universal Neutral"}
         read-me-sample)
      (? :-
         {:margin-top    2

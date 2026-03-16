@@ -205,7 +205,7 @@
    :mood   :light
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
-   :bracket-contrast "low"
+   :bracket-contrast "high"
    :tokens {:classes {:comment    {:color      "#AA3731"
                                    :font-style :italic}
                       :metadata   {:color            "#be55bb"
@@ -241,19 +241,19 @@
    :mood             :dark
    :author           "Author Name"
    :langs            ["Clojure" "ClojureScript" "Babashka"]
-   :bracket-contrast "low"
+   :bracket-contrast "high"
    :tokens           {:classes {:comment    {:color      "#e0d557"
                                              :font-style :italic}
                                 :eval-label {:color            "#85b7e5"
                                              :font-style       :italic
                                              :background-color "#00345c"}
-                                :metadata   {:color            "#bb7777"
+                                :metadata   {:color            "#d58c8c"
                                              :text-shadow      "0 0 2px #003538"
                                              :background-color "#2e0a0a"}
                                 :label      {:color            "#a9aabc"
                                              :background-color "#212d36"
                                              :font-style       :italic}
-                                :metadata2  {:color            "#9773b5"
+                                :metadata2  {:color            "#a982c9"
                                              :text-shadow      "0 0 2px #003538"
                                              :background-color "#260a3d"}} 
                       :syntax  (merge {:js-object-key {:color "#888888"}}
@@ -746,7 +746,7 @@
                                              :font-style :italic}
                                 :comment    {:color      "#2ef1ff"
                                              :font-style :italic}
-                                :metadata   {:color            "#c47878"
+                                :metadata   {:color            "#df8b8b"
                                              :text-shadow      "0 0 2px #003538"
                                              :background-color "#3f2222"}
                                 :metadata2  {:color            "#a77ccb"
