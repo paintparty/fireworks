@@ -293,27 +293,30 @@ This section outlines the four public macros that fireworks offers:<br>
 
 (? x)
 ```
-<p align="center"><img src="resources/features/fireworks-core-par.png" width="534px" /></p>
+<p align="center"><img src="resources/features/fireworks-core-par.png" width="600px" /></p>
 
 
-Calling **`fireworks.core/?`** with two arguments will print a label (instead of the form), the namespace info, and the result:
+Calling **`fireworks.core/?`** with a leading string argument will print a label (instead of the form), the namespace info, and the result:
 
 ```Clojure
 (? "My label" x)
 ```
-<p align="center"><img src="resources/features/fireworks-core-par-label.png" width="534px" /></p>
+<p align="center"><img src="resources/features/fireworks-core-par-label.png" width="600px" /></p>
 
 <br>
 
-The first argument can also be a specific flag, in the form of a keyword,
-which dictates a mode of functionality (See the table in the following section for more details):
+Calling **`fireworks.core/?`** with a leading :keyword flag will activate a specific mode of functionality (See the table in the following section for more details). The example below just prints the result, no label or file info:
 
 ```Clojure
 (? :- x)
 ```
+
+<p align="center"><img src="resources/features/fireworks-core-par-result.png" width="600px" /></p>
+
+
 <br>
 
-The first argument can also be a map, which supplies various [config options](#options):
+The leading argument can also be a map, which supplies various [config options](#options):
 
 ```Clojure
 (? {:label      "My label"
@@ -451,28 +454,8 @@ If you just want the formatted string, and/or other data that **`fireworks.core/
 
 ## Options
 
-Reference map of options and default values, for cutting & pasting:
+Check out [this file](https://github.com/paintparty/fireworks/blob/main/src/fireworks/config.cljc) for all the available options. 
 
-```Clojure
-{:theme                         "Alabaster Light"
- :line-height                   1.45
- :print-level                   7
- :label-max-length            25
- :format-label-as-code?         false
- :scalar-print-length         33
- :scalar-mapkey-max-length  20
- :scalar-result-print-length  444
- :scalar-depth-1-print-length 59
- :single-line-coll-max-length 15
- :print-length                    15
- :display-namespaces?           true
- :metadata-print-level          7
- :display-metadata?             true
- :metadata-position             :inline   ; :inline | :block
- :bracket-contrast              :high     ; :high | :low
- :supports-color-level          nil       ; 1, 2, or 3. 
- :enable-rainbow-brackets?      true}
-```
 
 <br>
 
@@ -535,238 +518,6 @@ You will need to substitute `<your-home-folder>` in the example above with the n
 
 For the actual `config.edn` file, you can use the above example map (at the beginning of this section) as a starting point. Prior to doing this you can experiment with the various configuration options ala-carte via passing a leading options map to `fireworks.core/?`:
 
-
-<br>
-<br>
-
-### All the options
-All of the available config options and their default values:
-
-<br>
-
-#### **`:theme`**
-Defaults to `"Alabaster Light"`<br>
-
-Sets the theme. This will override `:mood` setting.
-This must be one of the following 3 types of values:
-
-- A theme name which corresponds to the theme name of an stock fireworks theme in `themes/`. Currently, these include the following:<br><br>
-`"Alabaster Light"`<br>
-`"Alabaster Dark"`<br>
-`"Neutral Light"`<br>
-`"Neutral Dark"`<br>
-`"Solarized Light"`<br>
-`"Solarized Dark"`<br>
-`"Degas Light"`<br>
-`"Degas Dark"`<br>
-`"Zenburn Light"`<br>
-`"Zenburn Dark"`<br>
-`"Monokai Light"`<br>
-`"Monokai Dark"`<br>
-`"Universal Neutral"`<br>
-
-- A path pointing to an `.edn` file on your computer, the contents of which constitute a valid fireworks theme.<br>The path must be absolute e.g. `"/Users/<your-home-folder>/.config/bling/my-theme.edn"`<br>
-This will not work:
-`"~/.config/bling/my-theme.edn"`
-<br>If the map in this `.edn` file fails to satisfy the `fireworks.specs.theme/theme` spec it will issue a warning and fall back to the default light or dark theme (depending on the value of `:mood`). 
-
-- A valid Fireworks theme, which is a map that satisfies the `fireworks.specs.theme/theme` spec. Typically, its structure will at minimum resemble the first example found in the [theming section ](#theming) of this document.
-
-
-<br>
-
-
-#### **`:line-height`**
-Defaults to `1.45`<br>
-
-Sets the line-height. Only takes effect in browser consoles.
-
-<br>
-
-#### **`:print-length`**
-Defaults to `15`<br>
-
-Sets the max length of collections.  Collections whose count are at least 2 greater than this number will be truncated. By default, Fireworks aggressively truncates collections to keep the display footprint of the printed output as short and narrow as possible.
-
-<br>
-
-#### **`:label-max-length`**
-
- Defaults to `25`<br>
-
-Sets the max length of the form-to-be-evaled label, or the user label, if supplied.
-
-<br>
-
-#### **`:format-label-as-code`**
-
- Defaults to `false`<br>
-
-If a custom label is not supplied, this will pretty-print the form-to-be-printed,
-instead of truncating it.
-
-<br>
-
-#### **`:label-color`**
-
- Defaults to `nil`<br>
-
-Sets the color of the form-to-be-evaled label, or the user label, if supplied.
-Valid values are `:blue`, `:green`, or `:red`. All stock themes will have a preset color
-that is synced with the particular theme, so this option is intended to be used as an override at the call site if you have multiple printings from different places in your codebase, and you want an easy way to distinguish them from each other. 
-
-<br>
-
-#### **`:print-level`**
- Defaults to `7`<br>
-
-Sets the max depth of printing for nested collections.
-
-<br>
-
-#### **`:scalar-print-length`**
- Defaults to `33`<br>
-
-Sets the max length of things like strings, keywords, function names, etc., when they are nested more than one level deep inside a data structure. Values whose length exceeds this will be ellipsized.
-
-
-<br>
-
-#### **`:scalar-mapkey-max-length`** 
-Defaults to `20`<br>
-
-Sets the max length of things like strings, keywords, function names, etc., when they are used as keys in maps. Longer values will be ellipsized.
-
-
-<br>
-
-#### **`:scalar-result-print-length`**
-Defaults to `444`<br>
-
-Sets the max length of a scalarection value such as a string, keyword, function name, etc. Only applies when the value itself is the result of the evaluation (not nested within a data structure).
-
-
-<br>
-
-
-#### **`:scalar-depth-1-print-length`**
-Defaults to `69`<br>
-
-Sets the max length of a scalarection value such as a string, keyword, function name, etc. Only applies when the value is nested one level deep inside the result, which would be a non-associative collection such as a vector or seq.
-
-
-<br>
-
-#### **`:enable-rainbow-brackets?`**
-Defaults to `true`<br>
-
-Whether or not to use rainbow brackets. Rainbow brackets can be customized in your theme.
-
-
-<br>
-
-#### **`:bracket-contrast`**
-Defaults to `"high"`<br>
-
-Sets the level of rainbow bracket intensity to `"high"` or `"low"`.  Default value can also be overridden by `:bracket-contrast` entry in a Fireworks theme map.
-
-
-<br>
-
-#### **`:bold?`**
-Defaults to `false`<br>
-
-Will render the printed output with a `font-weight` of `bold`.
-
-
-<br>
-
-#### **`:truncate?`**
-Defaults to `true`<br>
-
-Intended primarily to used at the call site when you want to turn off all truncation of collections and all truncation (ellipsis) of self-evaluating values (string, keywords, symbols, etc.). If set to `false`, all truncation will be capped at 1000, meaning 1000 things in a collection and a length of 1000 for self-evaluating values.
-
-
-<br>
-
-#### **`:display-namespaces?`**
-Defaults to `true`<br>
-
-Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:scalar-print-length` or the `:scalar-mapkey-max-length` (in the case of map keys).
-
-<br>
-
-#### **`:supports-color-level`**
-
-Defaults to `nil`<br>
-
-You should generally not need to set this, as Fireworks automatically detects the host environment's level of color support, and will set this value internally. Most terminal environments support level `3` (truecolor). If set to `2`, Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If set to `1`, Fireworks will use a b&w theme ("Universal Neutral"). If you find that your host environment's color support level is not being detected, you can set this value explicitly to match a target level of color support.
-
-<br>
-
-#### <!--**`:enable-terminal-italics?`**-->
-<!--Defaults to `true`<br>-->
-
-<!--If set to `false`, any theme tokens specified to be italicized will not be italicized. You probably don't want to change this option.-->
-
-
-<!--<br>-->
-
-#### <!--**`:enable-terminal-font-weights?`**-->
-<!--Defaults to `true`<br>-->
-
-<!--If set to `false`, any theme tokens specified to be bold will NOT be bold. You .-->
-
-<!--<br>-->
-
-#### **`:metadata-print-level`** 
-Defaults to `6`<br>
-
-Sets the max depth of printing for metadata maps that contain nested collections.
-
-<br>
-
-#### **`:display-metadata?`**
-Defaults to `false`<br>
-
-Print metadata values.
-
-<br>
-
-#### **`:metadata-position`** 
-Defaults to `"inline"`<br>
-
-Determines position of metadata relative to value that is carrying it. Options are `"inline"` (default), or `"block"`. 
-
-<br>
-
-#### **`:find`** 
-Defaults to `nil`<br>
-
-Find and highlight values in the printed output. See [Highlighting values](#highlighting-values-in-printed-output) section.
-
-<br>
-
-#### **`:when`** 
-
-Defaults to `nil`<br>
-
-If supplied, this value should be a predicate. Will only print something if value passes predicate.
-
-<br>
-
-#### **`:print-with`**
-Defaults to `nil`<br>
-
-Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`.
-
-```Clojure
-(? {:label      "My label"
-    :print-with prn}
-   x)
-``` 
-If you want to print with `pprint` or `js/console.log`, use `(? :pp ...)` or `(? :js ...)`.
-
 <br>
 <br>
 
@@ -776,7 +527,7 @@ If you want to print with `pprint` or `js/console.log`, use `(? :pp ...)` or `(?
 
 If you happen to pass a bad value for an option, either at the call-site or in your global config, Fireworks will issue an actionable warning:
 
-<p align="center"><img src="resources/features/helpful-warnings.png" width="634px" /></p>
+<p align="center"><img src="resources/features/helpful-warnings.png" width="600px" /></p>
 
 
 
@@ -792,7 +543,7 @@ For data structures, the metadata map is displayed inline, immediately following
 (? ^{:a "a"} ['foo 'bar 'baz]
 ```
 
-<p align="center"><img src="resources/features/metadata-coll-inline.png" width="534px" /></p>
+<p align="center"><img src="resources/features/metadata-coll-inline.png" width="600px" /></p>
 
 
 Here is the same vector, with the second symbol in the vector carrying metadata:  
@@ -801,13 +552,13 @@ Here is the same vector, with the second symbol in the vector carrying metadata:
 (? ^{:a "a"} ['foo (with-meta (symbol "bar") {:b "b"}) 'baz]
 ```
 
-<p align="center"><img src="resources/features/metadata-coll-and-symbol-inline.png" width="534px" /></p>
+<p align="center"><img src="resources/features/metadata-coll-and-symbol-inline.png" width="600px" /></p>
 
 
 If you would rather print metadata in the traditional "block" position, you can set the config value of `:metadata-positioning` to `:block`:
 
 
-<p align="center"><img src="resources/features/metadata-coll-and-symbol-block.png" width="534px" /></p>
+<p align="center"><img src="resources/features/metadata-coll-and-symbol-block.png" width="600px" /></p>
 
 
 <br>
@@ -821,28 +572,31 @@ Fireworks offers a `:find` option which takes a map containing a `:pred` entry. 
 
 (? {:find {:pred #(= % 777)}} x)
 ```
-<p align="center"><img src="resources/features/highlight.png" width="534px" /></p>
+<p align="center"><img src="resources/features/highlight.png" width="600px" /></p>
 
 
 
 You can also pass a custom highlighting style:
 
 ```Clojure
-(? {:find {:pred #(= % 777)
-           :style {:background-color "#a0f7fd"}}}
+(? {:find {:pred  #(= % 777)
+           :style {:background-color "#ecec2e"
+                   :color            "#000000"}}}
    [1 33 99 777 -16])
 ```
-<p align="center"><img src="resources/features/highlight-with-custom-style.png" width="534px" /></p>
+<p align="center"><img src="resources/features/highlight-with-custom-style.png" width="600px" /></p>
 
 
 Or pass multiple preds, with different styles:
 ```Clojure
 (? {:find [{:pred #(= % 777)}
-           {:pred #(= % -16)
-            :style {:background-color "#a0f7fd"}}]}
+           {:pred  #(= % -16)
+            :style {:background-color "#ecec2e"
+                    :color            "#000000"
+                    :font-weight      :bold}}]}
    [1 33 99 777 -16])
 ```
-<p align="center"><img src="resources/features/highlight-with-multiple-custom-styles.png" width="534px" /></p>
+<p align="center"><img src="resources/features/highlight-with-multiple-custom-styles.png" width="600px" /></p>
 
 <!-- TODO - Add screenshots -->
 You can use one of the following predefined highlighting styles via a `:class` entry:
@@ -879,29 +633,6 @@ As an alternative to providing a `:pred` entry, you can target the value to be h
 
 Fireworks includes a handful of popular themes:
 
-<div align="center"><sub><b><i>Alabaster Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Alabaster-Light.png" width="600px"/></div>
-
-<div align="center"><sub><b><i>Zenburn Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Zenburn-Light.png" width="600px"/></div>
-
-<div align="center"><sub><b><i>Solarized Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Solarized-Light.png" width="600px"/></div>
-
-<div align="center"><sub><b><i>Monokai Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Monokai-Light.png" width="600px"/></div>
-
-<div align="center"><sub><b><i>Degas Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Degas-Light.png" width="600px"/></div>
-
-<div align="center"><sub><b><i>Neutral Light</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Neutral-Light.png" width="600px"/></div>
-
-<div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)</i></b></sub></div>
-<div align="center"><img src="resources/themes/light/Universal-Neutral-On-Light.png" width="600px"/></div>
-
-
-
 <div align="center"><sub><b><i>Alabaster Dark</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Alabaster-Dark.png" width="600px"/></div>
 
@@ -925,51 +656,89 @@ Fireworks includes a handful of popular themes:
 
 
 
+<div align="center"><sub><b><i>Alabaster Light</i></b></sub></div>
+<div align="center"><img src="resources/themes/light/Alabaster-Light.png" width="600px"/></div>
+
+<div align="center"><sub><b><i>Zenburn Light</i></b></sub></div>
+<div align="center"><img src="resources/themes/light/Zenburn-Light.png" width="600px"/></div>
+
+<div align="center"><sub><b><i>Solarized Light</i></b></sub></div>
+<div align="center"><img src="resources/themes/light/Solarized-Light.png" width="600px"/></div>
+
+<div align="center"><sub><b><i>Monokai Light</i></b></sub></div>
+<div align="center"><img src="resources/themes/light/Monokai-Light.png" width="600px"/></div>
+
+<div align="center"><sub><b><i>Degas Light</i></b></sub></div>
+<div align="center"><img src="resources/themes/light/Degas-Light.png" width="600px"/></div>
+
+<div align="center"><sub><b><i>Neutral Light</i></b></sub></div>
+<div align="center"><img src="resources/themes/light/Neutral-Light.png" width="600px"/></div>
+
+<div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)</i></b></sub></div>
+<div align="center"><img src="resources/themes/light/Universal-Neutral-On-Light.png" width="600px"/></div>
+
+
+
+
+
 Making your own Fireworks theme to perfectly match your current editor theme is straightforward.
 
 If you would like to make your own theme for use with Fireworks, check out `docs/example-theme.edn`. Notice how any of the keys in the `:classes` entry will act as a variable if the same keyword is used as a value in any of the other entries within the `:classes`, `:syntax`, or `:printer` maps.
 
 For your own theme, you do not need to dictate every value that is present in the `:theme` map within the example (`docs/example-theme.edn`). For example, in the default `"Alabaster Light"`, you can see how just a small handful of the tokens are specified. Internally, this gets merged with the base light theme, which specifies how most of the other values inherit from the basic classes in `:classes`. 
 ```Clojure
-(def alabaster-light
-  {:name   "Alabaster Light"
-   :desc   "Based on @tonsky's Alabaster theme."
+(def alabaster-dark 
+  {:name   "Alabaster Dark"
+   :desc   "Based on @tonsky's Alabaster Dark theme."
    :about  "This is additional documentation. Should support markdown here."
    :url    "url goes here"
+   :mood   :dark
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
-   :mood   :light
-   :tokens {:classes {:background    {:background-color "#f7f7f7"}
-                      :string        {:color "#448C27"}
-                      :constant      {:color "#7A3E9D"}
-                      :definition    {:color "#4d6dba"}
-                      :annotation    {:color      "#8c8c8c" 
-                                      :font-style :italic}
-                      :metadata      {:color            "#be55bb"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :background-color "#fae8fd"}
-                      :metadata2     {:color            "#be55bb"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :background-color "#e9e5ff"}
-                      :label         {:color            "#4d6dba"
-                                      :background-color "#edf2fc"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :font-style       :italic}
-                      :eval-label    {:color            "#4d6dba"
-                                      :background-color "#edf2fc"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :font-style       :italic}}
-            :syntax  {:js-object-key {:color "#888888"}}
-            :printer {:file-info     {:color                "#4d6dba"
-                                      :font-style           :italic
-                                      :padding-inline-start :0ch}
-                      :eval-form     :eval-label
-                      :comment       {:color            "#2e6666"
-                                      :text-shadow      "0 0 2px #ffffff"
-                                      :background-color "#e5f1fa"
-                                      :outline          "2px solid #e5f1fa"
-                                      :font-style       :italic}
-                      :atom-wrapper  :label}}})
+   :tokens {:classes {:background {:background-color "#0e1415"}
+                      :string     {:color "#8cbd7a"}
+                      :number     {:color "#6eabed"}
+                      :comment    {:color      "#DFDF8E"
+                                   :font-style :italic}
+                      :constant   {:color "#b696b5"}
+                      :definition {:color "#6eabed"}
+                      :annotation {:color      "#a3a3a3ff"
+                                   :font-style :italic}
+                      :metadata   {:color            "#ae849b"
+                                   :text-shadow      "0 0 2px #003538"
+                                   :background-color "#2f1423"}
+                      :metadata2  {:color            "#a08a40"
+                                   :text-shadow      "0 0 2px #003538"
+                                   :background-color "#351d1d"}
+                      :label      {:color            "#a794ce"
+                                   :background-color "#2b1661"
+                                   :font-style       :italic}
+                      :eval-label {:color            "#85b7e5"
+                                   :font-style       :italic
+                                   :background-color "#00345c"}}
+            :syntax  {:js-object-key             {:color "#b2b2b2"}
+                      :number                    :number
+                      :decimal                   :number
+                      :escaped-double-quote-char :string
+                      :escape-char               {:color (bling-css-color :dark-gray)}
+                      :string-delimiter          {:color "#d28c6d"}
+                      }
+            :printer {:file-info        :annotation
+                      :eval-label       :eval-label
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
+                      :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
+                      :comment          {:color            "#2e6666"
+                                         :text-shadow      "0 0 2px #ffffff"
+                                         :background-color "#e5f1fa"
+                                         :outline          "2px solid #e5f1fa"
+                                         :font-style       :italic}
+                      :ellipsis         {:color "#d28c6d"}
+                      :atom-wrapper     :label}}})
 ```
 
 <br>
@@ -1125,7 +894,7 @@ When printing maps that contain keys which are data-structures, `clojure.pprint/
 
 Fireworks will always print these maps consistently - every key on its own line & empty line between all entries:
 
-<p align="center"><img src="resources/features/printing-maps-with-colls-as-keys.png" width="534px" /></p>
+<p align="center"><img src="resources/features/printing-maps-with-colls-as-keys.png" width="600px" /></p>
 
 <br>
 
@@ -1176,7 +945,7 @@ A sample vector of 3 functions:
 <br>
 Fireworks:
 
-<p align="center"><img src="resources/features/printing-functions-in-cljs.png" width="534px" /></p>
+<p align="center"><img src="resources/features/printing-functions-in-cljs.png" width="600px" /></p>
 
 By default, Fireworks will print the function name with the fully-qualified namespace. This can be disabled by changing the config option `:display-namespaces?` to `false`.
 
@@ -1217,7 +986,7 @@ Output from `js/console.log`:
 ```
 Output from Fireworks:
 
-<p align="center"><img src="resources/features/printing-built-in-functions-in-cljs.png" width="534px" /></p>
+<p align="center"><img src="resources/features/printing-built-in-functions-in-cljs.png" width="600px" /></p>
 
 
 <br>
