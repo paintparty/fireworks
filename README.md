@@ -879,49 +879,49 @@ As an alternative to providing a `:pred` entry, you can target the value to be h
 
 Fireworks includes a handful of popular themes:
 
-<div align="center"><sub><b><i>Alabaster Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Alabaster Light</i></b></sub></div>
 <div align="center"><img src="resources/themes/light/Alabaster-Light.png" width="534px"/></div>
 
-<div align="center"><sub><b><i>Zenburn Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Zenburn Light</i></b></sub></div>
 <div align="center"><img src="resources/themes/light/Zenburn-Light.png" width="534px"/></div>
 
-<div align="center"><sub><b><i>Solarized Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Solarized Light</i></b></sub></div>
 <div align="center"><img src="resources/themes/light/Solarized-Light.png" width="534px"/></div>
 
-<div align="center"><sub><b><i>Monokai Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Monokai Light</i></b></sub></div>
 <div align="center"><img src="resources/themes/light/Monokai-Light.png" width="534px"/></div>
 
-<div align="center"><sub><b><i>Degas Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Degas Light</i></b></sub></div>
 <div align="center"><img src="resources/themes/light/Degas-Light.png" width="534px"/></div>
 
-<div align="center"><sub><b><i>Neutral Light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Neutral Light</i></b></sub></div>
 <div align="center"><img src="resources/themes/light/Neutral-Light.png" width="534px"/></div>
 
-<div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)</i></b></sub></div>
 <div align="center"><img src="resources/themes/light/Universal-Neutral-On-Light.png" width="534px"/></div>
 
 
 
-<div align="center"><sub><b><i>Alabaster Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Alabaster Dark</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Alabaster-Dark.png" width="600px"/></div>
 
-<div align="center"><sub><b><i>Zenburn Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Zenburn Dark</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Zenburn-Dark.png" width="600px"/></div>
 
-<div align="center"><sub><b><i>Solarized Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Solarized Dark</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Solarized-Dark.png" width="600px"/></div>
 
-<div align="center"><sub><b><i>Monokai Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Monokai Dark</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Monokai-Dark.png" width="600px"/></div>
 
-<div align="center"><sub><b><i>Degas Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Degas Dark</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Degas-Dark.png" width="600px"/></div>
 
-<div align="center"><sub><b><i>Neutral Dark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
+<div align="center"><sub><b><i>Neutral Dark</i></b></sub></div>
 <div align="center"><img src="resources/themes/dark/Neutral-Dark.png" width="600px"/></div>
 
-<div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></b></sub></div>
-<div align="center"><img src="resources/themes/dark/Universal-Neutral-On-Dark.png" width="600px"/></div>
+<div align="center"><sub><b><i>Universal Neutral (used if no theme is specified)</i></b></sub></div>
+<div align="center"><img src="resources/themes/dark/Universal-Neutral-on-dark.png" width="600px"/></div>
 
 
 
