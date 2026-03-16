@@ -63,22 +63,59 @@
 #?(:clj
    #_(pprint (tag-map (byte 0)))
    (do
-     (? :no-file
+
+     ;; (def my-theme
+     ;;   {:name   "Foo Dark" ;; Required. Name validated with: #"^[A-Z][^\t\n\r]+ (:?Dark|Light)$"
+     ;;   :mood   "dark"     ;; Required. "light" or "dark"
+     ;;   :tokens {:classes {:string {:color "#c7e62e"}}
+     ;;             :syntax  {:js-object-key {:color "#888888"}}}})
+ 
+     ;; ;; And then just try it out with some kind of sample value like this:
+     ;; (? {:theme my-theme}
+     ;;   {:string-sample   "string"
+     ;;     :number-sample   1234
+     ;;     :boolean-sample  false
+     ;;     :lambda-sample   #(inc %)
+     ;;     :fn-sample       juxt
+     ;;     :regex-sample    #"^hi$"
+     ;;     :symbol-sample   'mysym})
+
+     (def x [1 33 99 777 -16])
+
+     (? :- 
         {:margin-top        2
-         :margin-bottom     2
          :display-metadata? true
-         :label             "Degas Light"
-         :theme             "Degas Light"}
-        read-me-sample)
-     (? :-
-        {:margin-top    2
-         :margin-bottom 2}
-        '[js/decodeURI
-          js/isFinite
-          js/EvalError
-          js/Date])
+         :metadata-position :block
+         :theme             "Alabaster Dark"}
+        ['js/decodeURI
+         'js/isFinite
+         'js/EvalError
+         'js/Date])
+     (!? :- 
+         {:margin-top        2
+          :display-metadata? true
+          :metadata-position :block
+          :theme             "Alabaster Dark"}
+         ['sandbox.browser/ab
+          'sandbox.browser/abc
+          'sandbox.browser/my-function-with-a-really-long-name])
+
+     (!? :- {:margin-top        2
+             :margin-bottom     2
+             :display-metadata? true
+             :metadata-position :block
+             :theme             "Alabaster Dark"}
+         ^{:a 1} ['foo (with-meta 'bar {:b 2}) 'baz]
+         #_read-me-sample)
+     (!? :-
+         {:margin-top    2
+          :margin-bottom 2}
+         '[js/decodeURI
+           js/isFinite
+           js/EvalError
+           js/Date])
     ;;   (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
-     (? :pp {:colorize? true} sample/interop-types)
+     (!? :pp {:colorize? true} sample/interop-types)
     ;;  (? (transient [1 2 3 "foo"]))
     ;;  (println fireworks.sample/my-data-type)
     ;;  (? :pp (tag-map fireworks.sample/my-data-type))
