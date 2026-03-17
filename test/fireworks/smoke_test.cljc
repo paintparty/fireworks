@@ -69,7 +69,7 @@
      ;;   :mood   "dark"     ;; Required. "light" or "dark"
      ;;   :tokens {:classes {:string {:color "#c7e62e"}}
      ;;             :syntax  {:js-object-key {:color "#888888"}}}})
- 
+     
      ;; ;; And then just try it out with some kind of sample value like this:
      ;; (? {:theme my-theme}
      ;;   {:string-sample   "string"
@@ -79,18 +79,18 @@
      ;;     :fn-sample       juxt
      ;;     :regex-sample    #"^hi$"
      ;;     :symbol-sample   'mysym})
-
+     
      (def x [1 33 99 777 -16])
 
-     (? :- 
-        {:margin-top        2
-         :display-metadata? true
-         :metadata-position :block
-         :theme             "Alabaster Dark"}
-        ['js/decodeURI
-         'js/isFinite
-         'js/EvalError
-         'js/Date])
+     (!? :- 
+         {:margin-top        2
+          :display-metadata? true
+          :metadata-position :block
+          :theme             "Alabaster Dark"}
+         ['js/decodeURI
+          'js/isFinite
+          'js/EvalError
+          'js/Date])
      (!? :- 
          {:margin-top        2
           :display-metadata? true
@@ -107,6 +107,25 @@
              :theme             "Alabaster Dark"}
          ^{:a 1} ['foo (with-meta 'bar {:b 2}) 'baz]
          #_read-me-sample)
+
+     (def x 
+       {:name             "Crimson Willow Shell"
+        :category         :aerial
+        :colors           #{:crimson :silver :gold}
+        :traits           #{:crackling :glitter-tail :crossette}
+        :size             :3-inch
+        :fuse-type        :time-delay
+        :duration-ms      4500
+        :altitude-ft      300})
+
+     (?  "My Label"{:margin-top        2
+           :margin-bottom     2
+           :display-metadata? true
+           :metadata-position :block
+           :theme             "Alabaster Dark"}
+          x
+          #_read-me-sample)
+
      (!? :-
          {:margin-top    2
           :margin-bottom 2}
