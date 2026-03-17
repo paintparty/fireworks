@@ -289,7 +289,16 @@ This section outlines the four public macros that fireworks offers:<br>
 **`fireworks.core/?`** is a macro that prints the form, namespace info, and resulting value. It returns the resulting value.
 
 ```Clojure
-(def x {:a "foo" :xyz "bar"})
+;; Example map def, describing a pyrotechnic article
+(def x 
+     {:name        "Crimson Willow Shell"
+      :category    :aerial
+      :colors      #{:crimson :silver :gold}
+      :traits      #{:crackling :glitter-tail :crossette}
+      :size        :3-inch
+      :fuse-type   :time-delay
+      :duration-ms 4500
+      :altitude-ft 300})
 
 (? x)
 ```
@@ -993,7 +1002,7 @@ Output from Fireworks:
 
 ## Performance
 
-Meaningless performance test: `fireworks.core/?` vs `clojure.pprint/pprint` in JVM Clojure, printing a map of a dozen entries of various data types (found at `fireworks.smoke-test/basic-samples`).
+Meaningless performance test: `fireworks.core/?` vs `clojure.pprint/pprint` in JVM Clojure, printing a map of a dozen entries of various data types.
 
 ```
 Hardware:  Mac Mini
