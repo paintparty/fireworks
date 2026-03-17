@@ -286,10 +286,8 @@ This section outlines the four public macros that fireworks offers:<br>
 
 <br>
 
-**`fireworks.core/?`** is a macro that prints the form, namespace info, and resulting value. It returns the resulting value.
-
+First let's define an example value. This is a map that describes a real-world pyrotechnic article:
 ```Clojure
-;; Example map def, describing a pyrotechnic article
 (def x 
      {:name        "Crimson Willow Shell"
       :category    :aerial
@@ -299,7 +297,12 @@ This section outlines the four public macros that fireworks offers:<br>
       :fuse-type   :time-delay
       :duration-ms 4500
       :altitude-ft 300})
+```
 
+
+**`fireworks.core/?`** is a macro that prints the form, namespace info, and resulting value. It returns the resulting value.
+
+```Clojure
 (? x)
 ```
 <p align="center"><img src="resources/features/fireworks-core-par.png" width="600px" /></p>
@@ -314,7 +317,7 @@ Calling **`fireworks.core/?`** with a leading string argument will print a label
 
 <br>
 
-Calling **`fireworks.core/?`** with a leading :keyword flag will activate a specific mode of functionality (See the table in the following section for more details). The example below just prints the result, no label or file info:
+Calling **`fireworks.core/?`** with a leading keyword flag will activate a specific mode of functionality (See the table in the following section for more details). The example below just prints the result, no label or file info:
 
 ```Clojure
 (? :- x)
