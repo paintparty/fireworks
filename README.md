@@ -342,18 +342,7 @@ The leading argument can also be a map, which supplies various [config options](
 If you want to use a specific mode and also supply override config options, you can call  **`fireworks.core/?`** with 3 arguments:
 
 ```Clojure
-;; Passing the `:pp` flag as the first argument will print the value with fireworks.pp/pprint, instead of fireworks formatting.
-;; Prints with custom label of "My label", the file info, and returns the result.
-(? :pp {:label "my label" :bold? true} x)
-
-;; Passing the `:js` flag as the first argument will print the value with js/console.log, instead of fireworks formatting.
-;; Prints with custom label of "My label", the file info, and returns the result.
-(? :js {:label "my label" :bold? true} x)
-
-;; Passing the `:-` flag as the first argument will print only the value.
-;; Omits form (or custom label) and the file info.
-;; Options map override default config options.
-;; Returns the result
+;; Prints just the result, and truncates colls to 10
 (? :result {:print-length 10} x)
 
 ```
@@ -377,7 +366,7 @@ If you want to use a specific mode and also supply override config options, you 
 <br>
 
 ### Tap-driven development
-Fireworks prints values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide the user with a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't require the user to switch context and interact with a entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
+Fireworks prints values from your source without altering the execution of your program. By default, the printed output that Fireworks produces is typographically optimized for speed of comprehension. When printing data structures, the primary goal is to provide a high-level snapshot of the shape and contents of the data. This is often sufficient to enable understanding at glance, and doesn't require switching context and interacting with an entirely separate UI that might involve clicking and scrolling around just to look at a single nested value.
 
 Because Fireworks is designed to provide quick, rapid feedback to the terminal or browser dev console, it complements discovery-centric tools with a dedicated UI such as [FlowStorm](https://www.flow-storm.org/), [Reveal](https://vlaaad.github.io/reveal/), or [Portal](https://github.com/djblue/portal).
 
@@ -503,10 +492,13 @@ You can try any of the options out at the call site:
 
 You can also set them globally, in your project, at runtime:
 ```Clojure
-(fireworks.core/config! {:display-metadata?     true
+(fireworks.core/config! {:display-metadata?   true
                          :scalar-print-length 50
-                         :print-level           3})
+                         :print-level         3})
 ```
+If you change an option value in an existing call to `fireworks.core/config!`,
+in a ClojureScript project, you may need to restart your build for it to take
+effect.
 
 <br>
 
@@ -528,11 +520,16 @@ export BLING_CONFIG="/Users/<your-home-folder>/.config/bling/config.edn"
 
 You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. When you setup this environment variable for the first time, and you are already running a Clojure(Script) project that you aim to use Fireworks in, you will probably need restart a new session from a new terminal instance, so that your new `BLING_CONFIG` env var will be accessible in your dev environment.
 
-For the actual `config.edn` file, you can use the above example map (at the beginning of this section) as a starting point. Prior to doing this you can experiment with the various configuration options ala-carte via passing a leading options map to `fireworks.core/?`:
+The actual `config.edn` file should be a map with a bunch of options like this:
+```clojure
+{:theme               "Alabaster Dark"
+ :display-metadata?   true
+ :scalar-print-length 50
+ :print-level         3}
+```
 
 <br>
 <br>
-
 
 
 ### Helpful warnings for bad option values
@@ -546,13 +543,15 @@ If you happen to pass a bad value for an option, either at the call-site or in y
 
 
 ## Displaying metadata
-By default, Fireworks offers a unique way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value to which it is attached. In practice, I find this formatting much faster to comprehend as compared to conventional "block" positioning of the metadata (above the carrying value), especially when working with metadata-heavy code.
+Fireworks offers a novel way of printing metadata inline, next to the values which carry them. The intent of this is to spatially and stylistically decouple the metadata from the value to which it is attached. In practice, I find this formatting much faster to comprehend as compared to conventional "block" positioning of the metadata (above the carrying value), especially when working with metadata-heavy code.
 
 For data structures, the metadata map is displayed inline, immediately following the opening bracket. This means that any collection carrying metadata will always be display multi-line, with each value on its own line. Below is an example vector of three quoted symbols:
 
 
 ```Clojure
-(? ^{:a "a"} ['foo 'bar 'baz]
+(? {:display-metadata? true}
+   ^{:a "a"} 
+   ['foo 'bar 'baz]
 ```
 
 <p align="center"><img src="resources/features/metadata-coll-inline.png" width="600px" /></p>
@@ -572,6 +571,7 @@ If you would rather print metadata in the traditional "block" position, you can 
 
 <p align="center"><img src="resources/features/metadata-coll-and-symbol-block.png" width="600px" /></p>
 
+Note that fireworks does not print metadata by default, so you need to pass the option locally, or config it globally.
 
 <br>
 <br>
@@ -625,7 +625,7 @@ You can use one of the following predefined highlighting styles via a `:class` e
 
 ```Clojure
 (? {:find {:pred #(= % 777)
-           :class :error-underlined}}
+           :class :highlight-error-underlined}}
    [1 33 99 777 -16])
 ```
 
@@ -961,15 +961,10 @@ Fireworks:
 
 By default, Fireworks will print the function name with the fully-qualified namespace. This can be disabled by changing the config option `:display-namespaces?` to `false`.
 
-If the fully-qualified name of the function + args vector exceeds the value of `:scalar-print-length`, the args will get ellipsized, the namespace will be dropped (if necessary), and the function name will be ellipsized (if necessary).
+If the fully-qualified name of the function + args vector exceeds the value of `:scalar-print-length`, the namespace will be dropped (if necessary), and the function name will be ellipsized (if necessary).
 
 <br>
 
-#### Printing functions in Clojure
-
-Fireworks prints functions in Clojure the same way as it does in ClojureScript, except that the named args of the function are not available to be printed in the args vector.
-
-<br>
 
 #### Printing built-in JavaScript objects and functions (ClojureScript)
 
