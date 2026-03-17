@@ -2,8 +2,199 @@
 
 ;; TODO - preprocess these to be flat and support ansi-sgr, save compute that happens in state
 
-(ns fireworks.themes)
+;; TODO - catch bad values
 
+(ns fireworks.themes 
+  (:require
+   [fireworks.defs :as defs :refer [bling-css-color]]
+   #_[fireworks.pp :refer [?pp]]))
+
+
+
+(def regex-syntax-neutral
+  {:regex.character            {:font-weight :normal}
+   :regex.quantifier           {}
+   :regex.numeric-quantifier   {}
+   :regex.group-mods           {}
+   :regex.any-of-delimeter     {}
+   :regex.group-delimeter      {}
+   :regex.not-any-of-delimeter {} 
+   :regex.anchor               {}    
+   :regex.character-range      {:font-weight :normal}                                        
+   :regex.number-range         {:font-weight :normal}                                        
+   :regex.special-character    {:font-weight :normal}
+   :regex.alternation          {}})
+
+(def regex-syntax-neutral-light
+  (assoc regex-syntax-neutral
+         :regex.escape-backslash     
+         {:color (bling-css-color :light-gray)}))
+
+(def regex-syntax-neutral-dark
+  (assoc regex-syntax-neutral
+         :regex.escape-backslash     
+         {:color (bling-css-color :dark-gray)}
+         :regex.character            {:font-weight :normal :color "#b1b1b1"}
+         :regex.quantifier           {:color "#b1b1b1"}
+         :regex.numeric-quantifier   {:color "#b1b1b1"}
+         :regex.group-mods           {:color "#b1b1b1"}
+         :regex.any-of-delimeter     {:color "#b1b1b1"}
+         :regex.group-delimeter      {:color "#b1b1b1"}
+         :regex.not-any-of-delimeter {:color "#b1b1b1"} 
+         :regex.anchor               {:color "#b1b1b1"}    
+         :regex.character-range      {:font-weight :normal :color "#b1b1b1"}                                        
+         :regex.number-range         {:font-weight :normal :color "#b1b1b1"}                                        
+         :regex.special-character    {:font-weight :normal :color "#b1b1b1"}
+         :regex.alternation          {:color "#b1b1b1"}
+         ))
+
+
+(def regex-syntax-light
+  ;; minimal color
+  #_{:regex.character            {}
+   :regex.quantifier           {:color (bling-css-color :dark-blue)}
+   :regex.numeric-quantifier   {:color (bling-css-color :dark-blue)}
+   :regex.group-mods           {}
+   :regex.any-of-delimeter     {}
+   :regex.group-delimeter      {}
+   :regex.not-any-of-delimeter {} 
+   :regex.anchor               {:color (bling-css-color :dark-purple)}    
+   :regex.character-range      {}                                        
+   :regex.number-range         {}                                        
+   :regex.special-character    {}
+   :regex.escape-backslash     {:color (bling-css-color :light-gray)}
+   :regex.alternation          {}
+   }
+
+  {:regex.character            {:color nil :font-weight :normal}
+   :regex.quantifier           {:color (bling-css-color :dark-blue)}
+   :regex.numeric-quantifier   {:color (bling-css-color :dark-blue)}
+   :regex.group-mods           {:color (bling-css-color :dark-blue)}
+   :regex.any-of-delimeter     {:color (bling-css-color :medium-blue) #_"#b063d4" #_(bling-css-color :medium-purple) }
+   :regex.group-delimeter      {:color (bling-css-color :dark-green)}
+   :regex.not-any-of-delimeter {:color (bling-css-color :dark-blue)    #_"#b063d4"#_(bling-css-color :medium-purple)} 
+   :regex.anchor               {:color (bling-css-color :medium-orange) :font-weight :normal}    
+   :regex.character-range      {:color (bling-css-color :dark-blue) :font-weight :normal}                                        
+   :regex.number-range         {:color (bling-css-color :dark-blue) :font-weight :normal}                                        
+   :regex.special-character    {:color (bling-css-color :dark-purple) :font-weight :normal}
+   :regex.escape-backslash     {:color (bling-css-color :light-gray)}
+   :regex.alternation          {:color (bling-css-color :medium-magenta)
+                                :background-color "#fae7fa"}})
+
+
+(def regex-syntax-dark
+  {:regex.character            {:font-weight :normal}
+   :regex.quantifier           {:color (bling-css-color :medium-green)}
+   :regex.numeric-quantifier   {:color (bling-css-color :medium-green)}
+   :regex.group-mods           {:color (bling-css-color :medium-green)}
+   :regex.any-of-delimeter     {:color (bling-css-color :medium-blue)}
+   :regex.group-delimeter      {:color (bling-css-color :medium-green) }
+   :regex.not-any-of-delimeter {:color (bling-css-color :medium-blue)} 
+   :regex.anchor               {:color (bling-css-color :medium-orange)}    
+   :regex.character-range      {:color (bling-css-color :medium-blue) :font-weight :normal}                                        
+   :regex.number-range         {:color (bling-css-color :medium-blue) :font-weight :normal}                                        
+   :regex.special-character    {:color (bling-css-color :medium-purple) :font-weight :normal}
+   :regex.escape-backslash     {:color (bling-css-color :dark-gray)}
+   :regex.alternation          {:color (bling-css-color :medium-magenta)}})
+
+
+(def regex-syntax-minimal
+  {:regex.quantifier           {:color (bling-css-color :medium-blue)}
+   :regex.numeric-quantifier   {:color (bling-css-color :medium-blue)}
+   :regex.group-mods           {:color (bling-css-color :medium-blue)}
+   :regex.any-of-delimeter     {:color (bling-css-color :medium-blue)}
+   :regex.group-delimeter      {:color (bling-css-color :medium-blue)}
+   :regex.not-any-of-delimeter {:color (bling-css-color :medium-blue)} 
+   :regex.anchor               {:color (bling-css-color :medium-yellow)}    
+   :regex.character-range      {:color (bling-css-color :medium-purple)}                                        
+   :regex.special-character    {:color (bling-css-color :medium-purple)}                                        
+   :regex.escape-backslash     {:color (bling-css-color :medium-gray)}
+   :regex.number-range         {:color (bling-css-color :medium-purple)}
+   :regex.alternation          {:color (bling-css-color :medium-magenta)}})
+
+
+;; Put neutral tokens in all of these?
+(defn highlighted-regex-syntax 
+  [m]
+  (let [{:keys [in-group in-any-of in-group-neutral in-any-of-neutral]}
+        (let [neutral-light "#ebebeb"
+              neutral-dark  "#393939"]
+          (cond
+            (= m regex-syntax-light)
+            {:in-group          {:background-color "#d8fbdd"}
+             :in-any-of         {:background-color "#d3f3fa"}
+             :in-group-neutral  {:background-color neutral-light}
+             :in-any-of-neutral {:background-color neutral-light}}
+
+            (= m regex-syntax-neutral-light)
+            {:in-group          {:background-color neutral-light}
+             :in-any-of         {:background-color neutral-light}
+             :in-group-neutral  {:background-color neutral-light}
+             :in-any-of-neutral {:background-color neutral-light}}
+
+            (= m regex-syntax-dark)
+            {
+             :in-group          {:background-color "#003a09"}
+             :in-any-of         {:background-color "#053b47"}
+             ;;  :in-group          {:background-color "#036a13"}
+             ;;  :in-any-of         {:background-color "#005e73"}
+             :in-group-neutral  {:background-color neutral-dark}
+             :in-any-of-neutral {:background-color neutral-dark}}
+
+            (= m regex-syntax-neutral-dark)
+            {:in-group          {:background-color neutral-dark}
+             :in-any-of         {:background-color neutral-dark}
+             :in-group-neutral  {:background-color neutral-dark}
+             :in-any-of-neutral {:background-color neutral-dark}}
+
+            ;; This covers "Universal Neutral"
+            :else
+            {:in-group          {}
+             :in-any-of         {}
+             :in-group-neutral  {}
+             :in-any-of-neutral {}}))
+        with-highlight-styles
+        (reduce-kv 
+         (fn [acc k v]
+           (cond->
+            (assoc acc
+                   (keyword (str (name k) ".in-group"))
+                   (merge v in-group)
+                   (keyword (str (name k) ".in-any-of"))
+                   (merge v in-any-of)
+                   (keyword (str (name k) ".in-group.neutral"))
+                   (merge v in-group-neutral)
+                   (keyword (str (name k) ".in-any-of.neutral"))
+                   (merge v in-any-of-neutral)
+                   )
+
+             (= m regex-syntax-light)
+             (assoc (keyword (str (name k) ".neutral"))
+                    (-> regex-syntax-neutral-light k)
+
+                    (keyword (str (name k) ".in-group.neutral"))
+                    (merge (-> regex-syntax-neutral-light k)
+                           in-group-neutral)
+
+                    (keyword (str (name k) ".in-any-of.neutral"))
+                    (merge (-> regex-syntax-neutral-light k)
+                           in-any-of-neutral))
+
+             (= m regex-syntax-dark)
+             (assoc (keyword (str (name k) ".neutral"))
+                    (-> regex-syntax-neutral-dark k)
+                    
+                    (keyword (str (name k) ".in-group.neutral"))
+                    (merge (-> regex-syntax-neutral-dark k)
+                           in-group-neutral)
+
+                    (keyword (str (name k) ".in-any-of.neutral"))
+                    (merge (-> regex-syntax-neutral-dark k)
+                           in-any-of-neutral))))
+         {}
+         m)]
+    (when (= m regex-syntax-dark) (keys with-highlight-styles))
+    (merge m with-highlight-styles)))
 
 (def neutral-light
   {:name   "Neutral Light"
@@ -14,7 +205,7 @@
    :mood   :light
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
-   :bracket-contrast "low"
+   :bracket-contrast "high"
    :tokens {:classes {:comment    {:color      "#AA3731"
                                    :font-style :italic}
                       :metadata   {:color            "#be55bb"
@@ -29,6 +220,8 @@
                       :eval-label {:color            "#3e76a8"
                                    :background-color "#f0fbfe"
                                    :font-style       :italic}}
+            :syntax  (merge {:js-object-key {:color "#888888"}}
+                            (highlighted-regex-syntax regex-syntax-neutral-light))
             :printer {:file-info        :annotation
                       :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
@@ -37,43 +230,44 @@
                       :eval-form        :eval-label
                       :eval-form-red    :eval-label-red
                       :eval-form-green  :eval-label-green
-                      :eval-form-blue   :eval-label-blue
-                      }}})
+                      :eval-form-blue   :eval-label-blue}}})
                         
 (def neutral-dark
-  {:name   "Neutral Dark"
-   :desc   "Neutral dark theme with no syntax coloring on data. The label
+  {:name             "Neutral Dark"
+   :desc             "Neutral dark theme with no syntax coloring on data. The label
             above the printed result that displays the evaled form
             (or user-provided label) will be colorized. Metadata will also be
             colorized."
-   :mood   :dark
-   :author "Author Name"
-   :langs  ["Clojure" "ClojureScript" "Babashka"]
-   :bracket-contrast "low"
-   :tokens {:classes {:comment    {:color      "#e0d557"
-                                   :font-style :italic}
-                      :eval-label {:color            "#85b7e5"
-                                   :font-style       :italic
-                                   :background-color "#00345c"}
-                      :metadata   {:color            "#bb7777"
-                                   :text-shadow      "0 0 2px #003538"
-                                   :background-color "#2e0a0a"}
-                      :label      {:color            "#a9aabc"
-                                   :background-color "#212d36"
-                                   :font-style       :italic}
-                      :metadata2  {:color            "#9773b5"
-                                   :text-shadow      "0 0 2px #003538"
-                                   :background-color "#260a3d"}} 
-            :printer {:file-info        :annotation
-                      :eval-label       :eval-label
-                      :eval-label-red   :eval-label-red
-                      :eval-label-green :eval-label-green
-                      :eval-label-blue  :eval-label-blue
-                      :eval-form        :eval-label
-                      :eval-form-red    :eval-label-red
-                      :eval-form-green  :eval-label-green
-                      :eval-form-blue   :eval-label-blue
-                      }}})
+   :mood             :dark
+   :author           "Author Name"
+   :langs            ["Clojure" "ClojureScript" "Babashka"]
+   :bracket-contrast "high"
+   :tokens           {:classes {:comment    {:color      "#e0d557"
+                                             :font-style :italic}
+                                :eval-label {:color            "#85b7e5"
+                                             :font-style       :italic
+                                             :background-color "#00345c"}
+                                :metadata   {:color            "#d58c8c"
+                                             :text-shadow      "0 0 2px #003538"
+                                             :background-color "#2e0a0a"}
+                                :label      {:color            "#a9aabc"
+                                             :background-color "#212d36"
+                                             :font-style       :italic}
+                                :metadata2  {:color            "#a982c9"
+                                             :text-shadow      "0 0 2px #003538"
+                                             :background-color "#260a3d"}} 
+                      :syntax  (merge {:js-object-key {:color "#888888"}}
+                                      (highlighted-regex-syntax regex-syntax-neutral-dark))
+                      :printer {:file-info        :annotation
+                                :eval-label       :eval-label
+                                :eval-label-red   :eval-label-red
+                                :eval-label-green :eval-label-green
+                                :eval-label-blue  :eval-label-blue
+                                :eval-form        :eval-label
+                                :eval-form-red    :eval-label-red
+                                :eval-form-green  :eval-label-green
+                                :eval-form-blue   :eval-label-blue
+                                }}})
 
 ;; TODO - migrate theme syntax towards this?
 #_{:background-hue       :neutral
@@ -97,9 +291,7 @@
                                                 :font-style :italic}
                         :reader-macro          :annotation
                         :js-object-key         :foreground
-                        :printer/file-info     :annotation
-                        :printer/function-args :annotation}}
-
+                        :printer/file-info     :annotation}}
 
 (def alabaster-light
   {:name   "Alabaster Light"
@@ -127,9 +319,9 @@
                       :eval-label {:color            "#3764cd"
                                    :background-color "#f3f7feff"
                                    :font-style       :italic}}
-            :syntax  {:js-object-key {:color "#888888"}}
-            :printer {
-                      :file-info        :annotation 
+            :syntax  (merge {:js-object-key {:color "#888888"}}
+                            (highlighted-regex-syntax regex-syntax-neutral-light))
+            :printer {:file-info        :annotation 
                       :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
                       :eval-label-green :eval-label-green
@@ -143,7 +335,6 @@
                                          :background-color "#e5f1fa"
                                          :outline          "2px solid #e5f1fa"
                                          :font-style       :italic}
-                      :function-args    {:color "#999999"}
                       :atom-wrapper     :label}}})
 
 
@@ -155,27 +346,35 @@
    :mood   :dark
    :author "Author Name"
    :langs  ["Clojure" "ClojureScript" "Babashka"]
-   :tokens {:classes {:background    {:background-color "#0e1415"}
-                      :string        {:color "#8cbd7a"}
-                      :comment       {:color      "#DFDF8E"
-                                      :font-style :italic}
-                      :constant      {:color "#b696b5"}
-                      :definition    {:color "#71ADE7"}
-                      :annotation    {:color      "#a3a3a3ff"
-                                      :font-style :italic}
-                      :metadata      {:color            "#ae849b"
-                                      :text-shadow      "0 0 2px #003538"
-                                      :background-color "#3a1228"}
-                      :metadata2     {:color            "#a08a40"
-                                      :text-shadow      "0 0 2px #003538"
-                                      :background-color "#351d1d"}
-                      :label         {:color            "#5f9ed8"
-                                      :background-color "#162f46"
-                                      :font-style       :italic}
-                      :eval-label    {:color            "#85b7e5"
-                                      :font-style       :italic
-                                      :background-color "#00345c"}}
-            :syntax  {:js-object-key {:color "#b2b2b2"}}
+   :tokens {:classes {:background {:background-color "#0e1415"}
+                      :string     {:color "#8cbd7a"}
+                      :number     {:color "#6eabed"}
+                      :comment    {:color      "#DFDF8E"
+                                   :font-style :italic}
+                      :constant   {:color "#b696b5"}
+                      :definition {:color "#6eabed"}
+                      :annotation {:color      "#a3a3a3ff"
+                                   :font-style :italic}
+                      :metadata   {:color            "#ae849b"
+                                   :text-shadow      "0 0 2px #003538"
+                                   :background-color "#2f1423"}
+                      :metadata2  {:color            "#a08a40"
+                                   :text-shadow      "0 0 2px #003538"
+                                   :background-color "#351d1d"}
+                      :label      {:color            "#a794ce"
+                                   :background-color "#2b1661"
+                                   :font-style       :italic}
+                      :eval-label {:color            "#85b7e5"
+                                   :font-style       :italic
+                                   :background-color "#00345c"}}
+            :syntax  (merge {:js-object-key             {:color "#b2b2b2"}
+                             :number                    :number
+                             :decimal                   :number
+                             :escaped-double-quote-char :string
+                             :escape-char               {:color (bling-css-color :dark-gray)}
+                             :string-delimiter          {:color "#d28c6d"}
+                             }
+                            (highlighted-regex-syntax regex-syntax-neutral-dark))
             :printer {:file-info        :annotation
                       :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
@@ -185,13 +384,13 @@
                       :eval-form-red    :eval-label-red
                       :eval-form-green  :eval-label-green
                       :eval-form-blue   :eval-label-blue
-                      :comment       {:color             "#2e6666"
-                                      :text-shadow       "0 0 2px #ffffff"
-                                      :background-color  "#e5f1fa"
-                                      :outline           "2px solid #e5f1fa"
-                                      :font-style        :italic}
-                      :function-args {:color "#999999"}
-                      :atom-wrapper  :label}}})
+                      :comment          {:color            "#2e6666"
+                                         :text-shadow      "0 0 2px #ffffff"
+                                         :background-color "#e5f1fa"
+                                         :outline          "2px solid #e5f1fa"
+                                         :font-style       :italic}
+                      :ellipsis         {:color "#d28c6d"}
+                      :atom-wrapper     :label}}})
 
 
 (def degas-light
@@ -218,8 +417,9 @@
                       :eval-label {:color            "#4f7878"
                                    :background-color "#e5f1fa"
                                    :font-style       :italic}}
-            :syntax  {:number        {:color "#737373"}
-                      :js-object-key {:color "#888888"}}
+            :syntax  (merge {:number        {:color "#737373"}
+                             :js-object-key {:color "#888888"}}
+                            (highlighted-regex-syntax regex-syntax-neutral-light))
             :printer {:file-info        :annotation
                       :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
@@ -234,7 +434,6 @@
                                          :background-color "#e5f1fa"
                                          :outline          "2px solid #e5f1fa"
                                          :font-style       :italic}
-                      :function-args    {:color "#999999"}
                       :atom-wrapper     :label }}})
 
 
@@ -247,6 +446,7 @@
                       :foreground {:color "#bfbfbf"}
                       :string     {:color "#78ba78"}
                       :constant   {:color "#c0a1bf"}
+                      :number     {:color "#afaf87"}
                       :definition {:color "#80a3ea"}
                       :comment    {:color      "#e1d084"
                                    :font-style :italic}
@@ -264,8 +464,10 @@
                       :eval-label {:color            "#9ac2d6"
                                    :background-color "#2b4c69"
                                    :font-style       :italic}}
-            :syntax  {:number        {:color "#afaf87"}
-                      :js-object-key {:color "#888888"}}
+            :syntax  (merge {:number        :number
+                             :decimal       :decimal
+                             :js-object-key {:color "#888888"}}
+                            (highlighted-regex-syntax regex-syntax-neutral-dark))
             :printer {:file-info        :annotation
                       :eval-label       :eval-label
                       :eval-label-red   :eval-label-red
@@ -279,8 +481,7 @@
                                          :text-shadow      "0 0 2px #ffffff"
                                          :background-color "#e5f1fa"
                                          :outline          "2px solid #e5f1fa"
-                                         :font-style       :italic}
-                      :function-args    {:color "#b3b3b3"}}}})
+                                         :font-style       :italic}}}})
 
 
 (def zenburn-light
@@ -309,8 +510,9 @@
                                 :eval-label {:color            "#618d98"
                                              :font-style       :italic
                                              :background-color "#e8f3fd"}}
-                      :syntax  {:number        {:color "#3d7a99"}
-                                :js-object-key {:color "#888888"}}
+                      :syntax  (merge {:number        {:color "#3d7a99"}
+                                       :js-object-key {:color "#888888"}}
+                                      (highlighted-regex-syntax regex-syntax-neutral-light))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -325,7 +527,6 @@
                                                    :background-color "#e5f1fa"
                                                    :outline          "2px solid #e5f1fa"
                                                    :font-style       :italic}
-                                :function-args    {:color "#9e9e9e"}
                                 :atom-wrapper     :label}}})
 
 
@@ -336,6 +537,7 @@
    :bracket-contrast "low"
    :tokens           {:classes {:background {:background-color "#3f3f3f"}
                                 :string     {:color "#dc8f8f"}
+                                :number     {:color "#8fb8cc"}
                                 :constant   {:color "#8cc08c"}
                                 :definition {:color "#bfbf69"}
                                 :comment    {:color      "#76d5fe"
@@ -348,14 +550,21 @@
                                 :metadata2  {:color            "#b596c0"
                                              :background-color "#4e3257"
                                              :text-shadow      "0 0 2px #002916"}
-                                :label      {:color            "#b49d5f"
-                                             :background-color "#524019"
+                                :label      {:color            "#c1a75e"
+                                             :background-color "#4e4633"
                                              :font-style       :italic}
                                 :eval-label {:color            "#9ac2d6"
                                              :background-color "#2b4c69"
                                              :font-style       :italic}}
-                      :syntax  {:number        {:color "#8fb8cc"}
-                                :js-object-key {:color "#888888"}}
+                      :syntax  (merge {:number                    :number
+                                       :decimal                   :number
+                                       :nil                       {:color "#a9a9a9"}
+                                       :js-object-key             {:color "#a9a9a9"}
+                                       :escaped-double-quote-char :string
+                                       :escape-char               {:color (bling-css-color :dark-gray)}
+                                       :string-delimiter          {:color "#bfbf69"}
+                                       }
+                                      (highlighted-regex-syntax regex-syntax-neutral-dark))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -378,10 +587,11 @@
                                 :foreground {:color "#657b83"}
                                 :constant   {:color "#657b83"}
                                 :string     {:color "#2aa198"}
+                                :number     {:color "#af5f5f"}
                                 ;; :string     {:color "#859900"}
                                 :definition {:color "#268bd2"}
                                 ;; :definition {:color "#268bd2"}
-
+                                
                                 :comment    {:color      "#AA3731"
                                              :font-style :italic}
                                 :annotation {:color      "#999999"
@@ -397,11 +607,13 @@
                                              :font-style       :italic}
                                 :eval-label {:color            "#6c71c4"
                                              :background-color "#eef3ec"
-                                             :font-style       :italic}
-                                }
-                      :syntax  {:number        {:color "#af5f5f"}
-                                :boolean       {:color "#b58900"}
-                                :js-object-key {:color "#888888"}}
+                                             :font-style       :italic}}
+                      :syntax  (merge {:number        :number
+                                       :decimal       :number
+                                       :boolean       {:color "#b58900"}
+                                       :js-object-key {:color "#888888"}}
+                                      (highlighted-regex-syntax
+                                       regex-syntax-neutral-light))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -411,13 +623,12 @@
                                 :eval-form-red    :eval-label-red
                                 :eval-form-green  :eval-label-green
                                 :eval-form-blue   :eval-label-blue
-                                :comment       {:color             "#00ffff"
-                                                :text-shadow       "0 0 2px #ffffff"
-                                                :background-color  "#e5f1fa"
-                                                :outline           "2px solid #e5f1fa"
-                                                :font-style        :italic}
-                                :function-args {:color "#9e9e9e"}
-                                :atom-wrapper  :label}}})
+                                :comment          {:color            "#00ffff"
+                                                   :text-shadow      "0 0 2px #ffffff"
+                                                   :background-color "#e5f1fa"
+                                                   :outline          "2px solid #e5f1fa"
+                                                   :font-style       :italic}
+                                :atom-wrapper     :label}}})
 
 
 (def solarized-dark 
@@ -429,6 +640,7 @@
                                 :foreground {:color "#999999"}
                                 :bracket    {:color "#808080"}
                                 :string     {:color "#33a3a3"}
+                                :number     {:color "#bf6986"}
                                 :constant   {:color "#8f8f8f"}
                                 :definition {:color "#5289cc"}
                                 :comment    {:color      "#ee63b4"
@@ -445,8 +657,11 @@
                                 :eval-label {:color            "#659bdc"
                                              :background-color "#263d5a"
                                              :font-style       :italic}}
-                      :syntax  {:number        {:color "#bf6986"}
-                                :js-object-key {:color "#888888"}}
+                      :syntax  (merge {:number        :number
+                                       :decimal       :number
+                                       :js-object-key {:color "#888888"}}
+                                      (highlighted-regex-syntax 
+                                       regex-syntax-neutral-dark))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -470,6 +685,10 @@
    :bracket-contrast "high"
    :tokens            {:classes {:background {:background-color "#fff"}
                                  :string     {:color "#1386bf"}
+                                 :number     {
+                                              :color "#cc3d9c"
+                                              ;; :color "#a7ebaaff" ; <- for testing level-2 color support
+                                              }
                                  :constant   {:color "#8545e6"}
                                  :definition {:color "#178c54"}
                                  :annotation {:color      "#a6a6a6"
@@ -491,11 +710,11 @@
                                               ;; :background-color "#edfdfdff" ; <- for testing level-2 color support
                                               }}
 
-                       :syntax  {:number        {
-                                                 :color "#cc3d9c"
-                                                ;;  :color "#a7ebaaff" ; <- for testing level-2 color support
-                                                 }
-                                 :js-object-key {:color "#888888"}}
+                       :syntax  (merge {:number        :number
+                                        :decimal       :number
+                                        :js-object-key {:color "#888888"}}
+                                       (highlighted-regex-syntax
+                                        regex-syntax-neutral-light))
                        :printer {:file-info        :annotation
                                  :eval-label       :eval-label
                                  :eval-label-red   :eval-label-red
@@ -510,7 +729,6 @@
                                                     :background-color "#e5f1fa"
                                                     :outline          "2px solid #e5f1fa"
                                                     :font-style       :italic}
-                                 :function-args    {:color "#999999"}
                                  :atom-wrapper     :label} }})
 
 
@@ -521,13 +739,14 @@
    :bracket-contrast "high"
    :tokens           {:classes {:background {:background-color "#2d2a2e"}
                                 :string     {:color "#ccb43e"}
+                                :number     {:color "#14bcd2"}
                                 :constant   {:color "#cc99ff"}
                                 :definition {:color "#4fc94f"}
                                 :annotation {:color      "#999999"
                                              :font-style :italic}
                                 :comment    {:color      "#2ef1ff"
                                              :font-style :italic}
-                                :metadata   {:color            "#c47878"
+                                :metadata   {:color            "#df8b8b"
                                              :text-shadow      "0 0 2px #003538"
                                              :background-color "#3f2222"}
                                 :metadata2  {:color            "#a77ccb"
@@ -539,8 +758,11 @@
                                 :eval-label {:color            "#85b7e5"
                                              :font-style       :italic
                                              :background-color "#00345c"}}
-                      :syntax  {:number        {:color "#14bcd2"}
-                                :js-object-key {:color "#888888"}}
+                      :syntax  (merge {:number        :number
+                                       :decimal       :number
+                                       :js-object-key {:color "#888888"}}
+                                      (highlighted-regex-syntax
+                                       regex-syntax-neutral-dark))
                       :printer {:file-info        :annotation
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -557,8 +779,10 @@
    :desc             (str "A neutral syntax theme for Clojure data that works on both light and dark backgrounds."
                           "The eval label is printed in blue, metadata is printed in purple, and object labels are printed in green.")
    :mood             "universal"
-   :tokens           {:syntax  {:js-object-key {:color "#ff00ff"}}
-                      :printer {:file-info     {:font-style :italic }
+   :tokens           {:syntax  (merge {:js-object-key {:color "#888888"}}
+                                      regex-syntax-neutral
+                                      #_(highlighted-regex-syntax regex-syntax-neutral))
+                      :printer {:file-info        {:font-style :italic }
                                 ;; TODO maybe these values should be :classes/eval-label
                                 :eval-label       :eval-label
                                 :eval-label-red   :eval-label-red
@@ -568,8 +792,7 @@
                                 :eval-form-red    :eval-label-red
                                 :eval-form-green  :eval-label-green
                                 :eval-form-blue   :eval-label-blue
-                                :comment       {:font-style :italic}
-                                :function-args {:color "#9e9e9e"}}}})
+                                :comment          {:font-style :italic}}}})
 
 (def universal
   {:name   "Universal"
@@ -588,20 +811,19 @@
                                 :orange  208 
                                 :green   40
                                 :purple  201]}
-   :tokens {:classes {:foreground {:color "#9e9e9e"}
-                      :string     {:color "#00d700"}
+   :tokens {:classes {:string     {:color "#00d700"}
                       :definition {:color "#00afff"}
                       :metadata   {:color "#af87ff"}     ;; purple 
                       :metadata2  {:color "#87af00"}     ;; yellow
                       :label      {:color      "#ff00ff" ;; magenta
                                    :font-style :italic}}
 
-            :syntax  {:number        {:color "#ff8700"} ;; orange 
-                      :js-object-key {:color "#ff00ff"}}
+            :syntax  (merge {:number        {:color "#ff8700"} ;; orange 
+                             :js-object-key {:color "#ff00ff"}}
+                            (highlighted-regex-syntax regex-syntax-minimal))
 
             :printer {:file-info     :annotation
-                      :comment       {:font-style :italic}
-                      :function-args {:color "#9e9e9e"}}}})
+                      :comment       {:font-style :italic}}}})
 
 (def alabaster-light-legacy
   {:name   "Alabaster Light"
@@ -640,5 +862,4 @@
                                       :background-color "#e5f1fa"
                                       :outline          "2px solid #e5f1fa"
                                       :font-style       :italic}
-                      :function-args {:color "#999999"}
                       :atom-wrapper  :label}}})

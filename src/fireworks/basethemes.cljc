@@ -2,9 +2,8 @@
 ;; This is reqd by specs
 (ns fireworks.basethemes
   (:require
-   [fireworks.defs :as defs]
-   [fireworks.pp :refer [?pp]]
    [fireworks.color]
+   [fireworks.defs :as defs :refer [bling-css-color]]
    [fireworks.themes :as themes]))
 
 
@@ -107,6 +106,8 @@
 ;; The only things that should be specified here are:
 ;; :foreground, :bracket, :comment, :annotation, :highlight.
 
+;; TODO -  :highlight-error
+
 (def base-theme-universal*
   ;; Any single keywords (as vals) in all the maps below refer
   ;; to the values defined in the :classes entry 
@@ -114,9 +115,7 @@
                             {:comment                      :annotation
                              :annotation                   {:color      "#9f9f9f"
                                                             :font-style :italic}
-                             :highlight                    {:background-color "#8a8a8a"
-                                                            :color            "#ffffff"
-                                                            :font-weight      :bold}
+                             :highlight                    defs/highlight-universal
                              :highlight-underlined         {:background-color      "#8a8a8a"
                                                             :color                 "#ffffff"
                                                             :font-weight           :bold
@@ -156,12 +155,13 @@
    :syntax           defs/base-syntax-tokens
    :printer          defs/base-printer-tokens})
 
+
 (def base-theme-light*
   ;; Any single keywords (as vals) in all the maps below refer
   ;; to the values defined in the :classes entry 
   {:classes          (merge defs/base-classes
                             {
-                            ;;d :foreground     {:color "#585858"}
+                             ;;d :foreground     {:color "#585858"}
                              :bracket                      {:color "#888888"}
 
                              :comment                      :annotation
@@ -181,9 +181,7 @@
                                                             :text-decoration-line  :underline
                                                             :text-decoration-style :wavy }
 
-                             :highlight-error              {:background-color "#ffdbdb"
-                                                            :color            "#660000"
-                                                            :font-weight      :bold }
+                             :highlight-error              defs/highlight-error-light
 
                              :highlight-warning            {:background-color "#ffdea8"
                                                             :color            "#754800"
@@ -233,7 +231,9 @@
                              })
 
    ;; TODO - I don't think these currently merge if we were to use maps
-   :syntax           defs/base-syntax-tokens
+   :syntax           (merge defs/base-syntax-tokens
+                            
+                            )
    :printer          defs/base-printer-tokens})
 
 
@@ -248,62 +248,26 @@
                                             :font-style :italic}
              :metadata                     {:color       "#999999"
                                             :text-shadow "0 0 2px #003538"}
-             :highlight                    {:color            "#ffffff"
-                                            :background-color "#0000e0"
-                                            :font-weight      :bold}
-             
-             :highlight-underlined         {:color                 "#ffffff"
-                                            :background-color      "#0000e0"
-                                            :font-weight           :bold
-                                            :text-decoration-line  :underline
-                                            :text-decoration-style :wavy}
-
-             :highlight-error              {:background-color "#800000"
-                                            :color            "#ffe0e0"
-                                            :font-weight      :bold}
-
-             :highlight-warning            {:background-color "#6b4200"
-                                            :color            "#ffe4b8"
-                                            :font-weight      :bold}
-
-             :highlight-info               {:color            "#eae5ff"
-                                            :background-color "#0000e0"
-                                            :font-weight      :bold}
-
-             :highlight-error-underlined   {:background-color      "#800000"
-                                            :color                 "#ffe0e0"
-                                            :font-weight           :bold
-                                            :text-decoration-line  :underline
-                                            :text-decoration-style :wavy}
-
-             :highlight-warning-underlined {:background-color      "#6b4200"
-                                            :color                 "#ffe4b8"
-                                            :font-weight           :bold
-                                            :text-decoration-line  :underline
-                                            :text-decoration-style :wavy}
-
-             :highlight-info-underlined    {:color                 "#eae5ff"
-                                            :background-color      "#0000e0"
-                                            :font-weight           :bold
-                                            :text-decoration-line  :underline
-                                            :text-decoration-style :wavy}
-
+             :highlight                    defs/highlight-dark
+             :highlight-underlined         defs/highlight-underlined-dark
+             :highlight-error              defs/highlight-error-dark
+             :highlight-warning            defs/highlight-warning-dark
+             :highlight-info               defs/highlight-dark
+             :highlight-error-underlined   defs/highlight-error-underlined-dark
+             :highlight-warning-underlined defs/highlight-warning-underlined-dark
+             :highlight-info-underlined    defs/highlight-underlined-dark
              :label                        {:color            "#a3a3a3"
                                             :background-color "#333333"
                                             :text-shadow      "0 0 2px #000000"
                                             :font-style       :italic}
-             
-             
              :eval-label-red               {:color            "#e47f8eff"
                                             :font-style       :italic
                                             :text-shadow      "0 0 2px #003d6b"
                                             :background-color "#4a040eff"}
-
              :eval-label-green             {:color            "#49ca49ff"
                                             :font-style       :italic
                                             :text-shadow      "0 0 2px #003d6b"
                                             :background-color "#044301ff"}
-
              :eval-label-blue              {:color            "#85b7e5"
                                             :font-style       :italic
                                             :text-shadow      "0 0 2px #003d6b"
@@ -311,6 +275,7 @@
              }
    :syntax  defs/base-syntax-tokens
    :printer defs/base-printer-tokens})
+
 
 
 (def stock-themes

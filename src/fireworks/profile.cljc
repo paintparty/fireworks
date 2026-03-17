@@ -1,7 +1,7 @@
 (ns ^:dev/always fireworks.profile
   (:require
    [fireworks.defs :as defs]
-   [fireworks.pp :refer (?pp)]
+   [fireworks.pp :refer [?pp] :rename {?pp ?}]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
@@ -11,86 +11,94 @@
      (:import (clojure.lang PersistentVector))))
 
 
-;; TODO revist how your doing this, maybe there should be a :classname entry
-;; returned from lasertag
-(def badges-by-lasertag
-  {:js/Set      "js/Set"
-   :js/Promise  "js/Promise"
-   :js/Iterator defs/js-literal-badge
-   :js/Object   defs/js-literal-badge
-   :js/Array    defs/js-literal-badge
-   :lambda      defs/lambda-symbol
-   :transient   defs/transient-label
-   :uuid        defs/uuid-badge})
-
-
-;; Understand and doc how this works for custom types
+;; Document how this works for custom types
+;; This is where badges get determined
 (defn annotation-badge
   [{:keys [t 
+           og-t
            lambda?
-           js-built-in-object?
-           js-built-in-object-name
+           og-class
            all-tags
-           java-util-class?
-           java-lang-class?
+           classname
            coll-type?
            transient?
-           classname]
-    :as m}]
+           java-util-class?
+           java-lang-class?
+           val-is-derefable?
+           js-built-in-object?
+           js-built-in-object-name]
+    :as   m}]
   (when (map? m)
-   
-   (let [t     (cond lambda?
-                     :lambda
-                     transient?
-                     :transient
-                     :else
-                     t)
+    (let [t     (cond lambda?
+                      :lambda
+                      transient?
+                      :transient
+                      :else
+                      t)
 
-         badge (cond
-                 (contains? all-tags :datatype)
-                 (:classname m)
+          badge (cond
+                  (contains? all-tags :datatype)
+                  (string/replace (:classname m) #"_" "-")
 
-                 ;; Interesting visualization in JVM Clojure
-                 ;; Labels everything, including primitives
-                 ;; Maybe this could be exposed in an option 
-                 #_(or java-util-class? java-lang-class?)
-                 #_classname
+                  ;; Interesting visualization in JVM Clojure
+                  ;; Labels everything, including primitives
+                  ;; Maybe this could be exposed in an option 
+                  #_(or java-util-class? java-lang-class?)
+                  #_classname
 
-                 (= t :inst)
-                 defs/inst-badge
+                  (= og-t :throwable)
+                  og-class
 
-                 (or java-util-class?
-                     (and coll-type? java-lang-class?))
-                 classname
+                  val-is-derefable?
+                  (some-> og-t name string/capitalize)
 
-                 js-built-in-object?
-                 (str "js/" js-built-in-object-name)
+                  (= t :inst)
+                  defs/inst-badge
 
-                 (and (not= t :js/Object)
-                      (or (contains? all-tags :js-map-like-object)
-                          (contains? all-tags :js-typed-array)))
-                 (str "js/" classname)
-                 
-                 transient?
-                 (or (some->> #?(:cljs #"/" :clj #"\$")
-                              (string/split classname)
-                              peek)
-                     defs/transient-label)
+                  (= t :uuid)
+                  defs/uuid-badge
 
-                 :else
-                 #?(:cljs
-                    (get {"Map"    "js/Map"
-                          "Set"    "js/Set"
-                          "Array"  "js/Array"
-                          "Object" "js/Object"}
-                         classname 
-                         nil)
-                    :clj
-                    (get badges-by-lasertag t nil)))
-         badge #?(:cljs badge
-                  :clj  (if (= t :defmulti) "Multimethod" badge))]
+                  (= t :lambda)
+                  defs/lambda-badge
 
-     (when badge {:badge badge}))))
+                  (= t :regex)
+                  defs/regex-badge
+
+                  (or java-util-class?
+                      (and coll-type? java-lang-class?))
+                  (string/replace classname #"_" "-")
+
+                  js-built-in-object?
+                  (str "js/" js-built-in-object-name)
+
+                  (and (not= t :object)
+                       (or (contains? all-tags :js-map-like-object)
+                           (and (contains? all-tags :js)
+                                (contains? all-tags :object)
+                                (contains? all-tags :instance-of-built-in))
+                           (contains? all-tags :js-typed-array)))
+                  (str "js/" classname)
+                  
+                  transient?
+                  (or (some->> #?(:cljs #"/" :clj #"\$")
+                               (string/split classname)
+                               peek)
+                      defs/transient-label)
+
+                  :else
+                  #?(:clj
+                     nil
+                     :cljs
+                     (get {"Set"      "js/Set"
+                           "Promise"  "js/Promise"
+                           "Iterator" defs/js-literal-badge
+                           "Object"   defs/js-literal-badge
+                           "Array"    defs/js-literal-badge}
+                          classname)))
+          badge #?(:cljs badge
+                   :clj  (if (= t :defmulti) "Multimethod" badge))]
+
+      (when badge {:badge badge}))))
                          
 (defn target-path-is-ancestor-coll?
   [tp vp tp-list]
@@ -165,6 +173,15 @@
         val-str-len
         (or (-> x str count) 0)
 
+        ;; If we add the escape chars to string at an early stage, maybe we can
+        ;; remove this
+        val-str-len
+        (if (and (pos? val-str-len)
+                 (-> x meta :fw/truncated :t (= :string)))
+          (+ val-str-len 
+             (or (some->> x str (re-seq #"\"") count) 0))
+          val-str-len)
+
         ;; This currently only checks encapsulation-closing-bracket-len,
         ;; maybe don't need this.
         encapsulation-closing-bracket-len
@@ -180,13 +197,13 @@
            encapsulation-closing-bracket-len)]
 
     #_(when-not (not (coll? x)) #_@state/formatting-form-to-be-evaled?
-      (?pp
-       (keyed [str-len-with-badge
-               val-str-len
-               badge-str-len
-               x
-               encapsulation-closing-bracket-len
-               ])))
+                (?pp
+                 (keyed [str-len-with-badge
+                         val-str-len
+                         badge-str-len
+                         x
+                         encapsulation-closing-bracket-len
+                         ])))
 
     (keyed [str-len-with-badge
             badge-str-len
@@ -215,7 +232,7 @@
   [coll meta-map]
   (boolean
    (when (-> meta-map :map-like?)
-     (when-let [n (:single-column-maps-length-threshold @state/config)]
+     (when-let [n (:single-column-map-threshold @state/config)]
        (some (fn [[k v]] 
                (or (exceeds-map-value-threshold? k n)
                    (exceeds-map-value-threshold? v n)))
@@ -232,9 +249,7 @@
    
    Potentially sets single-column-map-layout? entry in meta to true, if x is a
    map-like? coll and any of the keys or values exceed the value of the config
-   option :single-column-maps-length-threshold.
-   "
-   
+   option :single-column-map-threshold."
   [{:keys [coll-type? ellipsized x t meta-map]}]
   (let [ret* (cond 
                coll-type?
@@ -314,9 +329,18 @@
 
 (defn- some-colls-as-keys?
   [coll]
-  (boolean (when (map? coll)
-             (some (fn [[k _]] (coll? k)) coll))))
+  (when (map? coll)
+    (when-let [key-colls (seq (filter (fn [[k _]] (coll? k)) coll))]
+      {:some-colls-as-keys?
+       true
 
+       ;; TODO - need a try/catch here?
+       :some-multi-line-colls-as-keys? 
+       (boolean (some #(-> % 
+                           str
+                           count
+                           (> (:scalar-mapkey-max-length @state/config)))
+                      key-colls))})))
 
 (defn- user-metadata [x]
   (some-> x meta :fw/user-meta))
@@ -355,7 +379,7 @@
   "Performance cheat to save a call to util-tag-map*"
   {:type          #?(:cljs cljs.core/PersistentVector
                      :clj clojure.lang.PersistentVector) 
-   :all-tags      #{:coll :vector :coll-type :carries-meta}
+   :all-tags      #{:coll :vector :coll-like :carries-meta}
    :classname     #?(:cljs "cljs.core/PersistentVector"
                      :clj "clojure.lang.PersistentVector")
    :coll-size     2
@@ -369,10 +393,12 @@
    (if (:fw/pre-profiled-mapkey mm)
      mm
      (let [{:keys [og-x val-is-atom?]
-            :as fw-truncated-meta}  (or (:fw/truncated mm)
-                                        ;; TODO - describe why it is necessary
-                                        ;; to provide this map here
-                                        meta-map-mapentry-vector)
+            :as fw-truncated-meta}  
+           (or (:fw/truncated mm)
+           ;; TODO - describe why it is necessary
+           ;; to provide this map here
+           meta-map-mapentry-vector)
+
            ret   (merge 
                   fw-truncated-meta
                   {:x    (or (:x fw-truncated-meta) x)
@@ -395,16 +421,16 @@
                   (some-> mm
                           (select-keys [:fw/user-meta :fw/user-meta-map?])))
 
-           ;; TODO - make dedicated badge fn?
            badge (annotation-badge ret)
-           ret   (let [some-colls-as-keys?                  
+           ret   (let [{:keys [some-colls-as-keys?
+                               some-multi-line-colls-as-keys?]}                  
                        (some-colls-as-keys? x)
 
                        some-syms-carrying-metadata-as-keys?
                        (some-syms-carrying-metadata-as-keys? x)
 
                        single-column-map-layout?            
-                       (or some-colls-as-keys?
+                       (or some-multi-line-colls-as-keys?
                            some-syms-carrying-metadata-as-keys?
                            (force-single-column-map-layout? x))
 
@@ -415,6 +441,7 @@
                           badge
                           (when badge {:inline-badge? inline-badge?})
                           (keyed [some-colls-as-keys?
+                                  some-multi-line-colls-as-keys?
                                   some-syms-carrying-metadata-as-keys?
                                   single-column-map-layout?])
 
@@ -428,7 +455,9 @@
                           (str-len-with-badge badge val-is-atom? x)
 
                           {:some-elements-carry-user-metadata? 
-                           (some-elements-carry-user-metadata? x)}))]
+                           (boolean 
+                            (when (:display-metadata? @state/config)
+                              (some-elements-carry-user-metadata? x)))}))]
         (when (coll? x) ret)
         ret))))
 
@@ -452,12 +481,18 @@
                      ;;  (?pp k)
                      ;;  (?pp (meta k))
                      [k v]))
-                 x))
-
-          ]
-
+                 x))]
       ret)
     x))
+
+(defn multi-line-string-meta* [x k v]
+  (vary-meta x assoc-in [:fw/truncated k] v))
+
+(defn multi-line-string-meta [x]
+  (-> x
+      (multi-line-string-meta* :multi-line-string-line? true)
+      (multi-line-string-meta* :t :symbol)
+      (multi-line-string-meta* :theme-token-override :string)))
 
 ;; TODO - Address the following:
 ;; - Is one of :user-meta and :fw/user-meta redundant?
@@ -484,7 +519,7 @@
    - Adjusted string length
 
    Example:
-   (? {:coll-limit 5} (with-meta (range 8) {:foo :bar}))
+   (? {:print-length 5} (with-meta (range 8) {:foo :bar}))
 
    ^{:og-x                                 '(0 1 2 3 4 5 6 7),
      :some-colls-as-keys?                  false,
@@ -504,7 +539,7 @@
      :some-syms-carrying-metadata-as-keys? false,
      :all-tags                             #{:coll :seq},
      :str-len-with-badge                   11,
-     :coll-limit                           5,
+     :print-length                           5,
      :some-elements-carry-user-metadata?   false,
      :fw/user-meta                         {:foo :bar},
      :coll-size-adjust                     8,
@@ -557,6 +592,11 @@
            x
            (re-profile x meta-map profile)
            
+           x
+           (if (:multi-line-string-collection? meta-map)
+             (mapv multi-line-string-meta x)
+             x)
+
            {:keys [coll-type? t]}
            meta-map
 

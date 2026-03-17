@@ -72,7 +72,7 @@
      (range 20)
 
 ;; Large collections are always truncated for
-;; printing. This :coll-limit value can be
+;; printing. This :print-length value can be
 ;; tweaked in your config or at the call site.
      (range 42)
 
@@ -215,10 +215,10 @@
 
 ;; Find --------------------------
      
-;; Find and hightlight a specific value
+;; Find and highlight a specific value
      (!? {:find {:pred #(= 2 %)}} sample)
 
-;; Find and hightlight multiple values
+;; Find and highlight multiple values
      (!?
       {:find [{:pred #(= 2 %)}
               {:pred  #(= 1 %)

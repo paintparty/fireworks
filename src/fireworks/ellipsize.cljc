@@ -1,49 +1,29 @@
 (ns ^:dev/always fireworks.ellipsize
 (:require
-   [clojure.string :as string]
-   [fireworks.defs :as defs]
-   [fireworks.pp :refer [?pp]]
-   [fireworks.state :as state]
-   [fireworks.specs.config :as specs.config]
-   #?(:cljs [fireworks.macros :refer-macros [keyed]])
-   #?(:clj [fireworks.macros :refer [keyed]])))
+ [clojure.string :as string]
+ [fireworks.defs :as defs]
+ [fireworks.pp :refer [?pp] :rename {?pp ?}]
+ [fireworks.state :as state]
+ [fireworks.specs.config :as specs.config]
+ #?(:cljs [fireworks.macros :refer-macros [keyed]])
+ #?(:clj [fireworks.macros :refer [keyed]])
+  ;;  #?(:clj [clojure.math])
+ ))
 
 (defn- len
   [x]
   (some-> x str count))
 
 (defn- budge-diff
-  [limit atom-wrap-count a b]
-  (- (+ (or (len a) 0)
-        (or (len b) 0)
-        (or atom-wrap-count 0))
+  [limit a]
+  (- (+ (or (len a) 0))
      (or limit 0)))
-
-(defn- fn-args*
-  [fn-args]
-  (if (contains? 
-       #{:lasertag/unknown-function-signature-on-js-built-in-method
-         :lasertag/unknown-function-signature-on-clj-function
-         :lasertag/unknown-function-signature-on-java-class
-         :lasertag/multimethod}
-       fn-args)
-    defs/mysterious-fn-args
-    fn-args))
 
 (defn- ellipsized-char-count 
   [badge s num-chars-dropped]
   (+ (or (some-> badge count) 0)
      (or (count s) 0)
      (or (when num-chars-dropped defs/ellipsis-count) 0)))
-
-(defn- mutable-wrapper-count
-  [{:keys [val-is-atom? val-is-volatile?]}]
-  (cond val-is-atom?
-        defs/atom-wrap-count
-        val-is-volatile?
-        defs/volatile-wrap-count
-        :else
-        0))
 
 (defn- pre-truncate-function-name
   "Potentially shortens, or drops, one or more of the following parts of
@@ -54,20 +34,21 @@
   [limit
    {:keys [fn-ns
            fn-name
-           fn-args
            js-built-in-function?
            js-built-in-method-of
+           java-lang-class?
            badge
            lambda?]
     :as   m}]
   (let [;; Create `budge-diff` partial, which will be used to calculate
         ;; the difference between the length of the fn name (at a given
-        ;; stage of shortening) and the (:non-coll-length-limit @state/config).
-        budge-diff      (partial budge-diff limit (mutable-wrapper-count m))
+        ;; stage of shortening) and the (:scalar-max-length @state/config).
+        
+        budge-diff      (partial budge-diff limit)
         
 
-        ;; Construct the fn display name with proper js/built-in prefix
-        ;; and optional namespace + possibly shortened fn-args vector.
+        ;; Construct the function display name with proper js/built-in prefix
+        ;; and optional namespace + possibly shortened function args fn-args vector.
         ;; Then use budge-diff to see if it is over budget.
         interop-prefix  (if js-built-in-function? "js/" nil)
         nm              (if js-built-in-function?
@@ -76,21 +57,10 @@
                                        (str "."))
                                fn-name)
                           (str (when (:display-namespaces? @state/config)
-                                 (some-> fn-ns (str "/")))
+                                 (some-> fn-ns
+                                         (str (if java-lang-class? "." "/"))))
                                fn-name))
-        fn-args         (fn-args* fn-args)
-        diff            (budge-diff nm fn-args)
-
-
-        ;; If over budget, truncate the fn-args vector and then check
-        ;; again to see if still over budget.
-        trunc-args?     (pos? diff)
-        fn-args         (if (and trunc-args?
-                                 (> (count (str fn-args))
-                                    (count (str defs/truncated-fn-args))))
-                          defs/truncated-fn-args
-                          fn-args)
-        diff            (budge-diff nm fn-args)
+        diff            (budge-diff nm)
 
 
         ;; If still over budget, drop the namespace and check again to
@@ -107,7 +77,7 @@
                                   (str js-built-in-method-of "."))
                                 fn-name))
                           nm)
-        diff            (budge-diff nm fn-args)
+        diff            (budge-diff nm)
 
 
         ;; If still over budget, truncate (ellipsize) the function name.
@@ -119,26 +89,26 @@
                                string/join 
                                symbol)
                           nm)
-        fn-display-name (when-not lambda?
+        fn-display-name (if lambda?
+                          nil #_defs/lambda-badge
                           (when-not (string/blank? (str fn-display-name))
                             fn-display-name))
 
 
         ;; Finally, calculate the final ellipsized-char-count. This count
-        ;; should never exceed the :non-coll-length-limit, or the
-        ;; :map-key-length-limit, from @state/config.
+        ;; should never exceed the :scalar-max-length, or the
+        ;; :map-key-print-length, from @state/config.
+        
+        
+        ecc             (ellipsized-char-count badge
+                                               (str fn-display-name)
+                                               trunc-name?)]
 
-                           
-        ecc             (+ (ellipsized-char-count badge
-                                                  (str fn-display-name)
-                                                  trunc-name?) ;; <-- TODO - maybe fix fn sig
-                           (or (count (str fn-args)) 0))]
 
-
-    (merge (keyed [fn-args fn-display-name drop-ns?])
-           {:ellipsized-char-count ecc
-            :truncate-fn-name?     trunc-name?
-            :truncate-fn-args?     trunc-args?})))
+    (merge (keyed [fn-display-name drop-ns?])
+           {:fn-args               nil
+            :ellipsized-char-count ecc
+            :truncate-fn-name?     trunc-name?})))
 
 
 (defn- inst-str
@@ -163,7 +133,7 @@
 
 
 (defn- stringified 
-  "Stringifies self-evaluating values (non-colls). 
+  "Stringifies self-evaluating values (scalars). 
    Wraps in appropriate quotes, when appropriate."
   [x t m]
   (let [s* (case t
@@ -219,7 +189,7 @@
    regexes, keywords, #insts, fns, etc.
    
    Truncation is based on the following:
-   - `:non-coll-mapkey-length-limit `or `:non-coll-length-limit` from config
+   - `:scalar-mapkey-max-length `or `:scalar-max-length` from config
    - Optional inline badge length e.g `#js `
    - Optional atom or volatile encapsulation e.g. `Atom<42>`"
   [x 
@@ -234,35 +204,35 @@
            top-level-sev?]
     :as   m}]
 
-  (let [{:keys [non-coll-depth-1-length-limit
-                non-coll-result-length-limit
-                non-coll-mapkey-length-limit
-                non-coll-length-limit
+  (let [{:keys [scalar-depth-1-max-length
+                scalar-result-max-length
+                scalar-mapkey-max-length
+                scalar-max-length
                 truncate?]}
         @state/config
 
         no-truncation?
         (false? truncate?)
 
-        non-coll-length-limit
+        scalar-max-length
         (if no-truncation?
-          specs.config/non-coll-length-limit
-          non-coll-length-limit)
+          specs.config/scalar-max-length
+          scalar-max-length)
 
-        non-coll-depth-1-length-limit
+        scalar-depth-1-max-length
         (if no-truncation?
-          specs.config/non-coll-length-limit
-          non-coll-depth-1-length-limit)
+          specs.config/scalar-max-length
+          scalar-depth-1-max-length)
 
-        non-coll-result-length-limit
+        scalar-result-max-length
         (if no-truncation? 
-          specs.config/non-coll-length-limit 
-          non-coll-result-length-limit)
+          specs.config/scalar-max-length 
+          scalar-result-max-length)
 
-        non-coll-mapkey-length-limit
+        scalar-mapkey-max-length
         (if no-truncation? 
-          specs.config/non-coll-length-limit 
-          non-coll-mapkey-length-limit)
+          specs.config/scalar-max-length 
+          scalar-mapkey-max-length)
 
 
         limit
@@ -272,11 +242,11 @@
                                     (and sev? (< depth 2))
                                     :level-1-sev))]
           (case level-k
-            :level-0-sev non-coll-result-length-limit
-            :level-1-sev non-coll-depth-1-length-limit)
+            :level-0-sev scalar-result-max-length
+            :level-1-sev scalar-depth-1-max-length)
           (max (if key?
-                 non-coll-mapkey-length-limit
-                 non-coll-length-limit)
+                 scalar-mapkey-max-length
+                 scalar-max-length)
                (or limit 0)))]
     
     (if (:ellipsized-char-count m)
@@ -289,8 +259,20 @@
                                           (len badge))
                                         0)
               stringified-len       (count stringified)
+
+              ;; If we add the escape chars to string at an early stage, maybe we can
+              ;; remove this
+              num-double-quotes     (when (= t :string)
+                                      (some->> stringified
+                                               (re-seq #"\"")
+                                               count
+                                               (- 2)
+                                               #?(:cljs
+                                                  js/Math.abs
+                                                  :clj
+                                                  Math/abs)))
+              stringified-len       (+ stringified-len (or num-double-quotes 0))
               char-len              (+ (or stringified-len 0)
-                                       (mutable-wrapper-count m)
                                        inline-badge-count)
               num-chars-over        (or (- char-len limit) 0)
               exceeds?              (pos? num-chars-over)
@@ -318,16 +300,15 @@
 
 
 
-        ;;  (when key?
-        ;;    (?pp stringified)
-        ;;    (?pp (keyed [#_m
-        ;;                 t
-        ;;                 stringified
-        ;;                 stringified-len
-        ;;                 num-chars-over
-        ;;                 exceeds?
-        ;;                 inline-badge-count
-        ;;                 s
-        ;;                 atom-wrap-count
-        ;;                 ellipsized-char-count])))
+          ;;  (when key?
+          ;;    (?pp stringified)
+          ;;    (?pp (keyed [#_m
+          ;;                 t
+          ;;                 stringified
+          ;;                 stringified-len
+          ;;                 num-chars-over
+          ;;                 exceeds?
+          ;;                 inline-badge-count
+          ;;                 s
+          ;;                 ellipsized-char-count])))
           ret)))))

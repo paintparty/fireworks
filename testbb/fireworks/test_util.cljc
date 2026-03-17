@@ -1,6 +1,7 @@
 (ns fireworks.test-util
   (:require [clojure.string :as string]))
 
+(def visual-mode? true)
 
 (defn escape-sgr
   "Escape sgr codes so we can test clj output."

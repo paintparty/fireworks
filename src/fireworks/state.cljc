@@ -10,7 +10,8 @@
             [fireworks.config :as config]
             [fireworks.defs :as defs]
             [fireworks.messaging :as messaging]
-            [fireworks.pp :refer [?pp pprint]]
+            ;; [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
+            [fireworks.pp :refer [pprint]]
             [fireworks.specs.config :as config.specs]
             [fireworks.specs.theme :as theme]
             [fireworks.specs.tokens :as tokens]
@@ -596,6 +597,12 @@
               [k (m->sgr (assoc m :k k))])
             merged))
 
+(defn ^:public style-map->sgr [m]
+  (->> m
+       sanitize-style-map
+       with-line-height
+       (map-vals hexa-or-sgr)
+       m->sgr))
 
 (defn- hydrated-classes [base theme]
   (let [tokens  (:tokens theme)
@@ -854,6 +861,10 @@
         (with-bling-color->sgr m k v)
         "color"
         (with-bling-color->sgr m k v)
+        "font-weight"
+        (assoc m :font-weight v)
+        "font-style"
+        (assoc m :font-weight v)
         m))
     {})))
 
@@ -879,9 +890,7 @@
   [s]
   ;; TODO - try to figure out way you can preserve the color in the output,
   ;; which would help even more for debugging.
-  (some-> s 
-          ?sgr-str
-          println)
+  (some-> s ?sgr-str println)
   s)
 
 
@@ -898,8 +907,9 @@
                   (let [style (sanitize-style-map style)]
                     (when (seq style)
                       (m->sgr (map-vals hexa-or-sgr style))))
-                  (let [highlight-class-sgr (some->> class (get @merged-theme))
-                        highlight-sgr (:highlight @merged-theme)]
+                  (let [highlight-class-sgr (some->> class 
+                                                     (get @merged-theme))
+                        highlight-sgr       (:highlight @merged-theme)]
 
                     #_(do 
                       (println 'highlight-sgr)
@@ -933,6 +943,12 @@
 
 
 (def *formatting-meta-level (atom 0))
+
+(defn meta-level-inc! []
+  (swap! *formatting-meta-level inc))
+
+(defn meta-level-dec! []
+  (swap! *formatting-meta-level dec))
 
 (defn formatting-meta-level []
   @*formatting-meta-level)

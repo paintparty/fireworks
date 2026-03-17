@@ -68,7 +68,7 @@
 (!? (range 50))
 
 ;; Adjust truncation of colls
-(!? {:coll-limit 100} (range 50))
+(!? {:print-length 100} (range 50))
 
 ;; Flag to disable all truncation of colls and long strings
 (!? :+ (range 50))

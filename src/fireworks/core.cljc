@@ -4,7 +4,7 @@
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
    [fireworks.browser]
-   [fireworks.pp :as fireworks.pp]
+   [fireworks.pp :as fireworks.pp :refer [?pp]]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
@@ -49,18 +49,18 @@
 ;   FFFFFFFFFFF           
 
 
-(defn resolve-label-length [label-length-limit]
-  (or (when (s/valid? ::specs.config/label-length-limit
-                      label-length-limit)
-        label-length-limit)
-      (:label-length-limit @state/config)
+(defn resolve-label-length [label-max-length]
+  (or (when (s/valid? ::specs.config/label-max-length
+                      label-max-length)
+        label-max-length)
+      (:label-max-length @state/config)
       (-> config/options
-          :label-length-limit
+          :label-max-length
           :default)))
 
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
-   {:keys [label-length-limit]} :user-opts
+   {:keys [label-max-length]} :user-opts
     :as opts}]
   (let [indent-spaces
         (or (some-> @state/margin-inline-start
@@ -90,15 +90,15 @@
                     (string/join
                      "\n"
                      (map
-                      #(str (tag/tag-entity!
+                      #(str (tag/tag-entity
                              (str indent-spaces %)
                              label-entity-tag)
-                            (tag/tag-reset!))
+                            (tag/reset-tag))
                       (string/split label #"\n")))
 
-                    (tag/tag-entity!
+                    (tag/tag-entity
                      (util/shortened label
-                                     (resolve-label-length label-length-limit))
+                                     (resolve-label-length label-max-length))
                      label-entity-tag))]
               (str indent-spaces label))))
 
@@ -107,27 +107,29 @@
           (when qf
             ;; TODO - Confirm that toggling this state doesn't matter, remove it
             (reset! state/formatting-form-to-be-evaled? true)
-            (let [form-entity-tag
-                  (case (some-> opts :label-color util/as-str)
-                    "green"
-                    :eval-form-green
-                    "blue"
-                    :eval-form-blue
-                    "red"
-                    :eval-form-red
-                    :eval-form)
-                  
-                  shortened
-                  (tag/tag-entity! 
-                   (if (:format-label-as-code? @state/config)
-                     (-> qf
-                         (pprint {:max-width 33})
-                         with-out-str
-                         (string/replace #"\n+$" ""))
-                     (util/shortened qf
-                                     (resolve-label-length label-length-limit)))
-                   form-entity-tag) 
-                  ret       shortened]
+            (let [form-entity-tag (case (some-> opts :label-color util/as-str)
+                                    "green"
+                                    :eval-form-green
+                                    "blue"
+                                    :eval-form-blue
+                                    "red"
+                                    :eval-form-red
+                                    :eval-form)
+                  format-anons    #(string/replace %
+                                                   #"p([0-9])__[0-9]+\#" 
+                                                   (fn [[_ n]] (str "%" n)))
+                  shortened       (if (:format-label-as-code? @state/config)
+                                    (-> qf
+                                        (pprint {:max-width 33})
+                                        with-out-str
+                                        (string/replace #"\n+$" "")
+                                        format-anons)
+                                    (util/shortened
+                                     (-> qf str format-anons)
+                                     (resolve-label-length
+                                      label-max-length)))
+                  tagged          (tag/tag-entity shortened form-entity-tag) 
+                  ret             tagged]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it
               (reset! state/formatting-form-to-be-evaled? false)
               (str indent-spaces ret))))]
@@ -148,10 +150,11 @@
                                  col :column} form-meta]
                        (str ns-str ":" ln ":" col)))
         file-info  (some-> file-info*
-                           (tag/tag-entity! :file-info))]
+                           (tag/tag-entity :file-info))]
    [file-info* file-info]))
 
 
+;; TODO - remove syntax around order mattering 
 (defn- file-info-and-eval-label
   "file-info and eval lable get tagged, so order matters."
   [{:keys [file-info-first? label?] :as opts}]
@@ -203,7 +206,7 @@
                       log?
                       threading?)
           ;; TODO - is the space before the newline necessary?
-          (tag/tag-entity! " \n" :result-header))
+          (tag/tag-entity " \n" :result-header))
 
         ;; TODO - Remove if post-replace works - cljs stuff below
         css-count*
@@ -567,7 +570,8 @@
 
     ;; TODO - add some observability here
     (reset! state/let-bindings? (:let-bindings? opts))
-    (reset! state/margin-inline-start (:margin-inline-start opts))
+    (reset! state/margin-inline-start (or (:margin-inline-start opts)
+                                          (:margin-left opts)))
 
     ;; TODO - lose if post-replace works
     (reset! state/styles [])
@@ -602,10 +606,8 @@
            (unknown-option-warning-opts opts k))))))
   
   ;; Reset the highlight state.
-  ;; It may pull hightlight style from merged theme.
-  (reset! state/highlight
-          (some->> find-vals 
-                   state/highlight-style))
+  ;; It may pull highlight style from merged theme.
+  (reset! state/highlight (some->> find-vals state/highlight-style))
   #_(reset! state/rewind-counter 0))
           
 
@@ -627,28 +629,50 @@
 ;  P::::::::P
 ;  PPPPPPPPPP
 
+(defn- maybe-unable-to-print-warning [x]
+  (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)
+        cause (if (= coll-size :lasertag.core/unknown-coll-size)
+                "Cannot determine collection size"
+                "Unknown")]
+    (messaging/unable-to-print-warning
+     "fireworks.core/?"
+     (str (messaging/italic "  Problem:\n")
+          "    " 
+          "Unable to print value."
+          "\n\n"
+          (messaging/italic "  Cause:\n")
+          "    "
+          cause
+          "\n\n"
+          (messaging/italic "  Value class:\n")
+          "    "
+          classname))))
 
 (defn- print-formatted
   ([x]
    (print-formatted x nil))
-  ([{:keys [fmt log? err err-x err-opts] :as x}
+  ([{:keys [fmt log? err err-x err-opts]
+     :as   x}
     js-printing-fn]
+   ;;  (?pp x)
    (if (instance? fireworks.messaging.FireworksThrowable x)
-     (let [{:keys [line column file]} (:form-meta err-opts)
-           ns-str                     (:ns-str err-opts)] 
+     (if (= (:coll-size err-opts) :lasertag.core/unknown-coll-size)
+       (maybe-unable-to-print-warning err-x)
+       (let [{:keys [line column file]} (:form-meta err-opts)
+             ns-str                     (:ns-str err-opts)] 
 
-       (messaging/caught-exception err
-                                   {:value  err-x
-                                    :type   :error
-                                    :form   (:quoted-fw-form err-opts)
-                                    :header (or (some-> err-opts :header)
-                                                (some-> err-opts :fw-fnsym))
-                                    :line   line
-                                    :column column
-                                    :file   (or file ns-str)})
-       (println 
-        (str "\nFalling back to pprint...\n\n"
-             (with-out-str (pprint err-x)))))
+         (messaging/caught-exception err
+                                     {:value  err-x
+                                      :type   :error
+                                      :form   (:quoted-fw-form err-opts)
+                                      :header (or (some-> err-opts :header)
+                                                  (some-> err-opts :fw-fnsym))
+                                      :line   line
+                                      :column column
+                                      :file   (or file ns-str)})
+         (println 
+          (str "\nFalling back to pprint...\n\n"
+               (with-out-str (pprint err-x))))))
 
      (let [termf #(do 
                     ;; If it has been formatted by fireworks, it will print here.
@@ -661,28 +685,20 @@
        #?(:cljs (if node? (termf x) (js-printing-fn x))
           :clj (termf x))))))
 
-(defn- try-pp [x]
-  (try (pprint x)
-       #?(:clj
-          (catch Throwable e
-            (let [{:keys [coll-size classname]} (-> x lasertag/tag-map)]
-              (messaging/unable-to-print-warning
-               "fireworks.core/?"
-               (str (messaging/italic "Problem:\n")
-                    "  " 
-                    "Unable to print value with pprint."
-                    "\n\n\n"
-                    (messaging/italic "Cause:\n")
-                    "  "
-                    coll-size
-                    "\n\n\n"
-                    (messaging/italic "Value class:\n")
-                    "  "
-                    classname)))))))
+(defn- try-pp 
+  ([x]
+   (try-pp x nil))
+  ([x opts]
+   (try (pprint x opts)
+        #?(:clj
+           ;; TODO - assess whether you need this and change messaging
+           (catch Throwable e
+             (maybe-unable-to-print-warning x))))))
 
 (defn- _pp* [user-opts x]
+  #_(println "_pp*" user-opts)
   (print (margin-block-str user-opts :margin-top))
-  (try-pp x)
+  (try-pp x user-opts) 
   ;; Extra line after pprint result
   (print (margin-block-str user-opts :margin-bottom))
   x)
@@ -799,9 +815,14 @@
   (messaging/->FireworksThrowable
    e
    x
-   (assoc opts
-          :header
-          "fireworks.core/formatted")))
+   (let [{:keys [coll-size all-tags]} (-> x lasertag/tag-map)]
+     (assoc opts
+            :header
+            "fireworks.core/formatted"
+            :coll-size 
+            coll-size
+            :all-tags 
+            all-tags))))
 
 
 (defn ^{:public true}
@@ -926,7 +947,6 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
-  ;; (ff opts)
   (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
         config-before (when debug-config? @state/config)]
@@ -937,7 +957,7 @@
                               (catch #?(:cljs js/Object :clj Throwable)
                                      e
                                 (fw-throwable e x opts)))
-          ;; TODO - Need a better way to do the hack for threading 
+          ;; TODO - Need a better way to do threading 
           opts           (merge opts
                                 native-logging
                                 (when (some-> opts :label :threading?)
@@ -1090,7 +1110,8 @@
                  (when (map? m)
                    {:user-opts m}))
           (list 'if (list 'nil? x+)
-                (list 'symbol "nil  ; <- short circuted")
+                ;; TODO - figure out annotation styling here
+                (list 'symbol "nil  \033[38;5;244;3m; <- short circuited\033[m")
                 x+)
           ))
    x+))

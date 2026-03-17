@@ -12,16 +12,16 @@
 (s/def ::edn-file-path 
   (s/and string? #(re-find #"\.edn$" %)))
 
-;; Upper bound of non-coll-length-limits get set here
-(def non-coll-length-limit
-  1000)
+;; Upper bound of scalar-max-lengths get set here
+(def scalar-max-length
+  10000)
 
-(def coll-limit
+(def print-length
   1000)
 
 ;; TODO - Should this be 1?
-(s/def ::fw-coll-limit
-  (s/and int? #(<= 2 % coll-limit)))
+(s/def ::fw-print-length
+  (s/and int? #(<= 1 % print-length)))
 
 ;; This is for the theme entry in a fireworks config .edn
 ;; It can be either
@@ -46,7 +46,7 @@
 
 (s/def ::truncate boolean?)
 
-(s/def ::label-length-limit
+(s/def ::label-max-length
   (s/and int? #(<= 10 % 100)))
 
 (s/def ::format-label-as-code?
@@ -64,31 +64,31 @@
 (s/def ::margin-inline-start
   (s/and int? #(<= 0 % 100)))
 
-(s/def ::single-line-coll-length-limit
+(s/def ::single-line-coll-max-length
   (s/and int? #(<= 2 % 200)))
 
-(s/def ::coll-limit
-  ::fw-coll-limit)
+(s/def ::print-length
+  ::fw-print-length)
 
-(s/def ::non-coll-extended-length-limit
-  (s/and int? #(<= 10 % non-coll-length-limit)))
+(s/def ::scalar-extended-print-length
+  (s/and int? #(<= 10 % scalar-max-length)))
 
-(s/def ::non-coll-result-length-limit
-  ::non-coll-extended-length-limit)
+(s/def ::scalar-result-max-length
+  ::scalar-extended-print-length)
 
-(s/def ::non-coll-depth-1-length-limit
-  ::non-coll-extended-length-limit)
+(s/def ::scalar-depth-1-max-length
+  ::scalar-extended-print-length)
 
-(s/def ::non-coll-length-limit
-  (s/and int? #(<= 10 % non-coll-length-limit)))
+(s/def ::scalar-max-length
+  (s/and int? #(<= 10 % scalar-max-length)))
 
-(s/def ::non-coll-mapkey-length-limit
-  (s/and int? #(<= 5 % non-coll-length-limit)))
+(s/def ::scalar-mapkey-max-length
+  (s/and int? #(<= 5 % scalar-max-length)))
 
 (s/def ::single-column-maps?
   boolean?)
 
-(s/def ::single-column-maps-length-threshold
+(s/def ::single-column-map-threshold
   (s/and int? #(< 1 %)))
 
 (s/def ::print-level
@@ -108,6 +108,9 @@
 
 (s/def ::enable-rainbow-brackets?
   boolean?)
+
+(s/def ::regex-theme
+  #{:color :neutral "color" "neutral"})
 
 (s/def ::bracket-contrast
   #{:high :low "high" "low"})
@@ -165,25 +168,12 @@
 
 (s/def ::when any?)
 
-(s/def ::fireworks-user-config
-  (s/and map?
-         (s/keys :opt-un [::line-height 
-                          ::enable-terminal-italics? 
-                          ::non-coll-result-length-limit
-                          ::non-coll-depth-1-length-limit
-                          ::non-coll-mapkey-length-limit 
-                          ::non-coll-length-limit 
-                          ::display-namespaces? 
-                          ::enable-rainbow-brackets? 
-                          ::enable-terminal-truecolor? 
-                          ::print-level 
-                          ::theme 
-                          ::metadata-print-level 
-                          ::coll-limit 
-                          ::display-metadata? 
-                          ::metadata-position 
-                          ::bracket-contrast
-                          ::custom-printers
-                          ;; TODO test this
-                          ::find
-                          ])))
+(s/def ::dissoc-metadata-keys vector?)
+
+(s/def ::select-metadata-keys vector?)
+
+(s/def ::multi-line-metadata? boolean?)
+
+(s/def ::quote-symbols? boolean?)
+
+(s/def ::colorize? boolean?)

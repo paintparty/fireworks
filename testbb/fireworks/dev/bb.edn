@@ -1,5 +1,7 @@
 {:paths []
- :deps  {io.github.paintparty/fireworks {:local/root "../../../"}}}
+ :deps  {io.github.paintparty/fireworks {:local/root "../../../"}
+         io.github.paintparty/lasertag  {:local/root "../../../../lasertag"}
+         }}
 
 ;; ./bb -Sdeps '{:paths ["src" "test"] :deps {io.github.paintparty/bling {:local/root "../../cljc/bling/"}}}' -e "(require '[bling.core-test]) (bling.core-test/bling-basics)"
 ;; ./bb -Sdeps '{:paths ["src" "test"] :deps {io.github.paintparty/bling {:local/root "./"}}}' -e "(require '[bling.core-test]) (bling.core-test/bling-basics)"

@@ -138,9 +138,7 @@
   ;; The :printer entry show below is identical to the :printer internal base
   ;; theme within fireworks. You don't need to specify any of these in your
   ;; own theme, unless you want to override them with different values, as
-  ;; shown with the :function-args token.
   :printer {:default             :default
-            :function-args       {:color "#cf9150"}
             :type-label          :annotation
             :metadata-label      :annotation
             :annotation          :annotation

@@ -27,5 +27,6 @@ node_modules/
 .clj-kondo/.cache
 /public/js
 visual_test/public/js
+visual_test/.clj-kondo/.cache
 .cpcache
 pom.properties

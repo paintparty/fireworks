@@ -1,13 +1,16 @@
 (ns ^:dev/always fireworks.truncate
-  (:require #?(:cljs [fireworks.macros :refer-macros [keyed]])
-            #?(:clj [fireworks.macros :refer [keyed]])
-            [clojure.string :as string]
-            [fireworks.specs.config :as specs.config]
-            [fireworks.ellipsize :as ellipsize]
-            [fireworks.order :refer [seq->sorted-map]]
-            [fireworks.profile :as profile]
-            [fireworks.state :as state]
-            [fireworks.util :as util :refer [maybe-> maybe->>]]))
+  (:require
+   #?(:cljs [fireworks.macros :refer-macros [keyed]])
+   #?(:clj [fireworks.macros :refer [keyed]])
+   [clojure.string :as string]
+   [fireworks.ellipsize :as ellipsize]
+   [fireworks.order :refer [seq->sorted-map]]
+   [fireworks.pp :refer [?pp]]
+   [fireworks.profile :as profile]
+   [fireworks.specs.config :as specs.config]
+   [fireworks.state :as state]
+   [fireworks.util :as util :refer [maybe->]]
+   [lasertag.core]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -54,7 +57,7 @@
          (js-delete "target")))))
 
 
-;; Maybe this could go in Lastertag?
+;; Maybe this could go in Lasertag?
 (defn- cljc-atom?
   [x]
   #?(:cljs (= cljs.core/Atom (type x))
@@ -64,34 +67,73 @@
 ;; Potential performance gains:
 ;; Maybe declare truncate new above this and incorporate into kv
 ;; Maybe use reduce-kv or transducer to speed this up
+
+
 #?(:cljs 
-   (defn- js-obj->array-map 
-     [{:keys [x coll-limit depth uid-entry? classname]}]
-     ;; TODO should 8 value be tied to user config? 
-     (if (> depth 8)
-       {}
-       (let [js-map? (= classname "Map") 
-             keys*   (if js-map? (js/Array.from (.keys x)) (.keys js/Object x))
-             keys    (take coll-limit keys*)]
-         (into (array-map)
-               (reduce (fn [acc k]
-                         (if (some-> k
-                                     (maybe-> string?)
-                                     (string/starts-with? "closure_uid_"))
-                           (do (vreset! uid-entry? true)
-                               acc)
-                           (conj acc
-                                 [(symbol (str "'" k "':"))
-                                  (if js-map?
-                                    (.get x k)
-                                    (aget x k))])))
-                       []
-                       keys))))))
+   (do
+     (defn- resolve-js-obj [{:keys [x resolver instance-properties]}]
+       (cond resolver
+             (or (resolver x) x)
+             (seq instance-properties)
+             (->> instance-properties
+                  (reduce (fn [m k] 
+                            (assoc m
+                                   ;; Need a way to attach metadata to this so that it gets the correct syntax coloring token from theme
+                                   k 
+                                   (let [v (aget x k)]
+                                     (if (undefined? v)
+                                       "____js/undefined____"
+                                       v))))
+                          {})
+                  clj->js)
+             :else
+             x))
+
+     (defn- js-kv [{:keys [x uid-entry? js-map?]} acc k]
+       (if (some-> k
+                   (maybe-> string?)
+                   (string/starts-with? "closure_uid_"))
+         (do (vreset! uid-entry? true)
+             acc)
+         (conj acc
+               [(with-meta (symbol (str "'" k "':")) {:bling.theme/token :js-object-key})
+                (let [v (if js-map? (.get x k) (aget x k))]
+                  (if (= v "____js/undefined____")
+                    (with-meta (symbol "js/undefined") {:bling.theme/token :nil})
+                    v))])))
+
+     (defn- js-obj->array-map 
+       [{:keys [print-length 
+                depth 
+                uid-entry? 
+                classname 
+                og-x]
+         :as   m}]
+       ;; TODO should 8 value be tied to user config? 
+       (if (> depth 8)
+         {}
+         (let [js-map?                  (= classname "Map") 
+               x                        (resolve-js-obj m)
+               keys*                    (if js-map?
+                                          (js/Array.from (.keys x)) 
+                                          (.keys js/Object x))
+               keys                     (take print-length keys*)
+               built-in-non-constructor (cond (= og-x js/Math) 'js/Math
+                                              (= og-x js/Atomics) 'js/Atomics
+                                              (= og-x js/JSON) 'js/JSON 
+                                              (= og-x js/Intl) 'js/Intl)]
+           (into (if built-in-non-constructor
+                   (apply array-map [:fireworks.truncate/js-built-in
+                                     built-in-non-constructor])
+                   (array-map))
+                 (reduce (partial js-kv (assoc m :x x :js-map? js-map?))
+                         []
+                         keys)))))))
 
 (declare truncate)
 
 (defn- truncate-iterable
-  [{:keys [coll-limit
+  [{:keys [print-length
            array-map?
            transient?
            map-like?
@@ -112,11 +154,11 @@
         (and (not map-like?)
              (some->> x
                       seq
-                      (take (min 50 coll-limit))
+                      (take (min 50 print-length))
                       (every? #(-> % map-entry?))))     
 
         ret
-        (let [taken (->> x (take coll-limit) vec)
+        (let [taken (->> x (take print-length) vec)
               x-is-set? (set? x)]
           (mapv (fn [i]
                   (let [nth-taken (nth taken i nil)]
@@ -172,7 +214,8 @@
                      depth
                      js-array?
                      coll-size
-                     coll-limit]}
+                     og-x
+                     print-length]}
              m]
          (cond
            dom-node-type
@@ -186,12 +229,12 @@
               (truncate {:depth (inc depth)
                          :path  path}
                         (aget x i)))
-            (range (min coll-limit coll-size)))
+            (range (min print-length coll-size)))
 
            (contains? all-tags :js-set)
            (->> x
                 js/Array.from
-                (take coll-limit)
+                (take print-length)
                 (mapv (partial truncate {:depth (inc depth)
                                          :path  path})))
 
@@ -209,17 +252,48 @@
      :clj
      (truncate-iterable m x)))
 
-
+(defn- truncated-val-in-meta [x]
+  (if (coll? x)
+    (let [s (cond (map? x)
+                  "{...}"
+                  (set? x)
+                  "#{...}"
+                  (seq? x)
+                  "(...)"
+                  :else
+                  "[...]")]
+      (symbol s))
+    (if (or (string? x) (keyword? x) (number? x)) 
+      (if (-> x str count (> 10))
+        (let [s (-> x str (subs 0 7) (str "..."))]
+          (symbol (if (string? x) (str "\"" s "\"") s)))
+        x)
+      x)))
 
 (defn- value-meta [x]
   (when-let [m (meta x)] 
     (when-not (and (list? x) (= '(:line :column) (keys m)))
-      m)))
+      (if-not (:multi-line-metadata? @state/config)
+        (let [num-dropped (when (< 1 (count m)) (-> m count dec))]
+          (if num-dropped
+            (let [[k v]          (->> m first)
+                  k              (truncated-val-in-meta k)
+                  v              (truncated-val-in-meta v)
+                  first-kv       [k v]
+                  dropped-key    (symbol "")
+                  dropped-syntax (symbol (str "...+" num-dropped))]
+              (apply array-map 
+                     (conj first-kv
+                           dropped-key
+                           dropped-syntax)))
+            m))
+        m))))
 
-(defn- resolve-coll-limit []
+
+(defn- resolve-print-length []
   (if (false? (:truncate? @state/config))
-    specs.config/coll-limit
-    (:coll-limit @state/config)))
+    specs.config/print-length
+    (:print-length @state/config)))
 
 
 (defn- reify-if-transient [x tag-map]
@@ -231,7 +305,7 @@
         (= t :set)
         #{}
         :else
-        (for [n (take (resolve-coll-limit) (range (count x)))]
+        (for [n (take (resolve-print-length) (range (count x)))]
           (nth x n))))
     x))
 
@@ -249,69 +323,193 @@
           :else
           (list (symbol "...")))))
 
+(defn- ml-str-with-adjusted-indentation [s]
+  (let [re #"\n( +)"
+        n  (some->> s
+                    str
+                    (re-seq re)
+                    (group-by #(count (second %)))
+                    keys
+                    (apply min))
+        f  (fn [[a]] (str "\n" (subs a (inc n))))
+        s  (string/replace s re f)]
+    s))
+
+(defn- ml-str 
+  {:doc "Takes a multi-line string like and normalizes the indentation.
+         Useful for multi-line strings that nested inside data structures,
+         because some editors automatically format these for readability, but
+         the resulting strings have unexpected indentations on lines after the
+         first."
+   :examples '[{:desc "String as map entry value"
+                :forms [[(ml-str "Line one
+                                  Line two
+                                  Line three
+                                    - Line four")
+                         
+                         "Line one\nLine two\nLine three\n  - Line four"]]}]}
+  [s]
+  (ml-str-with-adjusted-indentation s))
+
+(defn- ml-string? [x]
+  (boolean (and (string? x) (re-find #"\n" x))))
+
+(defn- ml-str->vec [s]
+  (-> s
+      ml-str
+      (string/split #"\n")
+      vec))
+
 (defn- truncation-profile
   [{:keys [path depth map-entry-in-non-map?]
     :as   m*}
    x]
-  (let [val-is-atom?     (cljc-atom? x)
-        val-is-volatile? (volatile? x) 
-        x                (if (or val-is-atom? val-is-volatile?) @x x)
-        kv?              (boolean (when-not map-entry-in-non-map? (map-entry? x)))
-        tag-map          (when-not kv? (util/tag-map* x))
-        x                (or (container-for-unknown-coll-size tag-map)
-                             (reify-if-transient x tag-map))
-        too-deep?        (> depth (:print-level @state/config))
-        sev?             (boolean (when-not kv?
-                                    (not (:coll-type? tag-map))))]
+  (let [multi-line-string?   (ml-string? x)
+        val-is-atom?         (cljc-atom? x)
+        val-is-volatile?     (volatile? x) 
+        val-is-delay?        (delay? x)
+        val-is-ref?          #?(:cljs
+                                false
+                                :clj
+                                (= (type x) clojure.lang.Ref))
+        val-is-agent?        #?(:cljs
+                                false
+                                :clj
+                                (= (type x) clojure.lang.Agent))
+        val-is-future?       #?(:cljs
+                                false
+                                :clj
+                                (future? x))
+        val-is-promise?      #?(:cljs
+                                false
+                                :clj
+                                (when (instance? clojure.lang.IPending x)
+                                  (when-not (or (coll? x)
+                                                val-is-future?
+                                                val-is-delay?)
+                                    true)))
+        val-is-derefable?    (or val-is-atom? 
+                                 val-is-volatile? 
+                                 val-is-agent? 
+                                 val-is-ref?
+                                 val-is-future?
+                                 val-is-promise?
+                                 val-is-delay?)
+        val-is-throwable?    (lasertag.core/throwable? x)
+        og-info              (when (or val-is-derefable? val-is-throwable?)
+                               (lasertag.core/tag-map x))
+        og-t                 (:tag og-info)
+        og-class             (:classname og-info)
+        x                    (cond
+                               val-is-derefable?
+                               (with-meta {:status :ready :val @x}
+                                 (meta x))
+
+                               multi-line-string?
+                               (ml-str->vec x)
+
+                               val-is-throwable?
+                               (cond-> {"Message" (or (ex-message x)
+                                                      "No message provided")
+                                        "Cause"   (or (ex-cause x)
+                                                      "No cause provided")}
+                                 (ex-data x)
+                                 (assoc "Data" (ex-data x)))
+                               :else
+                               x)
+        kv?                  (boolean (when-not map-entry-in-non-map?
+                                        (map-entry? x)))
+        tag-map              (when-not kv? (util/tag-map* x))
+        x                    (or (container-for-unknown-coll-size tag-map)
+                                 (reify-if-transient x tag-map))
+        too-deep?            (> depth (:print-level @state/config))
+        sev?                 (boolean (when-not kv?
+                                        (not (:coll-type? tag-map))))
+        user-meta            (value-meta x)
+        theme-token-override (:bling.theme/token user-meta)
+        user-meta            (some-> user-meta (dissoc :bling.theme/token))
+        user-meta            (when (seq user-meta)
+                               user-meta)]
 
     (merge m* ;; m* added for :key? and :map-value? entries
-           (keyed [val-is-atom?
+           (keyed [val-is-derefable?
                    val-is-volatile?
+                   val-is-agent?
+                   val-is-atom?
+                   val-is-ref?
                    too-deep?
+                   og-class
                    depth
+                   og-t
                    path
                    sev?
                    kv?
                    x])
            tag-map
-           {:user-meta      (value-meta x)
+           (some->> theme-token-override (hash-map :theme-token-override))
+           (when multi-line-string?
+             {:multi-line-string-collection? true})
+           {:user-meta      user-meta
             :og-x           x
             :uid-entry?     (volatile! false)
-            :coll-limit     (if too-deep? 0 
-                                (resolve-coll-limit))
+            :print-length   (if too-deep? 0 
+                                (resolve-print-length))
             :array-map?     (contains? (:all-tags tag-map) :array-map)
             :top-level-sev? (and sev? (zero? depth))}))) 
 
 
 (defn- truncated-x*
-  [{:keys [coll-type? kv? depth carries-meta? classname path]
+  [{:keys [coll-type? kv? depth carries-meta? classname path og-x all-tags t]
     :as m}
    x]
-  ;; (println "\n\nx in truncated-x*" x)
-  (let [x (cond
-            kv?        
-            (let [[k v] x
-                  ;; path (conj path k)
-                  ]
-              ;; truncate call
-              [(truncate {:depth depth 
-                          :key?  true 
-                          :path  (conj path k :fireworks.highlight/map-key)}
-                         k)
-               ;; truncate call
-               (truncate {:depth      depth
-                          :map-value? true
-                          :path       (conj path k)} v)])
+  (let [x (cond kv?        
+                (let [[k v] x
+                      ;; path (conj path k)
+                      ]
+                  ;; truncate call
+                  [(truncate {:depth depth 
+                              :key?  true 
+                              :path  (conj path k :fireworks.highlight/map-key)}
+                             k)
+                   ;; truncate call
+                   (truncate {:depth      depth
+                              :map-value? true
+                              :path       (conj path k)} v)])
 
+                
+                ;; TODO - try to get this working
+                ;; (?pp (and (contains? all-tags :js-object)
+                ;;         (contains? all-tags :built-in)))
+                ;; ;; #?(:cljs
+                ;; ;;    (contains? #{js/Math js/Atomics js/JSON js/Intl} og-x)
+                ;; ;;    :clj
+                ;; ;;    nil)
+                ;; #?(:cljs
+                ;;    (?pp (cond (= og-x js/Math) "js/Math"
+                ;;               (= og-x js/Atomics) "js/Atomics"
+                ;;               (= og-x js/JSON) "js/JSON" 
+                ;;               (= og-x js/Intl) "js/Intl"))
+                ;;    :clj
+                ;;    (symbol "wtf?"))
+                
+                coll-type?
+                (truncated-coll m x)
 
-            coll-type?
-            (truncated-coll m x)
+                (= classname "java.math.BigDecimal")
+                (symbol (str x "M"))
 
-            (= classname "java.math.BigDecimal")
-            (symbol (str x "M"))
+                (and (= t :symbol)
+                     (= x 'js/undefined))
+                (symbol "undefined")
 
-            :else      
-            x)]
+                (and (:quote-symbols? @state/config)
+                     (= t :symbol)
+                     ;; check that is is not a js-object key such as `'a':`
+                     (not (when (:key? m) (re-find #"'[^\']+':$" (str x)))))
+                (symbol (str "'" x))
+
+                :else      
+                x)]
 
     (if (or carries-meta?
             (util/carries-meta? x))
@@ -345,7 +543,7 @@
 ;; of that value changes.
 (defn truncate
   "Example:
-   (? {:coll-limit 5} (with-meta (range 8) {:foo :bar}))
+   (? {:print-length 5} (with-meta (range 8) {:foo :bar}))
    
    Assuming x is a (contrived) coll limit of 8, fireworks.truncate/truncate
    gets called recursively, and all coll types are converted to vectors.
@@ -364,7 +562,7 @@
                     :too-deep?           false,
                     :coll-size           8,
                     :all-tags            #{:coll :seq},
-                    :coll-limit          5,
+                    :print-length          5,
                     :coll-size-adjust    8,
                     :sev?                false,
                     :num-dropped         3,
@@ -409,12 +607,15 @@
         ;; TODO - Use this instead of what is happening in fireworks.profile
         ;; mm*
         ;; (with-badge-and-ellipsized x kv? mm*)
+
         meta-to-attach
         (merge {:fw/truncated mm*
                 :fw/user-meta #?(:cljs user-meta
                                  :bb (remove-sci-lang-type-metadata user-meta mm*)
                                  :clj user-meta)}
-               (some->> m* :user-meta? (hash-map :fw/user-meta-map?)))]
+               (some->> m*
+                        :user-meta? 
+                        (hash-map :fw/user-meta-map?)))]
     (with-meta truncated-x meta-to-attach)))
 
 

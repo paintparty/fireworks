@@ -1,20 +1,285 @@
+;; Check printing for a deftype such as: fireworks.sample/MyType
+
+;; update readme
+;; update changelog
+
 ;; Unstructured sandbox for smoke testing
 
 (ns fireworks.smoke-test
-  (:require [fireworks.core :refer [? !? ?> !?>]]
+  (:require [fireworks.core :refer [? !? ?> !?> pprint]]
             [fireworks.themes :as themes]
             [fireworks.state]
             [fireworks.color]
             [clojure.string :as string]
             [fireworks.pp :as pp]
-            [clojure.pprint :refer [pprint print-table]]
             [clojure.walk :as walk]
             [fireworks.util :as util]
             [fireworks.sample :as sample]
             [fireworks.basethemes :as basethemes]
-            [lasertag.core :refer [tag-map tag]]
+            [lasertag.core :as lt :refer [tag-map tag]]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
+
+(def my-atom (atom nil))
+(def my-volatile (volatile! nil))
+(defn foo [a b] nil)
+(def bar nil)
+
+(def read-me-sample
+  (array-map 
+   :string
+   "Hello"
+   :string/long
+   "The quick brown fox jumped over the lazy dog"
+   :string/newlines
+   "The quick brown
+    fox jumped over
+    the lazy dog"
+   :symbol
+   'foobar
+   :symbol/meta
+   (with-meta 'foobar {:a 1})
+   :boolean 
+   true
+   :regex
+   #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$"
+   :number
+   1234
+   :fn
+   juxt
+   :lambda
+   #()
+   :brackets
+   [[[[[[]]]]]] 
+   :map
+   {:foo :bar}
+   :vector
+   [1 2 3]
+   :record
+   sample/my-record-type
+   :atom
+   (atom [1 2 3])))
+
+#?(:clj
+   #_(pprint (tag-map (byte 0)))
+   (do
+
+     ;; (def my-theme
+     ;;   {:name   "Foo Dark" ;; Required. Name validated with: #"^[A-Z][^\t\n\r]+ (:?Dark|Light)$"
+     ;;   :mood   "dark"     ;; Required. "light" or "dark"
+     ;;   :tokens {:classes {:string {:color "#c7e62e"}}
+     ;;             :syntax  {:js-object-key {:color "#888888"}}}})
+     
+     ;; ;; And then just try it out with some kind of sample value like this:
+     ;; (? {:theme my-theme}
+     ;;   {:string-sample   "string"
+     ;;     :number-sample   1234
+     ;;     :boolean-sample  false
+     ;;     :lambda-sample   #(inc %)
+     ;;     :fn-sample       juxt
+     ;;     :regex-sample    #"^hi$"
+     ;;     :symbol-sample   'mysym})
+     
+     (def x [1 33 99 777 -16])
+
+     (!? :- 
+         {:margin-top        2
+          :display-metadata? true
+          :metadata-position :block
+          :theme             "Alabaster Dark"}
+         ['js/decodeURI
+          'js/isFinite
+          'js/EvalError
+          'js/Date])
+     (!? :- 
+         {:margin-top        2
+          :display-metadata? true
+          :metadata-position :block
+          :theme             "Alabaster Dark"}
+         ['sandbox.browser/ab
+          'sandbox.browser/abc
+          'sandbox.browser/my-function-with-a-really-long-name])
+
+     (!? :- {:margin-top        2
+             :margin-bottom     2
+             :display-metadata? true
+             :metadata-position :block
+             :theme             "Alabaster Dark"}
+         ^{:a 1} ['foo (with-meta 'bar {:b 2}) 'baz]
+         #_read-me-sample)
+
+     (def x 
+       {:name             "Crimson Willow Shell"
+        :category         :aerial
+        :colors           #{:crimson :silver :gold}
+        :traits           #{:crackling :glitter-tail :crossette}
+        :size             :3-inch
+        :fuse-type        :time-delay
+        :duration-ms      4500
+        :altitude-ft      300})
+
+     (?  "My Label"{:margin-top        2
+           :margin-bottom     2
+           :display-metadata? true
+           :metadata-position :block
+           :theme             "Alabaster Dark"}
+          x
+          #_read-me-sample)
+
+     (!? :-
+         {:margin-top    2
+          :margin-bottom 2}
+         '[js/decodeURI
+           js/isFinite
+           js/EvalError
+           js/Date])
+    ;;   (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
+     (!? :pp {:colorize? true} sample/interop-types)
+    ;;  (? (transient [1 2 3 "foo"]))
+    ;;  (println fireworks.sample/my-data-type)
+    ;;  (? :pp (tag-map fireworks.sample/my-data-type))
+    ;;  (? fireworks.sample/my-data-type)
+     
+     ;;  (? #'bar)
+     ;;  (? (tag-map #'bar))
+     ;;  (? (tag-map #(inc %)))
+     
+     ;;  (? (tag-map {:a "foo"}))
+     ;;  (? {:a #uuid "4fe5d828-6444-11e8-8222-720007e40350"})
+     ;;  (? foo)
+     (def my-throwable (Throwable. "something went wrong"))
+     ;;  (!? (tag-map my-throwable))
+     ;;  (? my-throwable)
+     ;;  (println my-throwable)
+     
+     ;;  (def my-assertion-error (AssertionError. "assertion error"))
+     ;;  (? (tag-map my-assertion-error))
+     ;;  (println "cause" (.getCause my-assertion-error))
+     
+     ;;  (def my-ex-info (ex-info "hey" {:a "foo"}))
+     ;;  (? (tag-map my-ex-info))
+     ;;  (println (ex-message my-ex-info))
+     ;;  (println (ex-data my-ex-info))
+     ;;  (println (.getMessage my-ex-info))
+     
+     ;;  (try
+     ;;    (throw (ex-info "Something failed" {:code 404}))
+     ;;    (catch Exception e
+     ;;      (println (.getMessage e))))  ; => "Something failed"
+     
+     (defmulti different-behavior (fn [x] (:x-type x)))
+     ;;  (? (tag different-behavior))
+     ;;  (? (tag-map different-behavior))
+     
+
+     (defrecord MyRecordType [a b c d])
+     (def my-record-type (->MyRecordType 4 8 4 5))
+     ;;  (? (tag my-record-type))
+     ;;  (? (tag-map my-record-type))
+     
+
+     (deftype CustomVector [vc]
+       clojure.lang.IPersistentVector
+       ;;  (count [_] (count m))
+       (assoc [this _ _] this))
+     
+     (def custom-vector-datatype (->CustomVector [:a 1 :b 3]))
+
+     ;;  (? :pp (tag-map custom-vector-datatype))
+     ;; (? custom-vector-datatype)
+     
+     (def my-ref (ref 1))
+     ;;  (? my-ref)
+     ;;  (? (tag-map my-ref))
+     
+     (def my-agent (agent 3))
+     ;;  (? my-agent)
+     ;;  (? (tag-map my-agent))
+     
+     ;;  (? my-atom)
+     ;;  (? (tag-map my-atom))
+     
+     ;; (? my-volatile)
+     ;;  (? (tag-map my-volatile))
+     
+
+     (def my-future (future (Thread/sleep 100) 100))
+     ;;  (? (tag-map my-future))
+     ;; (? my-future)
+     ;;  (print my-future)
+     
+
+     ;;  (def my-promise (promise))
+     ;;   ;; (? (tag-map my-promise))
+     ;;   (? my-promise)
+     ;;   ;; (print my-promise)
+     
+
+     (def my-delay (delay 100))
+     ;;  (? (tag-map my-delay))
+     ;; (? my-delay)
+     ;; (println my-delay)
+     
+     ;;  (? :pp (tag-map (seq [1 2 3])))
+     ;;  (? :pp (tag-map (repeat 3 "hi")))
+     
+     ;;  (? (tag-map (list 'a 'b 'c)))
+     
+     ;;  (? :pp lt/scalar-types-set)
+     ;;  (? :pp lt/literal-types-set)
+     
+     ;;  (? :pp (tag-map "hi"))
+     ;;  (? :pp (tag-map (short 3)))
+     ;; (? :pp (tag-map (java.util.ArrayList. [1 2 3])))
+     
+     ;; (? (java.util.ArrayList. [1 2 3]))
+     
+     ;; (? #"^abc")
+     ;;  (? #uuid "4fe5d828-6444-11e8-8222-720007e40350")
+     ;;  (? (tag "hi"))               
+     ;;  (? (tag :hi))                
+     ;;  (? (tag #"^hi$"))             
+     ;;  (? (tag true))               
+     ;;  (? (tag 'mysym))              
+     ;;  (? (tag +))              
+     ;;  (? (tag nil))                
+     ;;  (? (tag [1 2 3]))            
+     ;;  (? (tag #{1 3 2}))           
+     ;;  (? (tag {:a 2
+     ;;           :b 3}))       
+     ;;  (? (tag (map inc (range 3))))
+     ;;  (? (tag (range 3)))          
+     ;; (? (tag-map (range 3)))          
+     ;;  (? (tag '(:a :b :c)))         
+     ;;  (? (tag ##Inf))
+     ;;  (? (tag ##-Inf))
+     ;;  (? (tag ##NaN))
+     ;;  (? (tag 1/3))
+     ;;  (println (type (byte 0)))
+     ;;  (? (tag-map (byte 0)))
+     ;;  (? (byte 0))
+     ;;  (? (tag-map (short 3)))
+     ;;  (? (tag-map 23.44))
+     ;;  (? (tag-map 1M))
+     ;;  (? (tag-map 1))
+     ;;  (? (tag-map (float 1.5)))
+     ;;  (? (tag-map (java.math.BigInteger. "171")))
+     ;;  (? (tag-map (java.math.BigInteger. "171")))
+     ;;  (? (type (java.math.BigDecimal. "173.44")))
+     ;;  (? :pp (tag-map oogs))
+     ;;  (? foo)
+     ;;  (? (java.math.BigDecimal. "173.44"))
+     ;;  (? (tag (char 96)))
+     ;;  (? :pp (tag-map (java.util.Date.)))
+     ;;  (? (java.util.Date.))
+     ;;  (? (tag java.util.Date))
+     ))
+
+#_(? {"my string key" "foo \"bar\" baz\""
+    :abcdef         :gold})
+
+;; (? {:scalar-result-max-length 15} (symbol "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz"))
+#_(? {:scalar-result-max-length 15} "afd\"a\\fasdfasdfasdfasdfsasdffffzzzz")
 
 
 ;; let bindings smoke test
@@ -36,6 +301,7 @@
      ))
 
 (def my-map {"foo" "bar"})
+
 #_(? {:single-column-maps? true
     :margin-top          0} {:x 1
                              :y 2
@@ -58,7 +324,7 @@
 
 ;; long-fn name smoke test
 #_(do (defn abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn [] nil)
-    (? {:non-coll-length-limit 33}
+    (? {:scalar-max-length 33}
        {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})) 
 
 
@@ -322,24 +588,24 @@
       '(java.util.Date.)
       (java.util.Date.)]))
 
-(def lasertag-sample
-  #?(:cljs
-     ()
-     :clj
-     (reduce
-      (fn [acc [sym v]]
-        (conj acc
-              {'form              sym
-               'lasertag.core/tag (tag v)
-               'clojure.core/type (type v)}))
-      []
-      (partition 2 sample))))
+;; #_(def lasertag-sample
+;;   #?(:cljs
+;;      ()
+;;      :clj
+;;      (reduce
+;;       (fn [acc [sym v]]
+;;         (conj acc
+;;               {'form              sym
+;;                'lasertag.core/tag (tag v)
+;;                'clojure.core/type (type v)}))
+;;       []
+;;       (partition 2 sample))))
 
 
-#_(println (table [{:name 'form :title "form"}
-                   {:name 'lasertag.core/tag :title "lasertag.core/tag"}
-                   {:name 'clojure.core/type :title "clojure.core/type"}]
-                  lasertag-sample))
+;; #_(println (table [{:name 'form :title "form"}
+;;                    {:name 'lasertag.core/tag :title "lasertag.core/tag"}
+;;                    {:name 'clojure.core/type :title "clojure.core/type"}]
+;;                   lasertag-sample))
 
 ;; This is example config. If you want to run fireworks.core-test tests locally,
 ;; replace the config map in your ~/.fireworks/config.edn with this map temporarily.
@@ -348,9 +614,9 @@
 {:theme                        "Alabaster Light"
  :line-height                  1.45
  :print-level                  7
- :non-coll-length-limit        33
- :non-coll-mapkey-length-limit 20
- :coll-limit                   15
+ :scalar-max-length        33
+ :scalar-mapkey-max-length 20
+ :print-length                   15
  :display-namespaces?          true
  :metadata-print-level         7
  :display-metadata?            true
@@ -419,22 +685,22 @@
        :string))
 
 
-(!? {:coll-limit 100
+(!? {:print-length 100
      :theme      "Alabaster Light"
      :label      "Clojure(Script) Values"}
     sample/array-map-of-multiline-formatting-cljc)
 
-(!? {:coll-limit 100
+(!? {:print-length 100
      :theme      "Alabaster Light"
      :label      "Clojure(Script) Values, with extras"
      :find {:pred #(= :tag %)}}
     (sample/vec-of-everything-cljc-with-extras))
 
-(!? {:coll-limit 100
+(!? {:print-length 100
      :label      "JVM Clojure Values"}
     sample/interop-types)
 
-(!? {:coll-limit 100
+(!? {:print-length 100
      :label      "JVM Clojure Values with extras"}
     sample/vec-of-interop-types-with-extras)
 
@@ -626,13 +892,13 @@
     (? {:label "theme Alabaster Light" :theme "Alabaster Light"}
        (atom [[1 2 3] "abcdefghijk"]))
 
-    ;; :non-coll-length-limit
-    (? {:label :non-coll-length-limit :non-coll-length-limit 20}
+    ;; :scalar-max-length
+    (? {:label :scalar-max-length :scalar-max-length 20}
        "abcdefghijklmnopqrstuvwxyz")
 
 
-    ;; :non-coll-mapkey-length-limit
-    (? {:label :non-coll-mapkey-length-limit :non-coll-mapkey-length-limit         20}
+    ;; :scalar-mapkey-max-length
+    (? {:label :scalar-mapkey-max-length :scalar-mapkey-max-length         20}
        {"abcdefghijklmnopqrstuvwxyz" [1 2 3]})
 
     (? {:label :display-namespaces? :display-namespaces?        true}
@@ -689,8 +955,7 @@
         :theme {:name   "MyCustomTheme Dark"
                 :tokens {:classes {:string {:color "#ff0000"}
                                    :comment {:color "#ff00cc"}}
-                         :syntax  {:js-object-key {:color "#888888"}}
-                         :printer {:function-args {:color "#bb8f44"}}}}}
+                         :syntax  {:js-object-key {:color "#888888"}}}}}
        {:string "string"}))
 
 

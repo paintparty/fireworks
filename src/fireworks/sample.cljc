@@ -1,14 +1,12 @@
 (ns fireworks.sample
-  (:require [fireworks.core :refer [? !? ?> !?> pprint]]
-            [fireworks.themes :as themes]
-            [clojure.string :as string]
-            [clojure.walk :as walk]
-            [fireworks.util :as util]
-            [lasertag.core :refer [tag-map tag]]
-            #?(:cljs [lasertag.cljs-interop])
-            #?(:cljs [cljs.js])
-            ;; [lambdaisland.ansi :as ansi]
-            )
+  (:require
+   #?(:cljs [cljs.js]) ;; [lambdaisland.ansi :as ansi]
+   #?(:cljs [lasertag.cljs-interop])
+   [clojure.pprint]
+   [fireworks.core :refer [!? ?]]
+   [fireworks.util :as util]
+  ;;  [me.flowthing.pp :as pp]
+   [lasertag.core :refer [tag-map]])
             
   #?(:cljs
      (:require-macros [fireworks.sample :refer [qc]])
@@ -17,7 +15,12 @@
 ;; Definitions to use in samples -----------------------------------------------
 
 #?(:bb
-   []
+   (do 
+     (def custom-vector-datatype nil)
+     (def custom-map-datatype nil)
+
+     (def vector-with-custom-datatypes 
+       []))
    :clj
    (do 
      (deftype CustomMap [m]
@@ -44,24 +47,88 @@
 
      ))
 
-(deftype MyType [a b])
-(def my-data-type (->MyType 2 3))
-(defrecord MyRecordType [a b])
-(def my-record-type (->MyRecordType "a" "b"))
-(defmulti different-behavior (fn [x] (:x-type x)))
-(defmethod different-behavior :wolf
-  [x]
-  (str (:name x) " will have a specific behavior"))
-(defn xy [x y] (+ x y))
-(defn xyv ([x y] (+ x y)) ([x y v] (+ x y v)))
-(defn xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz [x y] (+ x y))
-(def my-date (new #?(:cljs js/Date :clj java.util.Date)))
-
 ;;  (def my-prom (js/Promise. (fn [x] x)))
 ;;  (def prom-ref js/Promise)
 
 ;; For producing example :call field in metadata of examples
 (defrecord QuotedCall [qx x])
+
+(defmulti different-behavior (fn [x] (:x-type x)))
+
+(defmethod different-behavior :wolf
+  [x]
+  (str (:name x) " will have a specific behavior"))
+
+(defn xy [x y] (+ x y))
+
+(defn xyv ([x y] (+ x y)) ([x y v] (+ x y v)))
+
+(defn xyasldfasldkfaslkjfzzzzzzzzzzzzzzzzzzz [x y] (+ x y))
+
+(def my-date (new #?(:cljs js/Date :clj java.util.Date)))
+
+(deftype MyType [a b])
+
+(def my-data-type (->MyType 2 3))
+
+(defrecord MyRecordType [a b])
+
+(def my-record-type (->MyRecordType "a" "bbbbbbbbbbbbbb"))
+
+
+#?(:clj
+   nil
+   #_(do 
+     ;;  (!? :- {:a 2})
+     ;;  (? :- my-record-type)
+     ;;  (? (volatile! 2))
+     
+     (!? (range 25 1000 25))
+     (!? [1 
+          clojure.lang.Counted
+          (fn [] nil)
+          (java.util.Date.)
+          (tag-map clojure.lang.IPersistentMap)
+          (atom 1)
+          (tag-map #uuid "4fe5d828-6444-11e8-8222-720007e40350")
+          ])
+
+
+     #_(? {:display-metadata?               true
+           :multi-line-metadata?            false
+           :single-line-metadata-max-length 22}
+          (with-meta 'sym {:first   1
+                           :second  2
+                           :third   3
+                           :fourth  4
+                           :fifth   5
+                           :sixth   6
+                           :seventh 7
+                           :eighth  8})
+          #_^{:first   1
+              :second  2
+              :third   3
+              :fourth  4
+              :fifth   5
+              :sixth   6
+              :seventh 7
+              :eighth  8} {:a 1})
+
+     #_(binding [*print-meta* true]
+         (clojure.pprint/pprint [^{:first   1
+                                   :second  2
+                                   :third   3
+                                   :fourth  4
+                                   :fifth   5
+                                   :sixth   6
+                                   :seventh 7
+                                   :eighth  8} {:a 1}]))
+
+     
+     ))
+
+
+
 
 #?(:clj
    (defmacro qc
@@ -71,6 +138,7 @@
       #fireworks.sample/QuotedCall{:qx '(+ 1 1) :x 2}"
      [coll]
      `(do (->QuotedCall (quote ~coll) ~coll))))
+
 
 
 
@@ -168,7 +236,7 @@
    :string
    "string"
    :regex
-   #"myregex"
+   #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$"
    :uuid    
    #uuid "4fe5d828-6444-11e8-8222-720007e40350"
    :symbol  
@@ -218,7 +286,7 @@
    "Primitives"
    (array-map
     :string   "string"
-    :regex    #"myregex"
+    :regex    #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$"
     :uuid     (qc #uuid "4fe5d828-6444-11e8-8222-720007e40350")
     :symbol   'mysym
     :symbol+meta   (with-meta 'mysym {:foo "bar"})
@@ -240,7 +308,6 @@
    "Functions"    
    (array-map
     :lambda            #()
-    :lambda-2-args     #(+ % %2) 
     :core-fn           juxt 
     :date-fn   #?(:cljs
                   js/Date
@@ -345,7 +412,17 @@
 
    "Abstractions"
    (array-map
-    :atom             (qc (atom 1))
+    :atom             (qc (atom {:red     196
+                                 :orange  172
+                                 :yellow  178
+                                 :olive   106
+                                 :green   76
+                                 :blue    75
+                                 :purple  141
+                                 :magenta 171 ;; 201
+                                 :gray    247
+                                 :black   16
+                                 :white   231}))
     ;; :date             my-date
     :volatile!        (volatile! 1)
     :transient-vector (transient [1 2 3 4])

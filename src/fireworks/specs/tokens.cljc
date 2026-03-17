@@ -36,6 +36,7 @@
 
 (s/def ::color-value 
   (s/or 
+   :nil     nil?
    :css-hex ::css-hex
    :xterm-color-id ::xterm-color-id
    :bling-color-name bling-color-names-set))
@@ -99,7 +100,7 @@
 ;;                :tokens {:classes {...}
 ;;                         :syntax  {...}
 ;;                         :printer {...}}
-;;  :coll-limit  33
+;;  :print-length  33
 ;;  :line-height 1.45
 ;;  ...}
 

@@ -50,19 +50,24 @@
         (case block-type
           :warning (:orange sgr-tags)
           :error (:red sgr-tags)
-          (:gray sgr-tags))
+          (:neutral sgr-tags))
 
         footer-stripe
         "╚══════════════════════════════════════════════"
+        #_"└──────────────────────────────────────────────"
+        #_"╰──────────────────────────────────────────────"
 
         header-stripe-start
         "╔═ "
+        #_"┌─ "
+        #_"╭─ "
 
         header-stripe
         (string/join (repeat (- (count footer-stripe)
                                 (count header-str)
                                 (count header-stripe-start)
                                 1)
+                             #_"─"
                              "═"))]
     (str "\n"
          open-tag
@@ -162,7 +167,7 @@
         trace))))
 
 (defn summary-header [s]
-  (sgr :gray (italic (str s "\n"))))
+  (sgr :neutral (italic (str s "\n"))))
 
 (defn stack-trace-preview
   "Creates a user-friendly stack-trace preview, limited to the frames which
@@ -182,7 +187,7 @@
              ;; Create a formatted string of of the stack trace, clean it up and
              ;; make it easier to read
              (let [strace-len   (count strace)
-                   depth        (or (maybe-> depth pos-int?) 7)
+                   depth        (or (maybe-> depth pos-int?) 21)
                    mini-strace  (mini-trace depth strace)
                    last-index   (last-index-of-relevant-stack-trace regex
                                                                     depth 
@@ -228,12 +233,12 @@
 
 (defn unable-to-print-warning
   [s x]
-  (println (block {:header-str s
-                   :block-type :warning 
+  (println (block {:header-str (str "WARNING [" s "]")
+                  ;;  :block-type :warning 
                    :body       x})))
 
 (defn summary-section [warning-label s]
-  (str (summary-header warning-label) indent s lb))
+  (str "  " (summary-header warning-label) indent s lb))
 
 
 (defn- line-number+bad-form [{:keys [k v form line]}]
@@ -300,7 +305,7 @@
 (defn unknown-option-warning
   [opts]
   (println 
-   (block {:header-str "WARNING: Unknown option"
+   (block {:header-str "WARNING ─────────────────── fireworks.core/?"
            :block-type :warning
            :body       (str
                         (warning-details (assoc opts
@@ -373,18 +378,17 @@
                (stack-trace-preview
                 {:error err
                  :regex #"^fireworks\.|^lasertag\."
-                 :depth 12})
-              ;;  _ (?pp m)
+                 :depth 21})
                hint
                (let [hints-by-error-message
                      (->> err-msg-str (get hints))
 
                      hint-by-st-frames
                      (get hints-by-error-message
-                          [[(-> stack-trace-seq first (.getClassName))
-                            (-> stack-trace-seq first (.getMethodName))]
-                           [(-> stack-trace-seq second (.getClassName))
-                            (-> stack-trace-seq second (.getMethodName))]])]
+                          [[(some-> stack-trace-seq first (.getClassName))
+                            (some-> stack-trace-seq first (.getMethodName))]
+                           [(some-> stack-trace-seq second (.getClassName))
+                            (some-> stack-trace-seq second (.getMethodName))]])]
                  hint-by-st-frames)
 
                message-from-clojure

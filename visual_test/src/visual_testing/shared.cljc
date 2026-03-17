@@ -4,13 +4,21 @@
             [fireworks.sample :as sample :refer []]
             [bling.core :refer [print-bling bling ?sgr callout]]
             [bling.hifi :refer [hifi print-hifi]]
-            [lasertag.core :refer [tag-map]]
+            [lasertag.core :refer [tag tag-map]]
             ;; [taoensso.tufte :as tufte :refer [p profile]]
             [fireworks.core :refer [? !? ?> !?> pprint]]))
 
 (def everything sample/array-map-of-everything-cljc)
 
 ;; (tufte/add-handler! :my-console-handler (tufte/handler:console))
+(defn xy [x y] (+ x y))
+
+(defrecord MyRecordType [a b c d])
+(def my-record-type (->MyRecordType 4 8 4 5))
+
+(defmulti different-behavior (fn [x] (:x-type x)))
+(? (tag different-behavior))
+(? (tag-map different-behavior))
 
 (defn test-suite []
   #?(:cljs
@@ -18,6 +26,20 @@
      (do 
 
        (js/console.clear)
+
+       (? :- '[js/decodeURI
+               js/isFinite
+               js/EvalError
+               js/Date])     
+
+      ;;  (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
+       
+       ;; (? (tag my-record-type)) 
+       ;; (? (tag-map my-record-type)) 
+       
+       ;;  (? (tag different-behavior))
+       ;;  (? (tag-map different-behavior))
+       
        ;;  (js/console.log (? :data {:a "foo"
        ;;                            :b 2
        ;;                            :c 3}))
@@ -25,55 +47,89 @@
        #_(print-hifi {:a "foo"
                       :b 2
                       :c 3})
+
        ;;  (println (hifi {:a "foo"
        ;;                  :b 2
        ;;                  :c 3}))
        
-      ;;  (? #js[])
-      ;;  (? :js  (ffirst everything))
-      ;;  (? :js- (ffirst everything))
-      ;;  (? :pp  (ffirst everything))
-      ;;  (? :pp- (ffirst everything))
+       ;; (? #js[])
+       ;;  (? :js  (ffirst everything))
+       ;;  (? :js- (ffirst everything))
+       ;;  (? :pp  (ffirst everything))
+       ;;  (? :pp- (ffirst everything))
        
 
-       (callout {:type  :info
-                 :theme :boxed}
-                (bling [:p [:red "This is red" [:bold " and bold."]]]
-                       
-                       (hifi {:a "foo"
-                              :b 2
-                              :c 3
-                              :d "asdfsadfsdfasdfasdfasdfasdffsaa"
-                              :e "asdfsadfsdfasdfasdfasdfasdffsaa"
-                              })))
+       
+       
+
+       ;; TODO fix this
+       #_(callout {:type  :info
+                   :theme :boxed}
+                  (bling [:p [:red "This is red" [:bold " and bold."]]]
+                         
+                         (hifi {:a "foo"
+                                :b 2
+                                :c 3
+                                :d "asdfsadfsdfasdfasdfasdfasdffsaa"
+                                :e "asdfsadfsdfasdfasdfasdfasdffsaa"
+                                })))
 
        #_(callout {:type  :info
-                 :theme :sideline}
-                (bling [:p [:red "This is red" [:bold " and bold."]]]
-                       [:p "Line two"]
-                       (hifi {:a "foo" :b 2 :c 3})))
+                   :theme :sideline}
+                  (bling [:p [:red "This is red" [:bold " and bold."]]]
+                         [:p "Line two"]
+                         (hifi {:a "foo"
+                                :b 2
+                                :c 3})))
 
        #_(callout {:type        :info
-                 :label-theme :pipe}
-                (bling [:p [:red "This is red" [:bold " and bold."]]]
-                       [:p "Line two"]
-                       (hifi {:a "foo"
-                              :b 2
-                              :c 3})))
+                   :label-theme :pipe}
+                  (bling [:p [:red "This is red" [:bold " and bold."]]]
+                         [:p "Line two"]
+                         (hifi {:a "foo"
+                                :b 2
+                                :c 3})))
 
-       #_(? {:coll-limit  200
-             :label       "Clojure(Script) values"
-             :label-color :blue
-           ;;  :bold?       true
-             :find        {:pred #(= % 3.33)}
+       #_(? #uuid "4fe5d828-6444-11e8-8222-720007e40350")
+
+       #_(? (tag-map  #(inc 1)))
+
+       
+      ;;  (? (volatile! {:a (new js/Promise (fn [x] x))}))
+      ;;  (? {:a (new js/Promise (fn [x] x))})
+      ;;  (? {:a (new js/Set #js[1 2])})
+      ;;  (? {:a (new js/Array 1 2 3)})
+       
+      ;;  (? (tag-map xy))
+      ;;  #?(:cljs
+      ;;     (? (tag-map (new js/Promise (fn [x] x))))
+      ;;     :clj
+      ;;     ())
+       
+
+       ;;  (? (tag-map #js{:a 1}))
+       ;;  (? [#js{:a 1}])
+       
+
+       ;;  (? #(inc 1))
+       ;;  (? :pp (tag-map test-suite))
+       #_(? test-suite)
+
+       ;;  (? {:a #()})
+       
+       #_(? {:print-length 200
+             :label        "Clojure(Script) values"
+             :label-color  :blue
+             ;;  :bold?       true
+             :find         {:pred #(= % 3.33)}
              }
             everything
             #_(select-keys everything [:atom]))
 
-       #_(? {:coll-limit  200
-             :label       "Clojure(Script) values"
-             :label-color :red
-             :bold?       true
+       #_(? {:print-length 200
+             :label        "Clojure(Script) values"
+             :label-color  :red
+             :bold?        true
              }
             (select-keys everything [:atom]))
 
@@ -139,8 +195,8 @@
        
        
        
-       #_(? {:coll-limit 200
-             :label      "ClojureScript interop types"}
+       #_(? {:print-length 200
+             :label        "ClojureScript interop types"}
             sample/interop-types)
 
        #_(let [buffer      (new js/ArrayBuffer 8)
@@ -201,24 +257,24 @@
         :label "Universal Neutral"} everything))
   
   #_(do 
-    (println "\n:label-length-limit of 10")
-    (? {:label-length-limit 10} (str "1234567890" "abcdefghijklmnopqrstuvwxyz"))
+    (println "\n:label-max-length of 10")
+    (? {:label-max-length 10} (str "1234567890" "abcdefghijklmnopqrstuvwxyz"))
 
-    (println "\n:label-length-limit of 50")
-    (? {:label-length-limit 50} (str "1234567890"
+    (println "\n:label-max-length of 50")
+    (? {:label-max-length 50} (str "1234567890"
                                      "abcdefghijklmnopqrstuvwxyz"
                                      "ABCDEFGHIJKLMNOP"))
 
-    (println "\n:single-line-coll-length-limit of 10")
-    (? {:single-line-coll-length-limit 10} (range 4))
+    (println "\n:single-line-coll-max-length of 10")
+    (? {:single-line-coll-max-length 10} (range 4))
 
-    (println "\n:single-line-coll-length-limit of 10")
-    (? {:single-line-coll-length-limit 10} (range 5))
+    (println "\n:single-line-coll-max-length of 10")
+    (? {:single-line-coll-max-length 10} (range 5))
 
-    (println "\n:single-line-coll-length-limit of 50")
-    (? {:single-line-coll-length-limit 50} (range 19))
+    (println "\n:single-line-coll-max-length of 50")
+    (? {:single-line-coll-max-length 50} (range 19))
 
-    (println "\n:single-line-coll-length-limit of 50")
-    (? {:single-line-coll-length-limit 50} (range 20)))
+    (println "\n:single-line-coll-max-length of 50")
+    (? {:single-line-coll-max-length 50} (range 20)))
 
   nil)
