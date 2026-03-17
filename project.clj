@@ -9,7 +9,7 @@
                  ]
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [expound "0.9.0"]
-                 [io.github.paintparty/lasertag "0.11.7"]]
+                 [io.github.paintparty/lasertag "0.12.0"]]
   :repl-options {:init-ns fireworks.core}
   :deploy-repositories [["clojars" {:url           "https://clojars.org/repo"
                                     :sign-releases false}]])
