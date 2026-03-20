@@ -63,7 +63,6 @@
 #?(:clj
    #_(pprint (tag-map (byte 0)))
    (do
-
      ;; (def my-theme
      ;;   {:name   "Foo Dark" ;; Required. Name validated with: #"^[A-Z][^\t\n\r]+ (:?Dark|Light)$"
      ;;   :mood   "dark"     ;; Required. "light" or "dark"
@@ -109,20 +108,20 @@
          #_read-me-sample)
 
      (def x 
-       {:name             "Crimson Willow Shell"
-        :category         :aerial
-        :colors           #{:crimson :silver :gold}
-        :traits           #{:crackling :glitter-tail :crossette}
-        :size             :3-inch
-        :fuse-type        :time-delay
-        :duration-ms      4500
-        :altitude-ft      300})
+       {:name        "Crimson Willow Shell"
+        :category    :aerial
+        :colors      #{:crimson :silver :gold}
+        :traits      #{:crackling :glitter-tail :crossette}
+        :size        :3-inch
+        :fuse-type   :time-delay
+        :duration-ms 4500
+        :altitude-ft 300})
 
-     (?  "My Label"{:margin-top        2
-           :margin-bottom     2
-           :display-metadata? true
-           :metadata-position :block
-           :theme             "Alabaster Dark"}
+     (!?  "My Label" {:margin-top        2
+                      :margin-bottom     2
+                      :display-metadata? true
+                      :metadata-position :block
+                      :theme             "Alabaster Dark"}
           x
           #_read-me-sample)
 

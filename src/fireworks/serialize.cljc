@@ -265,10 +265,10 @@
 
                        (and (= t :number) (re-find #"^[0-9]+\.[0-9]+" s))
                        (let [[integral-part decimal-part] (string/split s #"\.")]
-                         (str (sgr-tag :number)
+                         (str (sgr-tag :number highlighting)
                               integral-part "."
                               main-entity-tag-reset
-                              (sgr-tag :decimal)
+                              (sgr-tag :decimal highlighting)
                               decimal-part
                               main-entity-tag-reset))
 
