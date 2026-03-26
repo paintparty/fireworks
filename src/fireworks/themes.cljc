@@ -361,8 +361,8 @@
                       :metadata2  {:color            "#a08a40"
                                    :text-shadow      "0 0 2px #003538"
                                    :background-color "#351d1d"}
-                      :label      {:color            "#a794ce"
-                                   :background-color "#2b1661"
+                      :label      {:color            "#797979"
+                                  ;;  :background-color "#000"
                                    :font-style       :italic}
                       :eval-label {:color            "#85b7e5"
                                    :font-style       :italic
