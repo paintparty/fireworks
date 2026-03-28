@@ -1,3 +1,4 @@
+;; TODO - Move conversion fns to distinct namespace? 
 (ns fireworks.color 
   (:require [clojure.string :as string]))
 
