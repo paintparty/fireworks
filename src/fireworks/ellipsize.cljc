@@ -27,10 +27,10 @@
 
 (defn- pre-truncate-function-name
   "Potentially shortens, or drops, one or more of the following parts of
-   a function's (or function-like object's) display value:
-   - The args vec
+   the display value of a function (or function-like object such as a java
+   class, JS class, or defmulti):
    - The fully-qualified namespace
-   - The function nam "
+   - The function name"
   [limit
    {:keys [fn-ns
            fn-name
@@ -203,7 +203,6 @@
            inline-badge?
            top-level-sev?]
     :as   m}]
-
   (let [{:keys [scalar-depth-1-max-length
                 scalar-result-max-length
                 scalar-mapkey-max-length
