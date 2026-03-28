@@ -6,7 +6,8 @@
             [bling.hifi :refer [hifi print-hifi]]
             [lasertag.core :refer [tag tag-map]]
             ;; [taoensso.tufte :as tufte :refer [p profile]]
-            [fireworks.core :refer [? !? ?> !?> pprint]]))
+            [fireworks.core :refer [? !? ?> !?> pprint]]
+            [lasertag.cached :as cached]))
 
 (def everything sample/array-map-of-everything-cljc)
 
@@ -17,8 +18,8 @@
 (def my-record-type (->MyRecordType 4 8 4 5))
 
 (defmulti different-behavior (fn [x] (:x-type x)))
-(? (tag different-behavior))
-(? (tag-map different-behavior))
+;; (? (tag different-behavior))
+;; (? (tag-map different-behavior))
 
 (defn test-suite []
   #?(:cljs
@@ -27,12 +28,14 @@
 
        (js/console.clear)
 
-       (? :- '[js/decodeURI
-               js/isFinite
-               js/EvalError
-               js/Date])     
+      ;;  #_(? :- '[js/decodeURI
+      ;;            js/isFinite
+      ;;            js/EvalError
+      ;;            js/Date])     
 
-      ;;  (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
+       (? (tag-map ##-Inf))
+
+       ;;  (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
        
        ;; (? (tag my-record-type)) 
        ;; (? (tag-map my-record-type)) 
@@ -95,16 +98,16 @@
        #_(? (tag-map  #(inc 1)))
 
        
-      ;;  (? (volatile! {:a (new js/Promise (fn [x] x))}))
-      ;;  (? {:a (new js/Promise (fn [x] x))})
-      ;;  (? {:a (new js/Set #js[1 2])})
-      ;;  (? {:a (new js/Array 1 2 3)})
+       ;;  (? (volatile! {:a (new js/Promise (fn [x] x))}))
+       ;;  (? {:a (new js/Promise (fn [x] x))})
+       ;;  (? {:a (new js/Set #js[1 2])})
+       ;;  (? {:a (new js/Array 1 2 3)})
        
-      ;;  (? (tag-map xy))
-      ;;  #?(:cljs
-      ;;     (? (tag-map (new js/Promise (fn [x] x))))
-      ;;     :clj
-      ;;     ())
+       ;;  (? (tag-map xy))
+       ;;  #?(:cljs
+       ;;     (? (tag-map (new js/Promise (fn [x] x))))
+       ;;     :clj
+       ;;     ())
        
 
        ;;  (? (tag-map #js{:a 1}))

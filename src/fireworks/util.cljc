@@ -3,7 +3,21 @@
             [clojure.pprint :refer [pprint]]
             [fireworks.defs :as defs]
             [clojure.set :as set]
+            [lasertag.fns :as fns]
             [lasertag.core :as lasertag]))
+
+(defn ? 
+  "Debugging macro internal to lib"
+  ([x]
+   (? nil x))
+  ([l x]
+   (try (if l
+          (println (str " " l "\n") x)
+          (println x))
+        (catch #?(:cljs js/Object :clj Throwable)
+               e
+          (println "WARNING [lasertag.core/?] Unable to print value")))
+   x))
 
 (defn spaces [n] (string/join (repeat n " ")))
 
@@ -110,14 +124,16 @@
   ([x]
    (tag-map* x nil))
   ([x opts]
-   (let [{:keys [all-tags classname]
+   (let [{:keys [all-tags classname t]
           :as   tag-map}
          (-> x
              (lasertag/tag-map opts)
              (set/rename-keys {:tag :t}))]
      (merge tag-map
+            (when (contains? #{:function :class :defmulti} t)
+              (fns/fn-info x t))
             (when (contains? all-tags :carries-meta) {:carries-meta? true})
-            (when (or (contains? all-tags :coll-type) ;<- deprecate in lasertag
+            (when (or (contains? all-tags :coll-type) ; <- deprecate in lasertag
                       (contains? all-tags :coll-like))
               {:coll-type? true})
             (when (contains? all-tags :map-like) {:map-like? true})
