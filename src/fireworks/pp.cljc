@@ -21,6 +21,18 @@
 
 
 ;; Colors ----------------------------------------------------------------------
+(defn ? 
+  "Debugging macro internal to lib"
+  ([x]
+   (? nil x))
+  ([l x]
+   (try (if l
+          (println (str " " l "\n") x)
+          (println x))
+        (catch #?(:cljs js/Object :clj Throwable)
+               e
+          (println "WARNING [lasertag.core/?] Unable to print value")))
+   x))
 (def sgr-codes-by-color
   {:red        196
    :orange     172
@@ -553,10 +565,11 @@
   (with-meta form nil))
 
 (defn ^:private -maybe-colorize-form [form opts]
-  (let [tag (when (not (coll? form)) (lasertag.core/tag form))]
+  (let [f*  (first form)
+        tag (when-not (coll? f*) (lasertag.core/tag f*))]
     (if (:colorize? opts)
-      (some->> tag (colorized form))
-      form)))
+      (some->> tag (colorized f*))
+      f*)))
                   
 (defn ^:private -pprint-coll
   "Like -pprint, but only for lists, vectors and sets."
@@ -590,10 +603,10 @@
                   (when (and (= mode :miser) (pos? index))
                     (write writer (:indentation opts)))
 
-                  (let [f  (first form)
-                        n  (next form)
+                  (let [f (-maybe-colorize-form form opts)
+                        n (next form)
                         ;; Bling - -maybe-colorize-form
-                        f  (-maybe-colorize-form f opts)]
+                        ]
                     (if (empty? n)
                       ;; This is the last child, so reserve an additional
                       ;; slot for the closing delimiter of the parent
