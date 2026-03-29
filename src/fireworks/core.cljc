@@ -794,17 +794,16 @@
            (util/tag-map* x
                           {:include-function-info?           false
                            :include-js-built-in-object-info? false})]
-
        (when (or (and coll-type?
                       (not carries-meta?)
                       (not= t :cljs.core/Atom)
                       (not= t :cljs.core/Volatile)
                       (not transient?))
+
                  ;; Specific to HTML DOM Collections, maybe swap this out for
                  ;; something else, after adding support to lasertag
                  (when (= t :iterable) 
-                   (or (contains? defs/html-collection-types-primary classname)
-                       (contains? defs/html-collection-types-secondary classname))))
+                   (contains? defs/html-collection-types classname)))
          {:log? true}))
 
      :clj
