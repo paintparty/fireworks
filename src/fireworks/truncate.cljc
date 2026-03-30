@@ -10,7 +10,8 @@
    [fireworks.specs.config :as specs.config]
    [fireworks.state :as state]
    [fireworks.util :as util :refer [maybe->]]
-   [lasertag.core]))
+   [lasertag.core]
+   [lasertag.cached]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -395,7 +396,7 @@
                                  val-is-future?
                                  val-is-promise?
                                  val-is-delay?)
-        val-is-throwable?    (lasertag.core/throwable? x)
+        val-is-throwable?    (lasertag.cached/throwable? x)
         og-info              (when (or val-is-derefable? val-is-throwable?)
                                (lasertag.core/tag-map x))
         og-t                 (:tag og-info)
