@@ -130,24 +130,28 @@
              (lasertag/tag-map opts)
              (set/rename-keys {:tag :t}))]
      (merge tag-map
-            (when (contains? #{:function :class :defmulti} t)
-              (fns/fn-info x t))
-            (when (contains? all-tags :carries-meta) {:carries-meta? true})
-            (when (or (contains? all-tags :coll-type) ; <- deprecate in lasertag
-                      (contains? all-tags :coll-like))
-              {:coll-type? true})
-            (when (contains? all-tags :map-like) {:map-like? true})
-            (when (contains? all-tags :set-like) {:set-like? true})
-            (when (contains? all-tags :transient) {:transient? true})
-            (when (contains? all-tags :number) {:number-type? true})
-            #?(:cljs nil
-               :clj (when (some->> classname java-lang-class?)
-                      {:java-lang-class? true}))
-            #?(:cljs nil
-               :clj (when (some->> classname java-util-class?)
-                      {:java-util-class? true}))
-            #?(:cljs (merge (when (object? x) {:js-object? true})
-                            (when (array? x) {:js-array? true})))))))
+
+     ;; This is where we get the coll-size or collection size
+     (when (contains? all-tags :coll-like)
+       {:coll-type? true
+        :coll-size  (? :coll-size 
+                       (lasertag.core/coll-size* (assoc tag-map :x x)))})
+     (when (contains? #{:function :class :defmulti} t) (fns/fn-info x t))
+
+     ;; TODO - try to eliminate these and look into all-tags instead
+     (when (contains? all-tags :carries-meta) {:carries-meta? true})
+     (when (contains? all-tags :map-like) {:map-like? true})
+     (when (contains? all-tags :set-like) {:set-like? true})
+     (when (contains? all-tags :transient) {:transient? true})
+     (when (contains? all-tags :number) {:number-type? true})
+     #?(:cljs nil
+        :clj (when (some->> classname java-lang-class?)
+               {:java-lang-class? true}))
+     #?(:cljs nil
+        :clj (when (some->> classname java-util-class?)
+               {:java-util-class? true}))
+     #?(:cljs (merge (when (object? x) {:js-object? true})
+                     (when (array? x) {:js-array? true})))))))
 
 (defn re-seq-with-index 
 "Example usage
