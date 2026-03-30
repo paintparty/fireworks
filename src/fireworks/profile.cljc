@@ -144,12 +144,16 @@
    {:keys       [pred style]
     target-path :path
     :as         m}]
-  (when (or (and pred (pred x))
-            (and target-path (= target-path value-path))
-            (target-path-is-ancestor-coll? target-path
-                                           value-path
-                                           (apply list target-path)))
-    {:highlighting style}))
+  (let [target-path (or target-path @state/highlight-target-path)]
+    (when  (or (let [matches-pred? (and pred (pred x))]
+                 (when matches-pred?
+                   (reset! state/highlight-target-path value-path))
+                 matches-pred?)
+               (and target-path (= target-path value-path))
+               (target-path-is-ancestor-coll? target-path
+                                              value-path
+                                              (apply list target-path)))
+      {:highlighting style})))
 
 
 (defn- highlighting

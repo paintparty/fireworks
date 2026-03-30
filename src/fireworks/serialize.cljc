@@ -42,7 +42,7 @@
              k))
 
 
-(defn truncation-annotation 
+(defn- truncation-annotation 
   [{:keys [num-chars-dropped t truncate-fn-name? top-level-sev? highlighting]
     :as m}]
   (when (or truncate-fn-name?
@@ -67,7 +67,7 @@
         (str (sgr-tag theme-tag highlighting) s sgr-reset-tag)))))
 
 
-(defn sev-user-meta-position-match? [user-meta position]
+(defn- sev-user-meta-position-match? [user-meta position]
   (and (:display-metadata? @state/config)
        (seq user-meta)
        (contains? (if (= position :block)
@@ -76,7 +76,7 @@
                   (:metadata-position @state/config))))
 
 
-(defn sev
+(defn- sev
   "Creates a string with ansi-sgr formatting tags."
   [{:keys [x
            s
@@ -847,7 +847,7 @@
                                  max-keylen]))]
             {:escaped               tk
              :ellipsized-char-count (ansi/adjusted-char-count tk)})
-          (sev (merge key-props {:indent indent})))
+          (sev (merge key-props {:indent indent :highlighting highlighting})))
 
         theme-token-map
         {:theme-token (state/metadata-token)}
@@ -937,12 +937,13 @@
 
 ;; maybe a short coll as key
 (defn- tagged-key
-  [{:keys [key-props
-           t
+  [{:keys [t
            indent
-           multi-line?
+           key-props
            separator
-           max-keylen]
+           max-keylen
+           multi-line?
+           highlighting]
     coll-as-key :k
     :as m}]
   (let [t                          
@@ -970,9 +971,10 @@
       :else
       (:escaped (sev (merge key-props
                             (keyed [indent
-                                    multi-line?
                                     separator
-                                    max-keylen])))))))
+                                    max-keylen
+                                    multi-line?
+                                    highlighting])))))))
 
 
 (defn- tagged-val
@@ -983,7 +985,7 @@
            multi-line?
            separator
            max-keylen]
-    :as m}]
+    :as   m}]
   (let [t                          
         (or t (:t val-props))
 

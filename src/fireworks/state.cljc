@@ -87,6 +87,8 @@
 ;; For :find highlighting
 (def highlight (atom nil))
 
+(def highlight-target-path (atom nil))
+
 ;; When formatting form-to-be-evaled, this should be set to `true`
 (def formatting-form-to-be-evaled? (atom false))
 

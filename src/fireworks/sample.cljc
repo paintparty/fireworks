@@ -211,11 +211,13 @@
    (array-map 
 
     "Java collection types"
-    {'java.util.ArrayList (java.util.ArrayList. (range 6))
+    {
+     'java.util.ArrayList (java.util.ArrayList. (range 6))
      'java.util.HashMap (java.util.HashMap. {"a" 1 "b" 2})
      'java.util.HashSet (java.util.HashSet. #{"a" 1 "b" 2})
      'java.lang.String (java.lang.String. "welcome")
-     'array (to-array '(1 2 3 4 5))}
+     'array (to-array '(1 2 3 4 5))
+     }
 
     "Java numbers"
     (array-map

@@ -35,8 +35,8 @@
 
       ;;  (? cached/by-type-frequent)
 
-       (?  #_{:a 1 :b 2} (tag-map 2))
-      ;;  (?  cached/nums)
+      ;;  (?  #_{:a 1 :b 2} (tag-map 2))
+       (?  cached/tag-maps-by-class)
 
        ;;  (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
        

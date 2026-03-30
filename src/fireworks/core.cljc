@@ -608,6 +608,8 @@
   ;; Reset the highlight state.
   ;; It may pull highlight style from merged theme.
   (reset! state/highlight (some->> find-vals state/highlight-style))
+  (reset! state/highlight-target-path nil)
+
   #_(reset! state/rewind-counter 0))
           
 
