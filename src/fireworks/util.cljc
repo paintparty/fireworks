@@ -134,8 +134,7 @@
      ;; This is where we get the coll-size or collection size
      (when (contains? all-tags :coll-like)
        {:coll-type? true
-        :coll-size  (? :coll-size 
-                       (lasertag.core/coll-size* (assoc tag-map :x x)))})
+        :coll-size  (lasertag.core/coll-size* (assoc tag-map :x x))})
      (when (contains? #{:function :class :defmulti} t) (fns/fn-info x t))
 
      ;; TODO - try to eliminate these and look into all-tags instead
