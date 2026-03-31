@@ -40,75 +40,61 @@
            badge
            lambda?]
     :as   m}]
-  (let [;; Create `budge-diff` partial, which will be used to calculate
-        ;; the difference between the length of the fn name (at a given
-        ;; stage of shortening) and the (:scalar-max-length @state/config).
-        
-        budge-diff      (partial budge-diff limit)
-        
 
-        ;; Construct the function display name with proper js/built-in prefix
-        ;; and optional namespace + possibly shortened function args fn-args vector.
-        ;; Then use budge-diff to see if it is over budget.
-        interop-prefix  (if js-built-in-function? "js/" nil)
-        nm              (if js-built-in-function?
-                          (str interop-prefix 
-                               (some-> js-built-in-method-of
-                                       (str "."))
-                               fn-name)
-                          (str (when (:display-namespaces? @state/config)
-                                 (some-> fn-ns
-                                         (str (if java-lang-class? "." "/"))))
-                               fn-name))
-        diff            (budge-diff nm)
+  (let [result-map  (fn [nm ecc trunc?]
+                      {:fn-display-name       nm
+                       :drop-ns?              false ;; <- krft?
+                       :fn-args               nil   ;; <- krft? 
+                       :ellipsized-char-count ecc
+                       :truncate-fn-name?     trunc?} )]
+    (if lambda? 
+      (result-map nil 1 false)
 
+      (let [;; Create `budge-diff` partial, which will be used to calculate
+            ;; the difference between the length of the fn name (at a given
+            ;; stage of shortening) and the current limit.
+         
+            budge-diff      (partial budge-diff limit)
+            
 
-        ;; If still over budget, drop the namespace and check again to
-        ;; see if still over budget.
-        drop-ns?        (pos? diff)
-        nm              (if drop-ns? 
-                          (symbol
-                           (str interop-prefix
-                                (when (some->
-                                       js-built-in-method-of
-                                       str
-                                       count 
-                                       (< defs/js-built-in-method-nm-limit))
-                                  (str js-built-in-method-of "."))
-                                fn-name))
-                          nm)
-        diff            (budge-diff nm)
+            ;; Construct the function display name with proper js/built-in prefix
+            ;; and optional namespace + possibly shortened function args fn-args vector.
+            ;; Then use budge-diff to see if it is over budget.
+            interop-prefix  (if js-built-in-function? "js/" nil)
+            nm              (if js-built-in-function?
+                              (str interop-prefix 
+                                   (some-> js-built-in-method-of
+                                           (str "."))
+                                   fn-name)
+                              (str (when (:display-namespaces? @state/config)
+                                     (some-> fn-ns
+                                             (str (if java-lang-class? "." "/"))))
+                                   fn-name))
+            diff            (budge-diff nm)
 
 
-        ;; If still over budget, truncate (ellipsize) the function name.
-        trunc-name?     (pos? diff)
-        fn-display-name (if trunc-name? 
-                          (->> nm
-                               str
-                               (drop-last (+ diff defs/ellipsis-count)) 
-                               string/join 
-                               symbol)
-                          nm)
-        fn-display-name (if lambda?
-                          nil #_defs/lambda-badge
-                          (when-not (string/blank? (str fn-display-name))
-                            fn-display-name))
+
+            ;; If still over budget, truncate (ellipsize) the function name.
+            trunc-name?     (pos? diff)
+            fn-display-name (if trunc-name? 
+                              (->> nm
+                                   str
+                                   (drop-last (+ diff defs/ellipsis-count)) 
+                                   string/join 
+                                   symbol)
+                              nm)
+            fn-display-name (when-not (string/blank? (str fn-display-name))
+                              fn-display-name)
 
 
-        ;; Finally, calculate the final ellipsized-char-count. This count
-        ;; should never exceed the :scalar-max-length, or the
-        ;; :map-key-print-length, from @state/config.
-        
-        
-        ecc             (ellipsized-char-count badge
-                                               (str fn-display-name)
-                                               trunc-name?)]
+            ;; Finally, calculate the final ellipsized-char-count. This count
+            ;; should never exceed the :scalar-max-length, or the
+            ;; :map-key-print-length, from @state/config.
+            ecc             (ellipsized-char-count badge
+                                                   (str fn-display-name)
+                                                   trunc-name?)]
 
-
-    (merge (keyed [fn-display-name drop-ns?])
-           {:fn-args               nil
-            :ellipsized-char-count ecc
-            :truncate-fn-name?     trunc-name?})))
+        (result-map fn-display-name ecc trunc-name?)))))
 
 
 (defn- inst-str
