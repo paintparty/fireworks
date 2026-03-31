@@ -31,7 +31,7 @@
                                    :default 33
                                    :desc    "Sets the max length of things like strings, keywords, function names, etc., when they are nested more than one level deep inside a data structure. Values whose length exceeds this will be ellipsized."}
    :scalar-mapkey-max-length      {:spec    ::config/scalar-mapkey-max-length
-                                   :default 20
+                                   :default 33 
                                    :desc    "Sets the max length of things like strings, keywords, function names, etc., when they are used as keys in maps. Longer values will be ellipsized."}
    :single-column-maps?           {:spec    ::config/single-column-maps?
                                    :default false}
