@@ -1,7 +1,8 @@
 (ns fireworks.sample
   (:require
    #?(:cljs [cljs.js]) ;; [lambdaisland.ansi :as ansi]
-   #?(:cljs [lasertag.cljs-interop])
+   #?(:cljs [lasertag.jsi.native-plus])
+   #?(:cljs [lasertag.jsi.native])
    [clojure.pprint]
    [fireworks.core :refer [!? ?]]
    [fireworks.util :as util]
@@ -146,7 +147,7 @@
 
 #?(:cljs
     (defn cljs-interop-classes []
-       (let [ks (keys lasertag.cljs-interop/js-built-ins-by-category)]
+       (let [ks (keys lasertag.jsi.native/js-built-ins-by-category)]
          (reduce
           (fn [acc [k v]]
             (assoc acc
@@ -176,10 +177,10 @@
                                   []
                                   v))))
           {}
-          lasertag.cljs-interop/js-built-ins-by-category
+          lasertag.jsi.native/js-built-ins-by-category
           #_(do 
             (select-keys
-               lasertag.cljs-interop/js-built-ins-by-category
+               lasertag.jsi.native/js-built-ins-by-category
                [
                 ;; "Fundamental"
                 ;; "objects"
@@ -196,16 +197,12 @@
                 ;; "Managing memory"
                 ;; "Reflection"
                 ]))))
-
-       #_(doseq [[k v] lasertag.cljs-interop/js-built-in-objects-by-object-map]
-           (? :result k)
-           (? :result v)
-           ))
+       )
     :clj
     ())
 
 (def interop-types
-#?(:cljs ;; we get these from lasertag.cljs-interop
+#?(:cljs ;; we get these from lasertag.jsi.native
    (cljs-interop-classes)
    :clj ;; TODO - maybe move these into a new cljc lasertag.interop ns
    (array-map 

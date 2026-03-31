@@ -2,9 +2,11 @@
   (:require [fireworks.config]
             [fireworks.themes]
             [fireworks.sample :as sample :refer []]
+            [clojure.pprint :refer [pprint]]
             [bling.core :refer [print-bling bling ?sgr callout]]
             [bling.hifi :refer [hifi print-hifi]]
             [lasertag.core :refer [tag tag-map]]
+            [lasertag.fns]
             ;; [taoensso.tufte :as tufte :refer [p profile]]
             [fireworks.core :refer [? !? ?> !?> pprint]]
             [lasertag.cached :as cached]))
@@ -28,16 +30,29 @@
 
        (js/console.clear)
 
-      ;;  #_(? :- '[js/decodeURI
-      ;;            js/isFinite
-      ;;            js/EvalError
-      ;;            js/Date])     
+       ;;  #_(? :- '[js/decodeURI
+       ;;            js/isFinite
+       ;;            js/EvalError
+       ;;            js/Date])     
+       
+       ;;  (? cached/by-type-frequent)
+       
+       ;;  (?  #_{:a 1 :b 2} (tag-map 2))
+       
+       (let [v       (aget "foo" "concat")
+             tag-map (tag-map v)
+             fn-info (lasertag.fns/fn-info v (:tag tag-map))]
 
-      ;;  (? cached/by-type-frequent)
+         (pprint 
+          (type (with-meta {:a 1} {:type 2})))
 
-      ;;  (?  #_{:a 1 :b 2} (tag-map 2))
-       (?  cached/tag-maps-by-class)
+         (? #(inc 2))
 
+         (? cached/by-class)
+         )
+
+       ;;  (pprint (tag-map 12))
+       
        ;;  (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
        
        ;; (? (tag my-record-type)) 

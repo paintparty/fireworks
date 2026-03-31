@@ -1,7 +1,7 @@
 (ns fireworks.browser
   (:require [clojure.string :as string]
             [fireworks.ansi :as ansi]
-            [fireworks.pp :refer [?pp]]
+            ;; [fireworks.pp :refer [?pp]]
             [fireworks.state :as state]
             [fireworks.color]))
 

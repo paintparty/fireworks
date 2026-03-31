@@ -3,7 +3,7 @@
 (ns visual-testing.browser
   (:require
    [reagent.dom :as rdom]
-   [fireworks.core :refer [? !? ?> !?>]]
+  ;;  [fireworks.core :refer [? !? ?> !?>]]
    [visual-testing.macros :refer-macros [test-clj]]
    [visual-testing.shared :refer [test-suite]]))
 
