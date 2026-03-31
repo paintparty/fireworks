@@ -76,8 +76,31 @@
                   (:metadata-position @state/config))))
 
 
+;; SEV                                                                    
+;;                                                                     
+;;    SSSSSSSSSSSSSSS EEEEEEEEEEEEEEEEEEEEEEVVVVVVVV           VVVVVVVV
+;;  SS:::::::::::::::SE::::::::::::::::::::EV::::::V           V::::::V
+;; S:::::SSSSSS::::::SE::::::::::::::::::::EV::::::V           V::::::V
+;; S:::::S     SSSSSSSEE::::::EEEEEEEEE::::EV::::::V           V::::::V
+;; S:::::S              E:::::E       EEEEEE V:::::V           V:::::V 
+;; S:::::S              E:::::E               V:::::V         V:::::V  
+;;  S::::SSSS           E::::::EEEEEEEEEE      V:::::V       V:::::V   
+;;   SS::::::SSSSS      E:::::::::::::::E       V:::::V     V:::::V    
+;;     SSS::::::::SS    E:::::::::::::::E        V:::::V   V:::::V     
+;;        SSSSSS::::S   E::::::EEEEEEEEEE         V:::::V V:::::V      
+;;             S:::::S  E:::::E                    V:::::V:::::V       
+;;             S:::::S  E:::::E       EEEEEE        V:::::::::V        
+;; SSSSSSS     S:::::SEE::::::EEEEEEEE:::::E         V:::::::V         
+;; S::::::SSSSSS:::::SE::::::::::::::::::::E          V:::::V          
+;; S:::::::::::::::SS E::::::::::::::::::::E           V:::V           
+;;  SSSSSSSSSSSSSSS   EEEEEEEEEEEEEEEEEEEEEE            VVV            
+;;                                                                     
+;;                                                                     
+;;                                                                     
+
 (defn- sev
   "Creates a string with ansi-sgr formatting tags."
+  ;; "The main entity that gets tagged is either `s` or `fn-display-name`"
   [{:keys [x
            s
            t
@@ -99,30 +122,17 @@
            theme-token-override
            ellipsized-char-count]
     :as m}]
-  (let [encapsulated?
-        (or (= t :uuid) (contains? all-tags :inst))
-
-        ;; mutable-tagging-opts                                                    ;; TODO - Rename to not use mutable
-        ;; (when (or val-is-atom? 
-        ;;           val-is-volatile?
-        ;;           val-is-ref?
-        ;;           val-is-agent?
-        ;;           )
-        ;;   {
-        ;;   ;;  :theme-token  (if val-is-atom? :atom-wrapper :volatile-wrapper)
-        ;;    :display?     true
-        ;;    :highlighting highlighting})
-        
-        ;; The next set of bindings:                                            ;; break these into helper fns?
-        
-        ;; user-metadata-map-block (displays user-meta above value), optional
-        ;; annotation (badge), optional
-        ;; value tag
-        ;; num-chars-dropped-syntax
-        ;; value tag-reset 
-        ;; user-metadata-map-block (displays user-meta inline, after value), optional
-        
-        user-metadata-map-block-tagged                                          
+  
+  ;; break these into helper fns?
+  ;; "The intial set of bindings:                                            
+  ;;     -  user-metadata-map-block (displays user-meta above value), optional
+  ;;     -  annotation (badge), optional
+  ;;     -  ansi sgr tag
+  ;;     -  num-chars-dropped-syntax
+  ;;     -  ansi sgr tag-reset 
+  ;;     -  user-metadata-map-inline (displays user-meta inline, after value), optional"
+  
+  (let [user-metadata-map-block-tagged                                          
         (when (sev-user-meta-position-match? user-meta :block)
           
           (meta-level-inc!)
@@ -139,13 +149,6 @@
                                (+ defs/kv-gap)
                                spaces))))
 
-        ;; atom-tagged
-        ;; (some->> mutable-tagging-opts
-        ;;          (tagged (str (if val-is-volatile? 
-        ;;                         defs/volatile-label 
-        ;;                         defs/atom-label)
-        ;;                       #_defs/encapsulation-opening-bracket)))
-        
         badge-tagged
         (tagged badge
                 {:theme-token (cond
@@ -161,8 +164,6 @@
               :number
               js-map-like-key?
               :js-object-key
-              encapsulated?
-              :string
               :else
               t)
 
@@ -246,35 +247,34 @@
 
          main-entity-tag
          ;; (some-> num-chars-dropped pos?)
-         (do
-           (or (when s
-                 (cond (= t :string)
-                       (string/replace (subs s 1 (-> s count dec))
-                                       #"\""
-                                       ;; Maybe we should add this at an earlier stage
-                                       (str (sgr-tag :escape-char)
-                                            "\\\\"
-                                            main-entity-tag-reset
-                                            (sgr-tag :escaped-double-quote-char)
-                                            "\""
-                                            main-entity-tag-reset
-                                            main-entity-tag))
+         (or (when s
+               (cond (= t :string)
+                     (string/replace (subs s 1 (-> s count dec))
+                                     #"\""
+                                     ;; Maybe we should add this at an earlier stage
+                                     (str (sgr-tag :escape-char)
+                                          "\\\\"
+                                          main-entity-tag-reset
+                                          (sgr-tag :escaped-double-quote-char)
+                                          "\""
+                                          main-entity-tag-reset
+                                          main-entity-tag))
 
-                       (= t :regex)
-                       (tag/colorized-regex s)
+                     (= t :regex)
+                     (tag/colorized-regex s)
 
-                       (and (= t :number) (re-find #"^[0-9]+\.[0-9]+" s))
-                       (let [[integral-part decimal-part] (string/split s #"\.")]
-                         (str (sgr-tag :number highlighting)
-                              integral-part "."
-                              main-entity-tag-reset
-                              (sgr-tag :decimal highlighting)
-                              decimal-part
-                              main-entity-tag-reset))
+                     (and (= t :number) (re-find #"^[0-9]+\.[0-9]+" s))
+                     (let [[integral-part decimal-part] (string/split s #"\.")]
+                       (str (sgr-tag :number highlighting)
+                            integral-part "."
+                            main-entity-tag-reset
+                            (sgr-tag :decimal highlighting)
+                            decimal-part
+                            main-entity-tag-reset))
 
-                       :else
-                       s))
-               fn-display-name))
+                     :else
+                     s))
+             fn-display-name)
          main-entity-tag-reset
          chars-dropped-syntax
 
@@ -309,31 +309,28 @@
     ret))
 
 
-;;                               ooo OOO OOO ooo
-;;                           oOO                 OOo
-;;                       oOO                         OOo
-;;                    oOO                               OOo
-;;                  oOO                                   OOo
-;;                oOO                                       OOo
-;;               oOO                                         OOo
-;;              oOO                                           OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;              oOO                                           OOo
-;;               oOO                                         OOo
-;;                oOO                                       OOo
-;;                  oOO                                   OOo
-;;                    oO                                OOo
-;;                       oOO                         OOo
-;;                           oOO                 OOo
-;;                               ooo OOO OOO ooo
 
 
-;;;; For dealing with collections
-
+;;                                                                               
+;;                                                                               
+;; DDDDDDDDDDDDD      RRRRRRRRRRRRRRRRR        OOOOOOOOO     PPPPPPPPPPPPPPPPP   
+;; D::::::::::::DDD   R::::::::::::::::R     OO:::::::::OO   P::::::::::::::::P  
+;; D:::::::::::::::DD R::::::RRRRRR:::::R  OO:::::::::::::OO P::::::PPPPPP:::::P 
+;; DDD:::::DDDDD:::::DRR:::::R     R:::::RO:::::::OOO:::::::OPP:::::P     P:::::P
+;;   D:::::D    D:::::D R::::R     R:::::RO::::::O   O::::::O  P::::P     P:::::P
+;;   D:::::D     D:::::DR::::R     R:::::RO:::::O     O:::::O  P::::P     P:::::P
+;;   D:::::D     D:::::DR::::RRRRRR:::::R O:::::O     O:::::O  P::::PPPPPP:::::P 
+;;   D:::::D     D:::::DR:::::::::::::RR  O:::::O     O:::::O  P:::::::::::::PP  
+;;   D:::::D     D:::::DR::::RRRRRR:::::R O:::::O     O:::::O  P::::PPPPPPPPP    
+;;   D:::::D     D:::::DR::::R     R:::::RO:::::O     O:::::O  P::::P            
+;;   D:::::D     D:::::DR::::R     R:::::RO:::::O     O:::::O  P::::P            
+;;   D:::::D    D:::::D R::::R     R:::::RO::::::O   O::::::O  P::::P            
+;; DDD:::::DDDDD:::::DRR:::::R     R:::::RO:::::::OOO:::::::OPP::::::PP          
+;; D:::::::::::::::DD R::::::R     R:::::R OO:::::::::::::OO P::::::::P          
+;; D::::::::::::DDD   R::::::R     R:::::R   OO:::::::::OO   P::::::::P          
+;; DDDDDDDDDDDDD      RRRRRRRR     RRRRRRR     OOOOOOOOO     PPPPPPPPPP          
+;;                                                                               
+;;                                                                               
 
 ;;;; Num-dropped-syntax start --------------------------------------------------
 
@@ -405,6 +402,27 @@
       (str (sgr-tag :ellipsis) extra sgr-reset-tag))))
 
 ;;;; Num-dropped-syntax end ----------------------------------------------------
+
+;;                                                                                         
+;;                                                                                         
+;;         CCCCCCCCCCCCC     OOOOOOOOO     LLLLLLLLLLL             LLLLLLLLLLL             
+;;      CCC::::::::::::C   OO:::::::::OO   L:::::::::L             L:::::::::L             
+;;    CC:::::::::::::::C OO:::::::::::::OO L:::::::::L             L:::::::::L             
+;;   C:::::CCCCCCCC::::CO:::::::OOO:::::::OLL:::::::LL             LL:::::::LL             
+;;  C:::::C       CCCCCCO::::::O   O::::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;;  C:::::C       CCCCCCO::::::O   O::::::O  L:::::L         LLLLLL  L:::::L         LLLLLL
+;;   C:::::CCCCCCCC::::CO:::::::OOO:::::::OLL:::::::LLLLLLLLL:::::LLL:::::::LLLLLLLLL:::::L
+;;    CC:::::::::::::::C OO:::::::::::::OO L::::::::::::::::::::::LL::::::::::::::::::::::L
+;;      CCC::::::::::::C   OO:::::::::OO   L::::::::::::::::::::::LL::::::::::::::::::::::L
+;;         CCCCCCCCCCCCC     OOOOOOOOO     LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
+;;                                                                                         
+;                                                                                         
 
 
 (defn- stringified-bracketed-coll-with-num-dropped-syntax! 
@@ -816,6 +834,28 @@
                        true)))
     (tagged s (keyed [highlighting]))))
 
+
+;;                                                                                     
+;;                                                                                     
+;; MMMMMMMM               MMMMMMMM               AAA               PPPPPPPPPPPPPPPPP   
+;; M:::::::M             M:::::::M              A:::A              P::::::::::::::::P  
+;; M::::::::M           M::::::::M             A:::::A             P::::::PPPPPP:::::P 
+;; M:::::::::M         M:::::::::M            A:::::::A            PP:::::P     P:::::P
+;; M::::::::::M       M::::::::::M           A:::::::::A             P::::P     P:::::P
+;; M:::::::::::M     M:::::::::::M          A:::::A:::::A            P::::P     P:::::P
+;; M:::::::M::::M   M::::M:::::::M         A:::::A A:::::A           P::::PPPPPP:::::P 
+;; M::::::M M::::M M::::M M::::::M        A:::::A   A:::::A          P:::::::::::::PP  
+;; M::::::M  M::::M::::M  M::::::M       A:::::A     A:::::A         P::::PPPPPPPPP    
+;; M::::::M   M:::::::M   M::::::M      A:::::AAAAAAAAA:::::A        P::::P            
+;; M::::::M    M:::::M    M::::::M     A:::::::::::::::::::::A       P::::P            
+;; M::::::M     MMMMM     M::::::M    A:::::AAAAAAAAAAAAA:::::A      P::::P            
+;; M::::::M               M::::::M   A:::::A             A:::::A   PP::::::PP          
+;; M::::::M               M::::::M  A:::::A               A:::::A  P::::::::P          
+;; M::::::M               M::::::M A:::::A                 A:::::A P::::::::P          
+;; MMMMMMMM               MMMMMMMMAAAAAAA                   AAAAAAAPPPPPPPPPP          
+;;                                                                                     
+;;                                                                                     
+
 (defn- reduce-map*
   [{:keys [indent
            separator
@@ -935,6 +975,34 @@
                         max-keylen])))]
      ret))
 
+
+
+;;                                                                
+;;                                                                
+;; KKKKKKKKK    KKKKKKKEEEEEEEEEEEEEEEEEEEEEEYYYYYYY       YYYYYYY
+;; K:::::::K    K:::::KE::::::::::::::::::::EY:::::Y       Y:::::Y
+;; K:::::::K    K:::::KE::::::::::::::::::::EY:::::Y       Y:::::Y
+;; K:::::::K   K::::::KEE::::::EEEEEEEEE::::EY::::::Y     Y::::::Y
+;; KK::::::K  K:::::KKK  E:::::E       EEEEEEYYY:::::Y   Y:::::YYY
+;;   K:::::K K:::::K     E:::::E                Y:::::Y Y:::::Y   
+;;   K::::::K:::::K      E::::::EEEEEEEEEE       Y:::::Y:::::Y    
+;;   K:::::::::::K       E:::::::::::::::E        Y:::::::::Y     
+;;   K:::::::::::K       E:::::::::::::::E         Y:::::::Y      
+;;   K::::::K:::::K      E::::::EEEEEEEEEE          Y:::::Y       
+;;   K:::::K K:::::K     E:::::E                    Y:::::Y       
+;; KK::::::K  K:::::KKK  E:::::E       EEEEEE       Y:::::Y       
+;; K:::::::K   K::::::KEE::::::EEEEEEEE:::::E       Y:::::Y       
+;; K:::::::K    K:::::KE::::::::::::::::::::E    YYYY:::::YYYY    
+;; K:::::::K    K:::::KE::::::::::::::::::::E    Y:::::::::::Y    
+;; KKKKKKKKK    KKKKKKKEEEEEEEEEEEEEEEEEEEEEE    YYYYYYYYYYYYY    
+;;                                                                
+;;                                                                
+;;                                                                
+;;                                                                
+;;                                                                
+;;                                                                
+;;                                                                
+
 ;; maybe a short coll as key
 (defn- tagged-key
   [{:keys [t
@@ -976,6 +1044,32 @@
                                     multi-line?
                                     highlighting])))))))
 
+
+;;                                                                         
+;;                                                                         
+;; VVVVVVVV           VVVVVVVV   AAA               LLLLLLLLLLL             
+;; V::::::V           V::::::V  A:::A              L:::::::::L             
+;; V::::::V           V::::::V A:::::A             L:::::::::L             
+;; V::::::V           V::::::VA:::::::A            LL:::::::LL             
+;;  V:::::V           V:::::VA:::::::::A             L:::::L               
+;;   V:::::V         V:::::VA:::::A:::::A            L:::::L               
+;;    V:::::V       V:::::VA:::::A A:::::A           L:::::L               
+;;     V:::::V     V:::::VA:::::A   A:::::A          L:::::L               
+;;      V:::::V   V:::::VA:::::A     A:::::A         L:::::L               
+;;       V:::::V V:::::VA:::::AAAAAAAAA:::::A        L:::::L               
+;;        V:::::V:::::VA:::::::::::::::::::::A       L:::::L               
+;;         V:::::::::VA:::::AAAAAAAAAAAAA:::::A      L:::::L         LLLLLL
+;;          V:::::::VA:::::A             A:::::A   LL:::::::LLLLLLLLL:::::L
+;;           V:::::VA:::::A               A:::::A  L::::::::::::::::::::::L
+;;            V:::VA:::::A                 A:::::A L::::::::::::::::::::::L
+;;             VVVAAAAAAA                   AAAAAAALLLLLLLLLLLLLLLLLLLLLLLL
+;;                                                                         
+;;                                                                         
+;;                                                                         
+;;                                                                         
+;;                                                                         
+;;                                                                         
+;;                                                                         
 
 (defn- tagged-val
   [{:keys [v
