@@ -123,7 +123,7 @@
   [s]
   (some->> s
            (re-seq sgr-re)
-           (reduce (fn [n s] (+ n (count s))) 0)))
+           (reduce (fn [n s] (unchecked-add-int n (count s))) 0)))
 
 ;; -----------------------------------------------------------------------------
 ;; -----------------------------------------------------------------------------
@@ -480,7 +480,7 @@
         ;; Bling - adjust for ansi-sgr
         s-len           (strlen s)
         sgr-count       (or (sgr-count s) 0)
-        len-minus-sgr   (- s-len sgr-count)
+        len-minus-sgr   (unchecked-subtract-int s-len sgr-count)
         remaining-count (remaining writer)
         mode            (if (<= len-minus-sgr
                                 (unchecked-subtract-int remaining-count
@@ -871,14 +871,14 @@
   "Stringifies a collection and truncates the result with ellipsis 
    so that it fits on one line."
   [v limit]
-  (let [limit  limit
+  (let [limit  (unchecked-long limit)
         as-str (str v)]
-    (if (> limit (count as-str))
+    (if (> limit (unchecked-long (count as-str)))
       as-str
       (let [shortened*      (-> as-str
                                 (clojure.string/split #"\n")
                                 first)
-            shortened       (if (< limit (count shortened*))
+            shortened       (if (< limit (unchecked-long (count shortened*)))
                               (let [ret          (take limit shortened*)
                                     string-like? (string-like? v)]
                                 (str (clojure.string/join ret)
