@@ -456,6 +456,10 @@
        seq
        boolean))
 
+(defn- double-truncated-map? [coll t]
+  (and (= t :map)
+       (< 1 (count coll))
+       (= (first coll) ['... (symbol " ")])))
 
 (defn- reduce-coll-profile
   [coll indent*]
@@ -541,13 +545,15 @@
                        (or strlen-greater-than-limit?
                            (when display-metadata?
                              (some #(when (meta %) %)
-                                   (tree-seq coll? seq (:og-x meta-map)))))))))))
+                                   (tree-seq coll? seq (:og-x meta-map)))))))))
+              (double-truncated-map? coll t)))
 
 
         ;; _ (when-not multi-line? (?pp meta-map))
         
         ;; This is where indenting for multi-line collections is determined
         num-indent-spaces-for-t
+        ;; TODO - shouldn't need to check js/Set here, set-like? should cover
         (if (or set-like? user-meta-map? (= t :js/Set)) 2 1)
 
         indent       
@@ -887,7 +893,8 @@
                                  max-keylen]))]
             {:escaped               tk
              :ellipsized-char-count (ansi/adjusted-char-count tk)})
-          (sev (merge key-props {:indent indent :highlighting highlighting})))
+          (sev (merge key-props {:indent       indent
+                                 :highlighting highlighting})))
 
         theme-token-map
         {:theme-token (state/metadata-token)}
@@ -898,19 +905,28 @@
         gap-spaces-opts
         (keyed [formatting-meta? theme-token-map highlighting])
 
+        leading-or-trailing-truncation-kv?
+        (and (or (= k (symbol "... "))
+                 (= k (symbol "...")))
+             (= v (symbol "")))
+
         spaces-after-key
-        (let [num-extra (if multi-line?
-                          (- (or max-keylen 0)
-                             (or key-char-count 0))
-                          0)
-              s         (when (some-> num-extra pos?) (spaces num-extra))
-              k         :spaces-after-key]
-          (gap-spaces (assoc gap-spaces-opts :s s :k k)))
+        (if leading-or-trailing-truncation-kv? 
+          ""
+          (let [num-extra (if multi-line?
+                            (- (or max-keylen 0)
+                               (or key-char-count 0))
+                            0)
+                s         (when (some-> num-extra pos?) (spaces num-extra))
+                k         :spaces-after-key]
+            (gap-spaces (assoc gap-spaces-opts :s s :k k))))
 
         kv-gap-spaces
-        (let [s (spaces defs/kv-gap)
-              k :kv-gap-spaces]
-          (gap-spaces (assoc gap-spaces-opts :s s :k k)))
+        (if leading-or-trailing-truncation-kv?
+          ""
+          (let [s (spaces defs/kv-gap)
+                k :kv-gap-spaces]
+            (gap-spaces (assoc gap-spaces-opts :s s :k k))))
 
         tagged-val          
         (tagged-val (keyed [v
