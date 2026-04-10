@@ -24,7 +24,7 @@
 ;; -----------------------------------------------------------------------------
 #?(:cljs
    ;; In cljs, detect if env is node/deno vs browser
-   (do (defonce node?
+   (do (def node?
          (boolean 
           (some->> 
            (or (when (and (exists? js/window)

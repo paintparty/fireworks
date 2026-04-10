@@ -4,7 +4,7 @@
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
    [fireworks.browser]
-   [fireworks.pp :as fireworks.pp :refer [?pp]]
+   [fireworks.pp :refer [?pp]]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
@@ -58,6 +58,25 @@
           :label-max-length
           :default)))
 
+(defn- label-entity-tag* [opts]
+  (case (some-> opts :label-color util/as-str)
+    "green"
+    :eval-label-green
+    "blue"
+    :eval-label-blue
+    "red"
+    :eval-label-red
+    :eval-label))
+
+(defn- deref->at-syntax [qf]
+  (if (and (list? qf)
+           (= 2 (count qf))
+           (contains?
+            #{'cljs.core/deref 'clojure.core/deref}
+            (first qf)))
+    (symbol (str "@" (second qf)))
+    qf))
+
 (defn- user-label-or-form!
   [{:keys [qf template label mll?]
    {:keys [label-max-length]} :user-opts
@@ -76,14 +95,7 @@
                template)
           (when label
             (let [label-entity-tag
-                  (case (some-> opts :label-color util/as-str)
-                    "green"
-                    :eval-label-green
-                    "blue"
-                    :eval-label-blue
-                    "red"
-                    :eval-label-red
-                    :eval-label)
+                  (label-entity-tag* opts)
 
                   label
                   (if mll?
@@ -107,27 +119,20 @@
           (when qf
             ;; TODO - Confirm that toggling this state doesn't matter, remove it
             (reset! state/formatting-form-to-be-evaled? true)
-            (let [form-entity-tag (case (some-> opts :label-color util/as-str)
-                                    "green"
-                                    :eval-form-green
-                                    "blue"
-                                    :eval-form-blue
-                                    "red"
-                                    :eval-form-red
-                                    :eval-form)
+            (let [form-entity-tag (label-entity-tag* opts)
                   format-anons    #(string/replace %
                                                    #"p([0-9])__[0-9]+\#" 
                                                    (fn [[_ n]] (str "%" n)))
+                  qf              (deref->at-syntax qf)
                   shortened       (if (:format-label-as-code? @state/config)
                                     (-> qf
                                         (pprint {:max-width 33})
                                         with-out-str
                                         (string/replace #"\n+$" "")
                                         format-anons)
-                                    (util/shortened
-                                     (-> qf str format-anons)
-                                     (resolve-label-length
-                                      label-max-length)))
+                                    (util/shortened (-> qf str format-anons)
+                                                    (resolve-label-length
+                                                     label-max-length)))
                   tagged          (tag/tag-entity shortened form-entity-tag) 
                   ret             tagged]
               ;; TODO - Confirm that toggling this state doesn't matter, remove it
@@ -791,16 +796,14 @@
 (defn- native-logging*
   [x opts]
   #?(:cljs 
-     (let [{:keys [coll-type? carries-meta? t transient? classname]
+     (let [{:keys [coll-type? carries-meta? t transient? classname all-tags]
             :as   m} 
            (util/tag-map* x
                           {:include-function-info?           false
                            :include-js-built-in-object-info? false})]
-       (when (or (and coll-type?
-                      (not carries-meta?)
-                      (not= t :cljs.core/Atom)
-                      (not= t :cljs.core/Volatile)
-                      (not transient?))
+       (when (or (and coll-type? 
+                      (or (contains? all-tags :js)
+                          (not (string/starts-with? classname "cljs.core"))))
 
                  ;; Specific to HTML DOM Collections, maybe swap this out for
                  ;; something else, after adding support to lasertag

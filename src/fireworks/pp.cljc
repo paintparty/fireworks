@@ -33,6 +33,7 @@
                e
           (println "WARNING [lasertag.core/?] Unable to print value")))
    x))
+
 (def sgr-codes-by-color
   {:red        196
    :orange     172
@@ -893,8 +894,7 @@
         ns-str                (some-> *ns*
                                       ns-name
                                       str
-                                      (str ":" line ":" column))
-        ns-str                (str "\033[3;38;5;39m" ns-str "\033[0m")]
+                                      (str ":" line ":" column))]
     ns-str))
 
 (defn !?pp
@@ -903,25 +903,42 @@
   ([label x]
    x))
 
+(defn ns+label+result [ns-str form-or-label x]
+  (str ns-str
+       "\n"
+       form-or-label
+       "\n"
+       (with-out-str (fireworks.pp/pprint x))))
+
 (defmacro ?pp 
   ([x]
    (let [ns-str (ns-str (meta &form))]
-     `(do
-        (println
-         (str ~ns-str
-              "\n"
-              (shortened (quote ~x) 66)
-              "\n"
-              (with-out-str (fireworks.pp/pprint ~x))))
-        ~x)))
+     (if (:ns &env)
+       `(do
+          (js/console.log (fireworks.pp/ns+label+result 
+                           ~ns-str
+                           (shortened (quote ~x) 66) 
+                           ~x))
+          ~x)
+       `(do 
+          (println (fireworks.pp/ns+label+result
+                    (str "\033[3;38;5;39m" ~ns-str "\033[0m")
+                    (shortened (quote ~x) 66) 
+                    ~x))
+          ~x))))
   ([label x]
-   (let [label (or (:label label) label)
+   (let [label  (or (:label label) label)
          ns-str (ns-str (meta &form))]
-     `(do
-        (println
-         (str ~ns-str
-              "\n"
-              (with-out-str (fireworks.pp/pprint ~label))
-              "\n"
-              (with-out-str (fireworks.pp/pprint ~x))))
-        ~x))))
+     (if (:ns &env)
+       `(do
+          (js/console.log (fireworks.pp/ns+label+result 
+                           ~ns-str
+                           (with-out-str (fireworks.pp/pprint ~label)) 
+                           ~x))
+          ~x)
+       `(do 
+          (println (fireworks.pp/ns+label+result 
+                    (str "\033[3;38;5;39m" ~ns-str "\033[0m")
+                    (with-out-str (fireworks.pp/pprint ~label)) 
+                    ~x))
+          ~x)))))
