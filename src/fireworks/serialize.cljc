@@ -893,8 +893,14 @@
                                  max-keylen]))]
             {:escaped               tk
              :ellipsized-char-count (ansi/adjusted-char-count tk)})
-          (sev (merge key-props {:indent       indent
-                                 :highlighting highlighting})))
+
+          ;; assoc :indent to key-props, and conditionally assoc :highlighting
+          ;; from parent map, but only if key does not have its own entry for
+          ;; :highlighting.
+          (sev (cond-> (assoc key-props :indent indent)
+                 (and (nil? (:highlighting key-props))
+                      highlighting)
+                 (assoc :highlighting highlighting))))
 
         theme-token-map
         {:theme-token (state/metadata-token)}

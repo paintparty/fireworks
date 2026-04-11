@@ -5,7 +5,7 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :source-paths ["src"
                  ;; for local dev
-                 ;; "../lasertag/src"
+                 "../lasertag/src"
                  ]
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [expound "0.9.0"]

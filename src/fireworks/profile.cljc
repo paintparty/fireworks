@@ -103,7 +103,7 @@
 (defn target-path-is-ancestor-coll?
   [tp vp tp-list]
   (let [debug?
-        false
+        false #_true
         #_(boolean (and (= tp [:map :c])
                       (= vp [:map :c :fireworks.highlight/map-key])))
 
@@ -127,7 +127,7 @@
                 (not map-key-for-a-target-value?))))]
 
     #_(when debug?
-      (?pp (keyed [value-path-has-more-nodes-than-target-path?
+      (? (keyed [value-path-has-more-nodes-than-target-path?
                    target-path-is-potentially-an-ancestor?
                    map-key-for-a-target-value?
                    rest-of-value-path
