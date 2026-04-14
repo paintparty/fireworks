@@ -161,7 +161,8 @@
                   {:label  "java.io.IOException (CAUGHT)"
                    :header (str "Caused by bad value in "
                                 defs/italic-tag-open file defs/sgr-tag-close
-                                "\n\nCould not open file:")})]
+                                "\n\nCould not open file:")
+                   :regex  #"^fireworks\.|^lasertag\."})]
         (swap! messaging/warnings-and-errors
                conj
                [:messaging/read-file-warning opts])
@@ -173,7 +174,8 @@
                   {:label  "RuntimeException (CAUGHT)"
                    :header (str "Caused by bad value in "
                                 defs/italic-tag-open file defs/sgr-tag-close
-                                "\n\nCould not parse file:")})]
+                                "\n\nCould not parse file:")
+                   :regex  #"^fireworks\.|^lasertag\."})]
         (swap! messaging/warnings-and-errors
                conj
                [:messaging/read-file-warning opts])

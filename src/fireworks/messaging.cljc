@@ -1,6 +1,6 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
-            [fireworks.pp :refer [pprint]]
+            [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
             [expound.alpha :as expound]
             [fireworks.util :as util :refer [maybe->]]
             #?(:clj [clojure.main])))
@@ -27,6 +27,7 @@
    :red                   "\033[38;5;196m"
    :blue                  "\033[38;5;39m"
    :bold                  "\033[1m"
+   :dim                   "\033[2m"
    :sgr-tag-close         "\033[0;m"})
 
 
@@ -34,7 +35,7 @@
   (str (get sgr-tags k) v (:sgr-tag-close sgr-tags)))
 
 (def lb "\n\n\n")
-(def indent "  ")
+(def indent "   ")
 
 
 (defn bold [s]
@@ -77,7 +78,7 @@
          "\n"
          (:sgr-tag-close sgr-tags)
          "\n"
-         (str " " (string/join "\n " (string/split body #"\n")))
+         (str (string/join (str "\n" indent) (string/split body #"\n")))
          open-tag
          "\n\n"
          footer-stripe
@@ -145,26 +146,33 @@
                      loc]))))
      
      (defn- clean-up-frames [trace]
-       (map-indexed
-        (fn [i x]
-          (if (vector? x)
-            (let [[fqn wtf loc]   x
-                  [fn-ns fn-name] (-> fqn
-                                      str
-                                      clojure.main/demunge
-                                      (string/split #"/"))]
-              (string/join
-               " "
-               (remove
-                nil?
-                [(str (sgr :gray (str fn-ns (when fn-name "/")))
-                      fn-name)
-                 (when-not (contains? '#{invoke invokeStatic} wtf) wtf)
-                 (sgr :gray loc)
-                 (when (-> x meta :target?)
-                   (sgr :red "<- Probably here"))])))
-            x))
-        trace))))
+       (let [target? (some #(-> % meta :target?) trace)]
+         (mapv
+          (fn [x]
+            (if (vector? x)
+              (let [[fqn wtf loc]   x
+                    [fn-ns fn-name] (-> fqn
+                                        str
+                                        clojure.main/demunge
+                                        (string/split #"/"))]
+                (string/join
+                 " "
+                 (remove
+                  nil?
+                  (let [tag (if (and target?
+                                     (re-find #"^clojure\.|java\." fn-ns))
+                              :dim
+                              :gray)]
+                    [(str (sgr tag
+                               (str fn-ns (when fn-name "/")))
+                          (sgr tag fn-name))
+                     (when-not (contains? '#{invoke invokeStatic} wtf)
+                       (sgr tag wtf))
+                     (sgr tag loc)
+                     (when (-> x meta :target?)
+                       (sgr :red "<- Probably here"))]))))
+              x))
+          trace)))))
 
 (defn summary-header [s]
   (sgr :neutral (italic (str s "\n"))))
@@ -176,7 +184,7 @@
   [{:keys [error regex depth header]}]
   #?(:clj
      (let [strace 
-           (some->> (maybe-> error #(instance? Exception %)) .getStackTrace seq)
+           (some->> (maybe-> error #(instance? Throwable %)) .getStackTrace seq)
 
            formatted-string
            (if-not strace
@@ -186,37 +194,38 @@
 
              ;; Create a formatted string of of the stack trace, clean it up and
              ;; make it easier to read
-             (let [strace-len   (count strace)
-                   depth        (or (maybe-> depth pos-int?) 21)
-                   mini-strace  (mini-trace depth strace)
-                   last-index   (last-index-of-relevant-stack-trace regex
+             (let [strace-len  (count strace)
+                   depth       (or (some-> (maybe-> depth pos-int?) (+ 12))
+                                   33)
+                   mini-strace (mini-trace depth strace)
+                   last-index  (last-index-of-relevant-stack-trace regex
+                                                                   depth 
+                                                                   mini-strace)
+                   first-index (first-index-of-relevant-stack-trace regex
                                                                     depth 
                                                                     mini-strace)
-                   first-index  (first-index-of-relevant-stack-trace regex
-                                                                     depth 
-                                                                     mini-strace)
                    ;; Get all the frames up to the last index
-                   trace*       (some->> mini-strace
-                                         (take (inc (or last-index depth)))
-                                         vec)
-                   trace*       (if first-index
-                                  (assoc trace*
-                                         first-index
-                                         (with-meta (nth trace* first-index)
-                                           {:target? true}))
-                                  trace*)
-                   len          (when trace* (count trace*))
-                   with-header  [(or header
-                                     (summary-header "Stacktrace preview:"))]
-                   trace        (some->> trace*
-                                         (interpose "\n") 
-                                         (into with-header))
-                   num-dropped  (when trace
-                                  (let [n (- (or strace-len 0) (or len 0))]
-                                    (some->> (maybe-> n pos-int?)
-                                             (str "\n...+"))))
-                   trace        (some-> trace (conj num-dropped))
-                   trace2       (clean-up-frames trace)]
+                   trace*      (some->> mini-strace
+                                        (take (+ 3 (or last-index depth)))
+                                        vec)
+                   trace*      (if first-index
+                                 (assoc trace*
+                                        first-index
+                                        (with-meta (nth trace* first-index)
+                                          {:target? true}))
+                                 trace*)
+                   len         (when trace* (count trace*))
+                   with-header [(or header
+                                    (summary-header "Stacktrace preview:"))]
+                   trace       (some->> trace*
+                                        (interpose "\n") 
+                                        (into with-header))
+                   num-dropped (when trace
+                                 (let [n (- (or strace-len 0) (or len 0))]
+                                   (some->> (maybe-> n pos-int?)
+                                            (str "\n...+"))))
+                   trace       (some-> trace (conj num-dropped))
+                   trace2      (clean-up-frames trace)]
                (apply str trace2)))]
        {:formatted-string formatted-string
         :stack-trace-seq  strace})))
@@ -238,7 +247,7 @@
                    :body       x})))
 
 (defn summary-section [warning-label s]
-  (str "  " (summary-header warning-label) indent s lb))
+  (str indent (summary-header warning-label) indent s lb))
 
 
 (defn- line-number+bad-form [{:keys [k v form line]}]
@@ -359,7 +368,7 @@
   )
 
 (defn exception-clues
-  [err {:keys [body]}]
+  [err {:keys [body regex]}]
   (if err
     (let [err-msg-str #?(:cljs
                          nil
@@ -377,7 +386,7 @@
          (let [{:keys [formatted-string stack-trace-seq] :as m}
                (stack-trace-preview
                 {:error err
-                 :regex #"^fireworks\.|^lasertag\."
+                 :regex regex
                  :depth 21})
                hint
                (let [hints-by-error-message

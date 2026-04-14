@@ -676,7 +676,8 @@
                                                   (some-> err-opts :fw-fnsym))
                                       :line   line
                                       :column column
-                                      :file   (or file ns-str)})
+                                      :file   (or file ns-str)
+                                      :regex  #"^fireworks\.|^lasertag\."})
          (println 
           (str "\nFalling back to pprint...\n\n"
                (with-out-str (pprint err-x))))))

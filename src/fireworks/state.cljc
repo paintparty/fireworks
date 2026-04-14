@@ -236,7 +236,7 @@
     (catch #?(:cljs js/Object
               :clj Throwable)
            e
-      (messaging/caught-exception e {})
+      (messaging/caught-exception e {:regex  #"^fireworks\.|^lasertag\."})
       (swap! messaging/warnings-and-errors
              conj
              [:messaging/print-error e])
@@ -827,7 +827,8 @@
         :form   err-x
         :line   line
         :column column
-        :file   (or file ns-str)}))
+        :file   (or file ns-str)
+        :regex  #"^fireworks\.|^lasertag\."}))
     (do (def merged-theme 
           (atom with-serialized-style-maps))
         (def merged-theme-with-unserialized-style-maps
