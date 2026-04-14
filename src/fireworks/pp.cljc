@@ -9,7 +9,9 @@
    :license "MIT"
    :git/url "https://github.com/eerohele/pp.git"}
   (:require [clojure.string :as string]
-            [lasertag.core])
+            [lasertag.core]
+            [lasertag.cached]
+            [clojure.pprint])
   #?(:clj (:import [clojure.lang Compiler]))
   #?(:cljs (:require-macros 
             [fireworks.pp :refer [?pp]])))
@@ -48,7 +50,7 @@
    :white      231})
 
 (def colors-by-tag
-  {:keyword  :purple
+  {:keyword  :neutral
    :string   :olive
    :number   :orange
    :symbol   :blue
@@ -57,6 +59,7 @@
    :atom     :yellow
    :class    :blue
    :function :blue
+   :delim    :blue
    })
 
 (defn- cljc-atom?
@@ -103,7 +106,8 @@
                   s)
           ;; object? (string/starts-with? (str s) "#object")
           s (if (= k :string) (str "\"" s "\"") s)]
-      (symbol (str "\033[38;5;" sgr "m" s "\033[m")))
+      ((if (= k :delim) str symbol)
+       (str "\033[38;5;" sgr "m" s "\033[m")))
     s))
 
 
@@ -121,9 +125,10 @@
   "Given a string containing ANSI SGR tags, returns the character count of the
    ANSI SGR tags"
   [s]
-  (some->> s
-           (re-seq sgr-re)
-           (reduce (fn [n s] (unchecked-add-int n (count s))) 0)))
+  (or (some->> s
+               (re-seq sgr-re)
+               (reduce (fn [n s] (unchecked-add-int n (count s))) 0))
+      0))
 
 ;; -----------------------------------------------------------------------------
 ;; -----------------------------------------------------------------------------
@@ -160,25 +165,28 @@
   [x]
   `(some-> ~x class .isArray))
 
-(defn ^:private open-delim
+(defn ^:private ^:bling open-delim
   "Return the opening delimiter (a string) of coll."
   ^String [coll]
-  (cond
-    (map? coll) "{"
-    (vector? coll) "["
-    (set? coll) "#{"
-    (array? coll) "["
-    :else "("))
+  ;; Bling - colorized delimeter
+  (colorized (cond
+               (map? coll) "{"
+               (vector? coll) "["
+               (set? coll) "#{"
+               (array? coll) "["
+               :else "(")
+             :delim))
 
 (defn ^:private close-delim
   "Return the closing delimiter (a string) of coll."
   ^String [coll]
-  (cond
-    (map? coll) "}"
-    (vector? coll) "]"
-    (set? coll) "}"
-    (array? coll) "]"
-    :else ")"))
+  (colorized (cond
+               (map? coll) "}"
+               (vector? coll) "]"
+               (set? coll) "}"
+               (array? coll) "]"
+               :else ")")
+             :delim))
 
 (defprotocol CountKeepingWriter
   (^:private write [this s]
@@ -553,13 +561,21 @@
         (when (= :miser mode) (write writer (:indentation opts)))
         (-pprint form writer opts)))))
 
-(defn ^:private pprint-opts
+(defn ^:private ^:bling pprint-opts
   [open-delim opts]
+  ;; (println "\n\n" :strlen (strlen open-delim))
+  ;; (println "\n\n" :sgr-count (sgr-count open-delim))
+  
   (let [;; The indentation level is the indentation level of the
         ;; parent S-expression plus a number of spaces equal to the
         ;; length of the open delimiter (e.g. one for "(", two for
         ;; "#{").
-        indentation (str (:indentation opts) (.repeat " " (strlen open-delim)))]
+        
+        ;; Bling - Added colorize to delimeter
+        open-delim-strlen (unchecked-subtract-int (strlen open-delim)
+                                                  (sgr-count open-delim))
+        indentation       (str (:indentation opts) (.repeat " "
+                                                            open-delim-strlen))]
     (-> opts (assoc :indentation indentation) (update :level inc))))
 
 (defn ^:private without-meta [form]
@@ -626,7 +642,7 @@
   (if (:colorize? opts)
     (let [[k*]  this
           k-str (f this)
-          tag   (when (not (coll? k*)) (lasertag.core/tag k*))
+          tag   (when (not (coll? k*)) (lasertag.core/tag k-str))
           k     (or (some->> tag (colorized k-str))
                     k-str)]
       k)
