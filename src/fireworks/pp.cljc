@@ -167,26 +167,33 @@
 
 (defn ^:private ^:bling open-delim
   "Return the opening delimiter (a string) of coll."
-  ^String [coll]
+  ;; Bling - added opts
+  ^String [coll opts]
   ;; Bling - colorized delimeter
-  (colorized (cond
-               (map? coll) "{"
-               (vector? coll) "["
-               (set? coll) "#{"
-               (array? coll) "["
-               :else "(")
-             :delim))
+  (let [delim (cond
+                (map? coll) "{"
+                (vector? coll) "["
+                (set? coll) "#{"
+                (array? coll) "["
+                :else "(")]
+    (if (:colorize? opts)
+      (colorized delim :delim)
+      delim)))
 
-(defn ^:private close-delim
+(defn ^:private ^:bling close-delim
   "Return the closing delimiter (a string) of coll."
-  ^String [coll]
-  (colorized (cond
-               (map? coll) "}"
-               (vector? coll) "]"
-               (set? coll) "}"
-               (array? coll) "]"
-               :else ")")
-             :delim))
+  ;; Bling - added opts
+  ^String [coll opts]
+  ;; Bling - colorized delimeter
+  (let [delim (cond
+                 (map? coll) "}"
+                 (vector? coll) "]"
+                 (set? coll) "}"
+                 (array? coll) "]"
+                 :else ")")]
+    (if (:colorize? opts)
+      (colorized delim :delim)
+      delim)))
 
 (defprotocol CountKeepingWriter
   (^:private write [this s]
@@ -262,7 +269,7 @@
   #?(:clj (-> record class .getName)
      :cljs (-> record type pr-str)))
 
-(defn ^:private open-delim+form
+(defn ^:private ^:bling open-delim+form
   "Given a coll, return a tuple where the first item is the coll's
   opening delimiter and the second item is the coll.
 
@@ -272,7 +279,9 @@
 
   If the coll is a record, the open delimiter includes the record name
   prefix."
-  [coll]
+
+  ;; Bling added opts
+  [coll opts]
   (if (record? coll)
     [(str "#" (record-name coll) "{") coll]
     ;; If all keys in the map share a namespace and *print-
@@ -286,7 +295,7 @@
 
           coll (if ns ns-map coll)
 
-          o (if ns (str "#:" ns "{") (open-delim coll))]
+          o (if ns (str "#:" ns "{") (open-delim coll opts))]
       [o coll])))
 
 (defn ^:private meets-print-level?
@@ -343,7 +352,7 @@
   (if (meets-print-level? (:level opts 0))
     (write-into writer "#")
 
-    (let [[^String o form] (open-delim+form coll)]
+    (let [[^String o form] (open-delim+form coll opts)]
       (print-meta writer coll opts)
 
       (write-into writer o)
@@ -360,7 +369,8 @@
                 (write-into writer " ")
                 (recur n (inc index)))))))
 
-      (write-into writer (close-delim form)))))
+      ;; Bling - added opts
+      (write-into writer (close-delim form opts)))))
 
 (defn ^:private -print-coll
   "Like -print, but only for lists, vectors, and sets."
@@ -368,7 +378,7 @@
   (if (meets-print-level? (:level opts 0))
     (write-into writer "#")
 
-    (let [[^String o form] (open-delim+form coll)]
+    (let [[^String o form] (open-delim+form coll opts)]
       (print-meta writer coll opts)
 
       (write-into writer o)
@@ -384,7 +394,8 @@
                 (write-into writer " ")
                 (recur n (inc index)))))))
 
-      (write-into writer (close-delim form)))))
+      ;; Bling - added opts
+      (write-into writer (close-delim form opts)))))
 
 (defn ^:private -print-seq
   [this writer opts]
@@ -595,7 +606,7 @@
     (write writer "#")
     (if-some [m (printable-meta this)]
       (-pprint-with-meta m (without-meta this) writer opts)
-      (let [[^String o form] (open-delim+form this)
+      (let [[^String o form] (open-delim+form this opts)
             mode (print-mode writer this opts)
             opts (pprint-opts o opts)]
 
@@ -635,7 +646,8 @@
                         (recur n (inc index))))))))))
 
         ;; Print close delimiter
-        (write writer (close-delim form))
+        ;; Bling - Added opts
+        (write writer (close-delim form opts))
         mode))))
 
 (defn ^:private ^:bling -maybe-colorize [this f opts]
@@ -675,7 +687,7 @@
     (write writer "#")
     (if-some [m (printable-meta this)]
       (-pprint-with-meta m (without-meta this) writer opts)
-      (let [[^String o form] (open-delim+form this)
+      (let [[^String o form] (open-delim+form this opts)
             mode (print-mode writer this opts)
             opts (pprint-opts o opts)]
         (write writer o)
@@ -703,7 +715,8 @@
                         (write-sep writer mode)
                         (recur n (inc index))))))))))
 
-        (write writer (close-delim form))
+        ;; Bling - added opts
+        (write writer (close-delim form opts))
         mode))))
 
 (defn ^:private -pprint-seq
@@ -928,7 +941,7 @@
                       (if (lasertag.cached/hash-map? x)
                         (into (sorted-map) x)
                         x)
-                      {:colorize? true}
+                      #_{:colorize? true}
                       ))))
 
 (defmacro ?pp 
