@@ -553,8 +553,13 @@
         
         ;; This is where indenting for multi-line collections is determined
         num-indent-spaces-for-t
-        ;; TODO - shouldn't need to check js/Set here, set-like? should cover
-        (if (or set-like? user-meta-map? (= t :js/Set)) 2 1)
+        ;; TODO - shouldn't need to check js/Set here, set-like? should cover it
+        (if (or set-like?
+                user-meta-map? 
+                (= t :js/Set) 
+                (and (:quote-lists? @state/config)
+                     (-> coll meta :root-list?)))
+          2 1)
 
         indent       
         (+ (or indent* 0) num-indent-spaces-for-t)
@@ -676,11 +681,11 @@
     (let [offset        defs/metadata-position-inline-offset
           inline-offset (tagged (spaces (dec offset))
                                 {:theme-token (state/metadata-token)})
-          ob            (str (some-> coll
-                                     meta
-                                     brackets-by-type
-                                     first))
-          
+          ob            (some-> coll
+                                meta
+                                brackets-by-type
+                                first)
+          ob            (brackets/maybe-quoted-opening-paren coll ob)
           indent+ob     (+ (or (count ob) 0)
                            indent*)
           ret           (formatted-user-meta user-meta (+ indent+ob offset))]
@@ -804,11 +809,64 @@
            (coll-sep-tagged m idx)))))
 
 
+(defn tag-nested-lists
+  "Based on nesting, recursively augments metadata of vectors that represent
+   list values with a `:root-list?` entry, and potentially a `:nested-list?`
+   entry.
+   
+   This is only called when the `:quote-lists` option is true.
+   
+   This allows for lists to use the quoted syntax, without adding syntax quoting
+   to nested lists.
+
+   Example:
+   ```clojure
+   (? {:quote-lists? true} '(foo bar '(bang)))
+   ;; prints
+   '(foo bar (bang))
+   ```
+
+   One use case for the `:quote-lists` feature is printing generated code that
+   is to be copied and pasted source code."
+  ([coll]
+   (tag-nested-lists coll false))
+  ([coll inside-list?]
+   (if (vector? coll)
+     (let [m                 (meta coll)
+           og-list?          (= (:t m) :list)
+           
+           ;; Resolve new metadata
+           new-meta          (cond
+                               (not og-list?) m
+                               inside-list?   (assoc m :nested-list? true)
+                               :else          (assoc m :root-list? true))
+           
+           ;; If already inside a list, or this vector is a list,
+           ;; all nested children are considered "inside-list".
+           next-inside-list? (or inside-list? og-list?)]
+       
+       ;; Reconstruct the vec by recursively mapping over els, and applying the
+       ;; new metadata.
+       (with-meta (mapv #(tag-nested-lists % next-inside-list?) coll)
+         new-meta))
+     
+     ;; Return non-vectors
+     coll)))
+
+
 ;; Should we use a StringBuilder construct here in jvm?
 ;; What about cljs - just push to an array?
 (defn- reduce-coll
   [coll indent*]
-  (let [{:keys [single-column-map-layout?]
+  (let [coll
+        ;; Could keep a current-value-has-lists? in state for perf
+        ;; It would turned on during tagging in truncate
+        (if (and (:quote-lists? @state/config)
+                 (not (-> coll meta :nested-list?)))
+          (tag-nested-lists coll)
+          coll)
+        
+        {:keys [single-column-map-layout?]
          :as   coll-meta}
         (meta coll) 
 
@@ -1132,8 +1190,12 @@
                                     max-keylen])))))))
 
 
+
+
+
 (defn serialized
   [v indent]
+
   (str (when-not (pos? (state/formatting-meta-level))
          (some-> indent util/spaces))
        (tagged-val {:v         v
@@ -1193,6 +1255,8 @@
                  (into (empty form) mapped))) )
        :else
        (with-meta+ form )))))
+
+
 
 (defn formatted*
   ([source]

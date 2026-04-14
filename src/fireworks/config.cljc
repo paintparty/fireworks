@@ -106,6 +106,8 @@
                                    :default true}
    :quote-symbols?                {:spec    ::config/quote-symbols?
                                    :default false}
+   :quote-lists?                  {:spec    ::config/quote-lists?
+                                   :default false}
    :colorize?                     {:spec    ::config/colorize?
                                    :default true
                                    :desc "Experimental colorization for :pp mode, which dispatches to pp/pprint"}

@@ -13,7 +13,7 @@
            js-map-like?
            js-typed-array?
            :fw/user-meta-map?]
-    :as m}]
+    :as   m}]
   (cond 
     (or map-like?
         (contains? #{:map :js/Object :record :js/Map} t)
@@ -39,9 +39,9 @@
     (or (= :function t) (= :lambda t))
     ["" ""]
     :else
-        ;; This should probably be ["" ""]
-        ;; We need more granularity from lasertag first
-        ;; :list-like? :array-like?
+    ;; This should probably be ["" ""]
+    ;; We need more granularity from lasertag first
+    ;; :list-like? :array-like?
     ["[" "]"]))
 
 (defn- rainbow-bracket-color
@@ -124,16 +124,23 @@
       (str (tag-bracket m s) s sgr-reset-tag)
       (str sgr-reset-tag s sgr-reset-tag))))
 
+(defn maybe-quoted-opening-paren [coll ob]
+  (if (and (:quote-lists? @state/config)
+           (-> coll meta :root-list?))
+    "'("
+    ob))
 
 (defn- bracket
   [m kw]
-  (let [mm      (-> m :coll meta)
+  (let [coll    (:coll m)
+        mm      (meta coll)
         t       (:t mm)
         t       (cond 
                   (:record? m)     :map
                   (= t :js/Object) :map
                   :else            t)
         [ob cb] (brackets-by-type mm)  
+        ob      (maybe-quoted-opening-paren coll ob)
         s       (cond 
                   ;; TODO - maybe move this bracket up to bracket*
                   (:let-bindings? m)

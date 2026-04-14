@@ -176,4 +176,6 @@
 
 (s/def ::quote-symbols? boolean?)
 
+(s/def ::quote-lists? boolean?)
+
 (s/def ::colorize? boolean?)
