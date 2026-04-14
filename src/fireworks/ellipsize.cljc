@@ -187,7 +187,8 @@
            badge
            map-value?
            inline-badge?
-           top-level-sev?]
+           top-level-sev?
+           multi-line-string-line?]
     :as   m}]
   (let [{:keys [scalar-depth-1-max-length
                 scalar-result-max-length
@@ -221,18 +222,20 @@
 
 
         limit
-        (if-let [level-k (and (not (or key? map-value?))
-                              (cond top-level-sev?
-                                    :level-0-sev
-                                    (and sev? (< depth 2))
-                                    :level-1-sev))]
-          (case level-k
-            :level-0-sev scalar-result-max-length
-            :level-1-sev scalar-depth-1-max-length)
-          (max (if key?
-                 scalar-mapkey-max-length
-                 scalar-max-length)
-               (or limit 0)))]
+        (if multi-line-string-line?
+         scalar-result-max-length
+         (if-let [level-k (and (not (or key? map-value?))
+                               (cond top-level-sev?
+                                     :level-0-sev
+                                     (and sev? (< depth 2))
+                                     :level-1-sev))]
+           (case level-k
+             :level-0-sev scalar-result-max-length
+             :level-1-sev scalar-depth-1-max-length)
+           (max (if key?
+                  scalar-mapkey-max-length
+                  scalar-max-length)
+                (or limit 0))))]
     
     (if (:ellipsized-char-count m)
       x
