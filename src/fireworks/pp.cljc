@@ -908,11 +908,18 @@
        "\n"
        form-or-label
        "\n"
-       (with-out-str (fireworks.pp/pprint x))))
+       (with-out-str (fireworks.pp/pprint 
+                      (if (lasertag.cached/hash-map? x)
+                        (into (sorted-map) x)
+                        x)
+                      {:colorize? true}
+                      ))))
 
 (defmacro ?pp 
   ([x]
-   (let [ns-str (ns-str (meta &form))]
+   (let [ns-str (ns-str (meta &form))
+         x (if (map? x) (into (sorted-map) x) x)]
+     
      (if (:ns &env)
        `(do
           (js/console.log (fireworks.pp/ns+label+result 
