@@ -143,6 +143,7 @@
      (when (contains? all-tags :set-like) {:set-like? true})
      (when (contains? all-tags :transient) {:transient? true})
      (when (contains? all-tags :number) {:number-type? true})
+     (when (contains? all-tags :lambda) {:lambda? true})
      #?(:cljs nil
         :clj (when (some->> classname java-lang-class?)
                {:java-lang-class? true}))

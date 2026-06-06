@@ -58,6 +58,9 @@
                   (= t :uuid)
                   defs/uuid-badge
 
+                  ;; Leave this off for now...
+                  ;; Probably better to display "my.ns/fn__983098" than just "λ" 
+                  #_#_
                   (= t :lambda)
                   defs/lambda-badge
 
