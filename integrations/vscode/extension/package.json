@@ -17,7 +17,11 @@
     "commands": [
       { "command": "fireworks.toggle", "title": "Toggle ? (print)", "category": "Fireworks" },
       { "command": "fireworks.toggleTap", "title": "Toggle ?> (tap)", "category": "Fireworks" },
-      { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (ignore)", "category": "Fireworks" }
+      { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (ignore)", "category": "Fireworks" },
+      { "command": "fireworks.startLiveCoding", "title": "Start live coding", "category": "Fireworks" },
+      { "command": "fireworks.stopLiveCoding", "title": "Stop live coding", "category": "Fireworks" },
+      { "command": "fireworks.restartLiveCoding", "title": "Restart live coding", "category": "Fireworks" },
+      { "command": "fireworks.toggleLiveCodingMode", "title": "Toggle live coding mode", "category": "Fireworks" }
     ],
     "keybindings": [
       {
@@ -50,6 +54,27 @@
           "type": "boolean",
           "default": false,
           "description": "Write diagnostic traces to the Fireworks output channel."
+        },
+        "fireworks.liveCoding.terminal": {
+          "type": "string",
+          "enum": ["integrated", "external"],
+          "default": "integrated",
+          "markdownDescription": "Where the test-refresh watcher runs. `integrated` uses a dedicated VS Code terminal (Stop/Restart fully supported). `external` launches your own emulator via `#fireworks.liveCoding.externalCommand#` (Start only — Stop/Restart can't be driven by the extension)."
+        },
+        "fireworks.liveCoding.externalCommand": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Command template for `external` terminal mode, with `${cwd}` and `${command}` placeholders. Example (Ghostty on macOS): `open -na ghostty --args --working-directory=\"${cwd}\" -e ${command}`."
+        },
+        "fireworks.liveCoding.fireworksVersion": {
+          "type": "string",
+          "default": "0.16.1",
+          "description": "Fireworks version written into the provisioned project config (deps alias / lein :dev profile)."
+        },
+        "fireworks.liveCoding.testRefreshVersion": {
+          "type": "string",
+          "default": "0.26.0",
+          "description": "test-refresh version written into the provisioned project config (deps alias / lein :plugins)."
         }
       }
     }
