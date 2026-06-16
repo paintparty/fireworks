@@ -1,0 +1,77 @@
+{
+  "name": "fireworks",
+  "displayName": "Fireworks",
+  "description": "Live Coding for Clojure",
+  "version": "0.0.1",
+  "publisher": "paintparty",
+  "license": "EPL-2.0",
+  "categories": ["Programming Languages", "Other"],
+  "engines": {
+    "vscode": "^1.75.0",
+    "node": "^22.0.0"
+  },
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "extensionDependencies": ["betterthantomorrow.calva"],
+  "contributes": {
+    "commands": [
+      { "command": "fireworks.toggle", "title": "Toggle ? (print)", "category": "Fireworks" },
+      { "command": "fireworks.toggleTap", "title": "Toggle ?> (tap)", "category": "Fireworks" },
+      { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (ignore)", "category": "Fireworks" }
+    ],
+    "keybindings": [
+      {
+        "command": "fireworks.toggle",
+        "key": "ctrl+'", "mac": "cmd+'",
+        "when": "editorTextFocus && editorLangId == clojure"
+      },
+      {
+        "command": "fireworks.toggleTap",
+        "key": "ctrl+shift+'", "mac": "cmd+shift+'",
+        "when": "editorTextFocus && editorLangId == clojure"
+      },
+      {
+        "command": "fireworks.toggleIgnore",
+        "key": "ctrl+;", "mac": "cmd+;",
+        "when": "editorTextFocus && editorLangId == clojure"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        { "command": "fireworks.toggle", "when": "editorLangId == clojure" },
+        { "command": "fireworks.toggleTap", "when": "editorLangId == clojure" },
+        { "command": "fireworks.toggleIgnore", "when": "editorLangId == clojure" }
+      ]
+    },
+    "configuration": {
+      "title": "Fireworks",
+      "properties": {
+        "fireworks.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Write diagnostic traces to the Fireworks output channel."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile-cljs": "shadow-cljs compile :cljs-lib",
+    "release-cljs": "shadow-cljs release :cljs-lib",
+    "watch-cljs": "shadow-cljs watch :cljs-lib",
+    "test-cljs": "shadow-cljs compile :test",
+    "compile-ts": "tsc -p ./",
+    "watch-ts": "tsc -watch -p ./",
+    "compile": "npm run compile-cljs && npm run compile-ts",
+    "bundle": "node esbuild.mjs",
+    "vscode:prepublish": "npm run release-cljs && npm run bundle",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.75.0",
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.28.1",
+    "shadow-cljs": "^3.4.11",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,13 @@
+{:deps {:aliases [:dev]}
+
+ :builds
+ {:cljs-lib
+  {:target    :node-library
+   :output-to "lib/cljs-lib.js"
+   :exports   {:toggleForm fireworks-vscode.bridge/toggle-form}}
+
+  :test
+  {:target    :node-test
+   :output-to "out/cljs-tests.js"
+   :ns-regexp "-test$"
+   :autorun   true}}}

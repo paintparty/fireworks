@@ -1,6 +1,7 @@
 .DS_Store
 /target
 examples/test-refresh/lein-project/target
+integrations/vscode/extension/.md
 /classes
 /checkouts
 profiles.clj

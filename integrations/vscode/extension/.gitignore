@@ -1,0 +1,18 @@
+# shadow-cljs output (the hand-written lib/cljs-lib.d.ts is committed)
+/lib/cljs-lib.js
+/lib/cljs-lib.js.map
+.shadow-cljs/
+
+# tsc / esbuild output
+/out/
+
+# node
+/node_modules/
+
+# clojure cli dep cache
+/.cpcache/
+
+# packaged extension
+*.vsix
+
+*.md

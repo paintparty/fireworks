@@ -1,0 +1,7 @@
+{:paths ["cljs"]
+
+ :deps  {org.clojure/clojurescript {:mvn/version "1.12.145"}
+         rewrite-clj/rewrite-clj   {:mvn/version "1.2.54"}}
+
+ :aliases
+ {:dev {:extra-deps {thheller/shadow-cljs {:mvn/version "3.4.11"}}}}}
