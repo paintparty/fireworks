@@ -1,6 +1,6 @@
 (ns ^:dev/always fireworks.brackets
   (:require [clojure.string :as string]
-            [fireworks.pp :refer [?pp pprint]]
+            ;; [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
             [fireworks.defs :as defs]
             [fireworks.state :as state]
             [fireworks.tag :as tag :refer [style-from-theme sgr-tag sgr-reset-tag]]

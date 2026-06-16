@@ -131,9 +131,12 @@
    
    })
 
+
 ;; TODO prune this
+;; Should these all be consistently namespaced?
 (def undocumented-option-keys
   #{:fw/log?
+    :fw/hide-brackets?
     :log?
     :form-meta
     :user-opts

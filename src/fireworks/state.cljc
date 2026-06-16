@@ -10,8 +10,7 @@
             [fireworks.config :as config]
             [fireworks.defs :as defs]
             [fireworks.messaging :as messaging]
-            ;; [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
-            [fireworks.pp :refer [pprint]]
+            [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
             [fireworks.specs.config :as config.specs]
             [fireworks.specs.theme :as theme]
             [fireworks.specs.tokens :as tokens]
@@ -152,8 +151,8 @@
         valid?     (when-not undefined? (if spec (s/valid? spec v) v))
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
-      #_(do (println :invalid "::" 'validate-option-from-user-config-edn "\n")
-          (?pp [k #_v]))
+      ;; (do (println :invalid "::" 'validate-option-from-user-config-edn "\n")
+      ;;     (?pp [k #_v]))
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
               :header (str (some-> user-config-edn*

@@ -162,7 +162,7 @@
                   (let [tag (if (and target?
                                      (re-find #"^clojure\.|java\." fn-ns))
                               :dim
-                              :gray)]
+                              :neutral)]
                     [(str (sgr tag
                                (str fn-ns (when fn-name "/")))
                           (sgr tag fn-name))
