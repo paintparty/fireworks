@@ -11,17 +11,16 @@
     "node": "^22.0.0"
   },
   "main": "./out/extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "workspaceContains:**/deps.edn"
+  ],
   "extensionDependencies": ["betterthantomorrow.calva"],
   "contributes": {
     "commands": [
       { "command": "fireworks.toggle", "title": "Toggle ? (print)", "category": "Fireworks" },
       { "command": "fireworks.toggleTap", "title": "Toggle ?> (tap)", "category": "Fireworks" },
       { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (ignore)", "category": "Fireworks" },
-      { "command": "fireworks.startLiveCoding", "title": "Start live coding", "category": "Fireworks" },
-      { "command": "fireworks.stopLiveCoding", "title": "Stop live coding", "category": "Fireworks" },
-      { "command": "fireworks.restartLiveCoding", "title": "Restart live coding", "category": "Fireworks" },
-      { "command": "fireworks.toggleLiveCodingMode", "title": "Toggle live coding mode", "category": "Fireworks" }
+      { "command": "fireworks.addRequire", "title": "Add Fireworks Require", "category": "Fireworks" }
     ],
     "keybindings": [
       {
@@ -44,7 +43,8 @@
       "commandPalette": [
         { "command": "fireworks.toggle", "when": "editorLangId == clojure" },
         { "command": "fireworks.toggleTap", "when": "editorLangId == clojure" },
-        { "command": "fireworks.toggleIgnore", "when": "editorLangId == clojure" }
+        { "command": "fireworks.toggleIgnore", "when": "editorLangId == clojure" },
+        { "command": "fireworks.addRequire", "when": "editorLangId == clojure" }
       ]
     },
     "configuration": {
@@ -68,13 +68,18 @@
         },
         "fireworks.liveCoding.fireworksVersion": {
           "type": "string",
-          "default": "0.16.1",
-          "description": "Fireworks version written into the provisioned project config (deps alias / lein :dev profile)."
+          "default": "0.20.0",
+          "description": "Fireworks version injected into the watcher via clojure -Sdeps."
         },
         "fireworks.liveCoding.testRefreshVersion": {
           "type": "string",
           "default": "0.26.0",
-          "description": "test-refresh version written into the provisioned project config (deps alias / lein :plugins)."
+          "description": "test-refresh version injected into the watcher via clojure -Sdeps."
+        },
+        "fireworks.liveCoding.injectMacros": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "When on, the live-coding watcher interns Fireworks' `?` and `!?` macros into `clojure.core` at startup, so they resolve unqualified in reloaded namespaces without a `:require`. Affects the watcher process only (not your editor/Calva REPL). Off by default — interning into `clojure.core` is global."
         }
       }
     }

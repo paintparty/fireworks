@@ -4,15 +4,11 @@
  {:cljs-lib
   {:target    :node-library
    :output-to "lib/cljs-lib.js"
-   :exports   {:toggleForm      fireworks-vscode.bridge/toggle-form
-               :ensureDepsAlias fireworks-vscode.bridge/ensure-deps-alias
-               :ensureLeinSetup fireworks-vscode.bridge/ensure-lein-setup
-               :writeOptions    fireworks-vscode.bridge/write-options
-               :readOptions     fireworks-vscode.bridge/read-options
-               :readMode        fireworks-vscode.bridge/read-mode
-               :setMode         fireworks-vscode.bridge/set-mode
-               :extractManaged  fireworks-vscode.bridge/extract-managed
-               :defaultOptions  fireworks-vscode.bridge/default-options}}
+   :exports   {:toggleForm           fireworks-vscode.bridge/toggle-form
+               :addFireworksRequire  fireworks-vscode.bridge/add-fireworks-require
+               :defaultConfig        fireworks-vscode.bridge/default-config
+               :readMode             fireworks-vscode.bridge/read-mode
+               :setMode              fireworks-vscode.bridge/set-mode}}
 
   :test
   {:target    :node-test
