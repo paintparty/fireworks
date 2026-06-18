@@ -277,11 +277,20 @@ let visibleEditorsSub: vscode.Disposable | undefined;
 let inlineConfigSub: vscode.Disposable | undefined;
 let docChangeSub: vscode.Disposable | undefined;
 const fadeTimers = new Map<string, ReturnType<typeof setTimeout>[]>(); // in-flight fade per editor
-// Values observed *this session* only: result file fsPath -> value text. Painting
-// reads from here, never straight from disk, so stale files left on disk from a
-// previous run are never shown (e.g. opening a file with no watcher running). The
-// watcher populates it on writes; cleared on start/stop and by Clear Inline Results.
+// Values observed *this session* only: logical result key (see resultKey) -> value
+// text. Painting reads from here, never straight from disk, so stale files left on
+// disk from a previous run are never shown (e.g. opening a file with no watcher
+// running). Populated by ingestResult; cleared on start/stop and by Clear Inline
+// Results. The key is transport-independent so non-filesystem sources (a future
+// WebSocket push from a browser runtime) can feed the same cache.
 const resultsCache = new Map<string, string>();
+
+// The cache identity for a single `?` result, independent of how it arrived. Today
+// only the filesystem watcher writes it; a future WebSocket source builds the same
+// key from values parsed off the wire.
+function resultKey(root: string, ns: string, posKey: string): string {
+  return `${root} ${ns} ${posKey}`;
+}
 
 function inlineResultsEnabled(): boolean {
   return vscode.workspace.getConfiguration('fireworks').get<boolean>('inlineResults.enabled', false);
@@ -298,21 +307,30 @@ function inlineColor(): string | vscode.ThemeColor {
   return c ? c : new vscode.ThemeColor('editor.foreground');
 }
 
+// The background-tint color: the configured backgroundColor, or the foreground color
+// when that's empty (currentColor for the themed default, so the tint follows the text).
+function inlineBgColor(): string {
+  const c = cfg().get<string>('inlineResults.backgroundColor', '').trim();
+  if (c) {
+    return c;
+  }
+  const fg = inlineColor();
+  return typeof fg === 'string' ? fg : 'currentColor';
+}
+
+// The background tint: inlineBgColor mixed into transparent at backgroundOpacity
+// (clamped 0–0.2). undefined when the opacity is 0 (no tint).
+function inlineBackground(): string | undefined {
+  const op = clamp(cfg().get<number>('inlineResults.backgroundOpacity', 0.01), 0, 0.2);
+  if (op <= 0) {
+    return undefined;
+  }
+  return `color-mix(in srgb, ${inlineBgColor()} ${+(op * 100).toFixed(3)}%, transparent)`;
+}
+
 // Resting opacity of the value, floored at 0.5 so it stays legible.
 function valueOpacity(): number {
   return clamp(cfg().get<number>('inlineResults.opacity', 0.75), 0.5, 1);
-}
-
-// A faint background tint behind the value: the inline color mixed into transparent
-// at backgroundOpacity (0–10%). Uses currentColor for the themed default so it
-// follows the foreground. undefined when the opacity is 0.
-function inlineBackground(color: string | vscode.ThemeColor): string | undefined {
-  const p = clamp(cfg().get<number>('inlineResults.backgroundOpacity', 0.01), 0, 0.1);
-  if (p <= 0) {
-    return undefined;
-  }
-  const base = typeof color === 'string' ? color : 'currentColor';
-  return `color-mix(in srgb, ${base} ${+(p * 100).toFixed(3)}%, transparent)`;
 }
 
 const PREFIX = '▏ ';
@@ -444,18 +462,31 @@ function clearInlineResults(): void {
 }
 
 // A result file changed. Its path is <root>/.fireworks/results/<ns>/<line>:<col>.
-// Record the write (or eviction) in the session cache — this is the only place a
-// value enters it — then repaint every visible editor whose parsed ns matches.
+// Thin filesystem adapter: parse the logical (root, ns, posKey) identity off the
+// path, read the value (null = deleted/unreadable), and hand it to ingestResult.
 function onResultChanged(uri: vscode.Uri): void {
   const ns = namespaceFromResultPath(uri.fsPath);
-  if (!ns) {
+  const root = rootFor(uri.fsPath);
+  if (!ns || !root) {
     return;
   }
-  const raw = readFileOrNull(uri.fsPath);
-  if (raw === null) {
-    resultsCache.delete(uri.fsPath); // deleted or unreadable
+  const posKey = uri.fsPath.split(/[\\/]/).pop();
+  if (!posKey) {
+    return;
+  }
+  ingestResult(root, ns, posKey, readFileOrNull(uri.fsPath));
+}
+
+// The one place a value enters (or leaves) the session cache, regardless of source.
+// Records the write (`value`) or eviction (`null`), then repaints every visible
+// editor whose parsed ns matches. A future WebSocket source calls this directly with
+// values parsed off the wire — no filesystem touch.
+function ingestResult(root: string, ns: string, posKey: string, value: string | null): void {
+  const key = resultKey(root, ns, posKey);
+  if (value === null) {
+    resultsCache.delete(key);
   } else {
-    resultsCache.set(uri.fsPath, raw);
+    resultsCache.set(key, value);
   }
   for (const ed of vscode.window.visibleTextEditors) {
     if (ed.document.languageId !== 'clojure') {
@@ -509,10 +540,10 @@ function repaintEditor(editor: vscode.TextEditor): void {
     if (!Number.isInteger(line) || line < 0 || line >= editor.document.lineCount) {
       continue;
     }
-    // The result file is keyed by the form's start position (pos.key), but the
+    // The result is keyed by the form's start position (pos.key), but the
     // decoration is anchored on its end row (pos.row). Read from the session cache,
     // not disk, so only values written since start (never stale leftovers) paint.
-    const raw = resultsCache.get(path.join(root, RESULTS_DIR, namespace, pos.key));
+    const raw = resultsCache.get(resultKey(root, namespace, pos.key));
     if (raw === undefined) {
       continue;
     }
@@ -526,7 +557,7 @@ function repaintEditor(editor: vscode.TextEditor): void {
   // to keep order stable (VS Code groups same-position attachments, breaking
   // left-to-right order). The tint is a per-row gradient (built from each segment's
   // character offset) that stays transparent over the gaps between values.
-  const tint = inlineBackground(inlineColor());
+  const tint = inlineBackground();
   const paints: InlinePaint[] = [];
   for (const [line, values] of byRow) {
     const shown = values.slice(0, MAX_RESULTS_PER_LINE).reverse();
@@ -590,16 +621,16 @@ interface InlinePaint {
 
 // The `after` CSS, smuggled through the textDecoration escape hatch (the attachment
 // has no opacity/background-image fields of its own): the value opacity, plus the
-// per-row gradient when a tint is wanted. background-image — not backgroundColor — so
-// it can carry transparent bands over the gaps.
+// per-row tint gradient when one is wanted. background-image — not backgroundColor — so
+// it can carry transparent bands over the gaps (and a two-color tint sweep).
 function afterCss(opacity: number, gradient?: string): string {
   const base = `none; opacity: ${opacity}`;
   return gradient ? `${base}; background-image: ${gradient}` : base;
 }
 
 // A left-to-right gradient that tints [start, end) of each band and stays transparent
-// everywhere else (the gaps between values). Offsets are in ch; the content box ends
-// at the last value, and any sub-cell remainder past it is left transparent.
+// everywhere else (the gaps between values). Offsets are in ch; the content box ends at
+// the last value, and any sub-cell remainder past it is left transparent.
 function buildGradient(bands: Band[], tint: string): string {
   const stops: string[] = [];
   let cursor = 0;
@@ -613,7 +644,8 @@ function buildGradient(bands: Band[], tint: string): string {
 }
 
 // A row's DecorationOptions at the given opacity (rebuilt per fade frame). The
-// per-range after.textDecoration overrides the type's, carrying opacity + gradient.
+// per-range after.textDecoration overrides the type's, carrying opacity + the tint
+// gradient (which already encodes one or two colors).
 function toOption(p: InlinePaint, opacity: number): vscode.DecorationOptions {
   return {
     range: p.range,
