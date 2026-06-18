@@ -5,6 +5,9 @@
     },
     {
       "path": ".."
+    },
+    {
+      "path": "../../../kushi/kushi.css"
     }
   ],
   "settings": {

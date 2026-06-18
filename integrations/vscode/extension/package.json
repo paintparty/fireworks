@@ -102,36 +102,10 @@
           "maximum": 500,
           "markdownDescription": "Duration in milliseconds of the fade-in when an inline `?` value appears. Set to `0` to show values instantly without animation."
         },
-        "fireworks.liveCoding.terminal": {
-          "type": "string",
-          "enum": ["integrated", "external"],
-          "default": "integrated",
-          "markdownDescription": "Where the test-refresh watcher runs. `integrated` uses a dedicated VS Code terminal (Stop/Restart fully supported). `external` launches your own emulator via `#fireworks.liveCoding.externalCommand#` (Start only — Stop/Restart can't be driven by the extension).",
-          "when": false
-        },
-        "fireworks.liveCoding.externalCommand": {
+        "fireworks.liveCoding.command": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Command template for `external` terminal mode, with `${cwd}` and `${command}` placeholders. Example (Ghostty on macOS): `open -na ghostty --args --working-directory=\"${cwd}\" -e ${command}`.",
-          "when": false
-        },
-        "fireworks.liveCoding.fireworksVersion": {
-          "type": "string",
-          "default": "0.20.0",
-          "description": "Fireworks version injected into the watcher via clojure -Sdeps.",
-          "when": false
-        },
-        "fireworks.liveCoding.testRefreshVersion": {
-          "type": "string",
-          "default": "0.26.0",
-          "description": "test-refresh version injected into the watcher via clojure -Sdeps.",
-          "when": false
-        },
-        "fireworks.liveCoding.injectMacros": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "When on, the live-coding watcher interns Fireworks' `?` and `!?` macros into `clojure.core` at startup, so they resolve unqualified in reloaded namespaces without a `:require`. Affects the watcher process only (not your editor/Calva REPL). Off by default — interning into `clojure.core` is global.",
-          "when": false
+          "markdownDescription": "The command to run in the integrated terminal when you invoke `Fireworks: Live Code`. Example: `clojure -M:test-refresh`. The terminal opens in the project root (the directory containing `deps.edn`)."
         }
       }
     }
