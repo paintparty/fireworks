@@ -1,12 +1,3 @@
-;; Copyright (c) Jeremiah Coyle
-;;
-;; This program and the accompanying materials are made available under the
-;; terms of the Eclipse Public License 2.0 which is available at
-;; http://www.eclipse.org/legal/epl-2.0, or the GNU General Public License,
-;; version 2 or any later version with the GNU Classpath Exception which is
-;; available at https://www.gnu.org/software/classpath/license.html.
-;;
-;; SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0
 
 (ns fireworks-vscode.ns-require
   "Pure logic for the \"Add Fireworks Require\" command. Given a whole-document
