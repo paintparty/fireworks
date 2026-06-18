@@ -255,10 +255,12 @@ function makeInlineDecoration(): vscode.TextEditorDecorationType {
     // hatch since the attachment has no opacity field of its own.
     after: {
       color,
-      backgroundColor: inlineBackground(color),
-      // The lead gap rides a left margin — outside the attachment's background box —
-      // so the faint tint starts at the prefix bar, not in the empty gap before it.
+      // The lead gap rides a left margin — outside the attachment's box — so the tint
+      // never reaches the empty gap before the first prefix bar.
       margin: `0 0 0 ${cfg().get<number>('inlineResults.gap', 17)}ch`,
+      // The tint is a per-row background-image gradient (built in repaintEditor) with
+      // transparent bands over the gaps, injected via the textDecoration escape hatch.
+      // A solid backgroundColor here would bleed through those bands, so it's omitted.
       textDecoration: `none; opacity: ${valueOpacity()}`,
     },
   });
@@ -439,31 +441,43 @@ function repaintEditor(editor: vscode.TextEditor): void {
   }
 
   // One decoration per row: up to MAX_RESULTS_PER_LINE values (the budget split as
-  // evenly as possible across them) then a "+ n more" tail. The first value uses the
-  // configured gap; later ones a fixed gap. All in one element to keep order stable
-  // (VS Code groups multiple same-position attachments, breaking left-to-right order).
-  const options: vscode.DecorationOptions[] = [];
+  // evenly as possible across them) then a "+ n more" tail, all in one `after` element
+  // to keep order stable (VS Code groups same-position attachments, breaking
+  // left-to-right order). The tint is a per-row gradient (built from each segment's
+  // character offset) that stays transparent over the gaps between values.
+  const tint = inlineBackground(inlineColor());
+  const paints: InlinePaint[] = [];
   for (const [line, values] of byRow) {
     const shown = values.slice(0, MAX_RESULTS_PER_LINE).reverse();
     const overflow = values.length - shown.length;
     const alloc = allocateEven(shown.map((v) => v.length), budget);
     let content = '';
-    shown.forEach((v, i) => {
-      // The first value's lead gap is the decoration's left margin (so it carries no
-      // background); only inner values keep an in-text gap.
-      content += (i === 0 ? '' : nbsp(SUBSEQUENT_GAP)) + PREFIX + truncateTo(v, alloc[i]);
-    });
+    const bands: Band[] = []; // [start, end) of the tint for each value, in characters
+    let col = 0; // running character offset within the content box (after the margin)
+    const addSegment = (gapN: number, prefix: string, text: string): void => {
+      // First value's lead gap is the left margin; inner values carry an in-text gap.
+      content += nbsp(gapN) + prefix + text;
+      col += gapN;
+      // Start the tint at the bar cell's left edge — slightly left of the visible bar
+      // glyph — so the colorization butts right up to the bar with no gap before it.
+      bands.push({ start: col, end: col + prefix.length + text.length });
+      col += prefix.length + text.length;
+    };
+    shown.forEach((v, i) =>
+      addSegment(i === 0 ? 0 : SUBSEQUENT_GAP, PREFIX, truncateTo(v, alloc[i])),
+    );
     if (overflow > 0) {
-      content += nbsp(SUBSEQUENT_GAP) + OVERFLOW_PREFIX + `+ ${overflow} more`;
+      addSegment(SUBSEQUENT_GAP, OVERFLOW_PREFIX, `+ ${overflow} more`);
     }
     const eol = editor.document.lineAt(line).range.end;
-    options.push({
+    paints.push({
       // Non-breaking spaces: VS Code collapses runs of normal spaces in contentText.
       range: new vscode.Range(eol, eol),
-      renderOptions: { after: { contentText: content } },
+      content,
+      gradient: tint ? buildGradient(bands, tint) : undefined,
     });
   }
-  paintWithFade(editor, options);
+  paintWithFade(editor, paints);
 }
 
 function editorKey(editor: vscode.TextEditor): string {
@@ -482,30 +496,65 @@ function cancelFade(editor: vscode.TextEditor): void {
   }
 }
 
-// Same options but with a per-range opacity override — the per-range
-// after.textDecoration overrides the type's while leaving its color in place.
-function withOpacity(o: vscode.DecorationOptions, opacity: number): vscode.DecorationOptions {
+interface Band {
+  start: number; // tint starts here, in characters (ch)
+  end: number; // tint ends here
+}
+
+interface InlinePaint {
+  range: vscode.Range;
+  content: string; // the `after` contentText for the row
+  gradient?: string; // this row's background-image value, or undefined for no tint
+}
+
+// The `after` CSS, smuggled through the textDecoration escape hatch (the attachment
+// has no opacity/background-image fields of its own): the value opacity, plus the
+// per-row gradient when a tint is wanted. background-image — not backgroundColor — so
+// it can carry transparent bands over the gaps.
+function afterCss(opacity: number, gradient?: string): string {
+  const base = `none; opacity: ${opacity}`;
+  return gradient ? `${base}; background-image: ${gradient}` : base;
+}
+
+// A left-to-right gradient that tints [start, end) of each band and stays transparent
+// everywhere else (the gaps between values). Offsets are in ch; the content box ends
+// at the last value, and any sub-cell remainder past it is left transparent.
+function buildGradient(bands: Band[], tint: string): string {
+  const stops: string[] = [];
+  let cursor = 0;
+  for (const b of bands) {
+    stops.push(`transparent ${cursor}ch`, `transparent ${b.start}ch`);
+    stops.push(`${tint} ${b.start}ch`, `${tint} ${b.end}ch`);
+    cursor = b.end;
+  }
+  stops.push(`transparent ${cursor}ch`);
+  return `linear-gradient(to right, ${stops.join(', ')})`;
+}
+
+// A row's DecorationOptions at the given opacity (rebuilt per fade frame). The
+// per-range after.textDecoration overrides the type's, carrying opacity + gradient.
+function toOption(p: InlinePaint, opacity: number): vscode.DecorationOptions {
   return {
-    range: o.range,
+    range: p.range,
     renderOptions: {
-      after: {
-        ...(o.renderOptions?.after ?? {}),
-        textDecoration: `none; opacity: ${opacity}`,
-      },
+      after: { contentText: p.content, textDecoration: afterCss(opacity, p.gradient) },
     },
   };
 }
 
-// Paint `options`, fading opacity 0 -> the configured value opacity over fadeInMs
+// Paint `paints`, fading opacity 0 -> the configured value opacity over fadeInMs
 // in a few frames. fadeInMs <= 0 paints at full opacity immediately (no animation).
-function paintWithFade(editor: vscode.TextEditor, options: vscode.DecorationOptions[]): void {
+function paintWithFade(editor: vscode.TextEditor, paints: InlinePaint[]): void {
   if (!inlineDecoration) {
     return;
   }
   cancelFade(editor);
   const fadeMs = cfg().get<number>('inlineResults.fadeInMs', 90);
-  if (fadeMs <= 0 || options.length === 0) {
-    editor.setDecorations(inlineDecoration, options);
+  if (fadeMs <= 0 || paints.length === 0) {
+    editor.setDecorations(
+      inlineDecoration,
+      paints.map((p) => toOption(p, valueOpacity())),
+    );
     return;
   }
   const target = valueOpacity();
@@ -519,7 +568,7 @@ function paintWithFade(editor: vscode.TextEditor, options: vscode.DecorationOpti
           if (inlineDecoration) {
             editor.setDecorations(
               inlineDecoration,
-              options.map((o) => withOpacity(o, opacity)),
+              paints.map((p) => toOption(p, opacity)),
             );
           }
         },
