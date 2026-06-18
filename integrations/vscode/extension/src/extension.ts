@@ -32,6 +32,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.toggleIgnore', () => runToggle('#_')),
     vscode.commands.registerCommand('fireworks.addRequire', () => runAddRequire()),
     vscode.commands.registerCommand('fireworks.toggleInlineResults', () => toggleInlineResults()),
+    vscode.commands.registerCommand('fireworks.clearInlineResults', () => clearInlineResults()),
     vscode.commands.registerCommand('fireworks.startLiveCoding', () => startLiveCoding()),
     vscode.commands.registerCommand('fireworks.stopLiveCoding', () => stopLiveCoding()),
     vscode.commands.registerCommand('fireworks.restartLiveCoding', () => restartLiveCoding()),
@@ -192,6 +193,11 @@ let visibleEditorsSub: vscode.Disposable | undefined;
 let inlineConfigSub: vscode.Disposable | undefined;
 let docChangeSub: vscode.Disposable | undefined;
 const fadeTimers = new Map<string, ReturnType<typeof setTimeout>[]>(); // in-flight fade per editor
+// Values observed *this session* only: result file fsPath -> value text. Painting
+// reads from here, never straight from disk, so stale files left on disk from a
+// previous run are never shown (e.g. opening a file with no watcher running). The
+// watcher populates it on writes; cleared on start/stop and by Clear Inline Results.
+const resultsCache = new Map<string, string>();
 
 function inlineResultsEnabled(): boolean {
   return vscode.workspace.getConfiguration('fireworks').get<boolean>('inlineResults.enabled', false);
@@ -266,6 +272,7 @@ function startInlineResults(): void {
   if (resultsWatcher) {
     return; // already running
   }
+  resultsCache.clear(); // start blank: nothing paints until the watcher sees a write
   if (!inlineDecoration) {
     inlineDecoration = makeInlineDecoration();
   }
@@ -326,16 +333,37 @@ function stopInlineResults(): void {
     }
   }
   fadeTimers.clear();
+  resultsCache.clear();
   inlineDecoration?.dispose(); // clears every decoration it owns
   inlineDecoration = undefined;
 }
 
-// A result file changed. Its path is <root>/.fireworks/results/<ns>/<line>:<col>;
-// repaint every visible editor whose parsed ns matches.
+// Manual wipe: empty the session cache and clear decorations from every visible
+// editor (does not delete any result files). Bound to fireworks.clearInlineResults.
+function clearInlineResults(): void {
+  resultsCache.clear();
+  if (!inlineDecoration) {
+    return;
+  }
+  for (const ed of vscode.window.visibleTextEditors) {
+    cancelFade(ed);
+    ed.setDecorations(inlineDecoration, []);
+  }
+}
+
+// A result file changed. Its path is <root>/.fireworks/results/<ns>/<line>:<col>.
+// Record the write (or eviction) in the session cache — this is the only place a
+// value enters it — then repaint every visible editor whose parsed ns matches.
 function onResultChanged(uri: vscode.Uri): void {
   const ns = namespaceFromResultPath(uri.fsPath);
   if (!ns) {
     return;
+  }
+  const raw = readFileOrNull(uri.fsPath);
+  if (raw === null) {
+    resultsCache.delete(uri.fsPath); // deleted or unreadable
+  } else {
+    resultsCache.set(uri.fsPath, raw);
   }
   for (const ed of vscode.window.visibleTextEditors) {
     if (ed.document.languageId !== 'clojure') {
@@ -387,9 +415,10 @@ function repaintEditor(editor: vscode.TextEditor): void {
       continue;
     }
     // The result file is keyed by the form's start position (pos.key), but the
-    // decoration is anchored on its end row (pos.row).
-    const raw = readFileOrNull(path.join(root, RESULTS_DIR, namespace, pos.key));
-    if (raw === null) {
+    // decoration is anchored on its end row (pos.row). Read from the session cache,
+    // not disk, so only values written since start (never stale leftovers) paint.
+    const raw = resultsCache.get(path.join(root, RESULTS_DIR, namespace, pos.key));
+    if (raw === undefined) {
       continue;
     }
     const text = formatValue(raw, maxLength);

@@ -21,7 +21,8 @@
       { "command": "fireworks.toggleTap", "title": "Toggle ?> (tap)", "category": "Fireworks" },
       { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (ignore)", "category": "Fireworks" },
       { "command": "fireworks.addRequire", "title": "Add Fireworks Require", "category": "Fireworks" },
-      { "command": "fireworks.toggleInlineResults", "title": "Toggle Inline Results", "category": "Fireworks" }
+      { "command": "fireworks.toggleInlineResults", "title": "Toggle Inline Results", "category": "Fireworks" },
+      { "command": "fireworks.clearInlineResults", "title": "Clear Inline Results", "category": "Fireworks" }
     ],
     "keybindings": [
       {
