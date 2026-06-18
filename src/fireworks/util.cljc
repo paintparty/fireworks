@@ -189,3 +189,23 @@
 (defn insert-at [vc i elem]
   (into (conj (subvec vc 0 i) elem)
         (subvec vc i)))
+
+(defn safety-subs 
+  "Safely get a substring, with optional ellipsis"
+  [x {:keys [start end print-length print-level ellipsis?] 
+      :or {start 0
+           end 10
+           print-length 10
+           print-level 10
+           ellipsis? false}}]
+  (binding [*print-length* print-length
+            *print-level* print-level]
+    (let [s            (str x)
+          len          (count s)
+          start+       (max 0 (min start len))
+          end+         (max start+ (min end len))
+          target-len   (- end+ start+)
+          overflows?   (> len end+)]
+      (if (and ellipsis? overflows? (>= target-len 3))
+        (str (subs s start+ (- end+ 3)) "...")
+        (subs s start+ end+)))))

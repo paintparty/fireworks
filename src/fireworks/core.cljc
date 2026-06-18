@@ -860,15 +860,24 @@
          :formatted-with-header
          (tagged-string-data printing-opts :formatted+)))
 
+
+
 #?(:clj
-   (defn write-to-db [x
-                      {:keys [line column ns-str] 
-                       :as   m}]
-     (println "write to db")
+   (defn write-to-store 
+     [x
+      {:keys [line column ns-str] 
+       :as   m}]
      (when (.exists (io/file ".fireworks/results"))
-       (let [path (str ".fireworks/results/" ns-str "/" line ":" column)]
+       (let [s    (util/safety-subs
+                   x
+                   {:start        0
+                    :end          1000 ;; <- max string length
+                    :print-length (:print-length @state/config)
+                    :print-level  (:print-level @state/config)
+                    :ellipsis?    true})
+             path (str ".fireworks/results/" ns-str "/" line ":" column)]
          (io/make-parents path)
-         (spit (str ".fireworks/results/" ns-str "/" line ":" column) (str x))))))
+         (spit path s)))))
 
 
 (defn ^{:public true}
@@ -883,7 +892,7 @@
    (_p nil opts x))
 
   ([a opts x]
-  (write-to-db x (?pp (assoc (:form-meta opts) :ns-str (:ns-str opts))))
+  (write-to-store x (?pp (assoc (:form-meta opts) :ns-str (:ns-str opts))))
   ;; #?(:clj (println "hi" (write-to-db x (meta &form))))
   (let [opts (if (map? a)
                (merge (dissoc opts x :label) a)
@@ -1026,7 +1035,7 @@
 
           (reset! state/formatting-form-to-be-evaled? false)
           (when return-result? x)
-          #?(:clj (write-to-db x printing-opts)))))))
+          #?(:clj (write-to-store x printing-opts)))))))
 
 
 (defn- cfg-opts
