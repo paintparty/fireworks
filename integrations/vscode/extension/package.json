@@ -70,7 +70,7 @@
         "fireworks.inlineResults.maxLength": {
           "type": "number",
           "default": 80,
-          "markdownDescription": "Maximum number of characters of an inline `?` value to display before truncating with an ellipsis."
+          "markdownDescription": "Character budget for inline `?` values on a single line, shared as evenly as possible when a line has more than one result (truncated with `...`). At most 3 results show per line; the rest collapse into a `+ n more` tail. Set to `0` for no limit."
         },
         "fireworks.inlineResults.color": {
           "type": "string",

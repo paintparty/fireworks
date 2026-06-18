@@ -231,7 +231,10 @@ function inlineBackground(color: string | vscode.ThemeColor): string | undefined
   return `color-mix(in srgb, ${base} ${+(p * 100).toFixed(3)}%, transparent)`;
 }
 
-const PREFIX = '│ ';
+const PREFIX = '┊ ';
+const OVERFLOW_PREFIX = '▏ '; // marks the "+ n more" tail when a row has >3 results
+const MAX_RESULTS_PER_LINE = 3;
+const SUBSEQUENT_GAP = 4; // fixed gap before each result after the first
 
 function makeInlineDecoration(): vscode.TextEditorDecorationType {
   const color = inlineColor();
@@ -406,9 +409,13 @@ function repaintEditor(editor: vscode.TextEditor): void {
   }
 
   const maxLength = cfg().get<number>('inlineResults.maxLength', 80);
+  const budget = maxLength > 0 ? maxLength : Infinity; // total chars shared per row
   const gap = cfg().get<number>('inlineResults.gap', 17);
-  const options: vscode.DecorationOptions[] = [];
+  const nbsp = (n: number): string => '\u00a0'.repeat(Math.max(0, n));
 
+  // Group results by render row (end row). positions arrive in source order, so
+  // each row's values stay left-to-right.
+  const byRow = new Map<number, string[]>();
   for (const pos of positions) {
     const line = pos.row - 1; // 1-based end row -> 0-based render line
     if (!Number.isInteger(line) || line < 0 || line >= editor.document.lineCount) {
@@ -421,13 +428,32 @@ function repaintEditor(editor: vscode.TextEditor): void {
     if (raw === undefined) {
       continue;
     }
-    const text = formatValue(raw, maxLength);
+    const arr = byRow.get(line) ?? [];
+    arr.push(singleLine(raw));
+    byRow.set(line, arr);
+  }
+
+  // One decoration per row: up to MAX_RESULTS_PER_LINE values (the budget split as
+  // evenly as possible across them) then a "+ n more" tail. The first value uses the
+  // configured gap; later ones a fixed gap. All in one element to keep order stable
+  // (VS Code groups multiple same-position attachments, breaking left-to-right order).
+  const options: vscode.DecorationOptions[] = [];
+  for (const [line, values] of byRow) {
+    const shown = values.slice(0, MAX_RESULTS_PER_LINE);
+    const overflow = values.length - shown.length;
+    const alloc = allocateEven(shown.map((v) => v.length), budget);
+    let content = '';
+    shown.forEach((v, i) => {
+      content += nbsp(i === 0 ? gap : SUBSEQUENT_GAP) + PREFIX + truncateTo(v, alloc[i]);
+    });
+    if (overflow > 0) {
+      content += nbsp(SUBSEQUENT_GAP) + OVERFLOW_PREFIX + `+ ${overflow} more`;
+    }
     const eol = editor.document.lineAt(line).range.end;
     options.push({
+      // Non-breaking spaces: VS Code collapses runs of normal spaces in contentText.
       range: new vscode.Range(eol, eol),
-      // Marker + gap + value in one element. Non-breaking spaces because VS Code
-      // collapses runs of normal spaces in an after-decoration's contentText.
-      renderOptions: { after: { contentText: '\u00a0'.repeat(Math.max(0, gap)) + PREFIX + text } },
+      renderOptions: { after: { contentText: content } },
     });
   }
   paintWithFade(editor, options);
@@ -497,18 +523,46 @@ function paintWithFade(editor: vscode.TextEditor, options: vscode.DecorationOpti
   fadeTimers.set(editorKey(editor), timers);
 }
 
-// First line of the file's content (+ "..." if there were more lines), then capped
-// to `maxLength` chars (+ "..."). Trailing newline alone does not count as "more".
-function formatValue(raw: string, maxLength: number): string {
+// The value's first line, with "..." appended when it had more lines. (A lone
+// trailing newline does not count as "more".)
+function singleLine(raw: string): string {
   const lines = raw.replace(/\n+$/, '').split('\n');
-  let text = lines[0];
-  if (lines.length > 1) {
-    text += '...';
+  return lines.length > 1 ? lines[0] + '...' : lines[0];
+}
+
+// Truncate `s` to `total` characters total, ending in "..." when shortened.
+function truncateTo(s: string, total: number): string {
+  if (s.length <= total) {
+    return s;
   }
-  if (maxLength > 0 && text.length > maxLength) {
-    text = text.slice(0, maxLength) + '...';
+  return total <= 3 ? '...'.slice(0, Math.max(0, total)) : s.slice(0, total - 3) + '...';
+}
+
+// Max-min fair split of `budget` chars across items of the given full lengths:
+// items shorter than their share keep their full length and donate the surplus, so
+// the longer items come out as even as possible. budget may be Infinity (no cap).
+function allocateEven(lengths: number[], budget: number): number[] {
+  const alloc = new Array<number>(lengths.length).fill(0);
+  let active = lengths.map((_, i) => i);
+  let remaining = budget;
+  while (active.length > 0) {
+    const share = Math.floor(remaining / active.length);
+    const fits = active.filter((i) => lengths[i] <= share);
+    if (fits.length === 0) {
+      let extra = remaining - share * active.length; // spread the remainder one-per-item
+      for (const i of active) {
+        alloc[i] = share + (extra > 0 ? 1 : 0);
+        if (extra > 0) extra--;
+      }
+      break;
+    }
+    for (const i of fits) {
+      alloc[i] = lengths[i];
+      remaining -= lengths[i];
+    }
+    active = active.filter((i) => lengths[i] > share);
   }
-  return text;
+  return alloc;
 }
 
 // ============================================================================
