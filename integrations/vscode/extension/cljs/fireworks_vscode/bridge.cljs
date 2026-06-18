@@ -19,6 +19,7 @@
    #js {:text ...} on success or #js {:error \"...\"}; readMode returns #js {:mode ...}
    or #js {:error ...}; defaultConfig returns the rendered text directly."
   (:require [fireworks-vscode.config :as config]
+            [fireworks-vscode.inline-results :as inline-results]
             [fireworks-vscode.ns-require :as ns-require]
             [fireworks-vscode.toggle :as toggle]))
 
@@ -42,6 +43,15 @@
     #js {:replaceRange #js {:start (pos->js (:start replace-range))
                             :end   (pos->js (:end replace-range))}
          :insertText   insert-text}))
+
+;; --- Inline results -------------------------------------------------------
+;; Analyze a document for its namespace and the "<line>:<col>" positions of every
+;; `?` call. namespace nil -> JS null; positions -> a JS string array.
+
+(defn analyze-inline-results [text]
+  (let [{:keys [namespace positions]} (inline-results/analyze text)]
+    #js {:namespace namespace
+         :positions (clj->js positions)}))
 
 ;; --- Phase 2 config (.test-refresh.edn) -----------------------------------
 

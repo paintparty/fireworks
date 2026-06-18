@@ -20,7 +20,8 @@
       { "command": "fireworks.toggle", "title": "Toggle ? (print)", "category": "Fireworks" },
       { "command": "fireworks.toggleTap", "title": "Toggle ?> (tap)", "category": "Fireworks" },
       { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (ignore)", "category": "Fireworks" },
-      { "command": "fireworks.addRequire", "title": "Add Fireworks Require", "category": "Fireworks" }
+      { "command": "fireworks.addRequire", "title": "Add Fireworks Require", "category": "Fireworks" },
+      { "command": "fireworks.toggleInlineResults", "title": "Toggle Inline Results", "category": "Fireworks" }
     ],
     "keybindings": [
       {
@@ -54,6 +55,45 @@
           "type": "boolean",
           "default": false,
           "description": "Write diagnostic traces to the Fireworks output channel."
+        },
+        "fireworks.inlineResults.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "When on, the extension watches the project's `.fireworks/results/` directory and shows each `?` call's value as a read-only inline decoration at the end of its source line. Toggle with the `Fireworks: Toggle Inline Results` command."
+        },
+        "fireworks.inlineResults.gap": {
+          "type": "number",
+          "default": 17,
+          "markdownDescription": "Spaces between the last character of code on a line and the inline `?` value."
+        },
+        "fireworks.inlineResults.maxLength": {
+          "type": "number",
+          "default": 80,
+          "markdownDescription": "Maximum number of characters of an inline `?` value to display before truncating with an ellipsis."
+        },
+        "fireworks.inlineResults.color": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Foreground color of the inline `?` value, as any CSS color (e.g. `#e0af68`, `gold`, `rgb(224,175,104)`). Leave empty to use the editor's foreground color, which adapts to light and dark themes. See `#fireworks.inlineResults.opacity#`."
+        },
+        "fireworks.inlineResults.opacity": {
+          "type": "number",
+          "default": 0.75,
+          "minimum": 0.5,
+          "maximum": 1,
+          "markdownDescription": "Opacity of the inline `?` value. Clamped to the range 0.5–1.0 so the value stays legible."
+        },
+        "fireworks.inlineResults.backgroundOpacity": {
+          "type": "number",
+          "default": 0.01,
+          "minimum": 0,
+          "maximum": 0.1,
+          "markdownDescription": "Opacity of a faint background tint behind the inline `?` value (the value color mixed into transparent via CSS `color-mix`). Clamped to 0–0.1; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`."
+        },
+        "fireworks.inlineResults.fadeInMs": {
+          "type": "number",
+          "default": 90,
+          "markdownDescription": "Duration in milliseconds of the fade-in when an inline `?` value appears. Set to `0` to show values instantly without animation."
         },
         "fireworks.liveCoding.terminal": {
           "type": "string",

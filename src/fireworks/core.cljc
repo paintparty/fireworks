@@ -16,6 +16,7 @@
              [keyed
               compile-time-warnings-and-errors]])
    #?(:clj [fireworks.macros :refer [keyed get-user-config-edn-dynamic]])
+   #?(:clj [clojure.java.io :as io])
    [clojure.string :as string]
    [fireworks.config :as config]
    [fireworks.util :as util] 
@@ -360,15 +361,19 @@
        form-meta)
 
       ;; Else if print-and-return fns, return printing opts
-      {:fmt           fmt+
-       :log?          log?
+      (merge 
+       {:ns-str ns-str} ;; <-new
 
-       ;; Defaults to {:margin-bottom 1 :margin-top 0}
-       ;; If :result flag is used it will be {:margin-bottom 0 :margin-top 0}
-       ;; If :result flag is used w call-site opts for :margin-*, those will win
-       :margin-bottom (margin-block-str opts :margin-bottom)
-       :margin-top    (margin-block-str opts :margin-top)
-       :template      template})))
+       {:fmt           fmt+
+        :file-info-str file-info*
+        :log?          log?
+
+        ;; Defaults to {:margin-bottom 1 :margin-top 0}
+        ;; If :result flag is used it will be {:margin-bottom 0 :margin-top 0}
+        ;; If :result flag is used w call-site opts for :margin-*, those will win
+        :margin-bottom (margin-block-str opts :margin-bottom)
+        :margin-top    (margin-block-str opts :margin-top)
+        :template      template}))))
 
 
 #?(:cljs 
@@ -855,6 +860,16 @@
          :formatted-with-header
          (tagged-string-data printing-opts :formatted+)))
 
+#?(:clj
+   (defn write-to-db [x
+                      {:keys [line column ns-str] 
+                       :as   m}]
+     (println "write to db")
+     (when (.exists (io/file ".fireworks/results"))
+       (let [path (str ".fireworks/results/" ns-str "/" line ":" column)]
+         (io/make-parents path)
+         (spit (str ".fireworks/results/" ns-str "/" line ":" column) (str x))))))
+
 
 (defn ^{:public true}
   _p 
@@ -868,6 +883,8 @@
    (_p nil opts x))
 
   ([a opts x]
+  (write-to-db x (?pp (assoc (:form-meta opts) :ns-str (:ns-str opts))))
+  ;; #?(:clj (println "hi" (write-to-db x (meta &form))))
   (let [opts (if (map? a)
                (merge (dissoc opts x :label) a)
                opts)
@@ -924,7 +941,7 @@
                :clj (fireworks.core/pprint x)))
 
           (reset! state/formatting-form-to-be-evaled? false)
-          (when return-result? x)))))))
+          (when return-result? x) ))))))
 
 
 (defn ^{:public true} _p2 
@@ -952,6 +969,7 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
+  (?pp opts)
   (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
         config-before (when debug-config? @state/config)]
@@ -1007,7 +1025,8 @@
                :clj (fireworks.core/pprint x)))
 
           (reset! state/formatting-form-to-be-evaled? false)
-          (when return-result? x))))))
+          (when return-result? x)
+          #?(:clj (write-to-db x printing-opts)))))))
 
 
 (defn- cfg-opts

@@ -39,6 +39,24 @@ export interface RequireEdit {
 // already required, or the source won't parse.
 export function addFireworksRequire(text: string): RequireEdit | null;
 
+// --- Inline results --------------------------------------------------------
+
+export interface InlinePosition {
+  key: string; // "<start-row>:<start-col>" (1-based, at the `(`) — the result filename
+  row: number; // the form's last row (1-based) — where the decoration is anchored
+}
+
+export interface InlineAnalysis {
+  namespace: string | null; // the document's ns name, or null if none / fast path
+  positions: InlinePosition[]; // one entry per `(? …)` call
+}
+
+// Analyze a whole document for its namespace and every `(? …)` call. `key` matches
+// the filename the `?` macro writes under .fireworks/results/<ns>/; `row` is the
+// form's end row, where TS anchors the inline decoration (so multi-line forms show
+// at their end). Never throws — malformed source yields an empty result.
+export function analyzeInlineResults(text: string): InlineAnalysis;
+
 // --- Phase 2: live-coding config (.test-refresh.edn) ----------------------
 //
 // The test-refresh + Fireworks deps are injected at launch via `clojure -Sdeps`

@@ -31,6 +31,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.toggleTap', () => runToggle('?>')),
     vscode.commands.registerCommand('fireworks.toggleIgnore', () => runToggle('#_')),
     vscode.commands.registerCommand('fireworks.addRequire', () => runAddRequire()),
+    vscode.commands.registerCommand('fireworks.toggleInlineResults', () => toggleInlineResults()),
     vscode.commands.registerCommand('fireworks.startLiveCoding', () => startLiveCoding()),
     vscode.commands.registerCommand('fireworks.stopLiveCoding', () => stopLiveCoding()),
     vscode.commands.registerCommand('fireworks.restartLiveCoding', () => restartLiveCoding()),
@@ -46,7 +47,13 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  void refreshRoots();
+  context.subscriptions.push({ dispose: () => stopInlineResults() });
+
+  void refreshRoots().then(() => {
+    if (inlineResultsEnabled()) {
+      startInlineResults();
+    }
+  });
 }
 
 export function deactivate(): void {}
@@ -162,6 +169,317 @@ async function runAddRequire(): Promise<void> {
     new vscode.Position(plan.replaceRange.end.line, plan.replaceRange.end.col),
   );
   await editor.edit((b) => b.replace(range, plan!.insertText));
+}
+
+// ============================================================================
+// Inline results: watch .fireworks/results/ and paint `?` values inline.
+//
+// When the side-effecting `?` macro runs, Fireworks writes the value to
+// .fireworks/results/<ns>/<line>:<col> (1-based, at the opening `(`). When that
+// file appears/changes we re-analyze the matching visible editors (pure cljs
+// gives us the ns + the live `(? …)` positions) and repaint a read-only inline
+// decoration at the end of each line. Toggled by fireworks.toggleInlineResults
+// (flips fireworks.inlineResults.enabled, Workspace) and auto-started on
+// activation when enabled. Decoupled from live coding: it only reads the files,
+// whoever produced them.
+// ============================================================================
+
+const RESULTS_DIR = '.fireworks/results';
+
+let inlineDecoration: vscode.TextEditorDecorationType | undefined;
+let resultsWatcher: vscode.FileSystemWatcher | undefined;
+let visibleEditorsSub: vscode.Disposable | undefined;
+let inlineConfigSub: vscode.Disposable | undefined;
+let docChangeSub: vscode.Disposable | undefined;
+const fadeTimers = new Map<string, ReturnType<typeof setTimeout>[]>(); // in-flight fade per editor
+
+function inlineResultsEnabled(): boolean {
+  return vscode.workspace.getConfiguration('fireworks').get<boolean>('inlineResults.enabled', false);
+}
+
+function clamp(n: number, lo: number, hi: number): number {
+  return Number.isNaN(n) ? lo : Math.min(hi, Math.max(lo, n));
+}
+
+// The decoration foreground: the user's configured color if set, else the editor's
+// own foreground (a neutral default that adapts to light/dark themes).
+function inlineColor(): string | vscode.ThemeColor {
+  const c = cfg().get<string>('inlineResults.color', '').trim();
+  return c ? c : new vscode.ThemeColor('editor.foreground');
+}
+
+// Resting opacity of the value, floored at 0.5 so it stays legible.
+function valueOpacity(): number {
+  return clamp(cfg().get<number>('inlineResults.opacity', 0.75), 0.5, 1);
+}
+
+// A faint background tint behind the value: the inline color mixed into transparent
+// at backgroundOpacity (0–10%). Uses currentColor for the themed default so it
+// follows the foreground. undefined when the opacity is 0.
+function inlineBackground(color: string | vscode.ThemeColor): string | undefined {
+  const p = clamp(cfg().get<number>('inlineResults.backgroundOpacity', 0.01), 0, 0.1);
+  if (p <= 0) {
+    return undefined;
+  }
+  const base = typeof color === 'string' ? color : 'currentColor';
+  return `color-mix(in srgb, ${base} ${+(p * 100).toFixed(3)}%, transparent)`;
+}
+
+const PREFIX = '│ ';
+
+function makeInlineDecoration(): vscode.TextEditorDecorationType {
+  const color = inlineColor();
+  return vscode.window.createTextEditorDecorationType({
+    // ClosedClosed: the end-of-line anchor must not follow text inserted at its
+    // boundary. Without this, pressing Enter with the caret at the line end (the
+    // decoration's exact position) carries the value down onto the new line until
+    // the next eval repaints.
+    rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
+    // Marker + gap + value share one `after` element per range (built in
+    // repaintEditor). They share an opacity, but a single element is required: VS
+    // Code groups all `before` attachments then all `after` attachments at the same
+    // position, so a separate `before` marker bunches away from its value when two
+    // `?` results land on one line. opacity rides the textDecoration CSS escape
+    // hatch since the attachment has no opacity field of its own.
+    after: {
+      color,
+      backgroundColor: inlineBackground(color),
+      textDecoration: `none; opacity: ${valueOpacity()}`,
+    },
+  });
+}
+
+async function toggleInlineResults(): Promise<void> {
+  const next = !inlineResultsEnabled();
+  await vscode.workspace
+    .getConfiguration('fireworks')
+    .update('inlineResults.enabled', next, vscode.ConfigurationTarget.Workspace);
+  if (next) {
+    startInlineResults();
+  } else {
+    stopInlineResults();
+  }
+  vscode.window.showInformationMessage(`Fireworks: inline results ${next ? 'on' : 'off'}.`);
+}
+
+function startInlineResults(): void {
+  if (resultsWatcher) {
+    return; // already running
+  }
+  if (!inlineDecoration) {
+    inlineDecoration = makeInlineDecoration();
+  }
+  resultsWatcher = vscode.workspace.createFileSystemWatcher(`**/${RESULTS_DIR}/**`);
+  resultsWatcher.onDidCreate((uri) => onResultChanged(uri));
+  resultsWatcher.onDidChange((uri) => onResultChanged(uri));
+  resultsWatcher.onDidDelete((uri) => onResultChanged(uri));
+  // Repaint editors as they come on screen (switching tabs, opening splits).
+  visibleEditorsSub = vscode.window.onDidChangeVisibleTextEditors((editors) => {
+    for (const ed of editors) {
+      repaintEditor(ed);
+    }
+  });
+  // React live to color/gap/maxLength changes. The color is baked into the
+  // decoration type, so recreate it; gap/maxLength are read fresh on repaint.
+  inlineConfigSub = vscode.workspace.onDidChangeConfiguration((e) => {
+    if (!e.affectsConfiguration('fireworks.inlineResults')) {
+      return;
+    }
+    inlineDecoration?.dispose();
+    inlineDecoration = makeInlineDecoration();
+    for (const ed of vscode.window.visibleTextEditors) {
+      repaintEditor(ed);
+    }
+  });
+  // Clear (don't repaint) on edits: any edit can shift a form's coordinates, and
+  // reading result files by the new <line>:<col> would surface stale values from
+  // other forms (phantoms). Values reappear via the watcher on the next eval, when
+  // the files are fresh and at correct coordinates.
+  docChangeSub = vscode.workspace.onDidChangeTextDocument((e) => {
+    if (e.document.languageId !== 'clojure') {
+      return;
+    }
+    for (const ed of vscode.window.visibleTextEditors) {
+      if (ed.document === e.document && inlineDecoration) {
+        cancelFade(ed);
+        ed.setDecorations(inlineDecoration, []);
+      }
+    }
+  });
+  for (const ed of vscode.window.visibleTextEditors) {
+    repaintEditor(ed);
+  }
+}
+
+function stopInlineResults(): void {
+  resultsWatcher?.dispose();
+  resultsWatcher = undefined;
+  visibleEditorsSub?.dispose();
+  visibleEditorsSub = undefined;
+  inlineConfigSub?.dispose();
+  inlineConfigSub = undefined;
+  docChangeSub?.dispose();
+  docChangeSub = undefined;
+  for (const timers of fadeTimers.values()) {
+    for (const t of timers) {
+      clearTimeout(t);
+    }
+  }
+  fadeTimers.clear();
+  inlineDecoration?.dispose(); // clears every decoration it owns
+  inlineDecoration = undefined;
+}
+
+// A result file changed. Its path is <root>/.fireworks/results/<ns>/<line>:<col>;
+// repaint every visible editor whose parsed ns matches.
+function onResultChanged(uri: vscode.Uri): void {
+  const ns = namespaceFromResultPath(uri.fsPath);
+  if (!ns) {
+    return;
+  }
+  for (const ed of vscode.window.visibleTextEditors) {
+    if (ed.document.languageId !== 'clojure') {
+      continue;
+    }
+    if (cljsLib.analyzeInlineResults(ed.document.getText()).namespace === ns) {
+      repaintEditor(ed);
+    }
+  }
+}
+
+// The <ns> segment that follows ".fireworks/results/" in a result file path.
+function namespaceFromResultPath(fsPath: string): string | null {
+  const marker = `${path.sep}${RESULTS_DIR.split('/').join(path.sep)}${path.sep}`;
+  const i = fsPath.indexOf(marker);
+  if (i < 0) {
+    return null;
+  }
+  const rest = fsPath.slice(i + marker.length); // "<ns>/<line>:<col>"
+  const ns = rest.split(/[\\/]/)[0];
+  return ns || null;
+}
+
+// The cached project root that contains this document, or undefined.
+function rootFor(fsPath: string): string | undefined {
+  return knownRoots.find((root) => fsPath === root || fsPath.startsWith(root + path.sep));
+}
+
+// Render the value for each live `(? …)` in `editor` (clearing any stale ones).
+function repaintEditor(editor: vscode.TextEditor): void {
+  if (!inlineDecoration || editor.document.languageId !== 'clojure') {
+    return;
+  }
+  const { namespace, positions } = cljsLib.analyzeInlineResults(editor.document.getText());
+  const root = rootFor(editor.document.uri.fsPath);
+  if (!namespace || !root || positions.length === 0) {
+    cancelFade(editor);
+    editor.setDecorations(inlineDecoration, []);
+    return;
+  }
+
+  const maxLength = cfg().get<number>('inlineResults.maxLength', 80);
+  const gap = cfg().get<number>('inlineResults.gap', 17);
+  const options: vscode.DecorationOptions[] = [];
+
+  for (const pos of positions) {
+    const line = pos.row - 1; // 1-based end row -> 0-based render line
+    if (!Number.isInteger(line) || line < 0 || line >= editor.document.lineCount) {
+      continue;
+    }
+    // The result file is keyed by the form's start position (pos.key), but the
+    // decoration is anchored on its end row (pos.row).
+    const raw = readFileOrNull(path.join(root, RESULTS_DIR, namespace, pos.key));
+    if (raw === null) {
+      continue;
+    }
+    const text = formatValue(raw, maxLength);
+    const eol = editor.document.lineAt(line).range.end;
+    options.push({
+      range: new vscode.Range(eol, eol),
+      // Marker + gap + value in one element. Non-breaking spaces because VS Code
+      // collapses runs of normal spaces in an after-decoration's contentText.
+      renderOptions: { after: { contentText: '\u00a0'.repeat(Math.max(0, gap)) + PREFIX + text } },
+    });
+  }
+  paintWithFade(editor, options);
+}
+
+function editorKey(editor: vscode.TextEditor): string {
+  return `${editor.document.uri.toString()}::${editor.viewColumn ?? 'a'}`;
+}
+
+// Cancel an in-flight fade for `editor` so a new paint/clear doesn't fight it.
+function cancelFade(editor: vscode.TextEditor): void {
+  const key = editorKey(editor);
+  const timers = fadeTimers.get(key);
+  if (timers) {
+    for (const t of timers) {
+      clearTimeout(t);
+    }
+    fadeTimers.delete(key);
+  }
+}
+
+// Same options but with a per-range opacity override — the per-range
+// after.textDecoration overrides the type's while leaving its color in place.
+function withOpacity(o: vscode.DecorationOptions, opacity: number): vscode.DecorationOptions {
+  return {
+    range: o.range,
+    renderOptions: {
+      after: {
+        ...(o.renderOptions?.after ?? {}),
+        textDecoration: `none; opacity: ${opacity}`,
+      },
+    },
+  };
+}
+
+// Paint `options`, fading opacity 0 -> the configured value opacity over fadeInMs
+// in a few frames. fadeInMs <= 0 paints at full opacity immediately (no animation).
+function paintWithFade(editor: vscode.TextEditor, options: vscode.DecorationOptions[]): void {
+  if (!inlineDecoration) {
+    return;
+  }
+  cancelFade(editor);
+  const fadeMs = cfg().get<number>('inlineResults.fadeInMs', 90);
+  if (fadeMs <= 0 || options.length === 0) {
+    editor.setDecorations(inlineDecoration, options);
+    return;
+  }
+  const target = valueOpacity();
+  const frames = Math.max(2, Math.round(fadeMs / 16)); // ~60fps
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  for (let i = 1; i <= frames; i++) {
+    const opacity = (target * i) / frames;
+    timers.push(
+      setTimeout(
+        () => {
+          if (inlineDecoration) {
+            editor.setDecorations(
+              inlineDecoration,
+              options.map((o) => withOpacity(o, opacity)),
+            );
+          }
+        },
+        (fadeMs * i) / frames,
+      ),
+    );
+  }
+  fadeTimers.set(editorKey(editor), timers);
+}
+
+// First line of the file's content (+ "..." if there were more lines), then capped
+// to `maxLength` chars (+ "..."). Trailing newline alone does not count as "more".
+function formatValue(raw: string, maxLength: number): string {
+  const lines = raw.replace(/\n+$/, '').split('\n');
+  let text = lines[0];
+  if (lines.length > 1) {
+    text += '...';
+  }
+  if (maxLength > 0 && text.length > maxLength) {
+    text = text.slice(0, maxLength) + '...';
+  }
+  return text;
 }
 
 // ============================================================================

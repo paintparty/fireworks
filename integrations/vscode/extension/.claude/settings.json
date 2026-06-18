@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "additionalDirectories": ["../joyride/scripts"],
-    "initialPermissionMode": "plan"
+    "additionalDirectories": ["../joyride/scripts"]
   }
 }
