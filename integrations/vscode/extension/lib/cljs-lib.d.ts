@@ -27,16 +27,16 @@ export interface EditPlan {
 export function toggleForm(opts: ToggleOpts): EditPlan | null;
 
 export interface UnwrapAllOpts {
-  text: string; // the user's selection text
-  start: Pos; // selection start (0-based line, 0-based character)
-  end: Pos; // selection end
+  text: string; // the text of the region to unwrap (current form or manual selection)
+  start: Pos; // region start (0-based line, 0-based character)
+  end: Pos; // region end
 }
 
 // Bulk-unwrap every Fireworks macro wrap ((? …), (!? …), (?> …), (!?> …), nested
-// included) inside the selection, dropping any label/options arg. The plan replaces
-// the whole selection; `reformat` is true (kept forms keep their original indent, so
-// the TS side realigns the replaced range with the formatter). null when the
-// selection is blank, unparseable, or has no wrapped forms.
+// included) inside the region, dropping any label/options arg. The plan replaces the
+// whole region; `reformat` is true (kept forms keep their original indent, so the TS
+// side realigns the replaced range with the formatter). null when the region is
+// blank, unparseable, or has no wrapped forms.
 export function unwrapAll(opts: UnwrapAllOpts): EditPlan | null;
 
 // --- Add Fireworks Require -------------------------------------------------

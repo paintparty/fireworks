@@ -171,12 +171,13 @@
 
 (defn unwrap-all
   "Bulk-unwrap every Fireworks macro wrap ((? …) (!? …) (?> …) (!?> …), nested
-   included) inside the selected `text`, dropping any label/options arg and keeping
-   the printed form. opts: {:text :start :end} with :start/:end {:line :col} 0-based.
-   Returns an edit plan replacing the whole selection (`:reformat?` true — the kept
-   forms keep their original indentation, over-indented by the removed wrapper width
-   on multiline forms, so the TS side realigns the region with the formatter), or nil
-   when the selection is blank, unparseable, or contains no wrapped forms."
+   included) inside the region `text` (the current form or a manual selection),
+   dropping any label/options arg and keeping the printed form. opts: {:text :start
+   :end} with :start/:end {:line :col} 0-based. Returns an edit plan replacing the
+   whole region (`:reformat?` true — the kept forms keep their original indentation,
+   over-indented by the removed wrapper width on multiline forms, so the TS side
+   realigns the region with the formatter), or nil when the region is blank,
+   unparseable, or contains no wrapped forms."
   [{:keys [text start end]}]
   (try
     (when-not (str/blank? text)

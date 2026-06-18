@@ -147,21 +147,32 @@ async function runToggle(variant: '?' | '?>' | '#_'): Promise<void> {
   }, 50);
 }
 
-// Bulk-unwrap every Fireworks wrap inside the user's manual selection. Unlike
-// runToggle this does not call Calva's selectCurrentForm — it operates on whatever
-// the user has selected. The pure cljs side strips the wraps structurally
-// (preserving each kept form's text); we then realign the replaced range with the
-// editor's range formatter (Calva), since a multiline kept form is left
-// over-indented by the removed wrapper width.
+// Bulk-unwrap every Fireworks wrap inside the current form (or the manual selection,
+// if one is active). With no selection it falls back to Calva's selectCurrentForm like
+// the other toggle commands, so it works whether or not a region is selected. The pure
+// cljs side strips the wraps structurally (preserving each kept form's text); we then
+// realign the replaced range with the editor's range formatter (Calva), since a
+// multiline kept form is left over-indented by the removed wrapper width.
 async function runUnwrapAll(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.languageId !== 'clojure') {
     return; // silent no-op
   }
+
+  // No manual selection -> select the current form, as the other toggle commands do.
+  if (editor.selection.isEmpty) {
+    try {
+      await vscode.commands.executeCommand('calva.selectCurrentForm');
+    } catch (e) {
+      vscode.window.showErrorMessage('Fireworks needs Calva to be active.');
+      output.appendLine(`calva.selectCurrentForm failed: ${String(e)}`);
+      return;
+    }
+  }
+
   const sel = editor.selection;
   if (sel.isEmpty) {
-    vscode.window.showInformationMessage('Fireworks: select a region to unwrap.');
-    return;
+    return; // no form at the cursor
   }
 
   let plan: EditPlan | null;
