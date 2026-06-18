@@ -22,7 +22,10 @@
       { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (ignore)", "category": "Fireworks" },
       { "command": "fireworks.addRequire", "title": "Add Fireworks Require", "category": "Fireworks" },
       { "command": "fireworks.toggleInlineResults", "title": "Toggle Inline Results", "category": "Fireworks" },
-      { "command": "fireworks.clearInlineResults", "title": "Clear Inline Results", "category": "Fireworks" }
+      { "command": "fireworks.clearInlineResults", "title": "Clear Inline Results", "category": "Fireworks" },
+      { "command": "fireworks.startLiveCoding", "title": "Live Code", "category": "Fireworks" },
+      { "command": "fireworks.stopLiveCoding", "title": "Live Code (Stop)", "category": "Fireworks" },
+      { "command": "fireworks.restartLiveCoding", "title": "Live Code (Restart)", "category": "Fireworks" }
     ],
     "keybindings": [
       {
@@ -104,8 +107,8 @@
         },
         "fireworks.liveCoding.command": {
           "type": "string",
-          "default": "",
-          "markdownDescription": "The command to run in the integrated terminal when you invoke `Fireworks: Live Code`. Example: `clojure -M:test-refresh`. The terminal opens in the project root (the directory containing `deps.edn`)."
+          "default": "clojure -M:test-refresh",
+          "markdownDescription": "The command to run in the integrated terminal when you invoke `Fireworks: Live Code`. Defaults to `clojure -M:test-refresh` (assumes your `deps.edn` defines a `:test-refresh` alias). The terminal opens in the project root (the directory containing `deps.edn`)."
         }
       }
     }

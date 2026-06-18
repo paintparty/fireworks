@@ -36,11 +36,9 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.startLiveCoding', () => startLiveCoding()),
     vscode.commands.registerCommand('fireworks.stopLiveCoding', () => stopLiveCoding()),
     vscode.commands.registerCommand('fireworks.restartLiveCoding', () => restartLiveCoding()),
-    vscode.commands.registerCommand('fireworks.toggleLiveCodingMode', () => toggleLiveCodingMode()),
     vscode.window.onDidCloseTerminal((t) => {
       if (t === liveTerminal) {
         liveTerminal = undefined;
-        updateStatusBar();
       }
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
@@ -236,7 +234,7 @@ function inlineBackground(color: string | vscode.ThemeColor): string | undefined
   return `color-mix(in srgb, ${base} ${+(p * 100).toFixed(3)}%, transparent)`;
 }
 
-const PREFIX = '┊ ';
+const PREFIX = '▏ ';
 const OVERFLOW_PREFIX = '▏ '; // marks the "+ n more" tail when a row has >3 results
 const MAX_RESULTS_PER_LINE = 3;
 const SUBSEQUENT_GAP = 4; // fixed gap before each result after the first
@@ -258,6 +256,9 @@ function makeInlineDecoration(): vscode.TextEditorDecorationType {
     after: {
       color,
       backgroundColor: inlineBackground(color),
+      // The lead gap rides a left margin — outside the attachment's background box —
+      // so the faint tint starts at the prefix bar, not in the empty gap before it.
+      margin: `0 0 0 ${cfg().get<number>('inlineResults.gap', 17)}ch`,
       textDecoration: `none; opacity: ${valueOpacity()}`,
     },
   });
@@ -415,7 +416,6 @@ function repaintEditor(editor: vscode.TextEditor): void {
 
   const maxLength = cfg().get<number>('inlineResults.maxLength', 80);
   const budget = maxLength > 0 ? maxLength : Infinity; // total chars shared per row
-  const gap = cfg().get<number>('inlineResults.gap', 17);
   const nbsp = (n: number): string => '\u00a0'.repeat(Math.max(0, n));
 
   // Group results by render row (end row). positions arrive in source order, so
@@ -449,7 +449,9 @@ function repaintEditor(editor: vscode.TextEditor): void {
     const alloc = allocateEven(shown.map((v) => v.length), budget);
     let content = '';
     shown.forEach((v, i) => {
-      content += nbsp(i === 0 ? gap : SUBSEQUENT_GAP) + PREFIX + truncateTo(v, alloc[i]);
+      // The first value's lead gap is the decoration's left margin (so it carries no
+      // background); only inner values keep an in-text gap.
+      content += (i === 0 ? '' : nbsp(SUBSEQUENT_GAP)) + PREFIX + truncateTo(v, alloc[i]);
     });
     if (overflow > 0) {
       content += nbsp(SUBSEQUENT_GAP) + OVERFLOW_PREFIX + `+ ${overflow} more`;
@@ -573,18 +575,15 @@ function allocateEven(lengths: number[], budget: number): number[] {
 // ============================================================================
 // Phase 2: live coding (test-refresh watcher)
 //
-// The test-refresh + Fireworks deps are injected at launch via `clojure -Sdeps`,
-// so Fireworks never edits the project's deps.edn. The only file it writes is a
-// project .test-refresh.edn (created if missing), holding the watcher options and
-// the tap/test mode. TS owns the side effects (file I/O, terminal, status bar);
-// the pure .test-refresh.edn edits come from fireworks-vscode.config via the bridge.
+// Start/Stop/Restart a test-refresh watcher in an integrated terminal at the picked
+// deps.edn root. The watcher command is the `fireworks.liveCoding.command` setting
+// (default `clojure -M:test-refresh`), run verbatim — Fireworks does not inject deps
+// or macros and does not write any project files. Those are deferred; the cljs
+// config code (defaultConfig/readMode/setMode) stays in place for re-wiring later.
 // deps.edn projects only — Leiningen is out of scope (set that up by hand).
 // ============================================================================
 
-const TAP_BANNER = '🔥🔥🔥🔥🔥🔥🔥🔥🔥';
-const TEST_BANNER = '📋 Running tests...';
 const TERMINAL_NAME = 'Fireworks Live Coding';
-const ALIAS = 'fireworks/live';
 
 let liveTerminal: vscode.Terminal | undefined;
 let statusBar: vscode.StatusBarItem;
@@ -665,54 +664,10 @@ function preflight(): boolean {
   return false;
 }
 
-function optionsPath(root: string): string {
-  return path.join(root, '.test-refresh.edn');
-}
-
-// Create the project .test-refresh.edn from tap defaults if missing. We never modify
-// an existing one here — it is the user's source of truth for the watcher options.
-function ensureOptions(root: string): void {
-  const file = optionsPath(root);
-  if (fs.existsSync(file)) {
-    return;
-  }
-  fs.writeFileSync(file, cljsLib.defaultConfig('tap'), 'utf8');
-  log(`created ${file}`);
-}
-
-// Forms that intern Fireworks' ?/!? into clojure.core at startup (macro metadata
-// preserved via with-meta), so they resolve unqualified in reloaded code. Uses
-// (quote ...) and no double quotes, so it nests cleanly inside the -Sdeps EDN's
-// :main-opts and the shell's single quotes. Wrapped in try so a load failure can't
-// stop the watcher from starting.
-const INJECT_FORMS =
-  '(try (require (quote fireworks.core))' +
-  ' (doseq [s (quote [? !? ?> !?>])]' +
-  ' (when-let [v (ns-resolve (quote fireworks.core) s)]' + // skip any macro not in this version
-  ' (intern (quote clojure.core) (with-meta s (meta v)) (deref v))))' +
-  ' (catch Throwable e (.printStackTrace e)))';
-
-// The watcher command: inject test-refresh + Fireworks via -Sdeps so deps.edn is
-// untouched; :extra-paths ["test"] keeps the project's tests on the classpath. When
-// injectMacros is on, an -e step runs INJECT_FORMS before -m starts test-refresh.
+// The watcher command, run verbatim in the integrated terminal: the
+// `fireworks.liveCoding.command` setting, or `clojure -M:test-refresh` if it's blank.
 function watchCommand(): string {
-  const fw = cfg().get<string>('liveCoding.fireworksVersion', '0.20.0');
-  const tr = cfg().get<string>('liveCoding.testRefreshVersion', '0.26.0');
-  const inject = cfg().get<boolean>('liveCoding.injectMacros', false);
-  const mainOpts = inject
-    ? `["-e" "${INJECT_FORMS}" "-m" "com.jakemccrary.test-refresh"]`
-    : '["-m" "com.jakemccrary.test-refresh"]';
-  const sdeps =
-    `{:aliases {:${ALIAS} ` +
-    `{:extra-paths ["test"] ` +
-    `:extra-deps {com.jakemccrary/test-refresh {:mvn/version "${tr}"} ` +
-    `io.github.paintparty/fireworks {:mvn/version "${fw}"}} ` +
-    `:main-opts ${mainOpts}}}}`;
-  return `clojure -Sdeps '${sdeps}' -M:${ALIAS}`;
-}
-
-function terminalPref(): 'integrated' | 'external' {
-  return cfg().get<'integrated' | 'external'>('liveCoding.terminal', 'integrated');
+  return cfg().get<string>('liveCoding.command', '').trim() || 'clojure -M:test-refresh';
 }
 
 async function startLiveCoding(): Promise<void> {
@@ -727,113 +682,36 @@ async function startLiveCoding(): Promise<void> {
   if (!preflight()) {
     return;
   }
-  ensureOptions(root);
   launchWatcher(root);
 }
 
 // Run the watcher for a known root. Records it as the active session so
-// Stop/Restart/Toggle act on the same project without re-asking.
+// Stop/Restart act on the same project without re-asking.
 function launchWatcher(root: string): void {
   activeRoot = root;
   const command = watchCommand();
   log(`live coding -> ${command} (cwd ${root})`);
-
-  if (terminalPref() === 'external') {
-    startExternal(root, command);
-    updateStatusBar();
-    return;
-  }
-
   liveTerminal = vscode.window.createTerminal({ name: TERMINAL_NAME, cwd: root });
   liveTerminal.show();
   liveTerminal.sendText(command);
-  updateStatusBar();
-}
-
-function startExternal(root: string, command: string): void {
-  const template = cfg().get<string>('liveCoding.externalCommand', '').trim();
-  if (!template) {
-    vscode.window.showErrorMessage(
-      'Fireworks: set fireworks.liveCoding.externalCommand to use external-terminal mode.',
-    );
-    return;
-  }
-  const filled = template.replace(/\$\{cwd\}/g, root).replace(/\$\{command\}/g, command);
-  log(`external terminal: ${filled}`);
-  cp.exec(filled, (err) => {
-    if (err) {
-      vscode.window.showErrorMessage(`Fireworks: external terminal launch failed: ${err.message}`);
-    }
-  });
-}
-
-// In external mode the watcher is detached, so we have no handle to stop it.
-function externalModeBlocked(): boolean {
-  if (terminalPref() === 'external' && !liveTerminal) {
-    vscode.window.showInformationMessage(
-      "Fireworks: Stop/Restart aren't available in external-terminal mode — use Ctrl-C in your terminal, or switch to integrated mode.",
-    );
-    return true;
-  }
-  return false;
 }
 
 function stopLiveCoding(): void {
-  if (externalModeBlocked()) {
-    return;
-  }
   if (!liveTerminal) {
     return;
   }
   liveTerminal.sendText('\u0003'); // Ctrl-C: let test-refresh shut down cleanly
   liveTerminal.dispose();
   liveTerminal = undefined;
-  updateStatusBar();
 }
 
 async function restartLiveCoding(): Promise<void> {
-  if (externalModeBlocked()) {
-    return;
-  }
   const root = activeRoot;
   stopLiveCoding();
   if (root) {
     launchWatcher(root); // reuse the running session's root (no re-prompt)
   } else {
     await startLiveCoding();
-  }
-}
-
-// Read the current mode, flip it in .test-refresh.edn, and restart if running
-// (test-refresh reads its config only at startup).
-async function toggleLiveCodingMode(): Promise<void> {
-  const root = activeRoot ?? (await pickProjectRoot());
-  if (!root) {
-    return;
-  }
-  const file = optionsPath(root);
-  const text = readFileOrNull(file);
-  if (text === null) {
-    vscode.window.showErrorMessage('Fireworks: .test-refresh.edn not found — start live coding first.');
-    return;
-  }
-  const modeResult = cljsLib.readMode(text);
-  if (modeResult.error || !modeResult.mode) {
-    vscode.window.showErrorMessage('Fireworks: could not read the mode from .test-refresh.edn.');
-    return;
-  }
-  const next = modeResult.mode === 'tap' ? 'test' : 'tap';
-  const result = cljsLib.setMode(text, next, { tapBanner: TAP_BANNER, testBanner: TEST_BANNER });
-  if (result.error || result.text === undefined) {
-    vscode.window.showErrorMessage('Fireworks: could not update .test-refresh.edn.');
-    return;
-  }
-  fs.writeFileSync(file, result.text, 'utf8');
-  updateStatusBar();
-  if (liveTerminal) {
-    await restartLiveCoding();
-  } else {
-    vscode.window.showInformationMessage(`Fireworks: live coding mode set to ${next}.`);
   }
 }
 
