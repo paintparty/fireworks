@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext): void {
   extContext = context;
 
   statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-  statusBar.command = 'fireworks.toggleLiveCodingMode';
+  statusBar.command = 'fireworks.toggleInlineResults';
 
   context.subscriptions.push(
     output,
@@ -45,6 +45,11 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
       void refreshRoots();
+    }),
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('fireworks.inlineResults.enabled')) {
+        updateStatusBar();
+      }
     }),
   );
 
@@ -439,7 +444,7 @@ function repaintEditor(editor: vscode.TextEditor): void {
   // (VS Code groups multiple same-position attachments, breaking left-to-right order).
   const options: vscode.DecorationOptions[] = [];
   for (const [line, values] of byRow) {
-    const shown = values.slice(0, MAX_RESULTS_PER_LINE);
+    const shown = values.slice(0, MAX_RESULTS_PER_LINE).reverse();
     const overflow = values.length - shown.length;
     const alloc = allocateEven(shown.map((v) => v.length), budget);
     let content = '';
@@ -832,31 +837,11 @@ async function toggleLiveCodingMode(): Promise<void> {
   }
 }
 
-function currentMode(root: string): 'tap' | 'test' | undefined {
-  const text = readFileOrNull(optionsPath(root));
-  if (text === null) {
-    return undefined;
-  }
-  const result = cljsLib.readMode(text);
-  return result.error ? undefined : result.mode;
-}
-
-// Shown whenever the workspace has at least one deps.edn project. Click toggles mode.
 function updateStatusBar(): void {
-  if (knownRoots.length === 0) {
-    statusBar.hide();
-    return;
-  }
-  const running = liveTerminal !== undefined;
-  let mode: 'tap' | 'test' | undefined;
-  if (running && activeRoot) {
-    mode = currentMode(activeRoot);
-  } else if (knownRoots.length === 1) {
-    mode = currentMode(knownRoots[0]);
-  }
-  statusBar.text = running ? `$(flame) ${mode ?? 'tap'}` : '$(flame) live (off)';
-  statusBar.tooltip = running
-    ? `Fireworks live coding: ${mode ?? 'tap'} mode, running. Click to toggle mode.`
-    : 'Fireworks live coding: stopped. Click to toggle mode.';
+  const on = inlineResultsEnabled();
+  statusBar.text = on ? '$(circle-filled) Fireworks' : '$(circle-outline) Fireworks';
+  statusBar.tooltip = on
+    ? 'Fireworks: inline results on. Click to turn off.'
+    : 'Fireworks: inline results off. Click to turn on.';
   statusBar.show();
 }
