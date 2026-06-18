@@ -64,12 +64,16 @@
         },
         "fireworks.inlineResults.gap": {
           "type": "number",
-          "default": 17,
+          "default": 7,
+          "max": 300,
+          "min": 20,
           "markdownDescription": "Spaces between the last character of code on a line and the inline `?` value."
         },
         "fireworks.inlineResults.maxLength": {
           "type": "number",
           "default": 80,
+          "max": 300,
+          "min": 20,
           "markdownDescription": "Character budget for inline `?` values on a single line, shared as evenly as possible when a line has more than one result (truncated with `...`). At most 3 results show per line; the rest collapse into a `+ n more` tail. Set to `0` for no limit."
         },
         "fireworks.inlineResults.color": {
@@ -94,33 +98,40 @@
         "fireworks.inlineResults.fadeInMs": {
           "type": "number",
           "default": 90,
+          "minimum": 0,
+          "maximum": 500,
           "markdownDescription": "Duration in milliseconds of the fade-in when an inline `?` value appears. Set to `0` to show values instantly without animation."
         },
         "fireworks.liveCoding.terminal": {
           "type": "string",
           "enum": ["integrated", "external"],
           "default": "integrated",
-          "markdownDescription": "Where the test-refresh watcher runs. `integrated` uses a dedicated VS Code terminal (Stop/Restart fully supported). `external` launches your own emulator via `#fireworks.liveCoding.externalCommand#` (Start only — Stop/Restart can't be driven by the extension)."
+          "markdownDescription": "Where the test-refresh watcher runs. `integrated` uses a dedicated VS Code terminal (Stop/Restart fully supported). `external` launches your own emulator via `#fireworks.liveCoding.externalCommand#` (Start only — Stop/Restart can't be driven by the extension).",
+          "when": false
         },
         "fireworks.liveCoding.externalCommand": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Command template for `external` terminal mode, with `${cwd}` and `${command}` placeholders. Example (Ghostty on macOS): `open -na ghostty --args --working-directory=\"${cwd}\" -e ${command}`."
+          "markdownDescription": "Command template for `external` terminal mode, with `${cwd}` and `${command}` placeholders. Example (Ghostty on macOS): `open -na ghostty --args --working-directory=\"${cwd}\" -e ${command}`.",
+          "when": false
         },
         "fireworks.liveCoding.fireworksVersion": {
           "type": "string",
           "default": "0.20.0",
-          "description": "Fireworks version injected into the watcher via clojure -Sdeps."
+          "description": "Fireworks version injected into the watcher via clojure -Sdeps.",
+          "when": false
         },
         "fireworks.liveCoding.testRefreshVersion": {
           "type": "string",
           "default": "0.26.0",
-          "description": "test-refresh version injected into the watcher via clojure -Sdeps."
+          "description": "test-refresh version injected into the watcher via clojure -Sdeps.",
+          "when": false
         },
         "fireworks.liveCoding.injectMacros": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "When on, the live-coding watcher interns Fireworks' `?` and `!?` macros into `clojure.core` at startup, so they resolve unqualified in reloaded namespaces without a `:require`. Affects the watcher process only (not your editor/Calva REPL). Off by default — interning into `clojure.core` is global."
+          "markdownDescription": "When on, the live-coding watcher interns Fireworks' `?` and `!?` macros into `clojure.core` at startup, so they resolve unqualified in reloaded namespaces without a `:require`. Affects the watcher process only (not your editor/Calva REPL). Off by default — interning into `clojure.core` is global.",
+          "when": false
         }
       }
     }
