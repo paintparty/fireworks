@@ -142,6 +142,52 @@
      :new-cursor    start
      :reformat?     false}))
 
+;; ---------------------------------------------------------------------------
+;; Bulk unwrap: strip every Fireworks wrap inside a user selection.
+;; ---------------------------------------------------------------------------
+
+(def ^:private macro-syms #{"?" "!?" "?>" "!?>"})
+
+(defn- fireworks-wrap?
+  "True when `loc` is a list whose head symbol is one of the Fireworks macro
+   symbols (?, !?, ?>, !?>)."
+  [loc]
+  (and (= :list (z/tag loc))
+       (let [h (try (some-> loc z/down z/string) (catch :default _ nil))]
+         (contains? macro-syms h))))
+
+(defn- unwrap-all-zip
+  "Depth-first walk replacing every Fireworks wrap with its last child (the printed
+   form), dropping any label/options child. Re-examines each replacement in place so
+   nested wraps unwrap too. Returns [final-zloc count]."
+  [zloc]
+  (loop [loc zloc
+         n   0]
+    (cond
+      (z/end? loc)          [loc n]
+      (fireworks-wrap? loc) (recur (z/replace loc (-> loc z/down z/rightmost z/node))
+                                   (inc n))
+      :else                 (recur (z/next loc) n))))
+
+(defn unwrap-all
+  "Bulk-unwrap every Fireworks macro wrap ((? …) (!? …) (?> …) (!?> …), nested
+   included) inside the selected `text`, dropping any label/options arg and keeping
+   the printed form. opts: {:text :start :end} with :start/:end {:line :col} 0-based.
+   Returns an edit plan replacing the whole selection (`:reformat?` true — the kept
+   forms keep their original indentation, over-indented by the removed wrapper width
+   on multiline forms, so the TS side realigns the region with the formatter), or nil
+   when the selection is blank, unparseable, or contains no wrapped forms."
+  [{:keys [text start end]}]
+  (try
+    (when-not (str/blank? text)
+      (let [[zloc n] (unwrap-all-zip (z/of-string text))]
+        (when (pos? n)
+          {:replace-range {:start start :end end}
+           :insert-text   (z/root-string zloc)
+           :new-cursor    start
+           :reformat?     true})))
+    (catch :default _ nil)))
+
 (defn toggle-form
   "Pure dispatch over the selected `text`. opts:
    {:text :start :end :variant :before} where :start/:end are {:line :col}

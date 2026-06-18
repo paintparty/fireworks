@@ -30,6 +30,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.toggle', () => runToggle('?')),
     vscode.commands.registerCommand('fireworks.toggleTap', () => runToggle('?>')),
     vscode.commands.registerCommand('fireworks.toggleIgnore', () => runToggle('#_')),
+    vscode.commands.registerCommand('fireworks.unwrapAll', () => runUnwrapAll()),
     vscode.commands.registerCommand('fireworks.addRequire', () => runAddRequire()),
     vscode.commands.registerCommand('fireworks.toggleInlineResults', () => toggleInlineResults()),
     vscode.commands.registerCommand('fireworks.clearInlineResults', () => clearInlineResults()),
@@ -144,6 +145,75 @@ async function runToggle(variant: '?' | '?>' | '#_'): Promise<void> {
       void vscode.commands.executeCommand('calva-fmt.alignCurrentForm'); // keys off cursor, runs last
     }
   }, 50);
+}
+
+// Bulk-unwrap every Fireworks wrap inside the user's manual selection. Unlike
+// runToggle this does not call Calva's selectCurrentForm — it operates on whatever
+// the user has selected. The pure cljs side strips the wraps structurally
+// (preserving each kept form's text); we then realign the replaced range with the
+// editor's range formatter (Calva), since a multiline kept form is left
+// over-indented by the removed wrapper width.
+async function runUnwrapAll(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || editor.document.languageId !== 'clojure') {
+    return; // silent no-op
+  }
+  const sel = editor.selection;
+  if (sel.isEmpty) {
+    vscode.window.showInformationMessage('Fireworks: select a region to unwrap.');
+    return;
+  }
+
+  let plan: EditPlan | null;
+  try {
+    plan = cljsLib.unwrapAll({
+      text: editor.document.getText(sel),
+      start: { line: sel.start.line, col: sel.start.character },
+      end: { line: sel.end.line, col: sel.end.character },
+    });
+  } catch (e) {
+    log(`unwrapAll threw, treating as no-op: ${String(e)}`);
+    return;
+  }
+  if (!plan) {
+    log('unwrap-all no-op');
+    return;
+  }
+
+  const range = new vscode.Range(
+    new vscode.Position(plan.replaceRange.start.line, plan.replaceRange.start.col),
+    new vscode.Position(plan.replaceRange.end.line, plan.replaceRange.end.col),
+  );
+  const ok = await editor.edit((b) => b.replace(range, plan!.insertText));
+  if (!ok) {
+    return;
+  }
+
+  // Realign the replaced region: select it, run the range formatter, then collapse
+  // the cursor to the start. formatSelection is a no-op/throws if no clojure range
+  // formatter is registered — the text is already structurally correct without it.
+  if (plan.reformat) {
+    const endPos = endOfInsert(plan.replaceRange.start, plan.insertText);
+    editor.selection = new vscode.Selection(
+      new vscode.Position(plan.replaceRange.start.line, plan.replaceRange.start.col),
+      endPos,
+    );
+    try {
+      await vscode.commands.executeCommand('editor.action.formatSelection');
+    } catch (e) {
+      log(`formatSelection failed: ${String(e)}`);
+    }
+  }
+  const cursor = new vscode.Position(plan.newCursor.line, plan.newCursor.col);
+  editor.selection = new vscode.Selection(cursor, cursor);
+}
+
+// The end Position of `text` inserted at `start` (0-based line/col).
+function endOfInsert(start: { line: number; col: number }, text: string): vscode.Position {
+  const lines = text.split('\n');
+  return lines.length === 1
+    ? new vscode.Position(start.line, start.col + lines[0].length)
+    : new vscode.Position(start.line + lines.length - 1, lines[lines.length - 1].length);
 }
 
 // Add `[fireworks.core :refer [? !? ?> !?>]]` to the current namespace's ns form.

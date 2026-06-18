@@ -121,6 +121,43 @@
                             (opts wrapped [0 2] [1 (count (last (str/split-lines wrapped)))] "?"))))))))
 
 ;; ---------------------------------------------------------------------------
+;; Bulk unwrap: strip every wrap inside a user selection. No variant; all four
+;; macro symbols are stripped. nil when nothing is wrapped.
+;; ---------------------------------------------------------------------------
+
+(defn- uopts [text [sl sc] [el ec]]
+  {:text text :start {:line sl :col sc} :end {:line el :col ec}})
+
+(deftest unwrap-all-basics
+  (testing "a single wrap: whole selection replaced, cursor at start, reformat true"
+    (is (= {:replace-range {:start (pos 0 0) :end (pos 0 11)}
+            :insert-text   "(+ 1 1)"
+            :new-cursor    (pos 0 0)
+            :reformat?     true}
+           (toggle/unwrap-all (uopts "(? (+ 1 1))" [0 0] [0 11])))))
+  (testing "all four macro variants are stripped"
+    (is (= "(a) (b) (c) (d)"
+           (:insert-text (toggle/unwrap-all
+                          (uopts "(? (a)) (!? (b)) (?> (c)) (!?> (d))" [0 0] [0 34]))))))
+  (testing "the label/options arg is dropped"
+    (is (= "(+ 1 1)"
+           (:insert-text (toggle/unwrap-all (uopts "(? \"lbl\" (+ 1 1))" [0 0] [0 17]))))))
+  (testing "nested wraps fully unwrap"
+    (is (= "x"
+           (:insert-text (toggle/unwrap-all (uopts "(? (!? x))" [0 0] [0 10]))))))
+  (testing "wraps are stripped, untouched siblings and whitespace preserved"
+    (is (= "(foo)\n(bar)\n(baz)"
+           (:insert-text (toggle/unwrap-all (uopts "(foo)\n(? (bar))\n(baz)" [0 0] [2 5])))))))
+
+(deftest unwrap-all-no-ops
+  (testing "no wrapped forms -> nil"
+    (is (nil? (toggle/unwrap-all (uopts "(+ 1 1)" [0 0] [0 7])))))
+  (testing "blank selection -> nil"
+    (is (nil? (toggle/unwrap-all (uopts "   " [0 0] [0 3])))))
+  (testing "unparseable selection -> nil (no throw)"
+    (is (nil? (toggle/unwrap-all (uopts "(? (+ 1" [0 0] [0 7]))))))
+
+;; ---------------------------------------------------------------------------
 ;; double-form normalization: selection "? <arg>" without enclosing parens.
 ;; Shrink the replace range to the single "?" char and invert it.
 ;; ---------------------------------------------------------------------------
