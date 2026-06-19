@@ -978,7 +978,6 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
-  (?pp opts)
   (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
         config-before (when debug-config? @state/config)]

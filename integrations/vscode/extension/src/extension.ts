@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as cp from 'child_process';
+import * as os from 'os';
 import * as cljsLib from '../lib/cljs-lib';
 import type { EditPlan, RequireEdit } from '../lib/cljs-lib';
 
@@ -30,6 +31,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.onDidCloseTerminal((t) => {
       if (t === liveTerminal) {
         liveTerminal = undefined;
+        liveExecution = undefined;
+      }
+    }),
+    vscode.window.onDidEndTerminalShellExecution((e) => {
+      if (e.execution === liveExecution) {
+        liveExecution = undefined;
       }
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
@@ -735,9 +742,15 @@ function allocateEven(lengths: number[], budget: number): number[] {
 // deps.edn projects only — Leiningen is out of scope (set that up by hand).
 // ============================================================================
 
-const TERMINAL_NAME = 'Fireworks Live Coding';
+const TERMINAL_NAME = 'Fireworks: Live Code';
+
+// Cosmetic: ms to let the shell prompt finish drawing before sending the watcher
+// command, so zsh's line editor doesn't double-echo it. Remove the `await` in
+// sendWatcherCommand (and this const) to revert.
+const PROMPT_SETTLE_MS = 250;
 
 let liveTerminal: vscode.Terminal | undefined;
+let liveExecution: vscode.TerminalShellExecution | undefined;
 let statusBar: vscode.StatusBarItem;
 let extContext: vscode.ExtensionContext;
 let knownRoots: string[] = []; // deps.edn dirs in the workspace (cached for the status bar)
@@ -778,8 +791,19 @@ async function findProjectRoots(): Promise<string[]> {
   return [...roots].sort();
 }
 
-// Resolve which project root to act on: the only one, or a Calva-style pick when the
-// workspace has several. undefined if none, or the pick was dismissed.
+// Abbreviate a home-relative path with `~`, the way VS Code's own pickers do.
+function tildify(p: string): string {
+  const home = os.homedir();
+  if (p === home) {
+    return '~';
+  }
+  return p.startsWith(home + path.sep) ? '~' + p.slice(home.length) : p;
+}
+
+// Resolve which project root to act on: the only one, or a pick when the workspace has
+// several. The pick mirrors VS Code's own "new terminal" cwd picker — folder name as the
+// label, the home-abbreviated parent path as the muted description. undefined if none, or
+// the pick was dismissed.
 async function pickProjectRoot(): Promise<string | undefined> {
   const roots = await findProjectRoots();
   if (roots.length === 0) {
@@ -791,11 +815,14 @@ async function pickProjectRoot(): Promise<string | undefined> {
   }
   const pick = await vscode.window.showQuickPick(
     roots.map((root) => ({
-      label: vscode.workspace.asRelativePath(root, true),
-      description: 'deps.edn',
+      label: path.basename(root),
+      description: tildify(path.dirname(root)),
       root,
     })),
-    { placeHolder: 'Pick the Clojure project Fireworks should use as the root' },
+    {
+      placeHolder: 'Select the Clojure project for Fireworks live coding',
+      matchOnDescription: true, // typing filters on the path too, like the native picker
+    },
   );
   return pick?.root;
 }
@@ -822,9 +849,62 @@ function watchCommand(): string {
   return cfg().get<string>('liveCoding.command', '').trim() || 'clojure -M:test-refresh';
 }
 
+function waitForShellIntegration(
+  terminal: vscode.Terminal,
+  timeoutMs = 2000,
+): Promise<vscode.TerminalShellIntegration | undefined> {
+  if (terminal.shellIntegration) {
+    return Promise.resolve(terminal.shellIntegration);
+  }
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      disposable.dispose();
+      resolve(undefined);
+    }, timeoutMs);
+    const disposable = vscode.window.onDidChangeTerminalShellIntegration((e) => {
+      if (e.terminal === terminal) {
+        disposable.dispose();
+        clearTimeout(timer);
+        resolve(e.shellIntegration);
+      }
+    });
+  });
+}
+
+// Send the watcher command, tracking the execution when shell integration is
+// available. All launches route through here.
+async function sendWatcherCommand(
+  terminal: vscode.Terminal,
+  si: vscode.TerminalShellIntegration | undefined,
+  command: string,
+): Promise<void> {
+  // --- cosmetic: avoid the duplicate command echo (delete this await to revert) ---
+  await new Promise((r) => setTimeout(r, PROMPT_SETTLE_MS));
+  // ---------------------------------------------------------------------------------
+  if (terminal !== liveTerminal) {
+    return; // terminal closed/replaced during the settle delay
+  }
+  if (si) {
+    liveExecution = si.executeCommand(command);
+  } else {
+    terminal.sendText(command); // fallback: no execution tracking
+    liveExecution = undefined;
+  }
+}
+
 async function startLiveCoding(): Promise<void> {
+  clearInlineResults(); // wipe any stale inline values before the new session paints
   if (liveTerminal) {
-    liveTerminal.show(); // already running
+    if (liveTerminal.shellIntegration && liveExecution === undefined) {
+      // Shell integration confirmed the process exited — restart in the same terminal
+      liveTerminal.show();
+      // Wipe the dead session's scrollback first (Cmd-K equivalent) so the new run
+      // starts on a clean terminal. Acts on the active terminal, which show() just made it.
+      await vscode.commands.executeCommand('workbench.action.terminal.clear');
+      await sendWatcherCommand(liveTerminal, liveTerminal.shellIntegration, watchCommand());
+      return;
+    }
+    liveTerminal.show(); // process running, or no shell integration — just focus
     return;
   }
   const root = await pickProjectRoot();
@@ -834,18 +914,23 @@ async function startLiveCoding(): Promise<void> {
   if (!preflight()) {
     return;
   }
-  launchWatcher(root);
+  await launchWatcher(root);
 }
 
 // Run the watcher for a known root. Records it as the active session so
 // Stop/Restart act on the same project without re-asking.
-function launchWatcher(root: string): void {
+async function launchWatcher(root: string): Promise<void> {
   activeRoot = root;
+  liveExecution = undefined;
   const command = watchCommand();
   log(`live coding -> ${command} (cwd ${root})`);
   liveTerminal = vscode.window.createTerminal({ name: TERMINAL_NAME, cwd: root });
   liveTerminal.show();
-  liveTerminal.sendText(command);
+
+  const si = await waitForShellIntegration(liveTerminal);
+  if (!liveTerminal) return; // closed during wait
+
+  await sendWatcherCommand(liveTerminal, si, command);
 }
 
 function stopLiveCoding(): void {
@@ -855,13 +940,14 @@ function stopLiveCoding(): void {
   liveTerminal.sendText('\u0003'); // Ctrl-C: let test-refresh shut down cleanly
   liveTerminal.dispose();
   liveTerminal = undefined;
+  liveExecution = undefined;
 }
 
 async function restartLiveCoding(): Promise<void> {
   const root = activeRoot;
   stopLiveCoding();
   if (root) {
-    launchWatcher(root); // reuse the running session's root (no re-prompt)
+    await launchWatcher(root); // reuse the running session's root (no re-prompt)
   } else {
     await startLiveCoding();
   }
