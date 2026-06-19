@@ -94,7 +94,16 @@
                           (opts "(? \"label\" (+ 1 1))" [0 0] [0 19] "?"))))))
   (testing "tap form unwraps the same way"
     (is (= "(+ 1 1)"
-           (:insert-text (toggle/toggle-form (opts "(?> (+ 1 1))" [0 0] [0 12] "?>")))))))
+           (:insert-text (toggle/toggle-form (opts "(?> (+ 1 1))" [0 0] [0 12] "?>"))))))
+  (testing "empty wrap (no value form, e.g. a thread-tap) -> removed entirely"
+    (is (= {:replace-range {:start (pos 0 0) :end (pos 0 3)}
+            :insert-text   ""
+            :new-cursor    (pos 0 0)
+            :reformat?     false}
+           (toggle/toggle-form (opts "(?)" [0 0] [0 3] "?"))))
+    (is (= "" (:insert-text (toggle/toggle-form (opts "(!?)" [0 0] [0 4] "?")))))
+    (is (= "" (:insert-text (toggle/toggle-form (opts "(?>)" [0 0] [0 4] "?>")))))
+    (is (= "" (:insert-text (toggle/toggle-form (opts "(!?>)" [0 0] [0 5] "?>")))))))
 
 (deftest unwrap-multiline
   (testing "kept form reindents to the selection start column (col 0)"
@@ -138,7 +147,14 @@
            (:insert-text (toggle/unwrap-all (uopts "(? (!? x))" [0 0] [0 10]))))))
   (testing "wraps are stripped, untouched siblings and whitespace preserved"
     (is (= "(foo)\n(bar)\n(baz)"
-           (:insert-text (toggle/unwrap-all (uopts "(foo)\n(? (bar))\n(baz)" [0 0] [2 5])))))))
+           (:insert-text (toggle/unwrap-all (uopts "(foo)\n(? (bar))\n(baz)" [0 0] [2 5]))))))
+  (testing "empty wrap (no value form, e.g. a thread-tap) is removed entirely"
+    (is (= "(-> 1 (+ 3) (+ 6))"
+           (:insert-text (toggle/unwrap-all (uopts "(-> 1 (+ 3) (?) (+ 6))" [0 0] [0 22])))))
+    (is (= "(foo) (bar)"
+           (:insert-text (toggle/unwrap-all (uopts "(foo) (!?) (bar)" [0 0] [0 16])))))
+    (is (= ""
+           (:insert-text (toggle/unwrap-all (uopts "(?)" [0 0] [0 3])))))))
 
 (deftest unwrap-all-no-ops
   (testing "no wrapped forms -> nil"

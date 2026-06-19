@@ -74,32 +74,38 @@
    are its specification."
   [code start end]
   (let [sel-start-col (:col start)
-        n             (-> code p/parse-string n/sexpr count)
-        zd            (-> code z/of-string z/down)
-        {last-str :string {:keys [row col]} :loc} (value-node zd n)
-        ;; rewrite-clj col is 1-based; the form's column within the selection text
-        last-node-column        (dec col)
-        last-node-on-same-line? (= 1 row)
-        reformatted
-        (->> (str/split last-str #"\n")
-             (map-indexed
-              (fn [i line]
-                (if (zero? i)
-                  line
-                  (let [num-leading-spaces (some-> (re-find #"^( *)" line) last count)
-                        indentation        (- num-leading-spaces last-node-column)
-                        subs-start-base    (- last-node-column sel-start-col)
-                        subs-start         (if last-node-on-same-line?
-                                             (if (neg? indentation)
-                                               (+ last-node-column indentation)
-                                               last-node-column)
-                                             subs-start-base)]
-                    (subs line subs-start)))))
-             (str/join "\n"))]
-    {:replace-range {:start start :end end}
-     :insert-text   reformatted
-     :new-cursor    start
-     :reformat?     false}))
+        n             (-> code p/parse-string n/sexpr count)]
+    (if (< n 2)
+      ;; Empty wrap `(?)` (no value form, e.g. a thread-tap) -> remove it entirely.
+      {:replace-range {:start start :end end}
+       :insert-text   ""
+       :new-cursor    start
+       :reformat?     false}
+      (let [zd            (-> code z/of-string z/down)
+            {last-str :string {:keys [row col]} :loc} (value-node zd n)
+            ;; rewrite-clj col is 1-based; the form's column within the selection text
+            last-node-column        (dec col)
+            last-node-on-same-line? (= 1 row)
+            reformatted
+            (->> (str/split last-str #"\n")
+                 (map-indexed
+                  (fn [i line]
+                    (if (zero? i)
+                      line
+                      (let [num-leading-spaces (some-> (re-find #"^( *)" line) last count)
+                            indentation        (- num-leading-spaces last-node-column)
+                            subs-start-base    (- last-node-column sel-start-col)
+                            subs-start         (if last-node-on-same-line?
+                                                 (if (neg? indentation)
+                                                   (+ last-node-column indentation)
+                                                   last-node-column)
+                                                 subs-start-base)]
+                        (subs line subs-start)))))
+                 (str/join "\n"))]
+        {:replace-range {:start start :end end}
+         :insert-text   reformatted
+         :new-cursor    start
+         :reformat?     false}))))
 
 (def ^:private discard "#_")
 
@@ -149,15 +155,21 @@
 
 (defn- unwrap-all-zip
   "Depth-first walk replacing every Fireworks wrap with its last child (the printed
-   form), dropping any label/options child. Re-examines each replacement in place so
-   nested wraps unwrap too. Returns [final-zloc count]."
+   form), dropping any label/options child. An empty wrap `(?)` (head symbol only,
+   no value — e.g. a thread-tap) is removed entirely, whitespace tidied. Re-examines
+   each replacement in place so nested wraps unwrap too. Returns [final-zloc count]."
   [zloc]
   (loop [loc zloc
          n   0]
     (cond
       (z/end? loc)          [loc n]
-      (fireworks-wrap? loc) (recur (z/replace loc (-> loc z/down z/rightmost z/node))
-                                   (inc n))
+      (fireworks-wrap? loc) (let [head (z/down loc)]
+                              (if (z/right head)
+                                (recur (z/replace loc (z/node (z/rightmost head)))
+                                       (inc n))
+                                ;; z/remove lands on the previous node; the loop
+                                ;; re-examines it (no longer a wrap) and moves on.
+                                (recur (z/remove loc) (inc n))))
       :else                 (recur (z/next loc) n))))
 
 (defn unwrap-all

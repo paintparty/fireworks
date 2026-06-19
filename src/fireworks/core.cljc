@@ -892,65 +892,65 @@
    (_p nil opts x))
 
   ([a opts x]
-  (write-to-store x (?pp (assoc (:form-meta opts) :ns-str (:ns-str opts))))
-  ;; #?(:clj (println "hi" (write-to-db x (meta &form))))
-  (let [opts (if (map? a)
-               (merge (dissoc opts x :label) a)
-               opts)
-        
-        debug-config?
-        (or state/debug-config?
-            (-> opts :user-opts :fw/debug-config? true?)) 
+   (write-to-store x (assoc (:form-meta opts) :ns-str (:ns-str opts)))
+   ;; #?(:clj (println "hi" (write-to-db x (meta &form))))
+   (let [opts (if (map? a)
+                (merge (dissoc opts x :label) a)
+                opts)
+         
+         debug-config?
+         (or state/debug-config?
+             (-> opts :user-opts :fw/debug-config? true?)) 
 
-        config-before
-        (when debug-config? @state/config)]
+         config-before
+         (when debug-config? @state/config)]
 
-    (reset-state! opts)
+     (reset-state! opts)
 
-    (let [
-          ;; In cljs, if val is data structure but not cljs data structure
-          ;; TODO - Mabye add tag-map to the opts to save a call in truncate
-          native-logging (native-logging* x opts)
-          opts           (merge opts native-logging)
-          printing-opts  (try (formatted x opts)
-                              (catch #?(:cljs js/Object :clj Exception)
-                                     e
-                                (fw-throwable e x opts)))
-          return-result? (when-not (= (:template opts)
-                                      [:form-or-label :file-info])
-                           x)]
+     (let [
+           ;; In cljs, if val is data structure but not cljs data structure
+           ;; TODO - Mabye add tag-map to the opts to save a call in truncate
+           native-logging (native-logging* x opts)
+           opts           (merge opts native-logging)
+           printing-opts  (try (formatted x opts)
+                               (catch #?(:cljs js/Object :clj Exception)
+                                      e
+                                 (fw-throwable e x opts)))
+           return-result? (when-not (= (:template opts)
+                                       [:form-or-label :file-info])
+                            x)]
 
-      (when debug-config?
-        (fw-debug-report config-before opts "fireworks.core/_p2")) 
+       (when debug-config?
+         (fw-debug-report config-before opts "fireworks.core/_p2")) 
 
-      (when (or state/print-config?
-                (-> opts :user-opts :fw/print-config? true?))
-        (fw-config-report))
-
-
-      ;; TODO Change this to (= (:mode opts) :data)
-      (if (:p-data? opts) 
-        (as-data printing-opts)
-
-        (do 
-          (print-formatted printing-opts
-                           #?(:cljs (when-not node? js-print)))
+       (when (or state/print-config?
+                 (-> opts :user-opts :fw/print-config? true?))
+         (fw-config-report))
 
 
-          ;; Fireworks formatting and printing of does not happen when:
-          ;; - Value being printed is non-cljs or non-clj data-structure
-          ;; - :log or :log- is used (deprecated)
-          ;; - :js or :js- is used
-          ;; - :pp or :pp- is used
-          (when (and (not (:fw/log? opts))
-                     (:log? opts))        ; <- This is for something like (? #js[1 2 3])
-            #?(:cljs (if node?
-                       (fireworks.core/pprint x) ; <- In node, do you want pprint here, or just js/console.log ?
-                       (js/console.log x))
-               :clj (fireworks.core/pprint x)))
+       ;; TODO Change this to (= (:mode opts) :data)
+       (if (:p-data? opts) 
+         (as-data printing-opts)
 
-          (reset! state/formatting-form-to-be-evaled? false)
-          (when return-result? x) ))))))
+         (do 
+           (print-formatted printing-opts
+                            #?(:cljs (when-not node? js-print)))
+
+
+           ;; Fireworks formatting and printing of does not happen when:
+           ;; - Value being printed is non-cljs or non-clj data-structure
+           ;; - :log or :log- is used (deprecated)
+           ;; - :js or :js- is used
+           ;; - :pp or :pp- is used
+           (when (and (not (:fw/log? opts))
+                      (:log? opts))        ; <- This is for something like (? #js[1 2 3])
+             #?(:cljs (if node?
+                        (fireworks.core/pprint x) ; <- In node, do you want pprint here, or just js/console.log ?
+                        (js/console.log x))
+                :clj (fireworks.core/pprint x)))
+
+           (reset! state/formatting-form-to-be-evaled? false)
+           (when return-result? x) ))))))
 
 
 (defn ^{:public true} _p2 

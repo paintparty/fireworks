@@ -1,8 +1,11 @@
 {
 	"folders": [
-		{
-			"path": "../integrations/vscode/extension"
-		}
+    {
+      "path": "../integrations/vscode/extension"
+    },
+    {
+      "path": "../../../editor-extensions/vsc/theme-switcher"
+    }
   ],
   "settings": {}
 }
