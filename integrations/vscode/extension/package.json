@@ -17,9 +17,10 @@
   "extensionDependencies": ["betterthantomorrow.calva"],
   "contributes": {
     "commands": [
-      { "command": "fireworks.toggle", "title": "Toggle ? (print)", "category": "Fireworks" },
-      { "command": "fireworks.toggleTap", "title": "Toggle ?> (tap)", "category": "Fireworks" },
+      { "command": "fireworks.toggle", "title": "Toggle ? (print and return)", "category": "Fireworks" },
+      { "command": "fireworks.toggleTap", "title": "Toggle ?> (tap and return)", "category": "Fireworks" },
       { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (ignore)", "category": "Fireworks" },
+      { "command": "fireworks.withOption", "title": "? With Option", "category": "Fireworks" },
       { "command": "fireworks.unwrapAll", "title": "Unwrap All ? in Form", "category": "Fireworks" },
       { "command": "fireworks.unwrapAllInNs", "title": "Unwrap All ? in Namespace", "category": "Fireworks" },
       { "command": "fireworks.toggleAllSilent", "title": "Toggle All Silent In Form", "category": "Fireworks" },
@@ -53,6 +54,7 @@
         { "command": "fireworks.toggle", "when": "editorLangId == clojure" },
         { "command": "fireworks.toggleTap", "when": "editorLangId == clojure" },
         { "command": "fireworks.toggleIgnore", "when": "editorLangId == clojure" },
+        { "command": "fireworks.withOption", "when": "editorLangId == clojure" },
         { "command": "fireworks.unwrapAll", "when": "editorLangId == clojure" },
         { "command": "fireworks.unwrapAllInNs", "when": "editorLangId == clojure" },
         { "command": "fireworks.toggleAllSilent", "when": "editorLangId == clojure" },

@@ -46,6 +46,23 @@ export function unwrapAll(opts: UnwrapAllOpts): EditPlan | null;
 // unparseable, or has no wraps. Same opts shape as unwrapAll.
 export function toggleAllSilent(opts: UnwrapAllOpts): EditPlan | null;
 
+// --- ? with option ---------------------------------------------------------
+
+export interface SetOptionOpts {
+  text: string; // the current form's text (from calva.selectCurrentForm)
+  start: Pos; // form start (0-based line/character)
+  end: Pos; // form end
+  option: string | null; // keyword option to set (":+" …), or null to remove
+}
+
+// Set or remove the leading keyword option on the Fireworks wrap at the cursor. On
+// an existing wrap (?, !?, ?>, !?>, head preserved): replaces an existing leading
+// keyword option, inserts one when absent, or (option null) strips it. On a bare form
+// with an option, wraps it as (? <option> form); remove on a bare form is a no-op.
+// `reformat` is true so the range formatter realigns the column shift. null when the
+// form is blank, unparseable, or there is nothing to remove.
+export function setFormOption(opts: SetOptionOpts): EditPlan | null;
+
 // --- Add Fireworks Require -------------------------------------------------
 
 export interface RequireEdit {

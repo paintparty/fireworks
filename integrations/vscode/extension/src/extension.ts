@@ -33,6 +33,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.toggleAllSilentInNs', () =>
       runNsEdit(cljsLib.toggleAllSilent, 'toggle-all-silent-in-ns'),
     ),
+    vscode.commands.registerCommand('fireworks.withOption', () => runWithOption()),
     vscode.commands.registerCommand('fireworks.addRequire', () => runAddRequire()),
     vscode.commands.registerCommand('fireworks.toggleInlineResults', () => toggleInlineResults()),
     vscode.commands.registerCommand('fireworks.clearInlineResults', () => clearInlineResults()),
@@ -122,14 +123,26 @@ async function runToggle(variant: '?' | '?>' | '#_'): Promise<void> {
     return;
   }
 
+  await applyTogglePlan(editor, plan);
+}
+
+// Apply a single-form EditPlan from a selectCurrentForm-based command (toggle, ? with
+// option). Replaces the range, then sets the cursor + Calva-aligns on a later tick.
+// Ported from the Joyride scripts, which set the cursor inside a 50ms setTimeout after
+// editor.edit() and worked reliably. The async/await version that set editor.selection
+// synchronously lost a race with vscodevim, which re-asserts its own cursor after the
+// edit and left the caret mid-form. If a synchronous, race-free version can be found
+// later, prefer it. (applyEditPlan is the variant for the bulk/ns commands, which do not
+// go through selectCurrentForm and so are not subject to this race.)
+async function applyTogglePlan(editor: vscode.TextEditor, plan: EditPlan): Promise<void> {
   const range = new vscode.Range(
     new vscode.Position(plan.replaceRange.start.line, plan.replaceRange.start.col),
     new vscode.Position(plan.replaceRange.end.line, plan.replaceRange.end.col),
   );
 
-  // editor.edit applies the wrap/unwrap/invert text.
+  // editor.edit applies the wrap/unwrap/invert/option text.
   const ok = await editor.edit(
-    (b) => b.replace(range, plan!.insertText),
+    (b) => b.replace(range, plan.insertText),
     { undoStopBefore: true, undoStopAfter: false },
   );
   if (!ok) {
@@ -140,19 +153,78 @@ async function runToggle(variant: '?' | '?>' | '#_'): Promise<void> {
     await vscode.commands.executeCommand('extension.vim_escape'); // Vim's Escape nudges the cursor...
   }
 
-  // Place the cursor (and align) on a later tick rather than synchronously here.
-  // Ported from the Joyride scripts, which set the cursor inside a 50ms setTimeout
-  // after editor.edit() and worked reliably. The async/await version that set
-  // editor.selection synchronously lost a race with vscodevim, which re-asserts
-  // its own cursor after the edit and left the caret mid-form. If a synchronous,
-  // race-free version can be found later, prefer it.
   setTimeout(() => {
-    const cursor = new vscode.Position(plan!.newCursor.line, plan!.newCursor.col);
+    const cursor = new vscode.Position(plan.newCursor.line, plan.newCursor.col);
     editor.selection = new vscode.Selection(cursor, cursor); // ...so we set our cursor after it
-    if (plan!.reformat) {
+    if (plan.reformat) {
       void vscode.commands.executeCommand('calva-fmt.alignCurrentForm'); // keys off cursor, runs last
     }
   }, 50);
+}
+
+// --- ? with option ----------------------------------------------------------
+// Each entry is a picker row; `option` is the keyword passed to the pure side
+// (null = the "Remove Options" row).
+const FIREWORKS_OPTIONS: { option: string | null; label: string; detail: string }[] = [
+  { option: ':+', label: ':+', detail: 'Disable all truncation' },
+  { option: ':-', label: ':-', detail: 'Just print the result' },
+  { option: ':no-file', label: ':no-file', detail: "Don't print the file info" },
+  { option: ':no-label', label: ':no-label', detail: "Don't print the label" },
+  { option: ':trace', label: ':trace', detail: 'Print intermediary values in threading forms' },
+  { option: ':pp', label: ':pp', detail: 'Print with pprint' },
+];
+
+type OptionPick = vscode.QuickPickItem & { option?: string | null };
+
+// Pick a Fireworks print option from a QuickPick and attach it (or Remove Options to
+// strip it) on the wrapped form at the cursor. Same selectCurrentForm + apply flow as
+// runToggle; the pure side handles wrap/replace/remove and the bare-form wrap-then-add.
+async function runWithOption(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || editor.document.languageId !== 'clojure') {
+    return; // silent no-op
+  }
+
+  try {
+    await vscode.commands.executeCommand('calva.selectCurrentForm');
+  } catch (e) {
+    vscode.window.showErrorMessage('Fireworks needs Calva to be active.');
+    output.appendLine(`calva.selectCurrentForm failed: ${String(e)}`);
+    return;
+  }
+
+  const items: OptionPick[] = [
+    ...FIREWORKS_OPTIONS.map((o) => ({ label: o.label, detail: o.detail, option: o.option })),
+    { label: '', kind: vscode.QuickPickItemKind.Separator },
+    { label: 'Remove Options', detail: 'Strip the option keyword', option: null },
+  ];
+  const picked = await vscode.window.showQuickPick(items, {
+    placeHolder: 'Fireworks option',
+    matchOnDetail: true,
+  });
+  if (!picked) {
+    return; // cancelled
+  }
+
+  const sel = editor.selection;
+  let plan: EditPlan | null;
+  try {
+    plan = cljsLib.setFormOption({
+      text: editor.document.getText(sel),
+      start: { line: sel.start.line, col: sel.start.character },
+      end: { line: sel.end.line, col: sel.end.character },
+      option: picked.option ?? null,
+    });
+  } catch (e) {
+    log(`setFormOption threw, treating as no-op: ${String(e)}`);
+    return;
+  }
+  if (!plan) {
+    log('with-option no-op');
+    return;
+  }
+
+  await applyTogglePlan(editor, plan);
 }
 
 // A pure bulk structural transform over a region: unwrapAll or toggleAllSilent. Takes the

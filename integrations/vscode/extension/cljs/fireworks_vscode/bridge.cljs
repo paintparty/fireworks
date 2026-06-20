@@ -39,6 +39,12 @@
         plan (toggle/toggle-all-silent opts)]
     (when plan (plan->js plan))))
 
+;; :option arrives as a JS string (":+" …) or null; js->clj keeps it a string / nil.
+(defn set-form-option [^js js-opts]
+  (let [opts (js->clj js-opts :keywordize-keys true)
+        plan (toggle/set-form-option opts)]
+    (when plan (plan->js plan))))
+
 (defn add-fireworks-require [text]
   (when-let [{:keys [replace-range insert-text]} (ns-require/add-fireworks-require text)]
     #js {:replaceRange #js {:start (pos->js (:start replace-range))

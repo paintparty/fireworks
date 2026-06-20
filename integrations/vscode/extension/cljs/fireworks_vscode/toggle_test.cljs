@@ -273,3 +273,79 @@
     (is (nil? (toggle/toggle-form (opts "   " [0 0] [0 3] "?")))))
   (testing "unbalanced / unparseable selection -> nil (no throw)"
     (is (nil? (toggle/toggle-form (opts "(+ 1 1" [0 0] [0 6] "?"))))))
+
+;; ---------------------------------------------------------------------------
+;; Set option ("? with option"). Each case asserts the full plan or nil. The
+;; option only changes line 0's width, so multiline continuation lines shift by
+;; that delta; :reformat? is always true (Calva confirms the realignment).
+;; ---------------------------------------------------------------------------
+
+(defn- sfo [text [sl sc] [el ec] option]
+  {:text text :start {:line sl :col sc} :end {:line el :col ec} :option option})
+
+(deftest set-option-insert
+  (testing "adds an option to a wrap that has none, cursor at start, reformat true"
+    (is (= {:replace-range {:start (pos 0 0) :end (pos 0 15)}
+            :insert-text   "(? :+ (range 100))"
+            :new-cursor    (pos 0 0)
+            :reformat?     true}
+           (toggle/set-form-option (sfo "(? (range 100))" [0 0] [0 15] ":+")))))
+  (testing "a lone keyword is the printed value, so the option is inserted before it"
+    (is (= "(? :+ :foo)"
+           (:insert-text (toggle/set-form-option (sfo "(? :foo)" [0 0] [0 8] ":+")))))))
+
+(deftest set-option-replace
+  (testing "replaces an existing leading keyword option"
+    (is (= "(? :- (range 100))"
+           (:insert-text (toggle/set-form-option (sfo "(? :+ (range 100))" [0 0] [0 18] ":-"))))))
+  (testing "replacing with a longer option keeps a single space"
+    (is (= "(? :no-file (range 100))"
+           (:insert-text (toggle/set-form-option (sfo "(? :+ (range 100))" [0 0] [0 18] ":no-file")))))))
+
+(deftest set-option-remove
+  (testing "strips the leading keyword option"
+    (is (= {:replace-range {:start (pos 0 0) :end (pos 0 18)}
+            :insert-text   "(? (range 100))"
+            :new-cursor    (pos 0 0)
+            :reformat?     true}
+           (toggle/set-form-option (sfo "(? :+ (range 100))" [0 0] [0 18] nil)))))
+  (testing "remove on a wrap with no option -> nil"
+    (is (nil? (toggle/set-form-option (sfo "(? (range 100))" [0 0] [0 15] nil)))))
+  (testing "remove on a bare form -> nil"
+    (is (nil? (toggle/set-form-option (sfo "(range 100)" [0 0] [0 11] nil))))))
+
+(deftest set-option-variants
+  (testing "?> head preserved"
+    (is (= "(?> :pp (range 100))"
+           (:insert-text (toggle/set-form-option (sfo "(?> (range 100))" [0 0] [0 16] ":pp"))))))
+  (testing "!? head preserved"
+    (is (= "(!? :+ x)"
+           (:insert-text (toggle/set-form-option (sfo "(!? x)" [0 0] [0 6] ":+"))))))
+  (testing "!?> head preserved"
+    (is (= "(!?> :trace x)"
+           (:insert-text (toggle/set-form-option (sfo "(!?> x)" [0 0] [0 7] ":trace")))))))
+
+(deftest set-option-wrap-then-add
+  (testing "a bare form is wrapped with ? and the option added"
+    (is (= {:replace-range {:start (pos 0 0) :end (pos 0 11)}
+            :insert-text   "(? :pp (range 100))"
+            :new-cursor    (pos 0 0)
+            :reformat?     true}
+           (toggle/set-form-option (sfo "(range 100)" [0 0] [0 11] ":pp")))))
+  (testing "multiline bare form: continuation indents under the value"
+    (is (= "(? :+ (+ 1\n         2))"
+           (:insert-text (toggle/set-form-option (sfo "(+ 1\n   2)" [0 0] [1 5] ":+")))))))
+
+(deftest set-option-multiline
+  (testing "insert shifts continuation lines right by the option width"
+    (is (= "(? :+ (+ 1\n         2))"
+           (:insert-text (toggle/set-form-option (sfo "(? (+ 1\n      2))" [0 0] [1 9] ":+"))))))
+  (testing "remove shifts continuation lines left by the option width"
+    (is (= "(? (+ 1\n      2))"
+           (:insert-text (toggle/set-form-option (sfo "(? :+ (+ 1\n         2))" [0 0] [1 12] nil)))))))
+
+(deftest set-option-no-ops
+  (testing "blank selection -> nil"
+    (is (nil? (toggle/set-form-option (sfo "   " [0 0] [0 3] ":+")))))
+  (testing "unparseable selection -> nil (no throw)"
+    (is (nil? (toggle/set-form-option (sfo "(? (range" [0 0] [0 9] ":+"))))))

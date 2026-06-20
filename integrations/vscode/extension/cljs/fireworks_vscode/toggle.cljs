@@ -321,3 +321,71 @@
                :new-cursor    start
                :reformat?     false})))))
     (catch :default _ nil)))
+
+;; ---------------------------------------------------------------------------
+;; Set option: attach (or strip) a leading keyword option on a Fireworks wrap.
+;; Backs the "? with option" picker. A wrap carries at most one leading keyword
+;; option ((? :+ form)); setting replaces-or-inserts it, removing (option nil)
+;; strips it. A bare form is wrapped with `?` and the option added. The option
+;; string only widens/narrows line 0, so multiline continuation lines are shifted
+;; by that column delta to stay aligned (reformat? true lets Calva confirm it).
+;; ---------------------------------------------------------------------------
+
+(defn- existing-option-loc
+  "The leading keyword-option loc of a Fireworks wrap `zloc`, or nil. An option is a
+   keyword first arg that has at least one following value node — so a lone (? :kw)
+   keeps :kw as the printed value, not an option."
+  [zloc]
+  (let [a1 (some-> (z/down zloc) z/right)]
+    (when (and a1
+               (keyword? (try (z/sexpr a1) (catch :default _ nil)))
+               (z/right a1))
+      a1)))
+
+(defn set-form-option
+  "Set or remove the leading keyword option of the Fireworks wrap in `text` (the
+   current form). opts {:text :start :end :option} (0-based positions); :option is a
+   keyword string (\":+\" …) to set, or nil to remove. On an existing wrap: replaces
+   an existing leading keyword option, inserts one when absent, or (option nil) strips
+   it. On a bare form with an :option, wraps it as (? <option> form); remove on a bare
+   form is a no-op. Returns an edit plan replacing the whole form (`:reformat?` true to
+   realign continuation lines), or nil (blank, unparseable, or nothing to remove)."
+  [{:keys [text start end option]}]
+  (try
+    (when-not (str/blank? text)
+      (let [zloc (z/of-string text)]
+        (if (fireworks-wrap? zloc)
+          (let [opt (existing-option-loc zloc)
+                mk  (fn [s delta]
+                      {:replace-range {:start start :end end}
+                       :insert-text   (cond
+                                        (zero? delta) s
+                                        (pos? delta)  (indent-continuation s delta)
+                                        :else         (deindent-continuation s (- delta)))
+                       :new-cursor    start
+                       :reformat?     true})]
+            (cond
+              ;; Remove the option (no-op when there is none).
+              (nil? option)
+              (when opt
+                (mk (z/root-string (z/remove opt)) (- (inc (count (z/string opt))))))
+              ;; Replace an existing option keyword.
+              opt
+              (mk (z/root-string (z/replace opt (p/parse-string option)))
+                  (- (count option) (count (z/string opt))))
+              ;; Insert a new option after the macro head.
+              :else
+              (mk (z/root-string (z/insert-right (z/down zloc) (p/parse-string option)))
+                  (inc (count option)))))
+          ;; Not a wrap: wrap with `?` and add the option (remove is a no-op here).
+          (when option
+            (let [_      (p/parse-string text) ; validate; unparseable -> no-op via catch
+                  prefix (str "(? " option " ")
+                  code*  (if (re-find #"\n" text)
+                           (indent-continuation text (count prefix))
+                           text)]
+              {:replace-range {:start start :end end}
+               :insert-text   (str prefix code* ")")
+               :new-cursor    start
+               :reformat?     true})))))
+    (catch :default _ nil)))

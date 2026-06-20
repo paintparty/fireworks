@@ -7,6 +7,7 @@
    :exports   {:toggleForm           fireworks-vscode.bridge/toggle-form
                :unwrapAll            fireworks-vscode.bridge/unwrap-all
                :toggleAllSilent      fireworks-vscode.bridge/toggle-all-silent
+               :setFormOption        fireworks-vscode.bridge/set-form-option
                :addFireworksRequire  fireworks-vscode.bridge/add-fireworks-require
                :analyzeInlineResults fireworks-vscode.bridge/analyze-inline-results
                :defaultConfig        fireworks-vscode.bridge/default-config
