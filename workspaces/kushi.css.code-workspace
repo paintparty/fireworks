@@ -8,6 +8,9 @@
     },
     {
       "path": "../../../kushi/kushi.css"
+    },
+    {
+      "path": "../../bb-live"
     }
   ],
   "settings": {
