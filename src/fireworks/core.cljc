@@ -893,7 +893,6 @@
 
   ([a opts x]
    (write-to-store x (assoc (:form-meta opts) :ns-str (:ns-str opts)))
-   ;; #?(:clj (println "hi" (write-to-db x (meta &form))))
    (let [opts (if (map? a)
                 (merge (dissoc opts x :label) a)
                 opts)
