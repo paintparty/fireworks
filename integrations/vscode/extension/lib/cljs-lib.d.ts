@@ -39,6 +39,13 @@ export interface UnwrapAllOpts {
 // blank, unparseable, or has no wrapped forms.
 export function unwrapAll(opts: UnwrapAllOpts): EditPlan | null;
 
+// Master-toggle the silence of every Fireworks wrap in the region: if any wrap is loud
+// (?, ?>), silence them all (-> !?, !?>); only when all are already silent does it make
+// them all loud. The `>` tap distinction is preserved. The plan replaces the whole region
+// (`reformat` true, to realign the symbol-width change). null when the region is blank,
+// unparseable, or has no wraps. Same opts shape as unwrapAll.
+export function toggleAllSilent(opts: UnwrapAllOpts): EditPlan | null;
+
 // --- Add Fireworks Require -------------------------------------------------
 
 export interface RequireEdit {

@@ -316,8 +316,8 @@
                       :label      {:color            "#c76823"
                                    :background-color "#fff9f5"
                                    :font-style       :italic}
-                      :eval-label {:color            "#3764cd"
-                                   :background-color "#f3f7feff"
+                      :eval-label {:color            "#818eee"
+                                   :background-color "#e7effe"
                                    :font-style       :italic}}
             :syntax  (merge {:js-object-key {:color "#888888"}}
                             (highlighted-regex-syntax regex-syntax-neutral-light))

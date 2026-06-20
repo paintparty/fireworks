@@ -145,6 +145,33 @@
 
 (def ^:private macro-syms #{"?" "!?" "?>" "!?>"})
 
+;; Silence is the `!` prefix; the `>` (tap) distinction is preserved. The two directional
+;; maps are just the loud/silent halves of the full toggle map.
+(def ^:private silent-syms #{"!?" "!?>"})
+(def ^:private loud-syms #{"?" "?>"})
+(def ^:private silent-by-loud (select-keys inverse-macro-sym-by-macro loud-syms))   ; ? -> !?, ?> -> !?>
+(def ^:private loud-by-silent (select-keys inverse-macro-sym-by-macro silent-syms)) ; !? -> ?, !?> -> ?>
+
+(def ^:private wrap-opening-re
+  "Cheap necessary-condition for a Fireworks wrap: an open paren, optional leading
+   whitespace, then the start of a macro symbol — `?` optionally preceded by `!` (which
+   also covers `?>` / `!?>`, since those begin the same way). Note predicate names like
+   `even?` carry `?` as a *suffix*, so they never match — only a `?` directly after `(`
+   does — which is what makes this a useful filter for ordinary Clojure code. A match
+   still needs the real parse to confirm an actual wrap; a non-match is authoritative (no
+   wrap), so it is always safe to short-circuit on. Matches inside strings/comments are
+   harmless false positives — they merely forgo the short-circuit."
+  #"\([\s,]*!?\?")
+
+(defn maybe-wrapped?
+  "Fast pre-check over raw `text`: a false result means there is definitely no Fireworks
+   wrap, so the rewrite-clj parse + walk can be skipped entirely. Used to short-circuit
+   `unwrap-all`, and reusable to filter forms before parsing them when unwrapping a whole
+   namespace (skip the whole ns when it has none; otherwise skip each wrap-free top-level
+   form). See [[wrap-opening-re]]."
+  [text]
+  (boolean (and text (re-find wrap-opening-re text))))
+
 (defn- fireworks-wrap?
   "True when `loc` is a list whose head symbol is one of the Fireworks macro
    symbols (?, !?, ?>, !?>)."
@@ -183,13 +210,71 @@
    unparseable, or contains no wrapped forms."
   [{:keys [text start end]}]
   (try
-    (when-not (str/blank? text)
+    ;; Skip the rewrite-clj parse + walk for regions that can't hold a wrap (maybe-wrapped?
+    ;; is false): the common case for ordinary, predicate-heavy Clojure with no `?` calls.
+    (when (maybe-wrapped? text)
       (let [[zloc n] (unwrap-all-zip (z/of-string text))]
         (when (pos? n)
           {:replace-range {:start start :end end}
            :insert-text   (z/root-string zloc)
            :new-cursor    start
            :reformat?     true})))
+    (catch :default _ nil)))
+
+;; ---------------------------------------------------------------------------
+;; Bulk silence toggle: flip every wrap between loud (?, ?>) and silent (!?, !?>).
+;; Master toggle — silence them all unless they are already all silent, in which case
+;; make them all loud.
+;; ---------------------------------------------------------------------------
+
+(defn- wrap-scan
+  "One read-only walk: how many Fireworks wraps are in the tree, and whether every one is
+   already silent. Returns {:n count :all-silent? bool}."
+  [zloc]
+  (loop [loc zloc n 0 all-silent? true]
+    (cond
+      (z/end? loc) {:n n :all-silent? all-silent?}
+      (fireworks-wrap? loc)
+      (recur (z/next loc)
+             (inc n)
+             (and all-silent? (contains? silent-syms (z/string (z/down loc)))))
+      :else (recur (z/next loc) n all-silent?))))
+
+(defn- retag-wraps
+  "Walk replacing each wrap's head symbol via `sym->sym` (nil/identity = leave it).
+   Re-walks into args so nested wraps are retagged too. Returns [final-zloc changed-count]."
+  [zloc sym->sym]
+  (loop [loc zloc n 0]
+    (cond
+      (z/end? loc) [loc n]
+      (fireworks-wrap? loc)
+      (let [head (z/down loc)
+            new  (sym->sym (z/string head))]
+        (if (and new (not= new (z/string head)))
+          (recur (z/next (z/replace head (p/parse-string new))) (inc n))
+          (recur (z/next loc) n)))
+      :else (recur (z/next loc) n))))
+
+(defn toggle-all-silent
+  "Master-toggle the silence of every Fireworks wrap in the region `text`: if any wrap is
+   loud (?, ?>), silence them all (-> !?, !?>); only when every wrap is already silent does
+   it make them all loud. The `>` tap distinction is preserved. opts {:text :start :end}
+   (0-based positions); returns an edit plan replacing the whole region (`:reformat?` true,
+   so the TS side realigns the symbol-width change), or nil when there are no wraps, the
+   text is blank, or it won't parse."
+  [{:keys [text start end]}]
+  (try
+    (when (maybe-wrapped? text)
+      (let [zloc (z/of-string text)
+            {:keys [n all-silent?]} (wrap-scan zloc)]
+        (when (pos? n)
+          (let [sym->sym    (if all-silent? loud-by-silent silent-by-loud)
+                [zloc2 chg] (retag-wraps zloc sym->sym)]
+            (when (pos? chg)
+              {:replace-range {:start start :end end}
+               :insert-text   (z/root-string zloc2)
+               :new-cursor    start
+               :reformat?     true})))))
     (catch :default _ nil)))
 
 (defn toggle-form

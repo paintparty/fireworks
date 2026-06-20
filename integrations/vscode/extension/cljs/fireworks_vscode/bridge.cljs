@@ -34,6 +34,11 @@
         plan (toggle/unwrap-all opts)]
     (when plan (plan->js plan))))
 
+(defn toggle-all-silent [^js js-opts]
+  (let [opts (js->clj js-opts :keywordize-keys true)
+        plan (toggle/toggle-all-silent opts)]
+    (when plan (plan->js plan))))
+
 (defn add-fireworks-require [text]
   (when-let [{:keys [replace-range insert-text]} (ns-require/add-fireworks-require text)]
     #js {:replaceRange #js {:start (pos->js (:start replace-range))

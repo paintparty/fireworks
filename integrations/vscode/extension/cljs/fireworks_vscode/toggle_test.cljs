@@ -159,10 +159,56 @@
 (deftest unwrap-all-no-ops
   (testing "no wrapped forms -> nil"
     (is (nil? (toggle/unwrap-all (uopts "(+ 1 1)" [0 0] [0 7])))))
+  (testing "predicate `?` suffixes are not wraps -> nil (short-circuits, no parse)"
+    (is (nil? (toggle/unwrap-all
+               (uopts "(when (even? x) (string? y) (seq? z)) " [0 0] [0 37])))))
   (testing "blank selection -> nil"
     (is (nil? (toggle/unwrap-all (uopts "   " [0 0] [0 3])))))
   (testing "unparseable selection -> nil (no throw)"
     (is (nil? (toggle/unwrap-all (uopts "(? (+ 1" [0 0] [0 7]))))))
+
+(deftest maybe-wrapped-pre-check
+  (testing "true for every wrap variant (incl. leading ws and empty wraps)"
+    (is (every? toggle/maybe-wrapped?
+                ["(? x)" "(!? x)" "(?> x)" "(!?> x)" "(?)" "( ? x)"
+                 "(foo (? x))" "[a (!?> b)]"])))
+  (testing "false for predicate-heavy code with no wraps, blanks, and nil"
+    (is (not-any? toggle/maybe-wrapped?
+                  ["(even? x)" "(string? (foo? y))" "(+ 1 2)" "" "   " nil]))))
+
+;; ---------------------------------------------------------------------------
+;; Bulk silence master-toggle: any loud -> silence all; all silent -> make all loud.
+;; ---------------------------------------------------------------------------
+
+(defn- silenced [text [sl sc] [el ec]]
+  (:insert-text (toggle/toggle-all-silent (uopts text [sl sc] [el ec]))))
+
+(deftest toggle-all-silent-master
+  (testing "any loud -> silence all (tap distinction preserved)"
+    (is (= "(!? a) (!?> b)" (silenced "(? a) (?> b)" [0 0] [0 12]))))
+  (testing "a mix counts as 'any loud' -> silence the lot"
+    (is (= "(!? a) (!? b)" (silenced "(? a) (!? b)" [0 0] [0 12]))))
+  (testing "all already silent -> make all loud"
+    (is (= "(? a) (?> b)" (silenced "(!? a) (!?> b)" [0 0] [0 14]))))
+  (testing "nested wraps retag too"
+    (is (= "(!? (!? x))" (silenced "(? (!? x))" [0 0] [0 10]))))
+  (testing "empty wraps toggle: (?) -> (!?), and back when all silent"
+    (is (= "(!?)" (silenced "(?)" [0 0] [0 3])))
+    (is (= "(?)" (silenced "(!?)" [0 0] [0 4]))))
+  (testing "full plan: whole region replaced, cursor at start, reformat true"
+    (is (= {:replace-range {:start (pos 0 0) :end (pos 0 5)}
+            :insert-text   "(!? a)"
+            :new-cursor    (pos 0 0)
+            :reformat?     true}
+           (toggle/toggle-all-silent (uopts "(? a)" [0 0] [0 5]))))))
+
+(deftest toggle-all-silent-no-ops
+  (testing "no wraps -> nil (short-circuits)"
+    (is (nil? (toggle/toggle-all-silent (uopts "(even? x) (+ 1 2)" [0 0] [0 17])))))
+  (testing "blank -> nil"
+    (is (nil? (toggle/toggle-all-silent (uopts "   " [0 0] [0 3])))))
+  (testing "unparseable -> nil (no throw)"
+    (is (nil? (toggle/toggle-all-silent (uopts "(? (+ 1" [0 0] [0 7]))))))
 
 ;; ---------------------------------------------------------------------------
 ;; double-form normalization: selection "? <arg>" without enclosing parens.

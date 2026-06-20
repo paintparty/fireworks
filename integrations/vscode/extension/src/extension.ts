@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as cp from 'child_process';
 import * as os from 'os';
 import * as cljsLib from '../lib/cljs-lib';
-import type { EditPlan, RequireEdit, InlineAnalysis } from '../lib/cljs-lib';
+import type { EditPlan, RequireEdit, InlineAnalysis, UnwrapAllOpts } from '../lib/cljs-lib';
 
 let output: vscode.OutputChannel;
 
@@ -21,7 +21,18 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.toggle', () => runToggle('?')),
     vscode.commands.registerCommand('fireworks.toggleTap', () => runToggle('?>')),
     vscode.commands.registerCommand('fireworks.toggleIgnore', () => runToggle('#_')),
-    vscode.commands.registerCommand('fireworks.unwrapAll', () => runUnwrapAll()),
+    vscode.commands.registerCommand('fireworks.unwrapAll', () =>
+      runFormEdit(cljsLib.unwrapAll, 'unwrap-all'),
+    ),
+    vscode.commands.registerCommand('fireworks.unwrapAllInNs', () =>
+      runNsEdit(cljsLib.unwrapAll, 'unwrap-all-in-ns'),
+    ),
+    vscode.commands.registerCommand('fireworks.toggleAllSilent', () =>
+      runFormEdit(cljsLib.toggleAllSilent, 'toggle-all-silent'),
+    ),
+    vscode.commands.registerCommand('fireworks.toggleAllSilentInNs', () =>
+      runNsEdit(cljsLib.toggleAllSilent, 'toggle-all-silent-in-ns'),
+    ),
     vscode.commands.registerCommand('fireworks.addRequire', () => runAddRequire()),
     vscode.commands.registerCommand('fireworks.toggleInlineResults', () => toggleInlineResults()),
     vscode.commands.registerCommand('fireworks.clearInlineResults', () => clearInlineResults()),
@@ -144,13 +155,14 @@ async function runToggle(variant: '?' | '?>' | '#_'): Promise<void> {
   }, 50);
 }
 
-// Bulk-unwrap every Fireworks wrap inside the current form (or the manual selection,
-// if one is active). With no selection it falls back to Calva's selectCurrentForm like
-// the other toggle commands, so it works whether or not a region is selected. The pure
-// cljs side strips the wraps structurally (preserving each kept form's text); we then
-// realign the replaced range with the editor's range formatter (Calva), since a
-// multiline kept form is left over-indented by the removed wrapper width.
-async function runUnwrapAll(): Promise<void> {
+// A pure bulk structural transform over a region: unwrapAll or toggleAllSilent. Takes the
+// region's text + 0-based bounds, returns an edit plan or null (no-op).
+type RegionEdit = (opts: UnwrapAllOpts) => EditPlan | null;
+
+// Form-scoped driver: operate on the active selection, or Calva's current form when there
+// is none (like the other toggle commands), then run `transform` and apply its plan.
+// Shared by the "… in Form" bulk commands.
+async function runFormEdit(transform: RegionEdit, label: string): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.languageId !== 'clojure') {
     return; // silent no-op
@@ -174,32 +186,64 @@ async function runUnwrapAll(): Promise<void> {
 
   let plan: EditPlan | null;
   try {
-    plan = cljsLib.unwrapAll({
+    plan = transform({
       text: editor.document.getText(sel),
       start: { line: sel.start.line, col: sel.start.character },
       end: { line: sel.end.line, col: sel.end.character },
     });
   } catch (e) {
-    log(`unwrapAll threw, treating as no-op: ${String(e)}`);
+    log(`${label} threw, treating as no-op: ${String(e)}`);
     return;
   }
   if (!plan) {
-    log('unwrap-all no-op');
+    log(`${label} no-op`);
     return;
   }
+  await applyEditPlan(editor, plan);
+}
 
+// Namespace-scoped driver: hand the whole document to `transform`. Needs no selection and
+// no Calva — the pure side cheaply pre-checks for any wrap and no-ops a wrap-free file
+// without parsing. The reformat pass then realigns the replaced region (here, the file).
+async function runNsEdit(transform: RegionEdit, label: string): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || editor.document.languageId !== 'clojure') {
+    return; // silent no-op
+  }
+  const doc = editor.document;
+  const end = doc.lineAt(doc.lineCount - 1).range.end;
+
+  let plan: EditPlan | null;
+  try {
+    plan = transform({
+      text: doc.getText(),
+      start: { line: 0, col: 0 },
+      end: { line: end.line, col: end.character },
+    });
+  } catch (e) {
+    log(`${label} (ns) threw, treating as no-op: ${String(e)}`);
+    return;
+  }
+  if (!plan) {
+    log(`${label} no-op`);
+    return;
+  }
+  await applyEditPlan(editor, plan);
+}
+
+// Apply a structural EditPlan: replace the range, optionally realign it with the editor's
+// range formatter (Calva), then collapse the cursor to the plan's target. Shared by the
+// form- and namespace-scoped bulk commands. formatSelection is a no-op/throws if no clojure
+// range formatter is registered — the text is already structurally correct without it.
+async function applyEditPlan(editor: vscode.TextEditor, plan: EditPlan): Promise<void> {
   const range = new vscode.Range(
     new vscode.Position(plan.replaceRange.start.line, plan.replaceRange.start.col),
     new vscode.Position(plan.replaceRange.end.line, plan.replaceRange.end.col),
   );
-  const ok = await editor.edit((b) => b.replace(range, plan!.insertText));
+  const ok = await editor.edit((b) => b.replace(range, plan.insertText));
   if (!ok) {
     return;
   }
-
-  // Realign the replaced region: select it, run the range formatter, then collapse
-  // the cursor to the start. formatSelection is a no-op/throws if no clojure range
-  // formatter is registered — the text is already structurally correct without it.
   if (plan.reformat) {
     const endPos = endOfInsert(plan.replaceRange.start, plan.insertText);
     editor.selection = new vscode.Selection(
@@ -528,6 +572,71 @@ function clearInlineResults(): void {
     cancelFade(ed);
     ed.setDecorations(inlineDecoration, []);
   }
+}
+
+// Delete a project root's on-disk result tree (<root>/.fireworks/results). Called when a
+// live coding run starts or restarts so each run begins on a clean slate — orphan files
+// from earlier edits (forms that have since moved or been removed) don't accumulate.
+// Best-effort: a run recreates whatever it needs, so a failure here is non-fatal. Only the
+// `results` subdir is removed; `.fireworks/` itself (which may hold other state) is left
+// intact. The in-memory cache is cleared separately by clearInlineResults.
+function clearResultFiles(root: string): void {
+  const dir = path.join(root, '.fireworks', 'results');
+  try {
+    fs.rmSync(dir, { recursive: true, force: true });
+  } catch (e) {
+    log(`could not clear result files at ${dir}: ${String(e)}`);
+  }
+}
+
+// Make sure <root>/.fireworks exists. The library creates it on the first write, but
+// pre-creating it lets the .gitignore check below resolve the dir-only pattern and gives
+// the project a visible home for the result cache. Best-effort.
+function ensureFireworksDir(root: string): void {
+  try {
+    fs.mkdirSync(path.join(root, '.fireworks'), { recursive: true });
+  } catch (e) {
+    log(`could not create .fireworks dir at ${root}: ${String(e)}`);
+  }
+}
+
+// Ensure <root>/.fireworks is git-ignored so the ephemeral result cache never lands in
+// `git status`. Conservative and idempotent: skipped when the manageGitignore setting is
+// off; `git check-ignore` decides, so it does nothing when the path is already ignored (by
+// any gitignore — this one, a parent, or a global) or when there's no git repo. Only when
+// the path is genuinely untracked does it append one commented entry to <root>/.gitignore
+// (created only if missing). Never rewrites or reorders existing content. Failures log.
+function ensureGitignored(root: string): void {
+  // Deliberately NOT contributed in package.json, so it stays out of the Settings UI —
+  // it's a JSON-only escape hatch. get() still honors it from settings.json; the explicit
+  // `true` is the effective default. Don't add it back to contributes.configuration.
+  if (!cfg().get<boolean>('liveCoding.manageGitignore', true)) {
+    return;
+  }
+  try {
+    // -q exit codes: 0 = already ignored, 1 = not ignored, 128 = not a repo / git error.
+    // We act only on 1; a null status (git missing) is likewise left alone.
+    const res = cp.spawnSync('git', ['-C', root, 'check-ignore', '-q', '.fireworks']);
+    if (res.status !== 1) {
+      return;
+    }
+    const gitignore = path.join(root, '.gitignore');
+    const prior = fs.existsSync(gitignore) ? fs.readFileSync(gitignore, 'utf8') : '';
+    // Separate from any prior content with a blank line; don't double up newlines.
+    const lead = prior === '' || prior.endsWith('\n') ? '' : '\n';
+    fs.appendFileSync(gitignore, `${lead}\n# Fireworks inline-result cache\n.fireworks/\n`);
+    log(`added .fireworks/ to ${gitignore}`);
+  } catch (e) {
+    log(`could not update .gitignore at ${root}: ${String(e)}`);
+  }
+}
+
+// Prepare a root's result cache for a fresh live-coding run: make sure .fireworks exists
+// and is git-ignored, then drop the previous run's (and any orphaned) result files.
+function prepareResultsDir(root: string): void {
+  ensureFireworksDir(root);
+  ensureGitignored(root);
+  clearResultFiles(root);
 }
 
 // A result file changed. Its path is <root>/.fireworks/results/<ns>/<line>:<col>.
@@ -970,6 +1079,9 @@ async function startLiveCoding(): Promise<void> {
   if (liveTerminal) {
     if (liveTerminal.shellIntegration && liveExecution === undefined) {
       // Shell integration confirmed the process exited — restart in the same terminal
+      if (activeRoot) {
+        prepareResultsDir(activeRoot); // same fresh-slate prep as launchWatcher
+      }
       liveTerminal.show();
       // Wipe the dead session's scrollback first (Cmd-K equivalent) so the new run
       // starts on a clean terminal. Acts on the active terminal, which show() just made it.
@@ -993,6 +1105,7 @@ async function startLiveCoding(): Promise<void> {
 // Run the watcher for a known root. Records it as the active session so
 // Stop/Restart act on the same project without re-asking.
 async function launchWatcher(root: string): Promise<void> {
+  prepareResultsDir(root); // ensure .fireworks exists + ignored, then fresh-slate results
   activeRoot = root;
   liveExecution = undefined;
   const command = watchCommand();
