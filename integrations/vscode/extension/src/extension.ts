@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as cp from 'child_process';
 import * as os from 'os';
 import * as cljsLib from '../lib/cljs-lib';
-import type { EditPlan, RequireEdit } from '../lib/cljs-lib';
+import type { EditPlan, RequireEdit, InlineAnalysis } from '../lib/cljs-lib';
 
 let output: vscode.OutputChannel;
 
@@ -272,6 +272,7 @@ let inlineDecoration: vscode.TextEditorDecorationType | undefined;
 let resultsWatcher: vscode.FileSystemWatcher | undefined;
 let visibleEditorsSub: vscode.Disposable | undefined;
 let inlineConfigSub: vscode.Disposable | undefined;
+let themeSub: vscode.Disposable | undefined;
 let docChangeSub: vscode.Disposable | undefined;
 const fadeTimers = new Map<string, ReturnType<typeof setTimeout>[]>(); // in-flight fade per editor
 // Values observed *this session* only: logical result key (see resultKey) -> value
@@ -289,6 +290,44 @@ function resultKey(root: string, ns: string, posKey: string): string {
   return `${root} ${ns} ${posKey}`;
 }
 
+// analyzeInlineResults parses the whole document with rewrite-clj — by far the heaviest
+// step in a repaint. Its output (the ns + the `(? …)` positions) depends only on document
+// content, which changes on edit (and bumps document.version), never on which result file
+// arrived. So cache one analysis per document version: a test-refresh burst that writes
+// many result files then reuses a single parse instead of re-parsing the whole file on
+// every file event (the redundant parse was freezing the host, stalling the cursor).
+const analysisCache = new Map<string, { version: number; analysis: InlineAnalysis }>();
+function analyzeCached(doc: vscode.TextDocument): InlineAnalysis {
+  const key = doc.uri.toString();
+  const hit = analysisCache.get(key);
+  if (hit && hit.version === doc.version) {
+    return hit.analysis;
+  }
+  const analysis = cljsLib.analyzeInlineResults(doc.getText());
+  analysisCache.set(key, { version: doc.version, analysis });
+  return analysis;
+}
+
+// Coalesce result-driven repaints: a burst of result-file writes (one per `?` form on a
+// test-refresh run) lands as many separate events. Collect the editors to repaint and
+// flush once on the next tick so a burst paints in a single pass, not N back-to-back.
+const pendingRepaints = new Map<string, vscode.TextEditor>();
+let repaintTimer: ReturnType<typeof setTimeout> | undefined;
+function scheduleRepaint(editor: vscode.TextEditor): void {
+  pendingRepaints.set(editorKey(editor), editor);
+  if (repaintTimer !== undefined) {
+    return;
+  }
+  repaintTimer = setTimeout(() => {
+    repaintTimer = undefined;
+    const editors = [...pendingRepaints.values()];
+    pendingRepaints.clear();
+    for (const ed of editors) {
+      repaintEditor(ed);
+    }
+  }, 16);
+}
+
 function inlineResultsEnabled(): boolean {
   return vscode.workspace.getConfiguration('fireworks').get<boolean>('inlineResults.enabled', false);
 }
@@ -297,22 +336,38 @@ function clamp(n: number, lo: number, hi: number): number {
   return Number.isNaN(n) ? lo : Math.min(hi, Math.max(lo, n));
 }
 
-// The decoration foreground: the user's configured color if set, else the editor's
-// own foreground (a neutral default that adapts to light/dark themes).
-function inlineColor(): string | vscode.ThemeColor {
-  const c = cfg().get<string>('inlineResults.color', '').trim();
-  return c ? c : new vscode.ThemeColor('editor.foreground');
+// Named palette for the inline `?` color. The one chosen name drives both the value
+// foreground and its background tint; each name carries a light- and dark-theme HSL so
+// the color stays legible on either. Keys match the `inlineResults.color` enum exactly.
+const INLINE_PALETTE: Record<string, { light: string; dark: string }> = {
+  Purple: { light: 'hsl(277 100% 44%)', dark: 'hsl(277 88% 74%)' },
+  Blue: { light: 'hsl(213 100% 44%)', dark: 'hsl(221 100% 75%)' },
+  Cyan: { light: 'hsl(168 100% 25%)', dark: 'hsl(182 100% 47%)' },
+  Green: { light: 'hsl(107 100% 26%)', dark: 'hsl(107 70% 51%)' },
+  Neutral: { light: 'hsl(0 0% 20%)', dark: 'hsl(0 0% 80%)' },
+};
+const DEFAULT_INLINE_COLOR = 'Purple';
+
+// Which palette variant the active theme calls for. High-contrast light maps to light,
+// plain high-contrast (dark) maps to dark.
+function themeVariant(): 'light' | 'dark' {
+  const kind = vscode.window.activeColorTheme.kind;
+  return kind === vscode.ColorThemeKind.Light || kind === vscode.ColorThemeKind.HighContrastLight
+    ? 'light'
+    : 'dark';
 }
 
-// The background-tint color: the configured backgroundColor, or the foreground color
-// when that's empty (currentColor for the themed default, so the tint follows the text).
+// The decoration color: the chosen palette name resolved to its HSL for the active theme
+// (falls back to the default for an unknown/empty value).
+function inlineColor(): string {
+  const name = cfg().get<string>('inlineResults.color', DEFAULT_INLINE_COLOR);
+  const entry = INLINE_PALETTE[name] ?? INLINE_PALETTE[DEFAULT_INLINE_COLOR];
+  return entry[themeVariant()];
+}
+
+// The background-tint base color: the same chosen color drives the tint.
 function inlineBgColor(): string {
-  const c = cfg().get<string>('inlineResults.backgroundColor', '').trim();
-  if (c) {
-    return c;
-  }
-  const fg = inlineColor();
-  return typeof fg === 'string' ? fg : 'currentColor';
+  return inlineColor();
 }
 
 // The background tint: inlineBgColor mixed into transparent at backgroundOpacity
@@ -362,6 +417,16 @@ function makeInlineDecoration(): vscode.TextEditorDecorationType {
   });
 }
 
+// Recreate the (color-baked) decoration type and repaint every visible editor. Called
+// when a setting or the active theme changes either of the baked-in values.
+function refreshDecoration(): void {
+  inlineDecoration?.dispose();
+  inlineDecoration = makeInlineDecoration();
+  for (const ed of vscode.window.visibleTextEditors) {
+    repaintEditor(ed);
+  }
+}
+
 async function toggleInlineResults(): Promise<void> {
   const next = !inlineResultsEnabled();
   await vscode.workspace
@@ -399,12 +464,11 @@ function startInlineResults(): void {
     if (!e.affectsConfiguration('fireworks.inlineResults')) {
       return;
     }
-    inlineDecoration?.dispose();
-    inlineDecoration = makeInlineDecoration();
-    for (const ed of vscode.window.visibleTextEditors) {
-      repaintEditor(ed);
-    }
+    refreshDecoration();
   });
+  // The resolved color also depends on the active theme (light/dark variant), and that
+  // HSL is baked into the decoration type — so recreate it on theme switches too.
+  themeSub = vscode.window.onDidChangeActiveColorTheme(() => refreshDecoration());
   // Clear (don't repaint) on edits: any edit can shift a form's coordinates, and
   // reading result files by the new <line>:<col> would surface stale values from
   // other forms (phantoms). Values reappear via the watcher on the next eval, when
@@ -432,6 +496,8 @@ function stopInlineResults(): void {
   visibleEditorsSub = undefined;
   inlineConfigSub?.dispose();
   inlineConfigSub = undefined;
+  themeSub?.dispose();
+  themeSub = undefined;
   docChangeSub?.dispose();
   docChangeSub = undefined;
   for (const timers of fadeTimers.values()) {
@@ -440,6 +506,12 @@ function stopInlineResults(): void {
     }
   }
   fadeTimers.clear();
+  if (repaintTimer !== undefined) {
+    clearTimeout(repaintTimer);
+    repaintTimer = undefined;
+  }
+  pendingRepaints.clear();
+  analysisCache.clear();
   resultsCache.clear();
   inlineDecoration?.dispose(); // clears every decoration it owns
   inlineDecoration = undefined;
@@ -489,8 +561,9 @@ function ingestResult(root: string, ns: string, posKey: string, value: string | 
     if (ed.document.languageId !== 'clojure') {
       continue;
     }
-    if (cljsLib.analyzeInlineResults(ed.document.getText()).namespace === ns) {
-      repaintEditor(ed);
+    // Cached parse (cheap on a hit); the repaint it schedules reuses the same cache.
+    if (analyzeCached(ed.document).namespace === ns) {
+      scheduleRepaint(ed);
     }
   }
 }
@@ -517,7 +590,7 @@ function repaintEditor(editor: vscode.TextEditor): void {
   if (!inlineDecoration || editor.document.languageId !== 'clojure') {
     return;
   }
-  const { namespace, positions } = cljsLib.analyzeInlineResults(editor.document.getText());
+  const { namespace, positions } = analyzeCached(editor.document);
   const root = rootFor(editor.document.uri.fsPath);
   if (!namespace || !root || positions.length === 0) {
     cancelFade(editor);
