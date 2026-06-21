@@ -94,12 +94,23 @@ export interface InlineAnalysis {
 // at their end). Never throws — malformed source yields an empty result.
 export function analyzeInlineResults(text: string): InlineAnalysis;
 
+// --- Phase 2: live coding --------------------------------------------------
+
+export interface AliasesResult {
+  aliases?: string[]; // alias names (colon dropped), in deps.edn order; [] if none
+  error?: string; // "unparseable" when the deps.edn text won't parse
+}
+
+// The alias names under :aliases in a deps.edn string, for the Live Code picker.
+// The user owns deps.edn (the extension never writes it); they choose an alias that
+// pulls in test-refresh + Fireworks, and the watcher runs `clojure -M:<alias>`.
+export function depsAliases(text: string): AliasesResult;
+
 // --- Phase 2: live-coding config (.test-refresh.edn) ----------------------
 //
-// The test-refresh + Fireworks deps are injected at launch via `clojure -Sdeps`
-// (built TS-side), so nothing edits deps.edn. These functions only render and edit
-// the small .test-refresh.edn holding the watcher options and the tap/test mode.
-// `error` is the kebab string "unparseable".
+// These functions render and edit the small .test-refresh.edn holding the watcher
+// options and the tap/test mode. Not currently wired into the live-coding flow (kept
+// for later). `error` is the kebab string "unparseable".
 
 export type Mode = 'tap' | 'test';
 

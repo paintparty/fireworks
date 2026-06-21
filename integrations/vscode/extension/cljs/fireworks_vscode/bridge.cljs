@@ -10,6 +10,7 @@
    #js {:text ...} on success or #js {:error \"...\"}; readMode returns #js {:mode ...}
    or #js {:error ...}; defaultConfig returns the rendered text directly."
   (:require [fireworks-vscode.config :as config]
+            [fireworks-vscode.deps :as deps]
             [fireworks-vscode.inline-results :as inline-results]
             [fireworks-vscode.ns-require :as ns-require]
             [fireworks-vscode.toggle :as toggle]))
@@ -59,6 +60,15 @@
   (let [{:keys [namespace positions]} (inline-results/analyze text)]
     #js {:namespace namespace
          :positions (clj->js positions)}))
+
+;; --- Phase 2 live coding --------------------------------------------------
+
+;; The alias names defined under :aliases in a deps.edn string, for the Live Code
+;; picker. #js {:aliases [...]} on success (possibly empty); #js {:error "unparseable"}
+;; when the deps.edn won't parse.
+(defn deps-aliases [text]
+  (let [r (deps/alias-names text)]
+    (if (nil? r) #js {:error "unparseable"} #js {:aliases (clj->js r)})))
 
 ;; --- Phase 2 config (.test-refresh.edn) -----------------------------------
 

@@ -124,11 +124,6 @@
           "minimum": 0,
           "maximum": 500,
           "markdownDescription": "Duration in milliseconds of the fade-in when an inline `?` value appears. Set to `0` to show values instantly without animation."
-        },
-        "fireworks.liveCoding.command": {
-          "type": "string",
-          "default": "clojure -M:test-refresh",
-          "markdownDescription": "The command to run in the integrated terminal when you invoke `Fireworks: Live Code`. Defaults to `clojure -M:test-refresh` (assumes your `deps.edn` defines a `:test-refresh` alias). The terminal opens in the project root (the directory containing `deps.edn`)."
         }
       }
     }

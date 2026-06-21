@@ -54,6 +54,9 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
       updateStatusBar();
     }),
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      updateStatusBar();
+    }),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('fireworks.inlineResults.enabled')) {
         updateStatusBar();
@@ -1040,12 +1043,12 @@ function allocateEven(lengths: number[], budget: number): number[] {
 // ============================================================================
 // Phase 2: live coding (test-refresh watcher)
 //
-// Start/Stop/Restart a test-refresh watcher in an integrated terminal at the picked
-// deps.edn root. The watcher command is the `fireworks.liveCoding.command` setting
-// (default `clojure -M:test-refresh`), run verbatim — Fireworks does not inject deps
-// or macros and does not write any project files. Those are deferred; the cljs
-// config code (defaultConfig/readMode/setMode) stays in place for re-wiring later.
-// deps.edn projects only — Leiningen is out of scope (set that up by hand).
+// Start/Stop/Restart a watcher in an integrated terminal at the picked deps.edn root.
+// The flow is two picks and no magic: pick the project root, then pick an alias defined
+// in that project's deps.edn; the watcher runs `clojure -M:<alias>` verbatim. The user
+// owns deps.edn — it's on them to make sure the alias pulls in test-refresh + Fireworks.
+// Fireworks injects nothing and writes no project files. deps.edn projects only —
+// Leiningen is out of scope (set that up by hand).
 // ============================================================================
 
 const TERMINAL_NAME = 'Fireworks: Live Code';
@@ -1060,6 +1063,7 @@ let liveExecution: vscode.TerminalShellExecution | undefined;
 let statusBar: vscode.StatusBarItem;
 let extContext: vscode.ExtensionContext;
 let activeRoot: string | undefined; // the root the running / last-used session operates on
+let activeAlias: string | undefined; // the deps.edn alias that session launched with
 
 function cfg(): vscode.WorkspaceConfiguration {
   return vscode.workspace.getConfiguration('fireworks');
@@ -1142,10 +1146,38 @@ function preflight(): boolean {
   return false;
 }
 
-// The watcher command, run verbatim in the integrated terminal: the
-// `fireworks.liveCoding.command` setting, or `clojure -M:test-refresh` if it's blank.
-function watchCommand(): string {
-  return cfg().get<string>('liveCoding.command', '').trim() || 'clojure -M:test-refresh';
+// The watcher command for a chosen deps.edn alias, run verbatim in the integrated
+// terminal. The alias supplies its own deps and :main-opts (test-refresh + Fireworks).
+function aliasCommand(alias: string): string {
+  return `clojure -M:${alias}`;
+}
+
+// Pick an alias defined in `root`'s deps.edn. Reads the file, asks the cljs side for the
+// alias names, and shows a quick pick. undefined when the file is missing/unparseable,
+// defines no aliases, or the pick was dismissed (each surfaces its own message).
+async function pickAlias(root: string): Promise<string | undefined> {
+  const text = readFileOrNull(path.join(root, 'deps.edn'));
+  if (text === null) {
+    vscode.window.showErrorMessage(`Fireworks: could not read deps.edn in ${tildify(root)}.`);
+    return undefined;
+  }
+  const { aliases, error } = cljsLib.depsAliases(text);
+  if (error || !aliases) {
+    vscode.window.showErrorMessage(`Fireworks: could not parse deps.edn in ${tildify(root)}.`);
+    return undefined;
+  }
+  if (aliases.length === 0) {
+    vscode.window.showErrorMessage(
+      `Fireworks: no aliases defined in ${tildify(root)}/deps.edn. Add an alias with test-refresh + Fireworks, then try again.`,
+    );
+    return undefined;
+  }
+  // Show each alias as a keyword (`:dev`) but keep the bare name for `clojure -M:<alias>`.
+  const pick = await vscode.window.showQuickPick(
+    aliases.map((alias) => ({ label: `:${alias}`, alias })),
+    { placeHolder: 'Select the deps.edn alias to run (must include test-refresh + Fireworks)' },
+  );
+  return pick?.alias;
 }
 
 function waitForShellIntegration(
@@ -1194,7 +1226,7 @@ async function sendWatcherCommand(
 async function startLiveCoding(): Promise<void> {
   clearInlineResults(); // wipe any stale inline values before the new session paints
   if (liveTerminal) {
-    if (liveTerminal.shellIntegration && liveExecution === undefined) {
+    if (liveTerminal.shellIntegration && liveExecution === undefined && activeAlias) {
       // Shell integration confirmed the process exited — restart in the same terminal
       if (activeRoot) {
         prepareResultsDir(activeRoot); // same fresh-slate prep as launchWatcher
@@ -1203,7 +1235,11 @@ async function startLiveCoding(): Promise<void> {
       // Wipe the dead session's scrollback first (Cmd-K equivalent) so the new run
       // starts on a clean terminal. Acts on the active terminal, which show() just made it.
       await vscode.commands.executeCommand('workbench.action.terminal.clear');
-      await sendWatcherCommand(liveTerminal, liveTerminal.shellIntegration, watchCommand());
+      await sendWatcherCommand(
+        liveTerminal,
+        liveTerminal.shellIntegration,
+        aliasCommand(activeAlias),
+      );
       return;
     }
     liveTerminal.show(); // process running, or no shell integration — just focus
@@ -1216,16 +1252,21 @@ async function startLiveCoding(): Promise<void> {
   if (!preflight()) {
     return;
   }
-  await launchWatcher(root);
+  const alias = await pickAlias(root);
+  if (!alias) {
+    return;
+  }
+  await launchWatcher(root, alias);
 }
 
-// Run the watcher for a known root. Records it as the active session so
-// Stop/Restart act on the same project without re-asking.
-async function launchWatcher(root: string): Promise<void> {
+// Run the watcher for a known root + alias. Records them as the active session so
+// Stop/Restart act on the same project/alias without re-asking.
+async function launchWatcher(root: string, alias: string): Promise<void> {
   prepareResultsDir(root); // ensure .fireworks exists + ignored, then fresh-slate results
   activeRoot = root;
+  activeAlias = alias;
   liveExecution = undefined;
-  const command = watchCommand();
+  const command = aliasCommand(alias);
   log(`live coding -> ${command} (cwd ${root})`);
   liveTerminal = vscode.window.createTerminal({ name: TERMINAL_NAME, cwd: root });
   liveTerminal.show();
@@ -1248,17 +1289,24 @@ function stopLiveCoding(): void {
 
 async function restartLiveCoding(): Promise<void> {
   const root = activeRoot;
+  const alias = activeAlias;
   stopLiveCoding();
-  if (root) {
-    await launchWatcher(root); // reuse the running session's root (no re-prompt)
+  if (root && alias) {
+    await launchWatcher(root, alias); // reuse the running session's root + alias (no re-prompt)
   } else {
     await startLiveCoding();
   }
 }
 
+// Inline Results on/off toggle in the bottom status bar. Only shown when the active
+// editor is a Clojure file (same languageId gate the commands use); hidden otherwise.
 function updateStatusBar(): void {
+  if (vscode.window.activeTextEditor?.document.languageId !== 'clojure') {
+    statusBar.hide();
+    return;
+  }
   const on = inlineResultsEnabled();
-  statusBar.text = on ? '$(circle-filled) Fireworks' : '$(circle-outline) Fireworks';
+  statusBar.text = on ? '$(circle-filled) Inline Results' : '$(circle-outline) Inline Results';
   statusBar.tooltip = on
     ? 'Fireworks: inline results on. Click to turn off.'
     : 'Fireworks: inline results off. Click to turn on.';
