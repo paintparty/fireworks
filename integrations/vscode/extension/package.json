@@ -115,8 +115,8 @@
           "type": "number",
           "default": 0.01,
           "minimum": 0,
-          "maximum": 0.2,
-          "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`). Clamped to 0–0.2; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`."
+          "maximum": 0.3,
+          "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`). Clamped to 0–0.3; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`."
         },
         "fireworks.inlineResults.fadeInMs": {
           "type": "number",
