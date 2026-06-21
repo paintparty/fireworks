@@ -9,7 +9,8 @@
    pure fireworks-vscode.config logic, JS result envelopes out. setMode returns
    #js {:text ...} on success or #js {:error \"...\"}; readMode returns #js {:mode ...}
    or #js {:error ...}; defaultConfig returns the rendered text directly."
-  (:require [fireworks-vscode.config :as config]
+  (:require [fireworks-vscode.bb :as bb]
+            [fireworks-vscode.config :as config]
             [fireworks-vscode.deps :as deps]
             [fireworks-vscode.inline-results :as inline-results]
             [fireworks-vscode.ns-require :as ns-require]
@@ -69,6 +70,13 @@
 (defn deps-aliases [text]
   (let [r (deps/alias-names text)]
     (if (nil? r) #js {:error "unparseable"} #js {:aliases (clj->js r)})))
+
+;; The task names defined under :tasks in a bb.edn string, for the Live Code picker
+;; (Babashka projects). #js {:tasks [...]} on success (possibly empty);
+;; #js {:error "unparseable"} when the bb.edn won't parse.
+(defn bb-tasks [text]
+  (let [r (bb/task-names text)]
+    (if (nil? r) #js {:error "unparseable"} #js {:tasks (clj->js r)})))
 
 ;; --- Phase 2 config (.test-refresh.edn) -----------------------------------
 

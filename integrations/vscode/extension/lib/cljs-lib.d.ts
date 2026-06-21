@@ -106,6 +106,17 @@ export interface AliasesResult {
 // pulls in test-refresh + Fireworks, and the watcher runs `clojure -M:<alias>`.
 export function depsAliases(text: string): AliasesResult;
 
+export interface TasksResult {
+  tasks?: string[]; // task names (symbol keys under :tasks), in bb.edn order; [] if none
+  error?: string; // "unparseable" when the bb.edn text won't parse
+}
+
+// The task names under :tasks in a bb.edn string, for the Live Code picker (Babashka
+// projects). The user owns bb.edn; they choose a task that starts their Fireworks
+// watcher, and the extension runs `bb <task>`. Special keyword keys
+// (:init/:requires/:enter/:leave) are excluded — only symbol-keyed tasks are returned.
+export function bbTasks(text: string): TasksResult;
+
 // --- Phase 2: live-coding config (.test-refresh.edn) ----------------------
 //
 // These functions render and edit the small .test-refresh.edn holding the watcher

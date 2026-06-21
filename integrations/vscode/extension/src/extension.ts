@@ -1043,12 +1043,12 @@ function allocateEven(lengths: number[], budget: number): number[] {
 // ============================================================================
 // Phase 2: live coding (test-refresh watcher)
 //
-// Start/Stop/Restart a watcher in an integrated terminal at the picked deps.edn root.
-// The flow is two picks and no magic: pick the project root, then pick an alias defined
-// in that project's deps.edn; the watcher runs `clojure -M:<alias>` verbatim. The user
-// owns deps.edn — it's on them to make sure the alias pulls in test-refresh + Fireworks.
-// Fireworks injects nothing and writes no project files. deps.edn projects only —
-// Leiningen is out of scope (set that up by hand).
+// Start/Stop/Restart a watcher in an integrated terminal at the picked project root.
+// The flow is two picks and no magic: pick the project root, then pick what to run from
+// that project's own config — a deps.edn alias (`clojure -M:<alias>`) or, for a Babashka
+// project, a bb.edn task (`bb <task>`). The user owns those files — it's on them to
+// make the alias/task pull in test-refresh + Fireworks. Fireworks injects nothing and
+// writes no project files. Leiningen is out of scope (set that up by hand).
 // ============================================================================
 
 const TERMINAL_NAME = 'Fireworks: Live Code';
@@ -1063,7 +1063,7 @@ let liveExecution: vscode.TerminalShellExecution | undefined;
 let statusBar: vscode.StatusBarItem;
 let extContext: vscode.ExtensionContext;
 let activeRoot: string | undefined; // the root the running / last-used session operates on
-let activeAlias: string | undefined; // the deps.edn alias that session launched with
+let activeCommand: string | undefined; // the verbatim watcher command that session launched with
 
 function cfg(): vscode.WorkspaceConfiguration {
   return vscode.workspace.getConfiguration('fireworks');
@@ -1089,10 +1089,11 @@ function onPath(command: string): boolean {
   }
 }
 
-// Every directory in the workspace that holds a deps.edn — across all workspace
-// folders and nested subprojects (e.g. a monorepo's repo/foo).
+// Every directory in the workspace that holds a deps.edn or a bb.edn — across all
+// workspace folders and nested subprojects (e.g. a monorepo's repo/foo). The project
+// kind (Clojure CLI vs Babashka) is resolved per-root at launch by projectKind.
 async function findProjectRoots(): Promise<string[]> {
-  const uris = await vscode.workspace.findFiles('**/deps.edn', '**/node_modules/**');
+  const uris = await vscode.workspace.findFiles('**/{deps.edn,bb.edn}', '**/node_modules/**');
   const roots = new Set<string>();
   for (const u of uris) {
     roots.add(path.dirname(u.fsPath));
@@ -1116,7 +1117,7 @@ function tildify(p: string): string {
 async function pickProjectRoot(): Promise<string | undefined> {
   const roots = await findProjectRoots();
   if (roots.length === 0) {
-    vscode.window.showErrorMessage('Fireworks: no deps.edn found in this workspace.');
+    vscode.window.showErrorMessage('Fireworks: no deps.edn or bb.edn found in this workspace.');
     return undefined;
   }
   if (roots.length === 1) {
@@ -1129,14 +1130,14 @@ async function pickProjectRoot(): Promise<string | undefined> {
       root,
     })),
     {
-      placeHolder: 'Select the Clojure project for Fireworks live coding',
+      placeHolder: 'Select the project for Fireworks live coding',
       matchOnDescription: true, // typing filters on the path too, like the native picker
     },
   );
   return pick?.root;
 }
 
-function preflight(): boolean {
+function preflightClojure(): boolean {
   if (onPath('clojure') || onPath('clj')) {
     return true;
   }
@@ -1146,10 +1147,47 @@ function preflight(): boolean {
   return false;
 }
 
-// The watcher command for a chosen deps.edn alias, run verbatim in the integrated
-// terminal. The alias supplies its own deps and :main-opts (test-refresh + Fireworks).
+function preflightBb(): boolean {
+  if (onPath('bb')) {
+    return true;
+  }
+  vscode.window.showErrorMessage(
+    'Fireworks: the `bb` (Babashka) command is not on your PATH. Install Babashka, then try again.',
+  );
+  return false;
+}
+
+// The watcher command for a chosen deps.edn alias (Clojure CLI). The alias supplies its
+// own deps and :main-opts (test-refresh + Fireworks).
 function aliasCommand(alias: string): string {
   return `clojure -M:${alias}`;
+}
+
+// The watcher command for a chosen bb.edn task (Babashka). The task supplies the watcher.
+// `bb <task>` (not `bb run <task>`): a user task overrides a same-named built-in, so this
+// runs the task even for builtin-colliding names — and it avoids the `bb run` footgun where
+// a task literally named `run` would swallow the argument.
+function taskCommand(task: string): string {
+  return `bb ${task}`;
+}
+
+// Which runtime to launch for `root`: deps.edn -> Clojure CLI alias; bb.edn -> Babashka
+// task. When a project has both files, ask. undefined if neither exists (shouldn't happen
+// via pickProjectRoot) or the disambiguation pick was dismissed.
+async function projectKind(root: string): Promise<'deps' | 'bb' | undefined> {
+  const hasDeps = fs.existsSync(path.join(root, 'deps.edn'));
+  const hasBb = fs.existsSync(path.join(root, 'bb.edn'));
+  if (hasDeps && hasBb) {
+    const pick = await vscode.window.showQuickPick(
+      [
+        { label: 'Clojure (deps.edn alias)', runtime: 'deps' as const },
+        { label: 'Babashka (bb.edn task)', runtime: 'bb' as const },
+      ],
+      { placeHolder: 'This project has both deps.edn and bb.edn — which runtime?' },
+    );
+    return pick?.runtime;
+  }
+  return hasBb ? 'bb' : hasDeps ? 'deps' : undefined;
 }
 
 // Pick an alias defined in `root`'s deps.edn. Reads the file, asks the cljs side for the
@@ -1178,6 +1216,52 @@ async function pickAlias(root: string): Promise<string | undefined> {
     { placeHolder: 'Select the deps.edn alias to run (must include test-refresh + Fireworks)' },
   );
   return pick?.alias;
+}
+
+// Pick a task defined in `root`'s bb.edn. Mirrors pickAlias for Babashka projects.
+// undefined when the file is missing/unparseable, defines no tasks, or the pick was dismissed.
+async function pickTask(root: string): Promise<string | undefined> {
+  const text = readFileOrNull(path.join(root, 'bb.edn'));
+  if (text === null) {
+    vscode.window.showErrorMessage(`Fireworks: could not read bb.edn in ${tildify(root)}.`);
+    return undefined;
+  }
+  const { tasks, error } = cljsLib.bbTasks(text);
+  if (error || !tasks) {
+    vscode.window.showErrorMessage(`Fireworks: could not parse bb.edn in ${tildify(root)}.`);
+    return undefined;
+  }
+  if (tasks.length === 0) {
+    vscode.window.showErrorMessage(
+      `Fireworks: no tasks defined in ${tildify(root)}/bb.edn. Add a task that runs your watcher, then try again.`,
+    );
+    return undefined;
+  }
+  return vscode.window.showQuickPick(tasks, {
+    placeHolder: 'Select the bb.edn task to run (must start your Fireworks watcher)',
+  });
+}
+
+// Resolve the verbatim watcher command for `root`: detect the runtime, run its PATH
+// preflight, then pick the alias (deps) or task (bb). undefined aborts the launch (a
+// message was already shown, or a pick/preflight failed).
+async function resolveWatcherCommand(root: string): Promise<string | undefined> {
+  const kind = await projectKind(root);
+  if (!kind) {
+    return undefined;
+  }
+  if (kind === 'bb') {
+    if (!preflightBb()) {
+      return undefined;
+    }
+    const task = await pickTask(root);
+    return task ? taskCommand(task) : undefined;
+  }
+  if (!preflightClojure()) {
+    return undefined;
+  }
+  const alias = await pickAlias(root);
+  return alias ? aliasCommand(alias) : undefined;
 }
 
 function waitForShellIntegration(
@@ -1226,7 +1310,7 @@ async function sendWatcherCommand(
 async function startLiveCoding(): Promise<void> {
   clearInlineResults(); // wipe any stale inline values before the new session paints
   if (liveTerminal) {
-    if (liveTerminal.shellIntegration && liveExecution === undefined && activeAlias) {
+    if (liveTerminal.shellIntegration && liveExecution === undefined && activeCommand) {
       // Shell integration confirmed the process exited — restart in the same terminal
       if (activeRoot) {
         prepareResultsDir(activeRoot); // same fresh-slate prep as launchWatcher
@@ -1235,11 +1319,7 @@ async function startLiveCoding(): Promise<void> {
       // Wipe the dead session's scrollback first (Cmd-K equivalent) so the new run
       // starts on a clean terminal. Acts on the active terminal, which show() just made it.
       await vscode.commands.executeCommand('workbench.action.terminal.clear');
-      await sendWatcherCommand(
-        liveTerminal,
-        liveTerminal.shellIntegration,
-        aliasCommand(activeAlias),
-      );
+      await sendWatcherCommand(liveTerminal, liveTerminal.shellIntegration, activeCommand);
       return;
     }
     liveTerminal.show(); // process running, or no shell integration — just focus
@@ -1249,24 +1329,20 @@ async function startLiveCoding(): Promise<void> {
   if (!root) {
     return;
   }
-  if (!preflight()) {
+  const command = await resolveWatcherCommand(root);
+  if (!command) {
     return;
   }
-  const alias = await pickAlias(root);
-  if (!alias) {
-    return;
-  }
-  await launchWatcher(root, alias);
+  await launchWatcher(root, command);
 }
 
-// Run the watcher for a known root + alias. Records them as the active session so
-// Stop/Restart act on the same project/alias without re-asking.
-async function launchWatcher(root: string, alias: string): Promise<void> {
+// Run the watcher for a known root + resolved command. Records them as the active session
+// so Stop/Restart act on the same project/command without re-asking.
+async function launchWatcher(root: string, command: string): Promise<void> {
   prepareResultsDir(root); // ensure .fireworks exists + ignored, then fresh-slate results
   activeRoot = root;
-  activeAlias = alias;
+  activeCommand = command;
   liveExecution = undefined;
-  const command = aliasCommand(alias);
   log(`live coding -> ${command} (cwd ${root})`);
   liveTerminal = vscode.window.createTerminal({ name: TERMINAL_NAME, cwd: root });
   liveTerminal.show();
@@ -1289,10 +1365,10 @@ function stopLiveCoding(): void {
 
 async function restartLiveCoding(): Promise<void> {
   const root = activeRoot;
-  const alias = activeAlias;
+  const command = activeCommand;
   stopLiveCoding();
-  if (root && alias) {
-    await launchWatcher(root, alias); // reuse the running session's root + alias (no re-prompt)
+  if (root && command) {
+    await launchWatcher(root, command); // reuse the running session's root + command (no re-prompt)
   } else {
     await startLiveCoding();
   }
