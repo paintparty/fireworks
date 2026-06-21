@@ -12,7 +12,9 @@
   },
   "main": "./out/extension.js",
   "activationEvents": [
-    "workspaceContains:**/deps.edn"
+    "workspaceContains:**/deps.edn",
+    "workspaceContains:**/bb.edn",
+    "workspaceContains:**/.fireworks/**"
   ],
   "extensionDependencies": ["betterthantomorrow.calva"],
   "contributes": {

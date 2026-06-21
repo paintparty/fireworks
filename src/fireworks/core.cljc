@@ -867,7 +867,7 @@
      [x
       {:keys [line column ns-str] 
        :as   m}]
-     (when (.exists (io/file ".fireworks/results"))
+     (when (.exists (io/file ".fireworks/"))
        (let [s    (util/safety-subs
                    x
                    {:start        0

@@ -52,7 +52,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
-      void refreshRoots();
+      updateStatusBar();
     }),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('fireworks.inlineResults.enabled')) {
@@ -63,11 +63,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push({ dispose: () => stopInlineResults() });
 
-  void refreshRoots().then(() => {
-    if (inlineResultsEnabled()) {
-      startInlineResults();
-    }
-  });
+  updateStatusBar();
+  if (inlineResultsEnabled()) {
+    startInlineResults();
+  }
 }
 
 export function deactivate(): void {}
@@ -399,6 +398,13 @@ const fadeTimers = new Map<string, ReturnType<typeof setTimeout>[]>(); // in-fli
 // WebSocket push from a browser runtime) can feed the same cache.
 const resultsCache = new Map<string, string>();
 
+// Project roots that have a `.fireworks/` results tree, learned as result files arrive
+// (and lazily when mapping an editor to its root). This is what associates a document
+// with the root its results were cached under — independent of deps.edn or how the
+// results were produced (Babashka, lein, deps). Live coding's deps.edn root discovery
+// (findProjectRoots) is separate and unaffected.
+const fireworksRoots = new Set<string>();
+
 // The cache identity for a single `?` result, independent of how it arrived. Today
 // only the filesystem watcher writes it; a future WebSocket source builds the same
 // key from values parsed off the wire.
@@ -629,6 +635,7 @@ function stopInlineResults(): void {
   pendingRepaints.clear();
   analysisCache.clear();
   resultsCache.clear();
+  fireworksRoots.clear();
   inlineDecoration?.dispose(); // clears every decoration it owns
   inlineDecoration = undefined;
 }
@@ -716,10 +723,11 @@ function prepareResultsDir(root: string): void {
 // path, read the value (null = deleted/unreadable), and hand it to ingestResult.
 function onResultChanged(uri: vscode.Uri): void {
   const ns = namespaceFromResultPath(uri.fsPath);
-  const root = rootFor(uri.fsPath);
+  const root = rootFromResultPath(uri.fsPath);
   if (!ns || !root) {
     return;
   }
+  fireworksRoots.add(root); // remember it so repaint can map this root's editors
   const posKey = uri.fsPath.split(/[\\/]/).pop();
   if (!posKey) {
     return;
@@ -761,9 +769,53 @@ function namespaceFromResultPath(fsPath: string): string | null {
   return ns || null;
 }
 
-// The cached project root that contains this document, or undefined.
+// The project root for a result file: everything before the ".fireworks/results/"
+// marker (i.e. the dir that holds `.fireworks`). Mirrors namespaceFromResultPath.
+function rootFromResultPath(fsPath: string): string | null {
+  const marker = `${path.sep}${RESULTS_DIR.split('/').join(path.sep)}${path.sep}`;
+  const i = fsPath.indexOf(marker);
+  return i < 0 ? null : fsPath.slice(0, i);
+}
+
+// Whether `dir` contains a `.fireworks` directory on disk.
+function hasFireworksDir(dir: string): boolean {
+  try {
+    return fs.statSync(path.join(dir, '.fireworks')).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+// The `.fireworks` project root that contains this path, or undefined. Prefers an
+// already-discovered root (longest match wins for nested projects); otherwise walks up
+// the directory tree to the nearest ancestor holding a `.fireworks` dir and records it.
+// The root string is the parent of `.fireworks`, matching what rootFromResultPath
+// stores, so cache keys (resultKey) line up between ingestion and repaint.
 function rootFor(fsPath: string): string | undefined {
-  return knownRoots.find((root) => fsPath === root || fsPath.startsWith(root + path.sep));
+  let best: string | undefined;
+  for (const root of fireworksRoots) {
+    if (
+      (fsPath === root || fsPath.startsWith(root + path.sep)) &&
+      (best === undefined || root.length > best.length)
+    ) {
+      best = root;
+    }
+  }
+  if (best) {
+    return best;
+  }
+  let dir = path.dirname(fsPath);
+  for (;;) {
+    if (hasFireworksDir(dir)) {
+      fireworksRoots.add(dir);
+      return dir;
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) {
+      return undefined;
+    }
+    dir = parent;
+  }
 }
 
 // Render the value for each live `(? …)` in `editor` (clearing any stale ones).
@@ -1007,7 +1059,6 @@ let liveTerminal: vscode.Terminal | undefined;
 let liveExecution: vscode.TerminalShellExecution | undefined;
 let statusBar: vscode.StatusBarItem;
 let extContext: vscode.ExtensionContext;
-let knownRoots: string[] = []; // deps.edn dirs in the workspace (cached for the status bar)
 let activeRoot: string | undefined; // the root the running / last-used session operates on
 
 function cfg(): vscode.WorkspaceConfiguration {
@@ -1079,12 +1130,6 @@ async function pickProjectRoot(): Promise<string | undefined> {
     },
   );
   return pick?.root;
-}
-
-// Refresh the cached roots (for the status bar) and repaint it.
-async function refreshRoots(): Promise<void> {
-  knownRoots = await findProjectRoots();
-  updateStatusBar();
 }
 
 function preflight(): boolean {
