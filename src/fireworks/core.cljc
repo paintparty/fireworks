@@ -269,8 +269,10 @@
     (and (= template [:result])
          (not (pos-int? (k user-opts))))
     ""
+    ;; If you want a margin on the top when using native printing
+    ;; Disabled for now
     (contains? #{:log :pp :js} mode)
-    "\n"
+    "" #_"\n"
     :else
     (string/join (repeat (get @state/config k 0) "\n")))
 
@@ -675,7 +677,6 @@
   ([{:keys [fmt log? err err-x err-opts]
      :as   x}
     js-printing-fn]
-   ;;  (?pp x)
    (if (instance? fireworks.messaging.FireworksThrowable x)
      (if (= (:coll-size err-opts) :lasertag.core/unknown-coll-size)
        (maybe-unable-to-print-warning err-x)
@@ -944,7 +945,6 @@
            (print-formatted printing-opts
                             #?(:cljs (when-not node? js-print)))
 
-
            ;; Fireworks formatting and printing of does not happen when:
            ;; - Value being printed is non-cljs or non-clj data-structure
            ;; - :log or :log- is used (deprecated)
@@ -1011,7 +1011,7 @@
           return-result? (when-not (= (:template opts)
                                       [:form-or-label :file-info])
                            x)]
-      
+     #_(when (= x :fooo) (?pp printing-opts))
       (when debug-config? 
         (fw-debug-report config-before opts "fireworks.core/_p2")) 
 

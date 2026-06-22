@@ -214,8 +214,7 @@
   ([n x]
    (truncated-seq n x nil))
   ([n x label]
-   (println n)
-   (println (longer-than? n x))
+   (longer-than? n x)
    (if (longer-than? n x)
      (concat (take n x) [label])
      (take n x))))
