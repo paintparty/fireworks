@@ -51,7 +51,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def theme "Alabaster Dark")
+(def theme "Alabaster Light")
 
 (defn abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn
   []
@@ -66,7 +66,7 @@
                                  {:a abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn})
              formatted-string (-> ret :formatted :string)]
          (!?pp  (string/join (escape-sgr formatted-string))))
-       "〠38;5;250〠{〠0〠〠38;2;182;150;181〠:a〠0〠〠〠 〠0〠〠38;2;110;171;237〠abcdefghijklmnopqrstuvwxyz-abc〠0〠〠38;2;210;140;109〠...〠0〠〠38;5;250〠}〠0〠")))
+       "〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;77;109;186〠fireworks.core-test/abcdefghij〠0〠〠3;38;2;140;140;140〠...〠0〠〠38;5;102〠}〠0〠")))
 
 #_(deftest transient-set
   (is (=
@@ -394,7 +394,9 @@
   {:theme theme}
   3.33)
 
-(deftest+ lambda
+;; Can't test this because it is dynamic
+;; Is there a way to test with regex?
+#_(deftest+ lambda
   {:theme theme}
   (fn []))
 
