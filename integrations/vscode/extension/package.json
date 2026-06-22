@@ -32,7 +32,8 @@
       { "command": "fireworks.clearInlineResults", "title": "Clear Inline Results", "category": "Fireworks" },
       { "command": "fireworks.startLiveCoding", "title": "Live Code", "category": "Fireworks" },
       { "command": "fireworks.stopLiveCoding", "title": "Live Code (Stop)", "category": "Fireworks" },
-      { "command": "fireworks.restartLiveCoding", "title": "Live Code (Restart)", "category": "Fireworks" }
+      { "command": "fireworks.restartLiveCoding", "title": "Live Code (Restart)", "category": "Fireworks" },
+      { "command": "fireworks.setAutoSaveDelay", "title": "Set Auto-Save Delay", "category": "Fireworks" }
     ],
     "keybindings": [
       {

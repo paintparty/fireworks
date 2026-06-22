@@ -40,6 +40,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.startLiveCoding', () => startLiveCoding()),
     vscode.commands.registerCommand('fireworks.stopLiveCoding', () => stopLiveCoding()),
     vscode.commands.registerCommand('fireworks.restartLiveCoding', () => restartLiveCoding()),
+    vscode.commands.registerCommand('fireworks.setAutoSaveDelay', () => setAutoSaveDelay()),
     vscode.window.onDidCloseTerminal((t) => {
       for (const [root, s] of liveSessions) {
         if (s.terminal === t) {
@@ -1459,6 +1460,44 @@ async function chooseSession(verb: 'stop' | 'restart'): Promise<LiveSession | un
     { placeHolder: `Select the Live Code session to ${verb}`, matchOnDescription: true },
   );
   return pick?.session;
+}
+
+// Preset auto-save delays (seconds) offered by fireworks.setAutoSaveDelay. They tune how
+// quickly a save lands after you stop typing — i.e. how snappy the test-refresh/inline loop
+// feels. VS Code's files.autoSaveDelay is in milliseconds.
+const AUTO_SAVE_DELAYS = [0.25, 0.5, 0.8, 1.5, 3, 5];
+
+// Pick a preset and write it to files.autoSaveDelay (user settings). The delay only applies
+// in "afterDelay" mode, so if auto-save is anything else (off/onFocusChange/onWindowChange)
+// switch it to afterDelay too.
+async function setAutoSaveDelay(): Promise<void> {
+  const files = vscode.workspace.getConfiguration('files');
+  const currentMs = files.get<number>('autoSaveDelay');
+  const pick = await vscode.window.showQuickPick(
+    AUTO_SAVE_DELAYS.map((seconds) => {
+      const ms = Math.round(seconds * 1000);
+      return {
+        label: `${seconds}`,
+        description: ms === currentMs ? 'seconds (current)' : 'seconds',
+        ms,
+        seconds,
+      };
+    }),
+    { placeHolder: 'Auto-save delay in seconds (sets files.autoSaveDelay)' },
+  );
+  if (!pick) {
+    return;
+  }
+  const target = vscode.ConfigurationTarget.Global;
+  await files.update('autoSaveDelay', pick.ms, target);
+  const wasOn = files.get<string>('autoSave') === 'afterDelay';
+  if (!wasOn) {
+    await files.update('autoSave', 'afterDelay', target);
+  }
+  flash(
+    `Fireworks: auto-save delay set to ${pick.seconds}s` +
+      (wasOn ? '.' : ' (auto-save turned on: after delay).'),
+  );
 }
 
 // Inline Results on/off toggle in the bottom status bar. Only shown when the active
