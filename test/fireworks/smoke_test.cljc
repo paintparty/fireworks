@@ -20,6 +20,57 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
+
+
+
+#_(do 
+  (? (take 10 (map inc (range 18))))
+
+  (? :- (take 10 (map inc (range 18))))
+  (println)
+  (? :no-label (take 10 (map inc (range 18))))
+
+  (? :no-file (take 10 (map inc (range 18))))
+
+  (? :no-file "custom label as string" (take 10 (map inc (range 18))))
+
+  (? :no-file {:label "custom label from opts"} (take 10 (map inc (range 18))))
+
+  (? :no-file (take 10 (map inc (range 18))))
+
+  (? :pp :fooo)
+
+  (? :+ (take 10 (map inc (range 44)))))
+
+;; (? :no-file {:label "wtf"} (take 10 (map inc (range 18))))
+(? :no-file (take 10 (map inc (range 18))))
+
+;; (? (def foo 'bar))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 (def my-atom (atom nil))
 (def my-volatile (volatile! nil))
 (defn foo [a b] nil)
