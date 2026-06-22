@@ -1518,6 +1518,21 @@ interface PreviewItem extends vscode.QuickPickItem {
   value: string | number;
 }
 
+// The row to highlight when the picker opens: the exact match if the current value is itself
+// a preset, otherwise (for numeric scales) the nearest preset — so the user navigates up/down
+// relative to where they already are. Strings (the color enum) only ever match exactly.
+function nearestItem(items: PreviewItem[], current: string | number): PreviewItem | undefined {
+  const exact = items.find((i) => i.value === current);
+  if (exact || typeof current !== 'number') {
+    return exact;
+  }
+  return items.reduce((best, i) =>
+    Math.abs((i.value as number) - current) < Math.abs((best.value as number) - current)
+      ? i
+      : best,
+  );
+}
+
 // How long the highlighted option must hold still before its value is applied. Debounces
 // the live preview so holding the arrow key to cycle through options doesn't write the
 // setting on every step — only the option you settle on (a beat after you stop) is applied.
@@ -1541,7 +1556,8 @@ async function pickWithLivePreview(
   const qp = vscode.window.createQuickPick<PreviewItem>();
   qp.title = title;
   qp.items = items;
-  qp.activeItems = items.filter((i) => i.value === effective);
+  const active = nearestItem(items, effective);
+  qp.activeItems = active ? [active] : [];
   let committed = false;
   let debounce: ReturnType<typeof setTimeout> | undefined;
   const cancelPending = (): void => {
