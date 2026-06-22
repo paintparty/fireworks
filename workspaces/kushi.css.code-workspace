@@ -7,10 +7,10 @@
       "path": ".."
     },
     {
-      "path": "../../../kushi/kushi.css"
+      "path": "../../bb-live"
     },
     {
-      "path": "../../bb-live"
+      "path": "../../../kushi/kushi.css"
     }
   ],
   "settings": {

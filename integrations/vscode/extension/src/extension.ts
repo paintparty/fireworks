@@ -1479,7 +1479,7 @@ async function chooseSession(verb: 'stop' | 'restart'): Promise<LiveSession | un
 // Preset auto-save delays (seconds) offered by fireworks.setAutoSaveDelay. They tune how
 // quickly a save lands after you stop typing — i.e. how snappy the test-refresh/inline loop
 // feels. VS Code's files.autoSaveDelay is in milliseconds.
-const AUTO_SAVE_DELAYS = [0.25, 0.5, 0.8, 1.5, 3, 5];
+const AUTO_SAVE_DELAYS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 5];
 
 // Pick a preset and write it to files.autoSaveDelay (user settings). The delay only applies
 // in "afterDelay" mode, so if auto-save is anything else (off/onFocusChange/onWindowChange)
@@ -1605,7 +1605,7 @@ async function pickWithLivePreview(
 // Preset scales offered by each picker. Keep values within the setting's declared range in
 // package.json so the chosen value isn't flagged as invalid in the Settings UI.
 const INLINE_COLORS = ['Purple', 'Blue', 'Cyan', 'Green', 'Neutral'];
-const INLINE_BG_OPACITIES = [0, 0.03, 0.04, 0.06, 0.09, 0.13, 0.18, 0.22];
+const INLINE_BG_OPACITIES = [0, 0.03, 0.04, 0.5, 0.06, 0.7, 0.8, 0.09, 0.11, 0.13, 0.18, 0.22];
 const INLINE_FG_OPACITIES = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65];
 const INLINE_GAP = [1, 2, 4, 6, 8, 10, 12, 14, 16];
 const INLINE_MAX_LENGTH = [16, 24, 32, 40, 52, 70, 100, 200];
