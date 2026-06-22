@@ -41,14 +41,19 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.stopLiveCoding', () => stopLiveCoding()),
     vscode.commands.registerCommand('fireworks.restartLiveCoding', () => restartLiveCoding()),
     vscode.window.onDidCloseTerminal((t) => {
-      if (t === liveTerminal) {
-        liveTerminal = undefined;
-        liveExecution = undefined;
+      for (const [root, s] of liveSessions) {
+        if (s.terminal === t) {
+          liveSessions.delete(root);
+          break;
+        }
       }
     }),
     vscode.window.onDidEndTerminalShellExecution((e) => {
-      if (e.execution === liveExecution) {
-        liveExecution = undefined;
+      for (const s of liveSessions.values()) {
+        if (s.execution === e.execution) {
+          s.execution = undefined; // process exited; terminal may still be open
+          break;
+        }
       }
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
@@ -82,6 +87,16 @@ function log(msg: string): void {
   if (debugEnabled()) {
     output.appendLine(msg);
   }
+}
+
+// A transient bottom-right notification that auto-dismisses after `ms` (default 5s). VS
+// Code exposes no timeout on window.showInformationMessage, so drive a notification-
+// location progress task that resolves on a timer — the toast closes when it resolves.
+function flash(message: string, ms = 5000): void {
+  void vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Notification, title: message },
+    () => new Promise<void>((resolve) => setTimeout(resolve, ms)),
+  );
 }
 
 function isVimActive(): boolean {
@@ -562,7 +577,7 @@ async function toggleInlineResults(): Promise<void> {
   } else {
     stopInlineResults();
   }
-  vscode.window.showInformationMessage(`Fireworks: inline results ${next ? 'on' : 'off'}.`);
+  flash(`Fireworks: inline results ${next ? 'on' : 'off'}.`);
 }
 
 function startInlineResults(): void {
@@ -653,6 +668,27 @@ function clearInlineResults(): void {
   for (const ed of vscode.window.visibleTextEditors) {
     cancelFade(ed);
     ed.setDecorations(inlineDecoration, []);
+  }
+}
+
+// Per-root wipe (multi-session safe): drop only one root's cached values and clear
+// decorations from its visible editors, leaving other projects' inline results intact.
+// resultKey is "<root> <ns> <pos>", so the root's entries share the "<root> " prefix.
+function clearResultsForRoot(root: string): void {
+  const prefix = `${root} `;
+  for (const key of resultsCache.keys()) {
+    if (key.startsWith(prefix)) {
+      resultsCache.delete(key);
+    }
+  }
+  if (!inlineDecoration) {
+    return;
+  }
+  for (const ed of vscode.window.visibleTextEditors) {
+    if (rootFor(ed.document.uri.fsPath) === root) {
+      cancelFade(ed);
+      ed.setDecorations(inlineDecoration, []);
+    }
   }
 }
 
@@ -1051,19 +1087,29 @@ function allocateEven(lengths: number[], budget: number): number[] {
 // writes no project files. Leiningen is out of scope (set that up by hand).
 // ============================================================================
 
-const TERMINAL_NAME = 'Fireworks: Live Code';
+// The terminal name for a root's session — basename-tagged so concurrent sessions in
+// different projects are distinguishable in the terminal dropdown.
+function terminalName(root: string): string {
+  return `Fireworks: Live Code — ${path.basename(root)}`;
+}
 
 // Cosmetic: ms to let the shell prompt finish drawing before sending the watcher
 // command, so zsh's line editor doesn't double-echo it. Remove the `await` in
 // sendWatcherCommand (and this const) to revert.
 const PROMPT_SETTLE_MS = 250;
 
-let liveTerminal: vscode.Terminal | undefined;
-let liveExecution: vscode.TerminalShellExecution | undefined;
+// One live-coding session per project root. Several can run at once (different projects
+// in the same workspace); each owns its own integrated terminal.
+interface LiveSession {
+  root: string;
+  command: string; // the verbatim watcher command it launched with (for restart)
+  terminal: vscode.Terminal;
+  execution: vscode.TerminalShellExecution | undefined; // tracked when shell integration is available
+}
+const liveSessions = new Map<string, LiveSession>(); // keyed by root
+
 let statusBar: vscode.StatusBarItem;
 let extContext: vscode.ExtensionContext;
-let activeRoot: string | undefined; // the root the running / last-used session operates on
-let activeCommand: string | undefined; // the verbatim watcher command that session launched with
 
 function cfg(): vscode.WorkspaceConfiguration {
   return vscode.workspace.getConfiguration('fireworks');
@@ -1286,47 +1332,35 @@ function waitForShellIntegration(
   });
 }
 
-// Send the watcher command, tracking the execution when shell integration is
-// available. All launches route through here.
+// Send the watcher command into a session's terminal, tracking the execution when shell
+// integration is available. All launches route through here.
 async function sendWatcherCommand(
-  terminal: vscode.Terminal,
+  session: LiveSession,
   si: vscode.TerminalShellIntegration | undefined,
   command: string,
 ): Promise<void> {
   // --- cosmetic: avoid the duplicate command echo (delete this await to revert) ---
   await new Promise((r) => setTimeout(r, PROMPT_SETTLE_MS));
   // ---------------------------------------------------------------------------------
-  if (terminal !== liveTerminal) {
-    return; // terminal closed/replaced during the settle delay
+  if (liveSessions.get(session.root) !== session) {
+    return; // session closed/replaced during the settle delay
   }
   if (si) {
-    liveExecution = si.executeCommand(command);
+    session.execution = si.executeCommand(command);
   } else {
-    terminal.sendText(command); // fallback: no execution tracking
-    liveExecution = undefined;
+    session.terminal.sendText(command); // fallback: no execution tracking
+    session.execution = undefined;
   }
 }
 
 async function startLiveCoding(): Promise<void> {
-  clearInlineResults(); // wipe any stale inline values before the new session paints
-  if (liveTerminal) {
-    if (liveTerminal.shellIntegration && liveExecution === undefined && activeCommand) {
-      // Shell integration confirmed the process exited — restart in the same terminal
-      if (activeRoot) {
-        prepareResultsDir(activeRoot); // same fresh-slate prep as launchWatcher
-      }
-      liveTerminal.show();
-      // Wipe the dead session's scrollback first (Cmd-K equivalent) so the new run
-      // starts on a clean terminal. Acts on the active terminal, which show() just made it.
-      await vscode.commands.executeCommand('workbench.action.terminal.clear');
-      await sendWatcherCommand(liveTerminal, liveTerminal.shellIntegration, activeCommand);
-      return;
-    }
-    liveTerminal.show(); // process running, or no shell integration — just focus
-    return;
-  }
   const root = await pickProjectRoot();
   if (!root) {
+    return;
+  }
+  const existing = liveSessions.get(root);
+  if (existing) {
+    await reuseOrNotify(existing);
     return;
   }
   const command = await resolveWatcherCommand(root);
@@ -1336,42 +1370,95 @@ async function startLiveCoding(): Promise<void> {
   await launchWatcher(root, command);
 }
 
-// Run the watcher for a known root + resolved command. Records them as the active session
-// so Stop/Restart act on the same project/command without re-asking.
-async function launchWatcher(root: string, command: string): Promise<void> {
-  prepareResultsDir(root); // ensure .fireworks exists + ignored, then fresh-slate results
-  activeRoot = root;
-  activeCommand = command;
-  liveExecution = undefined;
-  log(`live coding -> ${command} (cwd ${root})`);
-  liveTerminal = vscode.window.createTerminal({ name: TERMINAL_NAME, cwd: root });
-  liveTerminal.show();
-
-  const si = await waitForShellIntegration(liveTerminal);
-  if (!liveTerminal) return; // closed during wait
-
-  await sendWatcherCommand(liveTerminal, si, command);
-}
-
-function stopLiveCoding(): void {
-  if (!liveTerminal) {
+// A session already exists for the picked root. If its process has exited (the terminal
+// is lingering), restart it in place. Otherwise it's genuinely running: reveal it and
+// show a modal notice — starting a second session for the same project is a no-op.
+async function reuseOrNotify(session: LiveSession): Promise<void> {
+  const exited = session.terminal.shellIntegration && session.execution === undefined;
+  if (exited) {
+    prepareResultsDir(session.root);
+    clearResultsForRoot(session.root);
+    session.terminal.show();
+    // Wipe the dead session's scrollback first (Cmd-K equivalent) so the new run starts
+    // clean. Acts on the active terminal, which show() just made it.
+    await vscode.commands.executeCommand('workbench.action.terminal.clear');
+    await sendWatcherCommand(session, session.terminal.shellIntegration, session.command);
     return;
   }
-  liveTerminal.sendText('\u0003'); // Ctrl-C: let test-refresh shut down cleanly
-  liveTerminal.dispose();
-  liveTerminal = undefined;
-  liveExecution = undefined;
+  session.terminal.show();
+  await vscode.window.showInformationMessage(
+    'Fireworks: Live Code already running in this project:',
+    { modal: true, detail: path.basename(session.root) },
+  );
+}
+
+// Run the watcher for a root + resolved command, registering it as a session so
+// Stop/Restart can act on it. Concurrent sessions for other roots are left untouched.
+async function launchWatcher(root: string, command: string): Promise<void> {
+  prepareResultsDir(root); // on-disk fresh slate for this root
+  clearResultsForRoot(root); // in-memory fresh slate for this root only (not other projects')
+  log(`live coding -> ${command} (cwd ${root})`);
+  const terminal = vscode.window.createTerminal({ name: terminalName(root), cwd: root });
+  const session: LiveSession = { root, command, terminal, execution: undefined };
+  liveSessions.set(root, session);
+  terminal.show();
+
+  const si = await waitForShellIntegration(terminal);
+  if (liveSessions.get(root) !== session) {
+    return; // closed/replaced during wait
+  }
+  await sendWatcherCommand(session, si, command);
+}
+
+// Stop a session: Ctrl-C so test-refresh shuts down cleanly, then dispose the terminal
+// (onDidCloseTerminal removes it from the map; the eager delete covers the event lag).
+function stopSession(session: LiveSession): void {
+  session.terminal.sendText('\u0003'); // Ctrl-C: let test-refresh shut down cleanly
+  session.terminal.dispose();
+  liveSessions.delete(session.root);
+}
+
+async function stopLiveCoding(): Promise<void> {
+  if (liveSessions.size === 0) {
+    flash('Fireworks: no Live Code session is running.');
+    return;
+  }
+  const session = await chooseSession('stop');
+  if (session) {
+    stopSession(session);
+  }
 }
 
 async function restartLiveCoding(): Promise<void> {
-  const root = activeRoot;
-  const command = activeCommand;
-  stopLiveCoding();
-  if (root && command) {
-    await launchWatcher(root, command); // reuse the running session's root + command (no re-prompt)
-  } else {
-    await startLiveCoding();
+  if (liveSessions.size === 0) {
+    await startLiveCoding(); // nothing to restart — start a fresh session
+    return;
   }
+  const session = await chooseSession('restart');
+  if (!session) {
+    return;
+  }
+  const { root, command } = session;
+  stopSession(session);
+  await launchWatcher(root, command); // reuse the session's root + command (no re-prompt)
+}
+
+// The running session to act on: the only one, or a quick pick when several are running.
+// Caller guarantees liveSessions is non-empty; undefined means the pick was dismissed.
+async function chooseSession(verb: 'stop' | 'restart'): Promise<LiveSession | undefined> {
+  const all = [...liveSessions.values()];
+  if (all.length === 1) {
+    return all[0];
+  }
+  const pick = await vscode.window.showQuickPick(
+    all.map((session) => ({
+      label: path.basename(session.root),
+      description: tildify(path.dirname(session.root)),
+      session,
+    })),
+    { placeHolder: `Select the Live Code session to ${verb}`, matchOnDescription: true },
+  );
+  return pick?.session;
 }
 
 // Inline Results on/off toggle in the bottom status bar. Only shown when the active

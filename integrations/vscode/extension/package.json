@@ -67,29 +67,11 @@
     "configuration": {
       "title": "Fireworks",
       "properties": {
-        "fireworks.debug": {
-          "type": "boolean",
-          "default": false,
-          "description": "Write diagnostic traces to the Fireworks output channel."
-        },
         "fireworks.inlineResults.enabled": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "When on, the extension watches the project's `.fireworks/results/` directory and shows each `?` call's value as a read-only inline decoration at the end of its source line. Toggle with the `Fireworks: Toggle Inline Results` command."
-        },
-        "fireworks.inlineResults.gap": {
-          "type": "number",
-          "default": 7,
-          "max": 300,
-          "min": 20,
-          "markdownDescription": "Spaces between the last character of code on a line and the inline `?` value."
-        },
-        "fireworks.inlineResults.maxLength": {
-          "type": "number",
-          "default": 80,
-          "max": 300,
-          "min": 20,
-          "markdownDescription": "Character budget for inline `?` values on a single line, shared as evenly as possible when a line has more than one result (truncated with `...`). At most 3 results show per line; the rest collapse into a `+ n more` tail. Set to `0` for no limit."
+          "markdownDescription": "When on, the extension watches the project's `.fireworks/results/` directory and shows each `?` call's value as a read-only inline decoration at the end of its source line. Toggle with the `Fireworks: Toggle Inline Results` command.",
+          "order": 1
         },
         "fireworks.inlineResults.color": {
           "type": "string",
@@ -102,28 +84,54 @@
             "Green — adapts to light/dark.",
             "Neutral gray — adapts to light/dark."
           ],
-          "markdownDescription": "Color of the inline `?` value and its background tint. The light- or dark-theme variant is chosen automatically. Intensity: `#fireworks.inlineResults.opacity#`; tint strength: `#fireworks.inlineResults.backgroundOpacity#`."
+          "markdownDescription": "Color of the inline `?` value and its background tint. The light- or dark-theme variant is chosen automatically. Intensity: `#fireworks.inlineResults.opacity#`; tint strength: `#fireworks.inlineResults.backgroundOpacity#`.",
+          "order": 2
         },
         "fireworks.inlineResults.opacity": {
           "type": "number",
           "default": 0.75,
           "minimum": 0.5,
           "maximum": 1,
-          "markdownDescription": "Opacity of the inline `?` value. Clamped to the range 0.5–1.0 so the value stays legible."
+          "markdownDescription": "Opacity of the inline `?` value. Clamped to the range 0.5–1.0 so the value stays legible.",
+          "order": 3
         },
         "fireworks.inlineResults.backgroundOpacity": {
           "type": "number",
           "default": 0.01,
           "minimum": 0,
           "maximum": 0.3,
-          "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`). Clamped to 0–0.3; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`."
+          "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`). Clamped to 0–0.3; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`.",
+          "order": 4
+        },
+        "fireworks.inlineResults.gap": {
+          "type": "number",
+          "default": 7,
+          "max": 300,
+          "min": 20,
+          "markdownDescription": "Spaces between the last character of code on a line and the inline `?` value.",
+          "order": 5
+        },
+        "fireworks.inlineResults.maxLength": {
+          "type": "number",
+          "default": 80,
+          "max": 300,
+          "min": 20,
+          "markdownDescription": "Character budget for inline `?` values on a single line, shared as evenly as possible when a line has more than one result (truncated with `...`). At most 3 results show per line; the rest collapse into a `+ n more` tail. Set to `0` for no limit.",
+          "order": 6
         },
         "fireworks.inlineResults.fadeInMs": {
           "type": "number",
           "default": 90,
           "minimum": 0,
           "maximum": 500,
-          "markdownDescription": "Duration in milliseconds of the fade-in when an inline `?` value appears. Set to `0` to show values instantly without animation."
+          "markdownDescription": "Duration in milliseconds of the fade-in when an inline `?` value appears. Set to `0` to show values instantly without animation.",
+          "order": 7
+        },
+        "fireworks.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Write diagnostic traces to the Fireworks output channel.",
+          "order": 8
         }
       }
     }
