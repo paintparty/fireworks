@@ -4,6 +4,7 @@
             [fireworks.defs :as defs]
             [clojure.set :as set]
             [lasertag.fns :as fns]
+            [lasertag.cached]
             [lasertag.core :as lasertag]))
 
 (defn ? 
@@ -190,22 +191,57 @@
   (into (conj (subvec vc 0 i) elem)
         (subvec vc i)))
 
+
+(defn longer-than?
+  "Returns true if `coll` has more than `n` elements.
+
+  Avoids fully realizing lazy sequences — walks at most (inc n) elements.
+
+  Examples:
+    (longer-than? 5 (range 3))   ;=> false
+    (longer-than? 5 (range 5))   ;=> false
+    (longer-than? 5 (range 6))   ;=> true
+    (longer-than? 5 (range 1e9)) ;=> true"
+  [n coll]
+  (some? (nth coll n nil)))
+
+(defn truncated-seq 
+  "Truncates a seq without realizing it.
+   
+   Optional trucation label or symbol is
+   appended to result (useful for printing).
+   (truncated-seq 3 '(1 2 3 4 5) '...) => '(1 2 3 ...)"
+  ([n x]
+   (truncated-seq n x nil))
+  ([n x label]
+   (println n)
+   (println (longer-than? n x))
+   (if (longer-than? n x)
+     (concat (take n x) [label])
+     (take n x))))
+
+
 (defn safety-subs 
   "Safely get a substring, with optional ellipsis"
   [x {:keys [start end print-length print-level ellipsis?] 
       :or {start 0
            end 10
-           print-length 10
+           print-length 10 ;<- max length of colls
            print-level 10
            ellipsis? false}}]
   (binding [*print-length* print-length
             *print-level* print-level]
-    (let [s            (str x)
-          len          (count s)
-          start+       (max 0 (min start len))
-          end+         (max start+ (min end len))
-          target-len   (- end+ start+)
-          overflows?   (> len end+)]
+    (let [lazy-seq?  (lasertag.cached/lazyish-seq? x)
+          s          (pr-str (if lazy-seq?
+                               ;; TODO - util fn (seq-overflow?) to compute '...+5,
+                               ;; How to make safe for infinite, etc
+                               (truncated-seq print-length x '...)
+                               x))
+          len        (count s)
+          start+     (max 0 (min start len))
+          end+       (max start+ (min end len))
+          target-len (- end+ start+)
+          overflows? (> len end+)]
       (if (and ellipsis? overflows? (>= target-len 3))
         (str (subs s start+ (- end+ 3)) "...")
         (subs s start+ end+)))))

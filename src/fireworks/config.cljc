@@ -15,12 +15,15 @@
                                    :default        false
                                    :updates-theme? true
                                    :desc           "Will render the printed output with a `font-weight` of `bold`."}
-   ;; Controls how many items are printed in a coll before truncation
    :print-length                  {:spec    ::config/print-length
-                                   :default 33}
-   ;; The strlen limit of a single-line coll, before truncation
+                                   :default 33
+                                   :desc    "Controls how many items are printed in a coll before truncation"}
+   :print-length-inline-results   {:spec    ::config/print-length-inline-results
+                                   :default 8
+                                   :desc    "Controls how many items are printed in a coll before truncation, for inline results"}
    :single-line-coll-max-length   {:spec    ::config/single-line-coll-max-length
-                                   :default 33}
+                                   :default 33
+                                   :desc    "The strlen limit of a single-line coll, before truncation"}
    :scalar-result-max-length      {:spec    ::config/scalar-result-max-length
                                    :default 444
                                    :desc    "Sets the max length of a scalar value such as a string, keyword, function name, etc. Only applies when the value itself is the result of the evaluation (not nested within a data structure)."}
@@ -40,6 +43,9 @@
    :print-level                   {:spec    ::config/print-level
                                    :default 7
                                    :desc    "Sets the max depth of printing for nested collections."}
+   :print-level-inline-results    {:spec    ::config/print-level-inline-results
+                                   :default 3
+                                   :desc    "Sets the max depth of printing for nested collections in inline results"}
    :metadata-print-level          {:spec    ::config/metadata-print-level
                                    :default 4
                                    :desc    "Sets the max depth of printing for metadata maps that contain nested collections."}
@@ -110,7 +116,7 @@
                                    :default false}
    :colorize?                     {:spec    ::config/colorize?
                                    :default true
-                                   :desc "Experimental colorization for :pp mode, which dispatches to pp/pprint"}
+                                   :desc    "Experimental colorization for :pp mode, which dispatches to pp/pprint"}
    
    
    ;; Deprecated / Internal dev only
