@@ -33,7 +33,13 @@
       { "command": "fireworks.startLiveCoding", "title": "Live Code", "category": "Fireworks" },
       { "command": "fireworks.stopLiveCoding", "title": "Live Code (Stop)", "category": "Fireworks" },
       { "command": "fireworks.restartLiveCoding", "title": "Live Code (Restart)", "category": "Fireworks" },
-      { "command": "fireworks.setAutoSaveDelay", "title": "Set Auto-Save Delay", "category": "Fireworks" }
+      { "command": "fireworks.setAutoSaveDelay", "title": "Set Auto-Save Delay", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsColor", "title": "Set Inline Results Color", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsBackgroundOpacity", "title": "Set Inline Results Background Opacity", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsOpacity", "title": "Set Inline Results Opacity", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsGap", "title": "Set Inline Results Gap", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsMaxLength", "title": "Set Inline Results Max Length", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsFadeIn", "title": "Set Inline Results Fade-In", "category": "Fireworks" }
     ],
     "keybindings": [
       {
@@ -98,7 +104,7 @@
         },
         "fireworks.inlineResults.backgroundOpacity": {
           "type": "number",
-          "default": 0.01,
+          "default": 0.03,
           "minimum": 0,
           "maximum": 0.3,
           "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`). Clamped to 0–0.3; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`.",
@@ -107,16 +113,16 @@
         "fireworks.inlineResults.gap": {
           "type": "number",
           "default": 7,
-          "max": 300,
-          "min": 20,
+          "minimum": 1,
+          "maximum": 300,
           "markdownDescription": "Spaces between the last character of code on a line and the inline `?` value.",
           "order": 5
         },
         "fireworks.inlineResults.maxLength": {
           "type": "number",
           "default": 80,
-          "max": 300,
-          "min": 20,
+          "minimum": 0,
+          "maximum": 300,
           "markdownDescription": "Character budget for inline `?` values on a single line, shared as evenly as possible when a line has more than one result (truncated with `...`). At most 3 results show per line; the rest collapse into a `+ n more` tail. Set to `0` for no limit.",
           "order": 6
         },

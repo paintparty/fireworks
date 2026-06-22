@@ -41,6 +41,20 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.stopLiveCoding', () => stopLiveCoding()),
     vscode.commands.registerCommand('fireworks.restartLiveCoding', () => restartLiveCoding()),
     vscode.commands.registerCommand('fireworks.setAutoSaveDelay', () => setAutoSaveDelay()),
+    vscode.commands.registerCommand('fireworks.setInlineResultsColor', () => setInlineResultsColor()),
+    vscode.commands.registerCommand('fireworks.setInlineResultsBackgroundOpacity', () =>
+      setInlineResultsBackgroundOpacity(),
+    ),
+    vscode.commands.registerCommand('fireworks.setInlineResultsOpacity', () =>
+      setInlineResultsOpacity(),
+    ),
+    vscode.commands.registerCommand('fireworks.setInlineResultsGap', () => setInlineResultsGap()),
+    vscode.commands.registerCommand('fireworks.setInlineResultsMaxLength', () =>
+      setInlineResultsMaxLength(),
+    ),
+    vscode.commands.registerCommand('fireworks.setInlineResultsFadeIn', () =>
+      setInlineResultsFadeIn(),
+    ),
     vscode.window.onDidCloseTerminal((t) => {
       for (const [root, s] of liveSessions) {
         if (s.terminal === t) {
@@ -514,7 +528,7 @@ function inlineBgColor(): string {
 // The background tint: inlineBgColor mixed into transparent at backgroundOpacity
 // (clamped 0–0.2). undefined when the opacity is 0 (no tint).
 function inlineBackground(): string | undefined {
-  const op = clamp(cfg().get<number>('inlineResults.backgroundOpacity', 0.01), 0, 0.2);
+  const op = clamp(cfg().get<number>('inlineResults.backgroundOpacity', 0.03), 0, 0.3);
   if (op <= 0) {
     return undefined;
   }
@@ -1497,6 +1511,156 @@ async function setAutoSaveDelay(): Promise<void> {
   flash(
     `Fireworks: auto-save delay set to ${pick.seconds}s` +
       (wasOn ? '.' : ' (auto-save turned on: after delay).'),
+  );
+}
+
+interface PreviewItem extends vscode.QuickPickItem {
+  value: string | number;
+}
+
+// How long the highlighted option must hold still before its value is applied. Debounces
+// the live preview so holding the arrow key to cycle through options doesn't write the
+// setting on every step — only the option you settle on (a beat after you stop) is applied.
+const PREVIEW_DEBOUNCE_MS = 350;
+
+// A QuickPick that previews each option live: a beat after you settle on an item, its value
+// is written to the given fireworks.* setting (user scope), so inline results re-render.
+// Enter keeps the highlighted value (applied immediately); Esc restores the original.
+// Preview is only visible while inline results are running, but the chosen value is saved
+// either way. inspect() captures the prior user-scope value so a cancel can clear an
+// override that wasn't there before.
+async function pickWithLivePreview(
+  key: string,
+  title: string,
+  items: PreviewItem[],
+  effective: string | number,
+): Promise<void> {
+  const originalGlobal = cfg().inspect<string | number>(key)?.globalValue;
+  const apply = (v: string | number | undefined) =>
+    cfg().update(key, v, vscode.ConfigurationTarget.Global);
+  const qp = vscode.window.createQuickPick<PreviewItem>();
+  qp.title = title;
+  qp.items = items;
+  qp.activeItems = items.filter((i) => i.value === effective);
+  let committed = false;
+  let debounce: ReturnType<typeof setTimeout> | undefined;
+  const cancelPending = (): void => {
+    if (debounce !== undefined) {
+      clearTimeout(debounce);
+      debounce = undefined;
+    }
+  };
+  return new Promise<void>((resolve) => {
+    qp.onDidChangeActive((active) => {
+      const item = active[0];
+      if (!item) {
+        return;
+      }
+      cancelPending(); // restart the timer on every move, so a held key never applies mid-cycle
+      debounce = setTimeout(() => {
+        debounce = undefined;
+        void apply(item.value);
+      }, PREVIEW_DEBOUNCE_MS);
+    });
+    qp.onDidAccept(() => {
+      committed = true;
+      cancelPending(); // flush now — don't wait out the debounce on the chosen value
+      const item = qp.activeItems[0];
+      if (item) {
+        void apply(item.value);
+      }
+      qp.hide();
+    });
+    qp.onDidHide(() => {
+      cancelPending(); // drop any preview that hadn't landed yet
+      void (async () => {
+        if (!committed) {
+          await apply(originalGlobal); // undefined clears the override we added for preview
+        }
+        qp.dispose();
+        resolve();
+      })();
+    });
+    qp.show();
+  });
+}
+
+// --- Inline-result appearance pickers (live preview; see pickWithLivePreview) ----------
+// Preset scales offered by each picker. Keep values within the setting's declared range in
+// package.json so the chosen value isn't flagged as invalid in the Settings UI.
+const INLINE_COLORS = ['Purple', 'Blue', 'Cyan', 'Green', 'Neutral'];
+const INLINE_BG_OPACITIES = [0, 0.03, 0.04, 0.06, 0.09, 0.13, 0.18, 0.22];
+const INLINE_FG_OPACITIES = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65];
+const INLINE_GAP = [1, 2, 4, 6, 8, 10, 12, 14, 16];
+const INLINE_MAX_LENGTH = [16, 24, 32, 40, 52, 70, 100, 200];
+const INLINE_FADE = [0, 40, 80, 120, 200, 300, 450];
+
+// Build the live-preview items for a preset scale, tagging the active value "(current)".
+function previewItems(values: (string | number)[], current: string | number): PreviewItem[] {
+  return values.map((v) => ({
+    label: `${v}`,
+    description: v === current ? '(current)' : undefined,
+    value: v,
+  }));
+}
+
+async function setInlineResultsColor(): Promise<void> {
+  const current = cfg().get<string>('inlineResults.color', 'Purple');
+  await pickWithLivePreview(
+    'inlineResults.color',
+    'Inline Results Color',
+    previewItems(INLINE_COLORS, current),
+    current,
+  );
+}
+
+async function setInlineResultsBackgroundOpacity(): Promise<void> {
+  const current = cfg().get<number>('inlineResults.backgroundOpacity', 0.03);
+  await pickWithLivePreview(
+    'inlineResults.backgroundOpacity',
+    'Inline Results Background Opacity',
+    previewItems(INLINE_BG_OPACITIES, current),
+    current,
+  );
+}
+
+async function setInlineResultsOpacity(): Promise<void> {
+  const current = cfg().get<number>('inlineResults.opacity', 0.75);
+  await pickWithLivePreview(
+    'inlineResults.opacity',
+    'Inline Results Opacity',
+    previewItems(INLINE_FG_OPACITIES, current),
+    current,
+  );
+}
+
+async function setInlineResultsGap(): Promise<void> {
+  const current = cfg().get<number>('inlineResults.gap', 7);
+  await pickWithLivePreview(
+    'inlineResults.gap',
+    'Inline Results Gap',
+    previewItems(INLINE_GAP, current),
+    current,
+  );
+}
+
+async function setInlineResultsMaxLength(): Promise<void> {
+  const current = cfg().get<number>('inlineResults.maxLength', 80);
+  await pickWithLivePreview(
+    'inlineResults.maxLength',
+    'Inline Results Max Length',
+    previewItems(INLINE_MAX_LENGTH, current),
+    current,
+  );
+}
+
+async function setInlineResultsFadeIn(): Promise<void> {
+  const current = cfg().get<number>('inlineResults.fadeInMs', 90);
+  await pickWithLivePreview(
+    'inlineResults.fadeInMs',
+    'Inline Results Fade-In (ms)',
+    previewItems(INLINE_FADE, current),
+    current,
   );
 }
 
