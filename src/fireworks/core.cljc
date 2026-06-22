@@ -269,10 +269,10 @@
     (and (= template [:result])
          (not (pos-int? (k user-opts))))
     ""
-    ;; If you want a margin on the top when using native printing
-    ;; Disabled for now
+    ;; Require margin on the top when using native printing  
     (contains? #{:log :pp :js} mode)
-    "" #_"\n"
+    "\n"
+
     :else
     (string/join (repeat (get @state/config k 0) "\n")))
 
@@ -1385,22 +1385,22 @@
          {:label      [:form-or-label :result]
           :file       [:file-info :result]
           :result     [:result]
-          :comment    [:form-or-label :file-info]
+          :comment    [:file-info :form-or-label]
           ;; default-case nix?
-          :data       [:form-or-label :file-info :result]
+          :data       [:file-info :form-or-label :result]
           ;; default-case nix?
-          :log        [:form-or-label :file-info :result]
+          :log        [:file-info :form-or-label :result]
           :log-       nil
           ;; default-case nix?
-          :js         [:form-or-label :file-info :result]
+          :js         [:file-info :form-or-label :result]
           :js-        nil
           ;; default-case nix?
-          :pp         [:form-or-label :file-info :result]
+          :pp         [:file-info :form-or-label :result]
           :pp-        nil
           ;; default-case nix?
-          :trace      [:form-or-label :file-info :result]}
+          :trace      [:file-info :form-or-label :result]}
          mode
-         [:form-or-label :file-info :result])
+         [:file-info :form-or-label :result])
         
         m
         (resolve-tracing-form &form mode)]
