@@ -323,18 +323,27 @@
         (when (string? qf) (re-find #"\n" qf))
 
         file-info-first?
-        (or (contains?
-             #{[:file-info :result]
-               [:file-info :form-or-label]
-               [:file-info :form-or-label :result]}
-             template)
-            (and label
-                 (contains? #{[:form-or-label :file-info]
-                              [:form-or-label :file-info :result]}
-                            template)
-                 (or mll? (< 44 (count (str label)))))
-            (and (= template [:form-or-label :file-info :result])
-                 (or ml-qf? (:format-label-as-code? opts))))
+        (or 
+         ;; NEW - just go first line if :file info in there at all
+         (contains? (into #{} template) :file-info)
+
+         ;; template specifies :file-info-first
+         (contains?
+          #{[:file-info :result]
+            [:file-info :form-or-label]
+            [:file-info :form-or-label :result]}
+          template)
+
+         ;; label is supplied, and template is label first, but label is multi-line or long
+         (and label
+              (contains? #{[:form-or-label :file-info]
+                           [:form-or-label :file-info :result]}
+                         template)
+              (or mll? (< 4 (count (str label)))))
+
+         ;; template is label first, but label is multiline or forced formatting as code
+         (and (= template [:form-or-label :file-info :result])
+              (or ml-qf? (:format-label-as-code? opts))))
 
         {:keys [fmt+ fmt file-info* css-count*]}
         (fmt+  (keyed [file-info-first? 
@@ -872,8 +881,8 @@
                    x
                    {:start        0
                     :end          1000 ;; <- max string length
-                    :print-length (:print-length @state/config)
-                    :print-level  (:print-level @state/config)
+                    :print-length (:print-length-inline-results @state/config)
+                    :print-level  (:print-level-inline-results @state/config)
                     :ellipsis?    true})
              path (str ".fireworks/results/" ns-str "/" line ":" column)]
          (io/make-parents path)
