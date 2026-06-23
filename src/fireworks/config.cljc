@@ -97,7 +97,7 @@
                                    :default 0}
    :print-with                    {:spec    ::config/print-with
                                    :default nil
-                                   :desc    "Although more of an edge-case, you can pass a `:print-with` option at the call site if you would like to print the value using a built-in clojure core printing function. The value must be one of `pr`, `pr-str`, `prn`, `prn-str`, `print`, or `println`."}
+                                   :desc    "A custom printing formatting / printing function can be passed at the call site. The function must ultimately call a core printing function such as `clojure.core/println`"}
    :find                          {:spec    ::config/find
                                    :default nil
                                    :desc    "Find and highlight values in the printed output."}
@@ -156,7 +156,13 @@
     :quoted-fw-form
     :qf
     :elide-branches
-    :p-data?})
+    :p-data?
+    
+    :display-file-info?
+    :display-form-or-label?
+    :data?
+    :trace?
+    })
 
 ;; Option keys
 (def option-keys
