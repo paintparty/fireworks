@@ -20,30 +20,66 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
-
-
-
+(def lb "\n\n ")
+(def lb2 "\n")
+(def xx {:a (take 10 (map inc (range 18))) :b "foo"})
+(defn my-custom-printer [x] (println (str "HIHIHIH " x)))
 #_(do 
-  (? (take 10 (map inc (range 18))))
+  ;; (println lb "DEFAULT" lb2)
+  ;; (? xx)
+  
+  (println lb "JUST-RESULT, from opts" lb2)
+  (? {:display-file-info? false :display-form-or-label? false} xx)
 
-  (? :- (take 10 (map inc (range 18))))
-  (println)
-  (? :no-label (take 10 (map inc (range 18))))
+  (println lb "NO-LABEL, from opts" lb2)
+  (? {:display-form-or-label? false} xx)
 
-  (? :no-file (take 10 (map inc (range 18))))
+  (println lb "NO-FILE" lb2)
+  (? {:display-file-info? false} xx)
 
-  (? :no-file "custom label as string" (take 10 (map inc (range 18))))
+  (println  lb "CUSTOM LABEL, from opts" lb2)
+  (? {:label "custom label as string"} xx)
 
-  (? :no-file {:label "custom label from opts"} (take 10 (map inc (range 18))))
+  (println lb "PRN, from opts" lb2)
+  (? {:print-with prn} "ln1\nln2")
 
-  (? :no-file (take 10 (map inc (range 18))))
+  (println lb "PRINT, from opts" lb2)
+  (? {:print-with print} "ln1\nln2")
 
-  (? :pp :fooo)
+  (println lb "PP, from opts" lb2)
+  (? {:print-with pprint} xx)
 
-  (? :+ (take 10 (map inc (range 44)))))
+  (println lb "CUSOM PRINTING FN, from opts" lb2)
+  (? {:print-with my-custom-printer} :foo)
+
+
+  (println lb "log?, from opts" lb2)
+  (? {:log? true} xx)
+
+  #_(println lb "NO TRUNCATION, from opts" lb2)
+  #_(? {:truncate? false} (assoc xx :c (range 100)))
+
+  #_(println lb "RESULT OF DATA, from opts.\n  (`:formatted` and `:formatted-with-header` dissoc'd)" lb2)
+  #_(pprint (dissoc (? {:data? true} :fooo) :formatted :formatted-with-header))
+
+  #_(? :pp :fooo)
+
+  ;; (? :+ (map inc (range 444)))
+  )
 
 ;; (? :no-file {:label "wtf"} (take 10 (map inc (range 18))))
-(? :no-file (take 10 (map inc (range 18))))
+
+(? :no-label "wow chick" :trace (-> 1 inc (+ 3)))
+
+(? :no-file "wow chick" {:print-length 6} [1 2 3 4 5 6 7 8 9])
+
+#_(? {:truncate? true} (range 108))
+
+#_(? {:label "girlssss"
+    ;; :no-file? true
+    ;; :no-label? true
+    }
+ :fooo)
 
 ;; (? (def foo 'bar))
 
