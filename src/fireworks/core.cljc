@@ -1611,6 +1611,7 @@
      (let [
            args                   (into [] args)
            x                      (peek args)
+           debug?                 (= x :foo)
            mods                   (pop args)
            last-mod               (peek mods)
            supplied-user-opts     (when (map? last-mod) last-mod)
@@ -1618,21 +1619,31 @@
            label                  (first (filter string? mods))
            label                  (or label
                                       (some-> supplied-user-opts :label))
-           just-results?          (contains? flags :-)
-           display-file-info?     (if (or just-results?
+           just-results-flag?     (contains? flags :-)
+           display-file-info?     (if (or just-results-flag?
                                           (contains? flags :no-file)
                                           (some-> supplied-user-opts
                                                   :display-file-info?
                                                   false? ))
                                     false
                                     (get @state/config :display-file-info?))
-           display-label-or-form? (if (or just-results?
+           display-label-or-form? (if (or just-results-flag?
                                           (contains? flags :no-label)
                                           (some-> supplied-user-opts
                                                   :display-label-or-form?
                                                   false? ))
                                     false
                                     (get @state/config :display-label-or-form?))
+           just-results?          (or just-results-flag?
+                                      (and (false? display-label-or-form?)
+                                           (false? display-file-info?)))
+
+
+          ;;  _ 
+          ;;  (when debug?
+          ;;    (?pp just-results?))
+
+
            truncate?              (if (or (contains? flags :+) 
                                           (some-> supplied-user-opts
                                                   :truncate?
@@ -1651,9 +1662,6 @@
                                     :else
                                     (let [f (:print-with supplied-user-opts)]
                                       (when (fn? f) f)))
-
-           just-results?          (and (false? display-label-or-form?)
-                                       (false? display-file-info?))
 
            log?                   (if (or (contains? flags :log) 
                                           (some-> supplied-user-opts
@@ -1825,8 +1833,8 @@
                      ]
 
                  #_(when (= x [1 2 3 4 5 6 7 8 9])
-                   (?pp supplied-user-opts-with-flag-overrides)
-                   (?pp cfg-opts))
+                     (?pp supplied-user-opts-with-flag-overrides)
+                     (?pp cfg-opts))
 
                  (keyed [defd x qf-nil? cfg-opts log?*]))]
 
