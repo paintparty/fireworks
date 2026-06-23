@@ -25,8 +25,8 @@
 (def xx {:a (take 10 (map inc (range 18))) :b "foo"})
 (defn my-custom-printer [x] (println (str "HIHIHIH " x)))
 (do 
-  ;; (println lb "DEFAULT" lb2)
-  ;; (? xx)
+  (println lb "DEFAULT" lb2)
+  (? xx)
   
   (println lb "JUST-RESULT, from opts" lb2)
   (? {:display-file-info? false :display-label-or-form? false} :foo)
@@ -34,27 +34,27 @@
   (println lb "NO-LABEL, from opts" lb2)
   (? {:display-label-or-form? false} xx)
 
-  ;; (println lb "NO-FILE" lb2)
-  ;; (? {:display-file-info? false} xx)
+  (println lb "NO-FILE" lb2)
+  (? {:display-file-info? false} xx)
 
-  ;; (println  lb "CUSTOM LABEL, from opts" lb2)
-  ;; (? {:label "custom label as string"} xx)
+  (println  lb "CUSTOM LABEL, from opts" lb2)
+  (? {:label "custom label as string"} xx)
 
-  ;; (println lb "PRN, from opts" lb2)
-  ;; (? {:print-with prn} "ln1\nln2")
+  (println lb "PRN, from opts" lb2)
+  (? {:print-with prn} "ln1\nln2")
 
-  ;; (println lb "PRINT, from opts" lb2)
-  ;; (? {:print-with print} "ln1\nln2")
+  (println lb "PRINT, from opts" lb2)
+  (? {:print-with print} "ln1\nln2")
 
-  ;; (println lb "PP, from opts" lb2)
-  ;; (? {:print-with pprint} xx)
+  (println lb "PP, from opts" lb2)
+  (? {:print-with pprint} xx)
 
-  ;; (println lb "CUSOM PRINTING FN, from opts" lb2)
-  ;; (? {:print-with my-custom-printer} :foo)
+  (println lb "CUSOM PRINTING FN, from opts" lb2)
+  (? {:print-with my-custom-printer} :foo)
 
 
-  ;; (println lb "log?, from opts" lb2)
-  ;; (? {:log? true} xx)
+  (println lb "log?, from opts" lb2)
+  (? {:log? true} xx)
 
   #_(println lb "NO TRUNCATION, from opts" lb2)
   #_(? {:truncate? false} (assoc xx :c (range 100)))

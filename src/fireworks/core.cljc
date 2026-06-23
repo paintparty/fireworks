@@ -95,24 +95,22 @@
                  #_[:form-or-label :file-info]}
                template)
           (when label
-            (let [label-entity-tag
-                  (label-entity-tag* opts)
+            (let [label-entity-tag (label-entity-tag* opts)
 
-                  label
-                  (if mll?
-                    (string/join
-                     "\n"
-                     (map
-                      #(str (tag/tag-entity
-                             (str indent-spaces %)
-                             label-entity-tag)
-                            (tag/reset-tag))
-                      (string/split label #"\n")))
-
-                    (tag/tag-entity
-                     (util/shortened label
-                                     (resolve-label-length label-max-length))
-                     label-entity-tag))]
+                  label            (if mll?
+                                     (string/join
+                                      "\n"
+                                      (map
+                                       #(str (tag/tag-entity
+                                              (str indent-spaces %)
+                                              label-entity-tag)
+                                             (tag/reset-tag))
+                                       (string/split label #"\n")))
+                                     
+                                     (tag/tag-entity
+                                      (util/shortened label
+                                                      (resolve-label-length label-max-length))
+                                      label-entity-tag))]
               (str indent-spaces label))))
 
         form
@@ -160,132 +158,6 @@
    [file-info* file-info]))
 
 
-;; TODO - remove syntax around order mattering 
-#_(defn- file-info-and-eval-label
-  "file-info and eval lable get tagged, so order matters."
-  [{:keys [file-info-first? label?] :as opts}]
-  (if file-info-first?
-    (let [[file-info* file-info] (file-info opts)
-          [label form]           (when label? (user-label-or-form! opts))]
-      (keyed [label
-              form
-              file-info*
-              file-info]))
-    (let [[label form]           (when label? (?pp (user-label-or-form! opts)))
-          [file-info* file-info] (file-info opts)]
-      (keyed [label
-              form
-              file-info*
-              file-info]))))
-
-#_(defn- fmt+
-  [{:keys [mll? 
-           log?
-           opts
-           label
-           source
-           template
-           truncate?
-           threading?
-           user-print-fn
-          ;;  file-info-first?
-           ]}]
-  (let [just-result?
-        (and log? (= template [:result]))
-
-        label?
-        (not (or just-result? (= template [:file-info :result])))
-
-        {:keys [form
-                label
-                file-info
-                file-info*]}
-        (when-not just-result?
-          (let [[label form]           
-                (when label? (user-label-or-form! 
-                              (merge opts
-                                     (keyed [
-                                             ;;  file-info-first?
-                                             mll? 
-                                             label
-                                             label?]))))
-
-                [file-info* file-info] 
-                (file-info opts)]
-            (keyed [label
-                    form
-                    file-info*
-                    file-info]))
-          ;; #_(file-info-and-eval-label (merge opts
-          ;;                                    (?pp (keyed [file-info-first?
-          ;;                                                 mll? 
-          ;;                                                 label
-          ;;                                                 label?]))))
-          )
-
-        result-header
-        (when-not (or (contains? #{[:result] [:form-or-label :file-info]}
-                                 template)
-                      log?
-                      threading?)
-          ;; TODO - is the space before the newline necessary?
-          (tag/tag-entity " \n" :result-header))
-
-        ;; TODO - Remove if post-replace works - cljs stuff below
-        css-count*
-        (count @state/styles)
-
-        fmt           
-        (if (:lasertag.core/unknown-coll-size opts)
-          (with-out-str (pprint source))
-          (when-not (or log?
-                        threading?
-                        (= template [:form-or-label :file-info]))
-            (if (fn? user-print-fn)
-              (with-out-str (user-print-fn source))
-
-              ;; This is where you feed the source to the formatting engine
-              (let [user-opts (merge (or (some-> opts :user-opts)
-                                         {})
-                                     (when (false? truncate?)
-                                       {:truncate? false}))]
-                (serialize/formatted* source user-opts)))))
-
-        label-or-form
-        (or label form)
-
-
-        fmt+          
-        (when-not just-result?
-          (str file-info
-               (when label-or-form "\n")
-               label-or-form
-               result-header
-               fmt)
-          ;; (if file-info-first?
-          ;;   (str 
-          ;;    file-info
-          ;;    (when label-or-form "\n")
-          ;;    label-or-form
-          ;;    result-header
-          ;;    fmt)
-          ;;   ;; remove
-          ;;   #_(str label-or-form
-          ;;          (when label-or-form
-          ;;            (when-not (re-find #"\n" label-or-form) "  "))
-          ;;          (when (and mll? file-info)
-          ;;            "\n")
-          ;;          file-info
-          ;;          result-header
-          ;;          fmt))
-          )]
-
-    {:fmt        fmt
-     :fmt+       fmt+
-     :file-info* file-info*
-     :css-count* css-count*}))
-
-
 (defn- margin-block-str
   [{:keys [template user-opts mode]}
    k]
@@ -298,16 +170,7 @@
     "\n"
 
     :else
-    (string/join (repeat (get @state/config k 0) "\n")))
-
-  ;; (ff k (get @state/config k 0))
-  ;; (string/join (repeat (get @state/config k 0) "\n"))
-  ;; (if-let [mb (ff (k user-opts))]
-  ;;     (if (or (zero? mb) (pos-int? mb))
-  ;;       (string/join (repeat mb "\n"))
-  ;;       "\n")
-  ;;     "")
-  )
+    (string/join (repeat (get @state/config k 0) "\n"))))
 
 
 
@@ -352,19 +215,6 @@
          ;; NEW - just go first line if :file info in there at all
          (contains? (into #{} template) :file-info))
 
-         
-        #_{:keys [fmt+ fmt file-info*]}
-        #_(fmt+  (keyed [file-info-first? 
-                       user-print-fn
-                       threading?
-                       truncate?
-                       template
-                       source
-                       label
-                       opts
-                       mll?
-                       log?]))
-
         just-result?
         (and log? (= template [:result]))
 
@@ -390,12 +240,7 @@
             (keyed [label
                     form
                     file-info*
-                    file-info]))
-          #_(file-info-and-eval-label (merge opts
-                                             (?pp (keyed [file-info-first?
-                                                          mll? 
-                                                          label
-                                                          label?])))))
+                    file-info])))
 
         result-header
         (when-not (or (contains? #{[:result] [:form-or-label :file-info]}
@@ -404,10 +249,6 @@
                       threading?)
           ;; TODO - is the space before the newline necessary?
           (tag/tag-entity " \n" :result-header))
-
-        ;; TODO - Remove if post-replace works - cljs stuff below
-        #_css-count*
-        #_(count @state/styles)
 
         fmt           
         (if (:lasertag.core/unknown-coll-size opts)
@@ -772,16 +613,17 @@
        (let [{:keys [line column file]} (:form-meta err-opts)
              ns-str                     (:ns-str err-opts)] 
 
-         (messaging/caught-exception err
-                                     {:value  err-x
-                                      :type   :error
-                                      :form   (:quoted-fw-form err-opts)
-                                      :header (or (some-> err-opts :header)
-                                                  (some-> err-opts :fw-fnsym))
-                                      :line   line
-                                      :column column
-                                      :file   (or file ns-str)
-                                      :regex  #"^fireworks\.|^lasertag\."})
+         (messaging/caught-exception 
+          err
+          {:value  err-x
+           :type   :error
+           :form   (:quoted-fw-form err-opts)
+           :header (or (some-> err-opts :header)
+                       (some-> err-opts :fw-fnsym))
+           :line   line
+           :column column
+           :file   (or file ns-str)
+           :regex  #"^fireworks\.|^lasertag\."})
          (println 
           (str "\nFalling back to pprint...\n\n"
                (with-out-str (pprint err-x))))))
@@ -1118,7 +960,7 @@
             (print-formatted printing-opts 
                              #?(:cljs (when-not node? js-print))))
           
-          ;; WHEN DOES THIS BRANCH GET CALLED???
+          ;; WHEN DOES THIS BRANCH GET CALLED? 
           ;; TODO should we reverse the order here, and put in a cond
           ;; Fireworks formatting and printing of does not happen when:
           ;; - Value being printed is non-cljs or non-clj data-structure
@@ -1186,47 +1028,6 @@
   [defd {:keys [ns-str]}]
   (symbol (str "#'" ns-str "/" defd)))
 
-(def modes #{
-             :comment
-             :data
-             :log
-             :log-
-             :pp
-             :pp-
-             :js
-             :js-
-             :no-truncation
-
-             ;; deprecated in favor of alias :no-label, :no-file, etc.
-             :label
-             :file
-             :result
-
-             ;; unsupported / experimental
-             :trace
-             })
-
-(def alias-modes 
-  {
-   ;; sugar for consuming this the formatted string
-   :string       :data
-
-   ;; sugar for changing what extra stuff is displayed
-   :no-label     :file
-   :no-file      :label
-   :-            :result 
-   :+            :no-truncation
-   :log/-        :log-
-   :js/-         :js-
-   :pp/-         :pp-
-   :log/no-label :log
-   :log/no-file  :log
-   :js/no-label  :js
-   :js/no-file   :js
-   :pp/no-label  :pp
-   :pp/no-file   :pp 
-   })
-
 
 (defn- _p2-call [og-x m x+ i]
   (list
@@ -1238,7 +1039,6 @@
           (merge {:qf                  (string/replace (str og-x)
                                                        #"p[0-9]+__[0-9]+#" "%")
                   :margin-inline-start 2
-                  ;;  :label-color         :green
                   :template            [:form-or-label :result]}
                  (when (map? m)
                    {:user-opts m}))
@@ -1431,131 +1231,7 @@
                   (str "_"
                        (dec (count rest-of-threading-form)))))]
     as-let))
-
-
-#_(defn- resolve-tracing-form [&form mode]
-  (let [tracing-form                          
-        (when (= mode :trace)
-          (or (first (filter threading-form? &form))
-              (first (filter let-form? &form))))
-
-        [sym] 
-        tracing-form
-
-        [thread-sym & rest-of-threading-form] 
-        (when-not (= sym 'let) tracing-form)
-
-        [_ let-bindings] 
-        (when (= sym 'let) tracing-form)
-
-        let-bindings 
-        (some-> let-bindings cc-destructure)
-
-        mode                                  
-        (if (= mode :trace)
-          (when (some->> sym (contains? #{'-> '->> 'some-> 'some->> 'let}))
-            :trace)
-          mode)]
-    {:thread-sym             thread-sym  
-     :rest-of-threading-form rest-of-threading-form  
-     :let-bindings           let-bindings    
-     :tracing-form           tracing-form  
-     :mode                   mode}))
-
-
-#_(defn- mode+template [a &form]
-  (let [alias-mode
-        (if (contains? alias-modes a) a nil)
-        
-        a
-        (get alias-modes a a)
-
-        mode
-        (if (contains? modes a) a nil)
-
-        template
-        (get 
-         {:label      [:form-or-label :result]
-          :file       [:file-info :result]
-          :result     [:result]
-          :comment    [:file-info :form-or-label]
-          ;; default-case nix?
-          :data       [:file-info :form-or-label :result]
-          ;; default-case nix?
-          :log        [:file-info :form-or-label :result]
-          :log-       nil
-          ;; default-case nix?
-          :js         [:file-info :form-or-label :result]
-          :js-        nil
-          ;; default-case nix?
-          :pp         [:file-info :form-or-label :result]
-          :pp-        nil
-          ;; default-case nix?
-          :trace      [:file-info :form-or-label :result]}
-         mode
-         [:file-info :form-or-label :result])
-        
-        m
-        (resolve-tracing-form &form mode)]
-    (merge {:mode       mode
-            :alias-mode alias-mode
-            :template   template}
-           m)))
-
-#_#?(:clj
-   (defn- ?2-helper
-     [{:keys [cfg-opts* alias-mode mode template label &form x truncation-flag]}]
-     (let [defd           (defd x)
-
-           log?*          (contains? #{:log :pp :js} mode)
-
-           just-results?  (contains? #{:result :log- :pp- :js-} mode)
-
-           quoted-fw-form (if just-results?
-                            (list 'quote nil)
-                            (list 'quote &form))
-
-           fw-fnsym       (when-not just-results?
-                            "fireworks.core/?")
-
-           form-meta      (when-not just-results?
-                            (meta &form))
-
-           qf-nil?        (contains? #{:comment :result} mode)
-
-           user-opts     (merge @state/config-overrides
-                                cfg-opts*
-                                (when (false? truncation-flag)
-                                  {:truncate? false}))
-
-           template       (or (:template user-opts) template)
-           cfg-opts       (merge (dissoc (or cfg-opts* {}) :label)
-
-                                 {:mode           mode
-                                  :alias-mode     alias-mode
-                                  :label          label
-                                  :template       template
-                                  :ns-str         (some-> *ns* ns-name str)
-                                  :user-opts      user-opts
-                                  :quoted-fw-form quoted-fw-form
-                                  :fw-fnsym       fw-fnsym}
-
-                                 (when (false? truncation-flag) 
-                                   {:truncate? false})
-
-                                 (when form-meta
-                                   {:form-meta form-meta})
-
-                                 (when log?*
-                                   {:log?    log?*
-                                    :fw/log? log?*})
-
-                                 (when (= mode :data)
-                                   {:p-data? true}))]
-
-       (keyed [defd x qf-nil? cfg-opts log?*]))))
-
-                                                               
+                                                              
  
 ;                  AAA               PPPPPPPPPPPPPPPPP   IIIIIIIIII
 ;                 A:::A              P::::::::::::::::P  I::::::::I
@@ -1617,8 +1293,7 @@
            supplied-user-opts     (when (map? last-mod) last-mod)
            flags                  (into #{} (filter keyword? mods))
            label                  (first (filter string? mods))
-           label                  (or label
-                                      (some-> supplied-user-opts :label))
+           label                  (or label (some-> supplied-user-opts :label))
            just-results-flag?     (contains? flags :-)
            display-file-info?     (if (or just-results-flag?
                                           (contains? flags :no-file)
@@ -1637,12 +1312,9 @@
            just-results?          (or just-results-flag?
                                       (and (false? display-label-or-form?)
                                            (false? display-file-info?)))
-
-
           ;;  _ 
           ;;  (when debug?
           ;;    (?pp just-results?))
-
 
            truncate?              (if (or (contains? flags :+) 
                                           (some-> supplied-user-opts
@@ -1662,7 +1334,6 @@
                                     :else
                                     (let [f (:print-with supplied-user-opts)]
                                       (when (fn? f) f)))
-
            log?                   (if (or (contains? flags :log) 
                                           (some-> supplied-user-opts
                                                   :log?
@@ -1670,21 +1341,18 @@
                                           (and just-results? print-with))
                                     true
                                     false)
-
            trace?                 (if (or (contains? flags :trace) 
                                           (some-> supplied-user-opts
                                                   :trace?
                                                   true?))
                                     true
                                     false)
-
            data?                  (if (or (contains? flags :data) 
                                           (some-> supplied-user-opts
                                                   :data?
                                                   true?))
                                     true
                                     false)
-
            template               (:template supplied-user-opts)
            
            supplied-user-opts-with-flag-overrides
@@ -1785,27 +1453,20 @@
                                     &form
                                     x]))
                (let [defd           (defd x)
-
                      log?*          (or log? 
                                         (contains? #{pprint} print-with))
-
                      quoted-fw-form (if just-results?
                                       (list 'quote nil)
                                       (list 'quote &form))
-
                      ;; what this for?
                      fw-fnsym       (when-not just-results?
                                       "fireworks.core/?")
-
                      ;; maybe always include?
                      form-meta      (when-not just-results?
                                       (meta &form))
-
                      qf-nil?        (false? display-label-or-form?)
-
                      user-opts      (merge @state/config-overrides
                                            supplied-user-opts-with-flag-overrides)
-
                      cfg-opts       (cond-> 
                                      {
                                       ;; :mode           mode
@@ -1850,8 +1511,7 @@
                      fireworks.core/_pp)
                    ~cfg-opts
                    (if ~defd (cast-var ~defd ~cfg-opts) ~x)))
-                (fireworks.core/_p2 cfg-opts# ret#))))))
-                ))
+                (fireworks.core/_p2 cfg-opts# ret#))))))))
 
 
 ;; TODO - Add to docs/readme
