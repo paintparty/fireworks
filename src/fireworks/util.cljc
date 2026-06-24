@@ -2,23 +2,11 @@
   (:require [clojure.string :as string]
             [clojure.pprint :refer [pprint]]
             [fireworks.defs :as defs]
+            [fireworks.debug :refer [?]]
             [clojure.set :as set]
             [lasertag.fns :as fns]
             [lasertag.cached]
             [lasertag.core :as lasertag]))
-
-(defn ? 
-  "Debugging macro internal to lib"
-  ([x]
-   (? nil x))
-  ([l x]
-   (try (if l
-          (println (str " " l "\n") x)
-          (println x))
-        (catch #?(:cljs js/Object :clj Throwable)
-               e
-          (println "WARNING [lasertag.core/?] Unable to print value")))
-   x))
 
 (defn spaces [n] (string/join (repeat n " ")))
 
@@ -132,27 +120,30 @@
              (set/rename-keys {:tag :t}))]
      (merge tag-map
 
-     ;; This is where we get the coll-size or collection size
-     (when (contains? all-tags :coll-like)
-       {:coll-type? true
-        :coll-size  (lasertag.core/coll-size* (assoc tag-map :x x))})
-     (when (contains? #{:function :class :defmulti} t) (fns/fn-info x t))
+            ;; This is where we get the coll-size or collection size
+            (when (contains? all-tags :coll-like)
+              {:coll-type? true
+               :coll-size  (lasertag.core/coll-size* (assoc tag-map :x x))})
+            (when (contains? #{:function :class :defmulti} t) (fns/fn-info x t))
 
-     ;; TODO - try to eliminate these and look into all-tags instead
-     (when (contains? all-tags :carries-meta) {:carries-meta? true})
-     (when (contains? all-tags :map-like) {:map-like? true})
-     (when (contains? all-tags :set-like) {:set-like? true})
-     (when (contains? all-tags :transient) {:transient? true})
-     (when (contains? all-tags :number) {:number-type? true})
-     (when (contains? all-tags :lambda) {:lambda? true})
-     #?(:cljs nil
-        :clj (when (some->> classname java-lang-class?)
-               {:java-lang-class? true}))
-     #?(:cljs nil
-        :clj (when (some->> classname java-util-class?)
-               {:java-util-class? true}))
-     #?(:cljs (merge (when (object? x) {:js-object? true})
-                     (when (array? x) {:js-array? true})))))))
+            (when (and (contains? all-tags :map-like)
+                       (contains? all-tags :datatype)) 
+              {:object-like-datatype? true})
+            ;; TODO - try to eliminate these and look into all-tags instead
+            (when (contains? all-tags :carries-meta) {:carries-meta? true})
+            (when (contains? all-tags :map-like) {:map-like? true})
+            (when (contains? all-tags :set-like) {:set-like? true})
+            (when (contains? all-tags :transient) {:transient? true})
+            (when (contains? all-tags :number) {:number-type? true})
+            (when (contains? all-tags :lambda) {:lambda? true})
+            #?(:cljs nil
+               :clj (when (some->> classname java-lang-class?)
+                      {:java-lang-class? true}))
+            #?(:cljs nil
+               :clj (when (some->> classname java-util-class?)
+                      {:java-util-class? true}))
+            #?(:cljs (merge (when (object? x) {:js-object? true})
+                            (when (array? x) {:js-array? true})))))))
 
 (defn re-seq-with-index 
 "Example usage
@@ -244,3 +235,73 @@
       (if (and ellipsis? overflows? (>= target-len 3))
         (str (subs s start+ (- end+ 3)) "...")
         (subs s start+ end+)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Raw datatype objects start 
+
+(defn- object-fields 
+  "Returns true if the given object instance has one or more named fields 
+   declared in its underlying structure across JVM, CLJS, and Babashka."
+  [obj]
+  (if (nil? obj)
+    false
+    #?(:bb   (let [members (:members (clojure.reflect/reflect obj))]
+               ;; Filter for members that represent the fields
+               (->> members
+                    (filter :flags)
+                    (map :name)
+                    clojure.set/into  ; isolates names
+                    ))
+       :clj  (.getDeclaredFields (.getClass obj))
+       :cljs (js/Object.keys obj))))
+
+(defn- object-field-count
+  "Returns true if the given object instance has one or more named fields 
+   declared in its underlying structure across JVM, CLJS, and Babashka."
+  [obj]
+  (if (nil? obj)
+    false
+    #?(:bb   (let [members (:members (clojure.reflect/reflect obj))]
+               ;; Filter for members that represent the fields
+               (->> (object-fields obj) count))
+       :clj  (alength (object-fields obj))
+       :cljs (alength (object-fields obj)))))
+
+(defn datatype->map 
+  "Turns a raw datatype with declared fields into a map.
+   If no declared fields are detected, just returns the object.
+   Set :skip-declared-fields check to `true` to skip check for perf."
+  [obj {:keys [skip-object-has-fields-check?]
+        :or   {skip-object-has-fields-check? false}}]
+  (if-not (or skip-object-has-fields-check?
+              (pos? (object-field-count obj)))
+    obj
+    #?(:bb
+       ;; Pure Babashka path
+       (->> (r/reflect obj)
+            :members
+            (filter :flags)
+            (reduce (fn [m member]
+                      (let [k (keyword (:name member))]
+                        (assoc m k (get obj k))))
+                    {}))
+
+       ;; => (:a :b)
+       :clj
+       ;; Standard Clojure JVM path
+       (->> (.getDeclaredFields (.getClass obj))
+            (reduce (fn [m field]
+                      (.setAccessible field true)
+                      (assoc m (symbol (.getName field)) (.get field obj)))
+                    {}))
+
+       :cljs
+       ;; ClojureScript path
+       (->> (js/Object.keys obj)
+            (reduce (fn [m k]
+                      (assoc m (keyword k) (aget obj k)))
+                    {})))))
+
+;; Raw datatype objects end
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
