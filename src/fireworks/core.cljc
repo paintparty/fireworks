@@ -4,7 +4,6 @@
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
    [fireworks.browser]
-   [fireworks.pp :refer [?pp]]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
@@ -199,6 +198,9 @@
   (let [user-print-fn
         (:print-with user-opts)
 
+        label*
+        label
+
         label
         (if (coll? label)
           (with-out-str (pprint label))
@@ -294,11 +296,16 @@
     (if  p-data?
       ;; If p-data, return a map of preformatted values
       (merge
-       {:ns-str        ns-str
-        :quoted-form   qf
-        :file-info-str file-info*
-        :formatted+    {:string fmt+}
-        :formatted     {:string fmt}}
+       {:ns-str              ns-str
+        :user-supplied-label label*
+        :display-label       (or label form)
+        :template            template
+        :quoted-form         qf
+        :file-info-str       file-info*
+        :formatted+          {:string fmt+}
+        :formatted           {:string fmt}
+        :threading?          threading?
+        :truncate?           truncate?}
        form-meta)
 
       ;; Else if print-and-return fns, return printing opts
@@ -821,7 +828,8 @@
          (spit path s)))))
 
 
-(defn ^{:public true}
+;; TODO - maybe we can remove this and just use _p2
+(defn ^{:public true :no-doc true}
   _p 
   "Internal runtime dispatch target for fireworks macros.
 
@@ -891,7 +899,7 @@
            (when return-result? x) ))))))
 
 
-(defn ^{:public true} _p2 
+(defn ^{:public true :no-doc true} _p2 
   "Internal runtime dispatch target for fireworks macros.
 
    Takes an optional leading argument (custom label or options map).
@@ -902,7 +910,7 @@
    
    Will not use fireworks formatting if:
 
-   - In ClrjureScript, if value is native data structure.
+   - In ClojureScript, if value is native data structure.
      Value will be printed with js/console.log or fireworks.core/pprint.
    
    - A native printing flag is supplied at callsite to fireworks.core/?
@@ -910,9 +918,7 @@
      `#{:pp, :pp-, :js, :js- :log, or :log-}`
      Example: `(? :pp (+ 1 1))`
      
-   - A valid `:print-with` option is supplied at callsite to fireworks.core/?
-     Value must be one of the following functions from `clojure.core`:
-     `#{pr pr-str prn prn-str print println}`
+   - A custom `:print-with` function is supplied at callsite to fireworks.core/?
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
@@ -942,7 +948,7 @@
           return-result? (when-not (= (:template opts)
                                       [:form-or-label :file-info])
                            x)]
-      #_(when (= x :fooo) (?pp printing-opts))
+
       (when debug-config? 
         (fw-debug-report config-before opts "fireworks.core/_p2")) 
 
@@ -1050,7 +1056,6 @@
    x+))
 
 ;; cc-destructure fn from Snitch - https://github.com/AbhinavOmprakash/snitch
-
 (defn- cc-destructure
   "A slightly modified version of clj and cljs' destructure to
   work with clj and cljs.
@@ -1287,39 +1292,36 @@
      (let [
            args                   (into [] args)
            x                      (peek args)
-           debug?                 (= x :foo)
+          ;;  debug?                 (= x :foo)
            mods                   (pop args)
            last-mod               (peek mods)
            supplied-user-opts     (when (map? last-mod) last-mod)
            flags                  (into #{} (filter keyword? mods))
-           label                  (first (filter string? mods))
-           label                  (or label (some-> supplied-user-opts :label))
+           label                  (or (first (filter string? mods))
+                                      (some-> supplied-user-opts :label))
            just-results-flag?     (contains? flags :-)
+           resolve-option         (fn resolve-option [flag-kw opts-kw pred]
+                                    (or (contains? flags flag-kw) 
+                                        (some-> supplied-user-opts 
+                                                opts-kw
+                                                pred)))
            display-file-info?     (if (or just-results-flag?
-                                          (contains? flags :no-file)
-                                          (some-> supplied-user-opts
-                                                  :display-file-info?
-                                                  false? ))
+                                          (resolve-option :no-file
+                                                          :display-file-info?
+                                                          false?))
                                     false
                                     (get @state/config :display-file-info?))
            display-label-or-form? (if (or just-results-flag?
-                                          (contains? flags :no-label)
-                                          (some-> supplied-user-opts
-                                                  :display-label-or-form?
-                                                  false? ))
+                                          (resolve-option :no-label
+                                                          :display-label-or-form? 
+                                                          false?))
                                     false
                                     (get @state/config :display-label-or-form?))
            just-results?          (or just-results-flag?
                                       (and (false? display-label-or-form?)
                                            (false? display-file-info?)))
-          ;;  _ 
-          ;;  (when debug?
-          ;;    (?pp just-results?))
 
-           truncate?              (if (or (contains? flags :+) 
-                                          (some-> supplied-user-opts
-                                                  :truncate?
-                                                  false?))
+           truncate?              (if (resolve-option :+ :truncate? false?)
                                     false
                                     (get @state/config :truncate?))
            print-with             (cond
@@ -1334,23 +1336,14 @@
                                     :else
                                     (let [f (:print-with supplied-user-opts)]
                                       (when (fn? f) f)))
-           log?                   (if (or (contains? flags :log) 
-                                          (some-> supplied-user-opts
-                                                  :log?
-                                                  true?)
+           log?                   (if (or (resolve-option :log :log? true?)
                                           (and just-results? print-with))
                                     true
                                     false)
-           trace?                 (if (or (contains? flags :trace) 
-                                          (some-> supplied-user-opts
-                                                  :trace?
-                                                  true?))
+           trace?                 (if (resolve-option :trace :trace? true?)
                                     true
                                     false)
-           data?                  (if (or (contains? flags :data) 
-                                          (some-> supplied-user-opts
-                                                  :data?
-                                                  true?))
+           data?                  (if (resolve-option :data :data? true?)
                                     true
                                     false)
            template               (:template supplied-user-opts)
@@ -1401,23 +1394,28 @@
                true))]
 
        (cond 
+         ;; Special handling for tracing a threading form
          trace+valid-trace-form?
          (let [form-meta (meta &form)
                ns-str    (some-> *ns* ns-name str)
                bindings? (boolean let-bindings)
                as-let    (if bindings?
                            (prep-bindings let-bindings supplied-user-opts)
-                           (as-let* thread-sym rest-of-threading-form supplied-user-opts))]
+                           (as-let* thread-sym 
+                                    rest-of-threading-form 
+                                    supplied-user-opts))]
 
            `(do 
-              (fireworks.core/_p2 {:form-meta ~form-meta
-                                   :ns-str    ~ns-str
-                                   :qf        (quote ~tracing-form) 
-                                   :template  [:file-info :form-or-label :result]}
-                                  (symbol (str "\n  "
-                                               (if ~bindings?
-                                                 "let bindings"
-                                                 (str "tracing " (quote ~thread-sym))))))
+              (fireworks.core/_p2 
+               {:form-meta ~form-meta
+                :ns-str    ~ns-str
+                :qf        (quote ~tracing-form) 
+                :template  [:file-info :form-or-label :result]}
+               (symbol (str "\n  "
+                            (if ~bindings?
+                              "let bindings"
+                              (str "tracing "
+                                   (quote ~thread-sym))))))
               ~as-let
               (println)
               (fireworks.core/_p2 {:template  [:result] 
@@ -1425,8 +1423,7 @@
                                   ~x)
               ~x))
 
-
-         ;; TODO figure out ideal truncation strategy here
+         ;; No file-info or label annotation and user wants default printing fn 
          log?
          `(do #?(:cljs (if node?
                          (fireworks.core/pprint ~x)
@@ -1434,27 +1431,14 @@
                  :clj (fireworks.core/pprint ~x))
               ~x)
 
-
-         ;; TODO figure out ideal truncation strategy here
+         ;; No file-info or label annotation and user has supplied printing fn
          (and just-results? print-with)
          `(do (print-with ~x) ~x)
 
-
          :else
-         (let [
-
-               {:keys [log?* defd qf-nil? cfg-opts]} 
-               #_(?2-helper (keyed [mode
-                                    alias-mode
-                                    template 
-                                    cfg-opts* 
-                                    label
-                                    truncation-flag
-                                    &form
-                                    x]))
+         (let [{:keys [log?* defd qf-nil? cfg-opts]} 
                (let [defd           (defd x)
-                     log?*          (or log? 
-                                        (contains? #{pprint} print-with))
+                     log?*          (or log? (contains? #{pprint} print-with))
                      quoted-fw-form (if just-results?
                                       (list 'quote nil)
                                       (list 'quote &form))
@@ -1462,16 +1446,12 @@
                      fw-fnsym       (when-not just-results?
                                       "fireworks.core/?")
                      ;; maybe always include?
-                     form-meta      (when-not just-results?
-                                      (meta &form))
+                     form-meta      (when-not just-results? (meta &form))
                      qf-nil?        (false? display-label-or-form?)
                      user-opts      (merge @state/config-overrides
                                            supplied-user-opts-with-flag-overrides)
                      cfg-opts       (cond-> 
-                                     {
-                                      ;; :mode           mode
-                                      ;; :alias-mode     alias-mode
-                                      :label          label
+                                     {:label          label
                                       :template       template
                                       :ns-str         (some-> *ns* ns-name str)
                                       :user-opts      user-opts
@@ -1488,14 +1468,7 @@
                                       (assoc :log? log?* :fw/log? log?*)
 
                                       data?
-                                      (assoc :p-data? true))
-                     
-                     ;;  _              (when (= x :fooo) (?pp cfg-opts))
-                     ]
-
-                 #_(when (= x [1 2 3 4 5 6 7 8 9])
-                     (?pp supplied-user-opts-with-flag-overrides)
-                     (?pp cfg-opts))
+                                      (assoc :p-data? true))]
 
                  (keyed [defd x qf-nil? cfg-opts log?*]))]
 
