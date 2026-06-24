@@ -10,7 +10,7 @@
             [fireworks.config :as config]
             [fireworks.defs :as defs]
             [fireworks.messaging :as messaging]
-            [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
+            [fireworks.pp :refer [pprint]]
             [fireworks.specs.config :as config.specs]
             [fireworks.specs.theme :as theme]
             [fireworks.specs.tokens :as tokens]
@@ -152,7 +152,7 @@
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
       ;; (do (println :invalid "::" 'validate-option-from-user-config-edn "\n")
-      ;;     (?pp [k #_v]))
+      ;;     (? [k #_v]))
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
               :header (str (some-> user-config-edn*
@@ -171,7 +171,7 @@
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
       #_(do (println :invalid "::" 'validate-option-from-user-config-edn-dynamic "\n")
-          ;; (?pp [k v])
+          ;; (? [k v])
           (println "The spec")
           (pprint spec)
           (println "\n\n")
@@ -445,7 +445,6 @@
     font-style  :font-style
     font-weight :font-weight
     :as         m}]
-  #_(?pp m)
   (let [debug? false #_(contains? #{:highlight-underlined :highlight :highlight-info :string} (:k m))
         fgc    (x->sgr fgc* :fg)
         bgc    (x->sgr bgc* :bg)
@@ -658,11 +657,11 @@
         printer (hydrated* base theme classes :printer)
         merged  (add-metadata-key-entries (merge classes syntax printer))
         merged2 (serialize-style-maps merged)]
-    ;; (?pp 'base (-> base :classes :label))
-    ;; (?pp 'theme (-> theme))
-    ;; (?pp classes)
-    ;; (?pp (select-keys classes [:highlight :highlight-underlined]))
-    ;; (?pp (select-keys merged [:highlight :highlight-underlined]))
+    ;; (? 'base (-> base :classes :label))
+    ;; (? 'theme (-> theme))
+    ;; (? classes)
+    ;; (? (select-keys classes [:highlight :highlight-underlined]))
+    ;; (? (select-keys merged [:highlight :highlight-underlined]))
     {:with-style-maps            merged
      :with-serialized-style-maps (assoc
                                   merged2
@@ -795,7 +794,7 @@
                 "theme mood"            mood
                 ;; "rainbow-brackets"      rainbow-brackets
                 }))
-     #_(?pp (keyed [theme* fallback-theme user-theme theme theme-suffix mood]))
+    ;;  (? (keyed [theme* fallback-theme user-theme theme theme-suffix mood]))
      ret)))
 
 
@@ -898,9 +897,9 @@
 
 (defn highlight-style*
   [{:keys [style pred path class] :as m}]
-  ;; (?pp m)
-  ;; (?pp (keys @merged-theme))
-  ;; (?pp (:highlight-underlined @merged-theme))
+  ;; (? m)
+  ;; (? (keys @merged-theme))
+  ;; (? (:highlight-underlined @merged-theme))
   ;; TODO - check is css-str always gonna be css?
   (let [style
         (with-bling-colors->sgr m)

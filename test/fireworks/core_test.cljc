@@ -31,6 +31,7 @@
    [fireworks.sample :as sample]
    [fireworks.smoke-test]
    [fireworks.config :as config]
+   [fireworks.test-util]
    [clojure.test :refer [deftest is]]))
 
 
@@ -38,10 +39,9 @@
 ;; Options
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Toggle this true / false to generate tests 
-
-(def write-tests? false)
-;; (def write-tests? true)
+;; This namespaces runs a few tests but mostly generates the fireworks.test-suite ns
+;; To write tests, toggle `fireworks.test-util/visual-mode?` to true
+;; And then run `lein test`
 
 ;; To see printed output with tests set fireworks.test-util/visual-mode? to true
 ;; Note there are 2 fireworks.test-util namespaces, one for clj tests and one
@@ -53,10 +53,101 @@
 
 (def theme "Alabaster Light")
 
+;; Tests for file-info and label/form annotation -------------------------------
+
+(def lb "\n\n ")
+(def lb2 "\n")
+(def xx {:a (take 10 (map inc (range 18))) :b "foo"})
+(defn my-custom-printer [x] (println (str "HIHIHIH " x)))
+(def dissoc-ks [:formatted-with-header
+                :formatted
+                :display-label
+                :line
+                :column
+                :file-info-str])
+(defn data-result [x]
+  (as-> x $ (apply dissoc $ dissoc-ks)))
+
+(do 
+  #_(println lb "DEFAULT" lb2)
+  (deftest annotation-default
+    (is (= (data-result (? {:data? true} :fooo))
+           {:quoted-form         :fooo,
+            :threading?          nil,
+            :template            [:file-info :form-or-label :result],
+            :ns-str              "fireworks.core-test",
+            :user-supplied-label nil,
+            :truncate?           nil})))
+  
+  #_(println lb "JUST-RESULT, from opts" lb2)
+  (deftest annotation-just-result 
+    (is (= (data-result (? {:data?                  true
+                            :display-file-info?     false 
+                            :display-label-or-form? false} 
+                           :foo))
+           {:quoted-form         nil,
+            :threading?          nil,
+            :template            [:result],
+            :ns-str              "fireworks.core-test",
+            :user-supplied-label nil,
+            :truncate?           nil}))) 
+  
+  (deftest annotation-no-label
+    (is (= (data-result (? {:data?                  true
+                            :display-label-or-form? false} 
+                           :foo))
+           {:quoted-form         nil,
+            :threading?          nil,
+            :template            [:file-info :result],
+            :ns-str              "fireworks.core-test",
+            :user-supplied-label nil,
+            :truncate?           nil}))) 
+
+  ;; (println lb "NO-LABEL, from opts" lb2)
+  ;; (? {:display-label-or-form? false} xx)
+  
+  ;; (println lb "NO-FILE" lb2)
+  ;; (? {:display-file-info? false} xx)
+  
+  ;; (println  lb "CUSTOM LABEL, from opts" lb2)
+  ;; (? {:label "custom label as string"} xx)
+  
+  ;; (println lb "PRN, from opts" lb2)
+  ;; (? {:print-with prn} "ln1\nln2")
+  
+  ;; (println lb "PRINT, from opts" lb2)
+  ;; (? {:print-with print} "ln1\nln2")
+  
+  ;; (println lb "PP, from opts" lb2)
+  ;; (? {:print-with pprint} xx)
+  
+  ;; (println lb "CUSOM PRINTING FN, from opts" lb2)
+  ;; (? {:print-with my-custom-printer} :foo)
+  
+
+  ;; (println lb "log?, from opts" lb2)
+  ;; (? {:log? true} xx)
+  
+  #_(println lb "NO TRUNCATION, from opts" lb2)
+  #_(? {:truncate? false} (assoc xx :c (range 100)))
+
+  #_(println lb "RESULT OF DATA, from opts.\n  (`:formatted` and `:formatted-with-header` dissoc'd)" lb2)
+  #_(pprint (dissoc (? {:data? true} :fooo) :formatted :formatted-with-header))
+
+  #_(? :pp :fooo)
+
+  ;; (? :+ (map inc (range 444)))
+  )
+
+
+
+
+
+;; A few misc test that are hard to do with deftest+  --------------------------
+
 (defn abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-really-long-named-fn
   []
   nil)
-
 
 (deftest long-fn-name
   (is (=
@@ -161,7 +252,9 @@
                            ~list? (quote ~v)
                            :else
                            ~v)})
-       (when visual-mode?
+       (when (and visual-mode?
+                  (or (nil? (seq fireworks.test-util/filter-tests))
+                      (contains? fireworks.test-util/filter-tests (quote ~sym))))
          (? (quote ~sym) ~opts ~v)))))
 
 ;; TODO - if elide branches, just don't write bb
@@ -564,5 +657,5 @@
     (java.util.HashSet. #{"a" 1 "b" 2})))
 
 
-(when write-tests?
+(when fireworks.test-util/write-tests?
   (write-tests-ns!))

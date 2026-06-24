@@ -68,9 +68,9 @@
 
 (def my-date (new #?(:cljs js/Date :clj java.util.Date)))
 
-(deftype MyType [a b])
+(deftype MyType [a b c d e f g h i j k])
 
-(def my-data-type (->MyType 2 3))
+(def my-data-type (->MyType 1 2 3 4 5 6 7 8 9 10 11))
 
 (defrecord MyRecordType [a b])
 

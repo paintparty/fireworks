@@ -153,7 +153,7 @@
                                                     start-plus-one
                                                     :end 
                                                     start-plus-needle)]
-                       #_(?pp (keyed [re needle m start-plus-needle new-m]))
+                      ;;  (? (keyed [re needle m start-plus-needle new-m]))
                        (conj vc new-m)))
                    []
                    (util/re-seq-with-index re s))]

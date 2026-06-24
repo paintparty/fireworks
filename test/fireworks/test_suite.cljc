@@ -2536,7 +2536,7 @@
     :string
     escape-sgr
     string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyType〠0〠〠38;2;77;109;186〠fireworks.sample.MyType@b8b6de6〠0〠")))
+   "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyType〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠a〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠b〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠c〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠d〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠e〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠f〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠g〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠h〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠i〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠j〠0〠〠〠 〠0〠〠38;2;122;62;157〠10〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠k〠0〠〠〠 〠0〠〠38;2;122;62;157〠11〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
 
 
 (deftest
@@ -2594,7 +2594,181 @@
     :string
     escape-sgr
     string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyRecordType〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠bbbbbbbbbbbbbb〠0〠〠38;2;68;140;39〠\"〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+   "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyRecordType〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠const__22〠0〠〠〠 〠0〠〠〠#'clojure.core/imap-cons〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠a〠0〠〠〠        〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__4〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/some〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__21〠0〠〠〠 〠0〠〠〠#'clojure.core/class〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__hash〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__23〠0〠〠〠 〠0〠〠〠#'clojure.core/str〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__16〠0〠〠〠 〠0〠〠〠#'clojure.core/assoc〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__14〠0〠〠〠 〠0〠〠〠#'clojure.core/not-empty〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__meta〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__13〠0〠〠〠 〠0〠〠〠#'clojure.core/into〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__18〠0〠〠〠 〠0〠〠〠#'clojure.core/seq〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__8〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__10〠0〠〠〠 〠0〠〠38;5;32〠#{〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;122;62;157〠:a〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__1〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/vals〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__19〠0〠〠〠 〠0〠〠〠#'clojure.core/concat〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__9〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠:a〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__11〠0〠〠〠 〠0〠〠〠#'clojure.core/dissoc〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__7〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/contains?〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__20〠0〠〠〠 〠0〠〠〠#'clojure.core/not〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__hasheq〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__17〠0〠〠〠 〠0〠〠38;5;32〠[〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠38;5;32〠]〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__2〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/keys〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__12〠0〠〠〠 〠0〠〠〠#'clojure.core/with-meta〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠b〠0〠〠〠        〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠bbbbbbbbbbbbbb〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__extmap〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__0〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/set〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__15〠0〠〠〠 〠0〠〠〠#'clojure.core/identical?〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+
+
+(deftest
+ java-interop-types
+ (is
+  (=
+   (->
+    (?
+     :data
+     {:regex-theme :neutral,
+      :line-height 1.45,
+      :find nil,
+      :single-column-maps? false,
+      :supports-color-level nil,
+      :enable-terminal-italics? true,
+      :print-with nil,
+      :display-namespaces? true,
+      :enable-rainbow-brackets? true,
+      :select-metadata-keys nil,
+      :enable-terminal-truecolor? true,
+      :quote-lists? false,
+      :scalar-depth-1-max-length 69,
+      :margin-left 0,
+      :bold? false,
+      :margin-top 0,
+      :print-level 7,
+      :single-line-coll-max-length 33,
+      :format-label-as-code? false,
+      :single-column-map-threshold 44,
+      :scalar-result-max-length 444,
+      :theme "Alabaster Light",
+      :metadata-print-level 4,
+      :scalar-max-length 33,
+      :label-color nil,
+      :scalar-mapkey-max-length 33,
+      :print-length 100,
+      :multi-line-metadata? true,
+      :truncate? true,
+      :enable-terminal-font-weights? true,
+      :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
+      :legacy-terminal? false,
+      :quote-symbols? false,
+      :colorize? true,
+      :label-max-length 44,
+      :margin-inline-start 0,
+      :print-length-inline-results 8,
+      :display-metadata? false,
+      :margin-bottom 1,
+      :metadata-position "inline",
+      :print-detected-color-level? false,
+      :bracket-contrast "high"}
+     sample/interop-types)
+    :formatted
+    :string
+    escape-sgr
+    string/join)
+   "〠38;5;102〠{〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠Java collection types〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;77;109;186〠java.util.ArrayList〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠java.util.ArrayList〠0〠\n                                              〠38;5;172;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠0〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠38;5;172;48;2;255;249;245〠]〠0〠〠〠\n                          〠0〠〠38;2;77;109;186〠java.util.HashMap〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠java.util.HashMap〠0〠\n                                              〠38;5;172;48;2;255;249;245〠{〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠b〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠38;5;172;48;2;255;249;245〠}〠0〠〠〠\n                          〠0〠〠38;2;77;109;186〠java.util.HashSet〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠java.util.HashSet〠0〠\n                                              〠38;5;172;48;2;255;249;245〠#{〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠b〠0〠〠38;2;68;140;39〠\"〠0〠〠38;5;172;48;2;255;249;245〠}〠0〠〠〠\n                          〠0〠〠38;2;77;109;186〠java.lang.String〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠welcome〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n                          〠0〠〠38;2;77;109;186〠array〠0〠〠〠              〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠Ljava.lang.Object〠0〠\n                                              〠38;5;172;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠38;5;172;48;2;255;249;245〠]〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠Java numbers〠0〠〠38;2;68;140;39〠\"〠0〠〠〠         〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;122;62;157〠:ratio〠0〠〠〠               〠0〠〠〠 〠0〠〠38;2;122;62;157〠1/3〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:byte〠0〠〠〠                〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:short〠0〠〠〠               〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:double〠0〠〠〠              〠0〠〠〠 〠0〠〠38;2;122;62;157〠〠38;2;122;62;157〠23.〠0〠〠38;2;122;62;157〠44〠0〠〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:decimal〠0〠〠〠             〠0〠〠〠 〠0〠〠38;2;122;62;157〠1M〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:int〠0〠〠〠                 〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:float〠0〠〠〠               〠0〠〠〠 〠0〠〠38;2;122;62;157〠〠38;2;122;62;157〠1.〠0〠〠38;2;122;62;157〠5〠0〠〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:char〠0〠〠〠                〠0〠〠〠 〠0〠〠〠a〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:java.math.BigInteger〠0〠〠〠 〠0〠〠38;2;122;62;157〠171〠0〠〠38;5;32〠}〠0〠〠38;5;102〠}〠0〠")))
+
+
+(deftest
+ java-util-hashmap
+ (is
+  (=
+   (->
+    (?
+     :data
+     {:regex-theme :neutral,
+      :line-height 1.45,
+      :find nil,
+      :single-column-maps? false,
+      :supports-color-level nil,
+      :enable-terminal-italics? true,
+      :print-with nil,
+      :display-namespaces? true,
+      :enable-rainbow-brackets? true,
+      :select-metadata-keys nil,
+      :enable-terminal-truecolor? true,
+      :quote-lists? false,
+      :scalar-depth-1-max-length 69,
+      :margin-left 0,
+      :bold? false,
+      :margin-top 0,
+      :print-level 7,
+      :single-line-coll-max-length 33,
+      :format-label-as-code? false,
+      :single-column-map-threshold 44,
+      :scalar-result-max-length 444,
+      :theme "Alabaster Light",
+      :metadata-print-level 4,
+      :scalar-max-length 33,
+      :label-color nil,
+      :scalar-mapkey-max-length 33,
+      :print-length 33,
+      :multi-line-metadata? true,
+      :truncate? true,
+      :enable-terminal-font-weights? true,
+      :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
+      :legacy-terminal? false,
+      :quote-symbols? false,
+      :colorize? true,
+      :label-max-length 44,
+      :margin-inline-start 0,
+      :print-length-inline-results 8,
+      :display-metadata? false,
+      :margin-bottom 1,
+      :metadata-position "inline",
+      :print-detected-color-level? false,
+      :bracket-contrast "high"}
+     (java.util.HashMap. {"a" 1, "b" 2}))
+    :formatted
+    :string
+    escape-sgr
+    string/join)
+   "〠3;38;2;199;104;35;48;2;255;249;245〠java.util.HashMap〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠b〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+
+
+(deftest
+ java-util-arraylist
+ (is
+  (=
+   (->
+    (?
+     :data
+     {:regex-theme :neutral,
+      :line-height 1.45,
+      :find nil,
+      :single-column-maps? false,
+      :supports-color-level nil,
+      :enable-terminal-italics? true,
+      :print-with nil,
+      :display-namespaces? true,
+      :enable-rainbow-brackets? true,
+      :select-metadata-keys nil,
+      :enable-terminal-truecolor? true,
+      :quote-lists? false,
+      :scalar-depth-1-max-length 69,
+      :margin-left 0,
+      :bold? false,
+      :margin-top 0,
+      :print-level 7,
+      :single-line-coll-max-length 33,
+      :format-label-as-code? false,
+      :single-column-map-threshold 44,
+      :scalar-result-max-length 444,
+      :theme "Alabaster Light",
+      :metadata-print-level 4,
+      :scalar-max-length 33,
+      :label-color nil,
+      :scalar-mapkey-max-length 33,
+      :print-length 33,
+      :multi-line-metadata? true,
+      :truncate? true,
+      :enable-terminal-font-weights? true,
+      :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
+      :legacy-terminal? false,
+      :quote-symbols? false,
+      :colorize? true,
+      :label-max-length 44,
+      :margin-inline-start 0,
+      :print-length-inline-results 8,
+      :display-metadata? false,
+      :margin-bottom 1,
+      :metadata-position "inline",
+      :print-detected-color-level? false,
+      :bracket-contrast "high"}
+     (java.util.ArrayList. [1 2 3]))
+    :formatted
+    :string
+    escape-sgr
+    string/join)
+   "〠3;38;2;199;104;35;48;2;255;249;245〠java.util.ArrayList〠0〠\n〠38;5;102;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠38;5;102;48;2;255;249;245〠]〠0〠")))
 
 
 (deftest

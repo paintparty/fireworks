@@ -7,6 +7,8 @@
 
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [? !? ?> !?> pprint]]
+            #?(:cljs [fireworks.macros :refer-macros [keyed]])
+            #?(:clj [fireworks.macros :refer [keyed]])
             [fireworks.themes :as themes]
             [fireworks.state]
             [fireworks.color]
@@ -20,11 +22,23 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
+#_(? :trace (let [a "foo"
+                b "gooasdfasdfsafasd"
+                c (java.util.HashSet. #{"a" 1 "b" 2})]))
+;; (def bar nil)
+;; (? (tag-map #'bar))
+;; (def my-delay (delay 100))
+;; (? (tag-map my-delay))
+;; (? (tag-map (range 3)))
+;; (? (lasertag.core/tag-map (java.util.HashSet. #{"a" 1 "b" 2})))
+;; (? (seqable? (java.util.HashSet. #{"a" 1 "b" 2})))
+
 (def lb "\n\n ")
 (def lb2 "\n")
 (def xx {:a (take 10 (map inc (range 18))) :b "foo"})
 (defn my-custom-printer [x] (println (str "HIHIHIH " x)))
-(do 
+
+#_(do 
   (println lb "DEFAULT" lb2)
   (? xx)
   

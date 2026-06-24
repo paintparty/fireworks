@@ -5,98 +5,13 @@
   [fireworks.specs.theme :as theme]
   [fireworks.basethemes :as basethemes]
   [fireworks.defs :as defs]
+  [fireworks.debug :refer [?]]
   [clojure.pprint :refer [pprint]]
-  [clojure.string :as string]
+  [clojure.string :as str]
   [clojure.edn :as edn]
   [clojure.spec.alpha :as s]))
 
-
 (def debug-config? false #_true)
-
-
-(defn- regex? [v]
-  (-> v type str (= "class java.util.regex.Pattern")))
-
-
-(defn- surround-with-quotes [x]
-  (str "\"" x "\""))
-
-
-(defn shortened
-  "Stringifies a collection and truncates the result with ellipsis 
-   so that it fits on one line."
-  [v limit]
-  (let [as-str         (str v)
-        regex?         (regex? v)
-        double-quotes? (or (string? v) regex?)
-        regex-pound    (when regex? "#")]
-    (if (> limit (count as-str))
-      (if double-quotes?
-        (str regex-pound (surround-with-quotes as-str))
-        as-str)
-      (let [ret* (-> as-str
-                     (string/split #"\n")
-                     first)
-            ret  (if (< limit (count ret*))
-                   (let [ret (->> ret*
-                                  (take limit)
-                                  string/join)]
-                     (str (if double-quotes?
-                            (str regex-pound (surround-with-quotes ret))
-                            ret)
-                          (when-not double-quotes? " ")
-                          "..."))
-                   ret*)]
-        ret))))
-
-
-  (defn- ns+ln+col-str
-    [form-meta]
-    (let [{:keys [line column]} form-meta
-          ns-str                (some-> *ns*
-                                        ns-name
-                                        str
-                                        (str ":" line ":" column))
-          ns-str                (do 
-                                  (str "\033[3;38;5;247m" ns-str "\033[0;m")
-
-                                  ;; magenta bold
-                                  (str "\033[3;38;5;201;1m" ns-str "\033[0m")
-
-                                  ;; olive bold
-                                  (str "\033[3;38;5;69;m" ns-str "\033[0m")
-                                  
-                                  )]
-      ns-str))
-
-
-(defmacro ? 
-    ([x]
-     (let [ns-str (ns+ln+col-str (meta &form))]
-       `(do
-          (println
-           (str ~ns-str
-                "\n"
-                (shortened (quote ~x) 25)
-                "\n"
-                (with-out-str (pprint ~x))))
-          ~x)))
-    ([label x]
-     (let [label  (or (:label label) label)
-           ns-str (ns+ln+col-str (meta &form))]
-      ;;  (println "FOOO" ns-str)
-       `(do
-          (println
-           (if (= :- ~label)
-             (with-out-str (pprint ~x))
-             #_(string/replace (with-out-str (pprint ~x)) #"\n$" "")
-             (str ~ns-str
-                  "\n"
-                  ~label
-                  "\n"
-                  (with-out-str (pprint ~x)))))
-          ~x))))
-
 
 (defmacro let-map
   "Equivalent of
@@ -189,7 +104,7 @@
 
 (defn- env-var-color-non-empty? [s]
   (boolean (when-let [v (System/getenv s)]
-             (not (string/blank? v)))))
+             (not (str/blank? v)))))
 
 
 (def bling-mood-names-set #{"light" "dark" "medium"})
@@ -483,12 +398,12 @@
       (do (dbgf (str "TERM=" term ", setting to 3"))
           3)
 
-      (not (string/blank? term-program))
+      (not (str/blank? term-program))
       (cond 
         (= term-program "iTerm.app")
         (if-let [v (? (some-> (System/getenv "TERM_PROGRAM_VERSION")
                               str
-                              (string/split #"\.")
+                              (str/split #"\.")
                               first
                               Integer/parseInt))]
           (let [ret (if (>= v 3) 3 2)]

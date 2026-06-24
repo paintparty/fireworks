@@ -204,13 +204,12 @@
            encapsulation-closing-bracket-len)]
 
     #_(when-not (not (coll? x)) #_@state/formatting-form-to-be-evaled?
-                (?pp
-                 (keyed [str-len-with-badge
-                         val-str-len
-                         badge-str-len
-                         x
-                         encapsulation-closing-bracket-len
-                         ])))
+                (? (keyed [str-len-with-badge
+                           val-str-len
+                           badge-str-len
+                           x
+                           encapsulation-closing-bracket-len
+                           ])))
 
     (keyed [str-len-with-badge
             badge-str-len
@@ -302,9 +301,10 @@
                        (mutable-wrapper-count meta-map)
                        str-len-val-ellipsized)
 
+                    ;; TODO - Remove?
                     ;; _ (when-not @state/formatting-form-to-be-evaled?
-                    ;;     (?pp x)
-                    ;;     (?pp (keyed [m
+                    ;;     (? x)
+                    ;;     (? (keyed [m
                     ;;                  badge-str-len
                     ;;                  atom-wrap-count
                     ;;                  ellipsized-char-count
@@ -477,16 +477,11 @@
           (vec
                 (map-indexed 
                  (fn [i [k v]]
-                   ;;  (?pp (meta k))
-                   ;;  (?pp k)
                    (let [k (f k {:key?             true
                                  :associated-value v
                                  :js-map-like-key? (:js-map-like? meta-map)
                                  :index            i})
                          v (vary-meta v assoc-in [:fw/truncated :map-value?] true)]
-
-                     ;;  (?pp k)
-                     ;;  (?pp (meta k))
                      [k v]))
                  x))]
       ret)

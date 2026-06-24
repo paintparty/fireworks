@@ -2,7 +2,6 @@
   (:require
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
-   [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
    [fireworks.truncate :as truncate]
    [fireworks.brackets
     :as brackets
@@ -12,11 +11,10 @@
    [clojure.string :as string]
    [fireworks.defs :as defs]
    [fireworks.tag :as tag :refer [sgr-tag reset-tag sgr-reset-tag tagged]]
-   [fireworks.util :refer [spaces badge-type]]
+   [fireworks.util :as util :refer [spaces badge-type]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [fireworks.state :as state :refer [meta-level-inc! meta-level-dec!]]
-   [fireworks.util :as util]
    [fireworks.ansi :as ansi]))
 
 (declare tagged-val)
@@ -122,7 +120,7 @@
            theme-token-override
            ellipsized-char-count]
     :as m}]
-  
+
   ;; break these into helper fns?
   ;; "The intial set of bindings:                                            
   ;;     -  user-metadata-map-block (displays user-meta above value), optional
@@ -238,6 +236,10 @@
          ;; positioned inline, to left of value 
          badge-tagged
 
+         ;; If datatype which shows a memory address, we do badge above
+         (when (= t :datatype)
+           "\n")
+
 
          ;; The self-evaluating value
          (when (= t :string)
@@ -301,7 +303,7 @@
                 s
                 t])]
 
-    #_(?pp 'locals
+    #_(? 'locals
            (merge ret
                   (keyed [main-entity-tag
                           chars-dropped-syntax
@@ -513,10 +515,10 @@
         user-meta-above?
         (boolean (and user-meta (contains? #{:block "block"} metadata-position)))
         
-        ;; _ (?pp meta-map)
+        ;; _ (? meta-map)
         
         ;; This is where multi-line for collections is determined
-        ;; _ (?pp (select-keys meta-map [:str-len-with-badge-ellipsized
+        ;; _ (? (select-keys meta-map [:str-len-with-badge-ellipsized
         ;;                               :str-len-val-ellipsized
         ;;                               :str-len-with-badge
         ;;                               :val-str-len
@@ -549,7 +551,7 @@
               (double-truncated-map? coll t)))
 
 
-        ;; _ (when-not multi-line? (?pp meta-map))
+        ;; _ (when-not multi-line? (? meta-map))
         
         ;; This is where indenting for multi-line collections is determined
         num-indent-spaces-for-t
@@ -1225,7 +1227,7 @@
          (reduce-kv (fn [m k v]
                       (let [
                             ;; k (-> k meta :fw/truncated :og-x)
-                            ;; _ (?pp (-> k meta :fw/truncated :og-x))
+                            ;; _ (? (-> k meta :fw/truncated :og-x))
                             ;; k (-> k meta :fw/truncated :og-x)
                             ]
                        (assoc m
@@ -1299,21 +1301,21 @@
 
 
      ;; for debugging path info
-     #_(walk/postwalk (fn [x]
-                        (println)
-                        (pprint (-> x meta :fw/truncated (select-keys [:og-x :path]))) x)
-                      truncated)
+    ;;  (walk/postwalk (fn [x]
+    ;;                     (println)
+    ;;                     (pprint (-> x meta :fw/truncated (select-keys [:og-x :path]))) x)
+    ;;                   truncated)
 
      ;; Just for debugging
      ;;  (when (:coll-type? (meta profiled))
-     ;;      (?pp (meta profiled)))
+     ;;      (? (meta profiled)))
      ;;  (? (:s (meta profiled)))
-     ;;  (?pp (map 
+     ;;  (? (map 
      ;;        (fn [a b]
      ;;          [a b])
      ;;        (rest (string/split serialized "%c"))
      ;;        @state/styles))
-     ;;  (?pp :serialized serialized)
-     ;;  (?pp @state/styles)
+     ;;  (? :serialized serialized)
+     ;;  (? @state/styles)
      
      serialized)))

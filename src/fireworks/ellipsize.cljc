@@ -2,13 +2,10 @@
 (:require
  [clojure.string :as str]
  [fireworks.defs :as defs]
- [fireworks.pp :refer [?pp] :rename {?pp ?}]
  [fireworks.state :as state]
  [fireworks.specs.config :as specs.config]
  #?(:cljs [fireworks.macros :refer-macros [keyed]])
- #?(:clj [fireworks.macros :refer [keyed]])
-  ;;  #?(:clj [clojure.math])
- ))
+ #?(:clj [fireworks.macros :refer [keyed]])))
 
 (defn- len
   [x]
@@ -170,7 +167,7 @@
             spliced)
           )]
     #_(when key? 
-      (?pp (keyed [num-to-remove
+        (? (keyed [num-to-remove
                    value-is-wrapped-in-some-kind-of-quotes?
                    ret])))
     ret))
@@ -295,8 +292,8 @@
 
 
           ;;  (when key?
-          ;;    (?pp stringified)
-          ;;    (?pp (keyed [#_m
+          ;;    (? stringified)
+          ;;    (? (keyed [#_m
           ;;                 t
           ;;                 stringified
           ;;                 stringified-len

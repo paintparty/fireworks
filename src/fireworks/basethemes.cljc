@@ -60,13 +60,13 @@
 
 
 ;; Conversion from browser-hex to x256
-#_(?pp (->> rainbow-brackets-colorscale
-          :universal
-          :browser
-          :high
-          (reduce (fn [acc [k v]] 
-                    (conj acc k (fireworks.color/hexa->x256 v)))
-                  [])))
+#_(->> rainbow-brackets-colorscale
+     :universal
+     :browser
+     :high
+     (reduce (fn [acc [k v]] 
+               (conj acc k (fireworks.color/hexa->x256 v)))
+             []))
 
 
   ;;  39  "#00afff"                                            ;; blue
