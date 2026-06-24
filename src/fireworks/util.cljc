@@ -1,8 +1,6 @@
 (ns fireworks.util
   (:require [clojure.string :as string]
-            [clojure.pprint :refer [pprint]]
             [fireworks.defs :as defs]
-            [fireworks.debug :refer [?]]
             [clojure.set :as set]
             [lasertag.fns :as fns]
             [lasertag.cached]

@@ -5,7 +5,7 @@
   [fireworks.specs.theme :as theme]
   [fireworks.basethemes :as basethemes]
   [fireworks.defs :as defs]
-  [fireworks.debug :refer [?]]
+  ;; [fireworks.debug :refer [?]]
   [clojure.pprint :refer [pprint]]
   [clojure.string :as str]
   [clojure.edn :as edn]
@@ -195,9 +195,9 @@
                                       (get basethemes/stock-themes theme* nil))]
 
                            ;; To debug theme problems
-                           #_(? theme* (->> (s/explain-data ::theme/theme x)
-                                            :clojure.spec.alpha/problems
-                                            (take 2)))
+                          ;;  (? theme* (->> (s/explain-data ::theme/theme x)
+                          ;;                 :clojure.spec.alpha/problems
+                          ;;                 (take 2)))
 
                            (when (s/valid? ::theme/theme x)
                              x))]
@@ -401,11 +401,11 @@
       (not (str/blank? term-program))
       (cond 
         (= term-program "iTerm.app")
-        (if-let [v (? (some-> (System/getenv "TERM_PROGRAM_VERSION")
-                              str
-                              (str/split #"\.")
-                              first
-                              Integer/parseInt))]
+        (if-let [v (some-> (System/getenv "TERM_PROGRAM_VERSION")
+;                              str
+                           (str/split #"\.")
+                           first
+                           Integer/parseInt)]
           (let [ret (if (>= v 3) 3 2)]
             (do (dbgf "iTerm.app, version " v  )
                 ret))
