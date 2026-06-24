@@ -12,6 +12,7 @@
                :analyzeInlineResults fireworks-vscode.bridge/analyze-inline-results
                :depsAliases          fireworks-vscode.bridge/deps-aliases
                :bbTasks              fireworks-vscode.bridge/bb-tasks
+               :testRefreshTemplate  fireworks-vscode.bridge/test-refresh-template
                :defaultConfig        fireworks-vscode.bridge/default-config
                :readMode             fireworks-vscode.bridge/read-mode
                :setMode              fireworks-vscode.bridge/set-mode}}

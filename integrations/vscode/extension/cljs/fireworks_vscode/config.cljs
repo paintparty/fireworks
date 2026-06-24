@@ -14,6 +14,22 @@
 (def ^:private tap-banner-default  "🔥🔥🔥🔥🔥🔥🔥🔥🔥")
 (def ^:private test-banner-default "📋 Running tests...")
 
+(def template
+  "The seed .test-refresh.edn written into a Clojure (deps) project that has no local
+   (project root) or global (~/.test-refresh.edn) config when Live Code launches. A
+   human-friendly literal — inline comments plus a #_ reader-discard alternate banner —
+   so the user can toggle debug/test mode by hand. Distinct from default-config (which
+   renders programmatically, sans comments, for the set-mode surface)."
+  "{
+ :quiet             true
+ :changes-only      true
+ :notify-on-success false
+ :debug             true                            ;<- If `true`, runs in debug mode - all tests are skipped
+ :banner            \"🔥🔥🔥\" #_\"📋 Running tests...\" ;<- Might want to toggle this for debug mode vs test mode
+ :clear             true                            ;<- Clears terminal on each reload, perfect for debug mode
+ }
+")
+
 ;; Rendered key order for a created .test-refresh.edn.
 (def ^:private option-order
   [:quiet :changes-only :notify-on-success :debug :banner :debug-mode-opts :clear])

@@ -135,6 +135,10 @@ export interface ModeResult {
   error?: string;
 }
 
+// The seed .test-refresh.edn text (commented literal) written when neither a project-local
+// nor a global ~/.test-refresh.edn exists at Live Code launch.
+export function testRefreshTemplate(): string;
+
 // The default .test-refresh.edn text for a mode (used to create the file).
 export function defaultConfig(mode: Mode): string;
 

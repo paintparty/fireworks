@@ -24,8 +24,26 @@
   (testing "test defaults: :debug false, running banner, no :debug-mode-opts"
     (let [o (edn/read-string (cfg/default-config :test))]
       (is (= false (:debug o)))
-      (is (= "📋 Running tests..." (:banner o)))
+      (is (= "🧪🧪🧪 Running tests..." (:banner o)))
       (is (not (contains? o :debug-mode-opts))))))
+
+;; ---------------------------------------------------------------------------
+;; template (the seed .test-refresh.edn)
+;; ---------------------------------------------------------------------------
+
+(deftest template-edn
+  (testing "seed template parses as valid EDN with tap-mode defaults"
+    (let [o (edn/read-string cfg/template)]
+      (is (= true (:debug o)))   ; ships in debug/tap mode
+      (is (= true (:quiet o)))
+      (is (= true (:changes-only o)))
+      (is (= false (:notify-on-success o)))
+      (is (= true (:clear o)))
+      (is (= "🔥🔥🔥" (:banner o)))               ; #_ alternate banner is discarded
+      (is (not (contains? o :debug-mode-opts)))))
+  (testing "guidance comments survive in the literal text"
+    (is (str/includes? cfg/template "runs in debug mode"))
+    (is (str/includes? cfg/template "#_\"📋 Running tests...\""))))
 
 ;; ---------------------------------------------------------------------------
 ;; read-mode

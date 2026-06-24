@@ -1303,6 +1303,40 @@ async function pickTask(root: string): Promise<string | undefined> {
   });
 }
 
+// Which .test-refresh.edn governs a Clojure watcher: 'local' (project root), 'global'
+// (~/.test-refresh.edn), 'created' (we seeded one in the project root), or 'error' (the
+// seed write failed — test-refresh falls back to its own defaults).
+type TestRefreshSource = 'local' | 'global' | 'created' | 'error';
+
+// Ensure a .test-refresh.edn is in effect for a Clojure (deps) project before its watcher
+// launches. test-refresh reads the project-root .test-refresh.edn, falling back to the
+// global ~/.test-refresh.edn. We never overwrite an existing config (local or global);
+// only when neither exists do we seed one in the project root from the Fireworks template.
+// Returns the source so the caller can track which config governs the run.
+function ensureTestRefreshConfig(root: string): TestRefreshSource {
+  const local = path.join(root, '.test-refresh.edn');
+  if (fs.existsSync(local)) {
+    log(`.test-refresh.edn: using project-local ${tildify(local)}`);
+    return 'local';
+  }
+  const global = path.join(os.homedir(), '.test-refresh.edn');
+  if (fs.existsSync(global)) {
+    log(`.test-refresh.edn: using global ${tildify(global)}`);
+    return 'global';
+  }
+  try {
+    fs.writeFileSync(local, cljsLib.testRefreshTemplate(), 'utf8');
+    log(`.test-refresh.edn: none found locally or globally — created ${tildify(local)}`);
+    return 'created';
+  } catch (e) {
+    log(`.test-refresh.edn: could not create ${tildify(local)}: ${String(e)}`);
+    vscode.window.showWarningMessage(
+      `Fireworks: could not create .test-refresh.edn in ${tildify(root)}. test-refresh will run with its defaults.`,
+    );
+    return 'error';
+  }
+}
+
 // Resolve the verbatim watcher command for `root`: detect the runtime, run its PATH
 // preflight, then pick the alias (deps) or task (bb). undefined aborts the launch (a
 // message was already shown, or a pick/preflight failed).
@@ -1322,7 +1356,14 @@ async function resolveWatcherCommand(root: string): Promise<string | undefined> 
     return undefined;
   }
   const alias = await pickAlias(root);
-  return alias ? aliasCommand(alias) : undefined;
+  if (!alias) {
+    return undefined;
+  }
+  // Clojure runtime only: make sure a .test-refresh.edn governs the run (seed one from the
+  // template if the project has neither a local nor a global config). Done after the alias
+  // pick so a dismissed pick writes nothing.
+  ensureTestRefreshConfig(root);
+  return aliasCommand(alias);
 }
 
 function waitForShellIntegration(

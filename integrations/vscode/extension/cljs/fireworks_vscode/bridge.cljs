@@ -83,6 +83,11 @@
 (defn- error? [r] (and (map? r) (:error r)))
 (defn- err->js [r] #js {:error (name (:error r))})
 
+;; The seed .test-refresh.edn text (commented literal) used when neither a project-local
+;; nor a global ~/.test-refresh.edn exists at Live Code launch. Returned verbatim as a string.
+(defn test-refresh-template []
+  config/template)
+
 (defn default-config [mode]
   (config/default-config (keyword mode)))
 
