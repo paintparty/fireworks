@@ -69,6 +69,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.setInlineResultsFadeIn', () =>
       setInlineResultsFadeIn(),
     ),
+    vscode.commands.registerCommand('fireworks.rainbowTracerVertical', () =>
+      rainbowTracerVertical(),
+    ),
+    vscode.commands.registerCommand('fireworks.rainbowTracerHorizontal', () =>
+      rainbowTracerHorizontal(),
+    ),
     vscode.window.onDidCloseTerminal((t) => {
       for (const [root, s] of liveSessions) {
         if (s.terminal === t) {
@@ -2188,6 +2194,20 @@ function playStartupSweep(editor: vscode.TextEditor): void {
     default: // 'left-to-right'
       playHorizontalSweep(editor, false);
       break;
+  }
+}
+
+function rainbowTracerVertical(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (editor) {
+    playVerticalSweep(editor, false);
+  }
+}
+
+function rainbowTracerHorizontal(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (editor) {
+    playHorizontalSweep(editor, false);
   }
 }
 

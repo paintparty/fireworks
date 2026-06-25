@@ -45,7 +45,9 @@
       { "command": "fireworks.setInlineResultsOpacity", "title": "Set Inline Results Opacity", "category": "Fireworks" },
       { "command": "fireworks.setInlineResultsGap", "title": "Set Inline Results Gap", "category": "Fireworks" },
       { "command": "fireworks.setInlineResultsMaxLength", "title": "Set Inline Results Max Length", "category": "Fireworks" },
-      { "command": "fireworks.setInlineResultsFadeIn", "title": "Set Inline Results Fade-In", "category": "Fireworks" }
+      { "command": "fireworks.setInlineResultsFadeIn", "title": "Set Inline Results Fade-In", "category": "Fireworks" },
+      { "command": "fireworks.rainbowTracerVertical", "title": "Rainbow Tracer (top-to-bottom)", "category": "Fireworks" },
+      { "command": "fireworks.rainbowTracerHorizontal", "title": "Rainbow Tracer (left-to-right)", "category": "Fireworks" }
     ],
     "keybindings": [
       {
