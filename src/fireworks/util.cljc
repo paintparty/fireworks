@@ -4,7 +4,8 @@
             [clojure.set :as set]
             [lasertag.fns :as fns]
             [lasertag.cached]
-            [lasertag.core :as lasertag]))
+            [lasertag.core :as lasertag]
+            #?(:bb [clojure.reflect :as r])))
 
 (defn spaces [n] (string/join (repeat n " ")))
 
@@ -244,12 +245,12 @@
   [obj]
   (if (nil? obj)
     false
-    #?(:bb   (let [members (:members (clojure.reflect/reflect obj))]
+    #?(:bb   (let [members (:members (r/reflect obj))]
                ;; Filter for members that represent the fields
                (->> members
                     (filter :flags)
                     (map :name)
-                    clojure.set/into  ; isolates names
+                    vec  ; isolates names
                     ))
        :clj  (.getDeclaredFields (.getClass obj))
        :cljs (js/Object.keys obj))))
@@ -260,9 +261,7 @@
   [obj]
   (if (nil? obj)
     false
-    #?(:bb   (let [members (:members (clojure.reflect/reflect obj))]
-               ;; Filter for members that represent the fields
-               (->> (object-fields obj) count))
+    #?(:bb   (->> (object-fields obj) count)
        :clj  (alength (object-fields obj))
        :cljs (alength (object-fields obj)))))
 
