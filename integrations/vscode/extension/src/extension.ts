@@ -902,16 +902,19 @@ function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } 
       return {
         title: 'Fireworks Babashka watch task',
         markdown: [
-          '# Fireworks: add a Babashka watch task',
+          '### ⚠️ Fireworks:',
+          '# Add a Babashka watch task',
           '',
-          'To use Fireworks Live Code with Babashka, add a `bb.edn` task that loads the watcher:',
+          'To use `Fireworks: Live Code` with Babashka, add a task to your `bb.edn` that loads the watcher:',
           '',
           '```clj',
           '{:tasks',
           ' {live {:task (load-file ".fireworks/bb/watch.clj")}}}',
           '```',
           '',
-          'Then run Live Code again and pick that task. Fireworks seeds `.fireworks/bb/watch.clj`',
+          'Then run Live Code again and pick that task.',
+          '',
+          ' Fireworks seeds `.fireworks/bb/watch.clj`',
           'for you, and the watcher self-loads the [fswatcher](https://github.com/babashka/fs) pod —',
           'no `:pods` entry is needed in your `bb.edn`.',
           '',
@@ -1949,63 +1952,113 @@ async function reuseOrNotify(session: LiveSession): Promise<void> {
 }
 
 // ============================================================================
-// Live Code startup sweep: a brief rainbow highlight that travels down the active
-// editor's visible rows when a session starts or restarts — a "refresh" cue, since
-// launching shows/focuses the terminal and gives the editor no signal of its own.
-// A short fading trail moves top -> bottom (each row lights at the wave front, then
-// fades back to normal), cycling the row color through 9 oklch medium tones at 10%
-// opacity. Paced from the visible row count so the whole sweep lasts ~1s. Active
-// editor only; gated by the hidden fireworks.liveCoding.startupAnimation setting.
+// Live Code startup sweep: a brief rainbow highlight that travels across the active
+// editor's viewport when a session starts or restarts — a "refresh" cue, since launching
+// shows/focuses the terminal and gives the editor no signal of its own. A short fading
+// trail sweeps in the configured direction (each cell lights at the wave front, then fades
+// back to normal), cycling the color through 9 oklch medium tones. Paced from the visible
+// row (vertical) or column (horizontal) count so the whole sweep lasts ~1s. Active editor
+// only; gated by the hidden fireworks.liveCoding.startupAnimation + .startupAnimationDirection settings.
 // ============================================================================
 
-const SWEEP_TOTAL_MS = 2000; // target duration of the whole sweep
+const SWEEP_TOTAL_MS = 1250; // target duration of the whole sweep
 const SWEEP_MIN_STEP_MS = 12; // floor on the per-row step so a dense viewport doesn't busy-loop
 const SWEEP_FADE_SPAN = 7; // rows in the fading trail = opacity levels per color
-const SWEEP_MAX_ALPHA = 0.30; // 10% transparency at the bright wave front
-const SWEEP_L = 0.72; // oklch lightness — a medium tone
+const SWEEP_MAX_ALPHA_BACKGROUND = 0.375; // background alpha at the bright front (spec's "10%" = 0.1)
+const SWEEP_MAX_ALPHA_FOREGROUND = 1.0; // foreground (text) alpha at the front; used iff SWEEP_TINT_FOREGROUND
+const SWEEP_MAX_COLS = 120; // cap on a horizontal sweep's column count (bounds the frame budget)
+const SWEEP_L = 0.72; // oklch lightness for the background tint — a medium tone
+const SWEEP_FG_L = 0.85; // brighter lightness for the foreground tint so it pops on dark backgrounds
 const SWEEP_C = 0.16; // oklch chroma
-// Hues for red, orange, yellow, lime, green, cyan, blue, purple, magenta. The row color
-// cycles through these top to bottom (row r -> SWEEP_HUES[r % 9]).
+// Hues for red, orange, yellow, lime, green, cyan, blue, purple, magenta. The color cycles
+// through these along the sweep (row r -> SWEEP_HUES[r % 9] vertical; column c likewise).
 const SWEEP_HUES = [25, 55, 95, 130, 150, 200, 260, 305, 340];
+// Whether the moving tint colors the cell background, the text foreground, or both. These are
+// application-logic switches (no hidden setting yet) — the defaults reproduce the original
+// background-only sweep. Read once, when the decoration types are first built.
+const SWEEP_TINT_BACKGROUND = true;
+const SWEEP_TINT_FOREGROUND = true;
+// Limit the background tint to cells holding non-blank text (skip whitespace and the empty area
+// past end-of-line). When off, a vertical sweep tints whole lines and a horizontal sweep tints
+// every column up to each line's length. Application-logic switch (no hidden setting).
+const SWEEP_BACKGROUND_TEXT_ONLY = true;
+// Skip line-comment lines entirely — no animation on any line whose first non-blank character is a
+// `;`. Precomputed once per run, so it costs one test per visible line (not per frame) and trims
+// the ranges painted. Application-logic switch (no hidden setting).
+const SWEEP_SKIP_LINE_COMMENTS = true;
 
-// [hue][level-1] decoration types: 9 colors x SWEEP_FADE_SPAN opacity levels, each a
-// whole-line background tint. Level k (1..span) -> alpha SWEEP_MAX_ALPHA * k/span, so the
-// wave front (highest level) is brightest and the trail dims behind it. Built once, reused
-// across every start/restart, disposed on deactivation.
-let sweepTypes: vscode.TextEditorDecorationType[][] | undefined;
+// [hue][level-1] decoration types: 9 colors x SWEEP_FADE_SPAN opacity levels, in two flavors —
+// whole-line tints (one band per row) and single-cell tints (one character cell). The whole-line
+// set backs a plain vertical sweep; the cell set backs horizontal sweeps and any sweep limited to
+// text cells (SWEEP_BACKGROUND_TEXT_ONLY). isWholeLine is baked into the type, so each flavor is
+// cached separately. Level k (1..span) -> alpha (SWEEP_MAX_ALPHA_BACKGROUND/_FOREGROUND) * k/span,
+// so the wave front is brightest and the trail dims behind it. Built once, reused, disposed on deactivation.
+let sweepTypesWholeLine: vscode.TextEditorDecorationType[][] | undefined;
+let sweepTypesCell: vscode.TextEditorDecorationType[][] | undefined;
 let sweepTimer: ReturnType<typeof setInterval> | undefined;
 let sweepEditor: vscode.TextEditor | undefined; // the editor the running sweep paints
+let sweepActive: vscode.TextEditorDecorationType[][] | undefined; // the type set the running sweep paints
 
-// Hidden (JSON-only) opt-out, mirroring fireworks.liveCoding.manageGitignore: read fresh,
-// not declared in package.json so it stays out of the Settings UI.
+// Hidden (JSON-only) settings, mirroring fireworks.liveCoding.manageGitignore: read fresh, not
+// declared in package.json so they stay out of the Settings UI.
 function startupAnimEnabled(): boolean {
   return vscode.workspace
     .getConfiguration('fireworks')
     .get<boolean>('liveCoding.startupAnimation', true);
 }
 
-function ensureSweepTypes(): vscode.TextEditorDecorationType[][] {
-  if (sweepTypes) {
-    return sweepTypes;
+type SweepDirection = 'top-to-bottom' | 'bottom-to-top' | 'left-to-right' | 'right-to-left';
+
+function startupAnimDirection(): SweepDirection {
+  const v = vscode.workspace
+    .getConfiguration('fireworks')
+    // .get<string>('liveCoding.startupAnimationDirection', 'bottom-to-top');
+    .get<string>('liveCoding.startupAnimationDirection', 'top-to-bottom');
+  switch (v) {
+    case 'top-to-bottom':
+    case 'bottom-to-top':
+    case 'right-to-left':
+      return v;
+    default:
+      return 'left-to-right';
   }
-  sweepTypes = SWEEP_HUES.map((hue) =>
+}
+
+function ensureSweepTypes(wholeLine: boolean): vscode.TextEditorDecorationType[][] {
+  const cached = wholeLine ? sweepTypesWholeLine : sweepTypesCell;
+  if (cached) {
+    return cached;
+  }
+  const built = SWEEP_HUES.map((hue) =>
     Array.from({ length: SWEEP_FADE_SPAN }, (_, i) => {
-      const alpha = +((SWEEP_MAX_ALPHA * (i + 1)) / SWEEP_FADE_SPAN).toFixed(3);
+      const level = i + 1; // 1..SWEEP_FADE_SPAN; the wave front is the top level
+      const frac = level / SWEEP_FADE_SPAN; // the background fades down the trail (1/span .. 1)
+      const bg = `oklch(${SWEEP_L} ${SWEEP_C} ${hue} / ${+(SWEEP_MAX_ALPHA_BACKGROUND * frac).toFixed(3)})`;
+      // Foreground lights only the front cell — no trailing fade — at a brighter lightness, so the
+      // active row pops on dark backgrounds and trailing rows drop straight back to their own color.
+      const onFront = level === SWEEP_FADE_SPAN;
+      const fg = `oklch(${SWEEP_FG_L} ${SWEEP_C} ${hue} / ${SWEEP_MAX_ALPHA_FOREGROUND})`;
       return vscode.window.createTextEditorDecorationType({
-        isWholeLine: true,
-        backgroundColor: `oklch(${SWEEP_L} ${SWEEP_C} ${hue} / ${alpha})`,
+        isWholeLine: wholeLine,
+        backgroundColor: SWEEP_TINT_BACKGROUND ? bg : undefined,
+        color: SWEEP_TINT_FOREGROUND && onFront ? fg : undefined,
       });
     }),
   );
-  return sweepTypes;
+  if (wholeLine) {
+    sweepTypesWholeLine = built;
+  } else {
+    sweepTypesCell = built;
+  }
+  return built;
 }
 
-// Clear every sweep decoration from the editor currently being animated.
+// Clear every decoration of the set the running sweep is painting, from its editor.
 function clearSweepDecorations(): void {
-  if (!sweepTypes || !sweepEditor) {
+  if (!sweepActive || !sweepEditor) {
     return;
   }
-  for (const row of sweepTypes) {
+  for (const row of sweepActive) {
     for (const t of row) {
       sweepEditor.setDecorations(t, []);
     }
@@ -2021,26 +2074,128 @@ function stopSweep(): void {
   }
   clearSweepDecorations();
   sweepEditor = undefined;
+  sweepActive = undefined;
 }
 
-// Tear-down for deactivation: stop the sweep and dispose the decoration types.
+// Tear-down for deactivation: stop the sweep and dispose both type flavors.
 function disposeSweep(): void {
   stopSweep();
-  if (sweepTypes) {
-    for (const row of sweepTypes) {
-      for (const t of row) {
-        t.dispose();
+  for (const set of [sweepTypesWholeLine, sweepTypesCell]) {
+    if (set) {
+      for (const row of set) {
+        for (const t of row) {
+          t.dispose();
+        }
       }
     }
-    sweepTypes = undefined;
+  }
+  sweepTypesWholeLine = undefined;
+  sweepTypesCell = undefined;
+}
+
+// Drive a sweep: each tick refills the per-(color, level) range buckets via `paintFrame` and
+// pushes them to the editor, for `totalSteps` ticks `step` ms apart, then clears. Ranges key off
+// document positions, so the sweep stays put even though launching focuses the terminal.
+//
+// Perf: there are 9*SWEEP_FADE_SPAN decoration types but only a handful hold ranges on any frame
+// (the trail). So (a) the buckets are allocated once and cleared in place — no per-frame garbage —
+// and (b) setDecorations is called only for a type whose ranges changed this frame (non-empty now,
+// or non-empty last frame and needing a clear), tracked in `dirty`. That turns ~9*SWEEP_FADE_SPAN
+// renderer round-trips per frame into ~2*trail, the single biggest cost in the animation.
+function runSweep(
+  editor: vscode.TextEditor,
+  types: vscode.TextEditorDecorationType[][],
+  totalSteps: number,
+  step: number,
+  paintFrame: (s: number, buckets: vscode.Range[][][]) => void,
+): void {
+  stopSweep(); // cancel any prior sweep before starting this one
+  sweepEditor = editor;
+  sweepActive = types;
+  const buckets = types.map((row) => row.map(() => [] as vscode.Range[]));
+  const dirty = types.map((row) => row.map(() => false)); // which types currently hold ranges
+  let s = 0;
+  sweepTimer = setInterval(() => {
+    if (!vscode.window.visibleTextEditors.includes(editor)) {
+      stopSweep(); // editor closed or scrolled out of view — stop wasting frames
+      return;
+    }
+    for (const row of buckets) {
+      for (const b of row) {
+        b.length = 0; // reuse the arrays; no per-frame allocation
+      }
+    }
+    paintFrame(s, buckets);
+    for (let c = 0; c < types.length; c++) {
+      for (let k = 0; k < types[c].length; k++) {
+        const hasRanges = buckets[c][k].length > 0;
+        if (hasRanges || dirty[c][k]) {
+          editor.setDecorations(types[c][k], buckets[c][k]); // only when this type changed
+          dirty[c][k] = hasRanges;
+        }
+      }
+    }
+    s++;
+    if (s >= totalSteps) {
+      stopSweep();
+    }
+  }, step);
+}
+
+// The visible lines' text, indexed from the first visible line. Feeds the text-only background
+// (SWEEP_BACKGROUND_TEXT_ONLY) and the horizontal sweep's per-column reach.
+function visibleLineTexts(editor: vscode.TextEditor, startLine: number, endLine: number): string[] {
+  const texts: string[] = [];
+  for (let line = startLine; line <= endLine; line++) {
+    texts.push(editor.document.lineAt(line).text);
+  }
+  return texts;
+}
+
+// A line whose first non-blank character is a `;` (a Clojure line comment).
+function isLineComment(text: string): boolean {
+  return /^\s*;/.test(text);
+}
+
+// Push a range for each run of non-blank characters on the line, so only the code is tinted —
+// whitespace and the empty area past end-of-line stay clear.
+function pushNonBlankRuns(bucket: vscode.Range[], line: number, text: string): void {
+  let runStart = -1;
+  for (let col = 0; col <= text.length; col++) {
+    const blank = col === text.length || text[col].trim() === '';
+    if (!blank && runStart < 0) {
+      runStart = col; // a non-blank run begins
+    } else if (blank && runStart >= 0) {
+      bucket.push(new vscode.Range(line, runStart, line, col)); // run ends just before this blank
+      runStart = -1;
+    }
   }
 }
 
-// Play the startup sweep on `editor`: a fading rainbow band travels from the top of the
-// viewport to the bottom over ~SWEEP_TOTAL_MS, then clears. Pacing derives from the
-// visible row count; whole-line decorations key off line number, so the sweep stays put
-// even though launching focuses the terminal.
+// Play the startup sweep on `editor` in the configured direction. A fading rainbow band
+// travels across the viewport over ~SWEEP_TOTAL_MS, then clears.
 function playStartupSweep(editor: vscode.TextEditor): void {
+  switch (startupAnimDirection()) {
+    case 'top-to-bottom':
+      playVerticalSweep(editor, false);
+      break;
+    case 'bottom-to-top':
+      playVerticalSweep(editor, true);
+      break;
+    case 'right-to-left':
+      playHorizontalSweep(editor, true);
+      break;
+    default: // 'left-to-right'
+      playHorizontalSweep(editor, false);
+      break;
+  }
+}
+
+// Vertical sweep. reversed=false runs top -> bottom, true runs bottom -> top. Each visible row
+// lights as the front reaches it (color stays anchored per row: SWEEP_HUES[r % 9]) and fades over
+// the next SWEEP_FADE_SPAN rows. Paced from the row count. With SWEEP_BACKGROUND_TEXT_ONLY the row
+// tints only its non-blank text runs (cell types); otherwise the whole line (whole-line types).
+function playVerticalSweep(editor: vscode.TextEditor, reversed: boolean): void {
   const ranges = editor.visibleRanges;
   if (ranges.length === 0) {
     return;
@@ -2051,37 +2206,74 @@ function playStartupSweep(editor: vscode.TextEditor): void {
   if (rows <= 0) {
     return;
   }
-  stopSweep(); // cancel any prior sweep before starting this one
-  const types = ensureSweepTypes();
-  sweepEditor = editor;
-  const fadeSpan = Math.min(SWEEP_FADE_SPAN, rows);
+  const textOnly = SWEEP_BACKGROUND_TEXT_ONLY;
+  const skipComments = SWEEP_SKIP_LINE_COMMENTS;
+  const lineTexts = textOnly || skipComments ? visibleLineTexts(editor, startLine, endLine) : null;
+  const commentLine = skipComments && lineTexts ? lineTexts.map(isLineComment) : null;
   const step = Math.max(SWEEP_TOTAL_MS / rows, SWEEP_MIN_STEP_MS); // ms the front spends per row
-  const totalSteps = rows + fadeSpan; // front sweeps `rows`, then the trail clears over `fadeSpan` more
-  let s = 0;
-  sweepTimer = setInterval(() => {
-    // buckets[hue][level-1] collects the lines to paint this frame.
-    const buckets = types.map((row) => row.map(() => [] as vscode.Range[]));
+  runSweep(editor, ensureSweepTypes(!textOnly), rows + SWEEP_FADE_SPAN, step, (s, buckets) => {
     for (let r = 0; r < rows; r++) {
-      const age = s - r; // steps since the front passed row r
-      if (age < 0 || age >= fadeSpan) {
+      if (commentLine && commentLine[r]) {
+        continue; // leave line-comment rows untouched
+      }
+      const pos = reversed ? rows - 1 - r : r; // this row's place in the sweep order
+      const age = s - pos; // steps since the front passed this row
+      if (age < 0 || age >= SWEEP_FADE_SPAN) {
         continue; // not yet reached, or fully faded
       }
-      const level = fadeSpan - age; // front (age 0) brightest, oldest trail dimmest
-      const colorIdx = r % SWEEP_HUES.length;
+      const level = SWEEP_FADE_SPAN - age; // front (age 0) is the top level, trail dims behind it
       const line = startLine + r;
-      buckets[colorIdx][level - 1].push(new vscode.Range(line, 0, line, 0));
-    }
-    // Reassign every type (an empty array clears last frame's rows -> the trail fades).
-    for (let c = 0; c < types.length; c++) {
-      for (let k = 0; k < types[c].length; k++) {
-        editor.setDecorations(types[c][k], buckets[c][k]);
+      const bucket = buckets[r % SWEEP_HUES.length][level - 1];
+      if (textOnly) {
+        pushNonBlankRuns(bucket, line, lineTexts![r]);
+      } else {
+        bucket.push(new vscode.Range(line, 0, line, 0)); // whole line
       }
     }
-    s++;
-    if (s >= totalSteps) {
-      stopSweep();
+  });
+}
+
+// Horizontal sweep. reversed=false runs left -> right, true runs right -> left. A column band
+// sweeps across the visible rows; each column lights as the front reaches it (color anchored per
+// column: SWEEP_HUES[c % 9]) and fades over the next SWEEP_FADE_SPAN columns. A cell paints only
+// where that line has a character (and, with SWEEP_BACKGROUND_TEXT_ONLY, only a non-blank one), so
+// the band tracks the code. Paced from the longest visible line, capped at SWEEP_MAX_COLS.
+function playHorizontalSweep(editor: vscode.TextEditor, reversed: boolean): void {
+  const ranges = editor.visibleRanges;
+  if (ranges.length === 0) {
+    return;
+  }
+  const startLine = ranges[0].start.line;
+  const endLine = ranges[ranges.length - 1].end.line;
+  const lineTexts = visibleLineTexts(editor, startLine, endLine);
+  const cols = Math.min(Math.max(...lineTexts.map((t) => t.length)), SWEEP_MAX_COLS);
+  if (cols <= 0) {
+    return; // nothing but blank lines in view
+  }
+  const textOnly = SWEEP_BACKGROUND_TEXT_ONLY;
+  const commentLine = SWEEP_SKIP_LINE_COMMENTS ? lineTexts.map(isLineComment) : null;
+  const step = Math.max(SWEEP_TOTAL_MS / cols, SWEEP_MIN_STEP_MS); // ms the front spends per column
+  runSweep(editor, ensureSweepTypes(false), cols + SWEEP_FADE_SPAN, step, (s, buckets) => {
+    for (let col = 0; col < cols; col++) {
+      const pos = reversed ? cols - 1 - col : col; // this column's place in the sweep order
+      const age = s - pos; // steps since the front passed this column
+      if (age < 0 || age >= SWEEP_FADE_SPAN) {
+        continue; // not yet reached, or fully faded
+      }
+      const level = SWEEP_FADE_SPAN - age; // front (age 0) is the top level, trail dims behind it
+      const bucket = buckets[col % SWEEP_HUES.length][level - 1];
+      for (let i = 0; i < lineTexts.length; i++) {
+        if (commentLine && commentLine[i]) {
+          continue; // leave line-comment rows untouched
+        }
+        const text = lineTexts[i];
+        if (col < text.length && (!textOnly || text[col].trim() !== '')) {
+          const line = startLine + i;
+          bucket.push(new vscode.Range(line, col, line, col + 1));
+        }
+      }
     }
-  }, step);
+  });
 }
 
 // Run the watcher for a root + resolved command, registering it as a session so
