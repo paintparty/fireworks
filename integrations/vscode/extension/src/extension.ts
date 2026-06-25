@@ -127,7 +127,7 @@ function log(msg: string): void {
 
 // A transient bottom-right notification that auto-dismisses after `ms` (default 5s). VS
 // Code exposes no timeout on window.showInformationMessage, so drive a notification-
-// location progress task that resolves on a timer — the toast closes when it resolves.
+// location progress task that resolves on a timer. The toast closes when it resolves.
 function flash(message: string, ms = 5000): void {
   void vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: message },
@@ -497,7 +497,7 @@ const resultsCache = new Map<string, string>();
 
 // Project roots that have a `.fireworks/` results tree, learned as result files arrive
 // (and lazily when mapping an editor to its root). This is what associates a document
-// with the root its results were cached under — independent of deps.edn or how the
+// with the root its results were cached under, independent of deps.edn or how the
 // results were produced (Babashka, lein, deps). Live coding's deps.edn root discovery
 // (findProjectRoots) is separate and unaffected.
 const fireworksRoots = new Set<string>();
@@ -509,7 +509,7 @@ function resultKey(root: string, ns: string, posKey: string): string {
   return `${root} ${ns} ${posKey}`;
 }
 
-// analyzeInlineResults parses the whole document with rewrite-clj — by far the heaviest
+// analyzeInlineResults parses the whole document with rewrite-clj, by far the heaviest
 // step in a repaint. Its output (the ns + the `(? …)` positions) depends only on document
 // content, which changes on edit (and bumps document.version), never on which result file
 // arrived. So cache one analysis per document version: a test-refresh burst that writes
@@ -625,7 +625,7 @@ function makeInlineDecoration(): vscode.TextEditorDecorationType {
     // hatch since the attachment has no opacity field of its own.
     after: {
       color,
-      // The lead gap rides a left margin — outside the attachment's box — so the tint
+      // The lead gap rides a left margin, outside the attachment's box, so the tint
       // never reaches the empty gap before the first prefix bar.
       margin: `0 0 0 ${cfg().get<number>('inlineResults.gap', 17)}ch`,
       // The tint is a per-row background-image gradient (built in repaintEditor) with
@@ -830,7 +830,7 @@ function ensureGitignored(root: string): void {
 }
 
 // ============================================================================
-// Setup guidance — rendered Markdown opened to the side. No toasts or popups: when Live Code
+// Setup guidance: rendered Markdown opened to the side. No toasts or popups when Live Code
 // can't proceed for a setup reason, we open a small readonly Markdown doc in the built-in preview
 // (syntax-highlighted code blocks, clickable links; select-and-copy for the snippets). One reusable
 // surface for every guidance message.
@@ -1292,14 +1292,14 @@ function allocateEven(lengths: number[], budget: number): number[] {
 //
 // Start/Stop/Restart a watcher in an integrated terminal at the picked project root.
 // The flow is two picks and no magic: pick the project root, then pick what to run from
-// that project's own config — a deps.edn alias (`clojure -M:<alias>`), a bb.edn task
+// that project's own config: a deps.edn alias (`clojure -M:<alias>`), a bb.edn task
 // (`bb <task>`), or a Leiningen profile carrying lein-test-refresh
 // (`lein with-profile +<profile> test-refresh`). For deps/bb the user owns those files and
 // Fireworks writes nothing. Leiningen is the one exception: it may patch project.clj's
-// :test-refresh (and add the plugin to a profile) — always prompt-then-patch, additive only.
+// :test-refresh (and add the plugin to a profile), always prompt-then-patch, additive only.
 // ============================================================================
 
-// The terminal name for a root's session — basename-tagged so concurrent sessions in
+// The terminal name for a root's session, basename-tagged so concurrent sessions in
 // different projects are distinguishable in the terminal dropdown.
 function terminalName(root: string): string {
   return `Fireworks: Live Code — ${path.basename(root)}`;
@@ -1422,8 +1422,8 @@ function withRecentSection<T extends vscode.QuickPickItem>(
 type RootPickItem = vscode.QuickPickItem & { root: string };
 
 // Resolve which project root to act on: the only one, or a pick when the workspace has
-// several. The pick mirrors VS Code's own "new terminal" cwd picker — folder name as the
-// label, the home-abbreviated parent path as the muted description — with recently-launched
+// several. The pick mirrors VS Code's own "new terminal" cwd picker, with folder name as the
+// label and home-abbreviated parent path as the muted description, with recently-launched
 // projects floated under a "Recent" header. undefined if none, or the pick was dismissed.
 async function pickProjectRoot(): Promise<string | undefined> {
   const roots = await findProjectRoots();
@@ -1487,7 +1487,7 @@ function aliasCommand(alias: string): string {
 
 // The watcher command for a chosen bb.edn task (Babashka). The task supplies the watcher.
 // `bb <task>` (not `bb run <task>`): a user task overrides a same-named built-in, so this
-// runs the task even for builtin-colliding names — and it avoids the `bb run` footgun where
+// runs the task even for builtin-colliding names, and it avoids the `bb run` footgun where
 // a task literally named `run` would swallow the argument.
 function taskCommand(task: string): string {
   return `bb ${task}`;
@@ -1566,7 +1566,7 @@ async function pickAlias(root: string): Promise<string | undefined> {
 
 // Whether `root`'s bb.edn is wired as a Fireworks watcher: a task whose body load-files
 // .fireworks/bb/watch.clj. This is the opt-in signal that gates whether bb is offered as a
-// runtime — a bb.edn kept only for build scripts returns false, so it isn't mistaken for a
+// runtime. A bb.edn kept only for build scripts returns false, so it isn't mistaken for a
 // watcher alongside a deps.edn / project.clj. Missing or unparseable bb.edn -> false.
 function bbHasWatchTask(root: string): boolean {
   const text = readFileOrNull(path.join(root, 'bb.edn'));
@@ -1578,7 +1578,7 @@ function bbHasWatchTask(root: string): boolean {
 }
 
 // Seed .fireworks/bb/watch.clj from the template when absent (the user's bb.edn task load-files
-// it). Never overwrites an existing file — it may be user-edited and is meant to be committed.
+// it). Never overwrites an existing file. It may be user-edited and is meant to be committed.
 // Returns false only on a write failure (a message is shown); true when the file is in place.
 function ensureBbWatchFile(root: string): boolean {
   const file = path.join(root, '.fireworks', 'bb', 'watch.clj');
@@ -1650,7 +1650,7 @@ async function pickProfile(profiles: string[], placeHolder: string): Promise<str
 
 // Which .test-refresh.edn governs a Clojure watcher: 'local' (project root), 'global'
 // (~/.test-refresh.edn), 'created' (we seeded one in the project root), or 'error' (the
-// seed write failed — test-refresh falls back to its own defaults).
+// seed write failed. test-refresh falls back to its own defaults).
 type TestRefreshSource = 'local' | 'global' | 'created' | 'error';
 
 // The .test-refresh.edn governing a running Clojure session: which file and how it was
@@ -1726,7 +1726,7 @@ async function resolveWatcherCommand(root: string): Promise<WatcherPlan | undefi
 }
 
 // --- Leiningen launch resolution ------------------------------------------
-// Unlike deps/bb, the Leiningen flow may edit the user's project.clj — but only after a
+// Unlike deps/bb, the Leiningen flow may edit the user's project.clj, but only after a
 // confirm modal, and only additively (rewrite-clj preserves formatting/comments). Eligibility:
 // a :profiles entry whose :plugins carries exactly [com.jakemccrary/lein-test-refresh "0.26.0"].
 
@@ -1936,7 +1936,7 @@ async function startLiveCoding(): Promise<void> {
 
 // A session already exists for the picked root. If its process has exited (the terminal
 // is lingering), restart it in place. Otherwise it's genuinely running: reveal it and
-// show a modal notice — starting a second session for the same project is a no-op.
+// show a modal notice. Starting a second session for the same project is a no-op.
 async function reuseOrNotify(session: LiveSession): Promise<void> {
   const exited = session.terminal.shellIntegration && session.execution === undefined;
   if (exited) {
@@ -1959,7 +1959,7 @@ async function reuseOrNotify(session: LiveSession): Promise<void> {
 
 // ============================================================================
 // Live Code startup sweep: a brief rainbow highlight that travels across the active
-// editor's viewport when a session starts or restarts — a "refresh" cue, since launching
+// editor's viewport when a session starts or restarts, as a refresh cue, since launching
 // shows/focuses the terminal and gives the editor no signal of its own. A short fading
 // trail sweeps in the configured direction (each cell lights at the wave front, then fades
 // back to normal), cycling the color through 9 oklch medium tones. Paced from the visible
@@ -1980,7 +1980,7 @@ const SWEEP_C = 0.16; // oklch chroma
 // through these along the sweep (row r -> SWEEP_HUES[r % 9] vertical; column c likewise).
 const SWEEP_HUES = [25, 55, 95, 130, 150, 200, 260, 305, 340];
 // Whether the moving tint colors the cell background, the text foreground, or both. These are
-// application-logic switches (no hidden setting yet) — the defaults reproduce the original
+// application-logic switches (no hidden setting yet). The defaults reproduce the original
 // background-only sweep. Read once, when the decoration types are first built.
 const SWEEP_TINT_BACKGROUND = true;
 const SWEEP_TINT_FOREGROUND = true;
@@ -1988,12 +1988,12 @@ const SWEEP_TINT_FOREGROUND = true;
 // past end-of-line). When off, a vertical sweep tints whole lines and a horizontal sweep tints
 // every column up to each line's length. Application-logic switch (no hidden setting).
 const SWEEP_BACKGROUND_TEXT_ONLY = true;
-// Skip line-comment lines entirely — no animation on any line whose first non-blank character is a
+// Skip line-comment lines entirely. No animation on any line whose first non-blank character is a
 // `;`. Precomputed once per run, so it costs one test per visible line (not per frame) and trims
 // the ranges painted. Application-logic switch (no hidden setting).
 const SWEEP_SKIP_LINE_COMMENTS = true;
 
-// [hue][level-1] decoration types: 9 colors x SWEEP_FADE_SPAN opacity levels, in two flavors —
+// [hue][level-1] decoration types: 9 colors x SWEEP_FADE_SPAN opacity levels, in two flavors:
 // whole-line tints (one band per row) and single-cell tints (one character cell). The whole-line
 // set backs a plain vertical sweep; the cell set backs horizontal sweeps and any sweep limited to
 // text cells (SWEEP_BACKGROUND_TEXT_ONLY). isWholeLine is baked into the type, so each flavor is
@@ -2104,7 +2104,7 @@ function disposeSweep(): void {
 // document positions, so the sweep stays put even though launching focuses the terminal.
 //
 // Perf: there are 9*SWEEP_FADE_SPAN decoration types but only a handful hold ranges on any frame
-// (the trail). So (a) the buckets are allocated once and cleared in place — no per-frame garbage —
+// (the trail). So (a) the buckets are allocated once and cleared in place, with no per-frame garbage,
 // and (b) setDecorations is called only for a type whose ranges changed this frame (non-empty now,
 // or non-empty last frame and needing a clear), tracked in `dirty`. That turns ~9*SWEEP_FADE_SPAN
 // renderer round-trips per frame into ~2*trail, the single biggest cost in the animation.
@@ -2439,7 +2439,7 @@ async function chooseSession(
 }
 
 // Preset auto-save delays (seconds) offered by fireworks.setAutoSaveDelay. They tune how
-// quickly a save lands after you stop typing — i.e. how snappy the test-refresh/inline loop
+// quickly a save lands after you stop typing, i.e. how snappy the test-refresh/inline loop
 // feels. VS Code's files.autoSaveDelay is in milliseconds.
 const AUTO_SAVE_DELAYS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 5];
 
@@ -2497,7 +2497,7 @@ function nearestItem(items: PreviewItem[], current: string | number): PreviewIte
 
 // How long the highlighted option must hold still before its value is applied. Debounces
 // the live preview so holding the arrow key to cycle through options doesn't write the
-// setting on every step — only the option you settle on (a beat after you stop) is applied.
+// setting on every step. Only the option you settle on (a beat after you stop) is applied.
 const PREVIEW_DEBOUNCE_MS = 350;
 
 // A QuickPick that previews each option live: a beat after you settle on an item, its value
