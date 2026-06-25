@@ -13,6 +13,141 @@
 
 (def debug-config? false #_true)
 
+
+
+;; START: For resolving theme from COLOR_THEME env var  ------------------------
+
+;; (? (resolve-bling-theme "dark:Atom One Dark, light:Atom One Light"))
+(defn ^:public when->
+  "If `(= (pred x) true)`, returns x, otherwise nil.
+   Useful in a `clojure.core/some->` threading form."
+  [x pred]
+  (when (pred x) x))
+
+(defn ^:public when->>
+  "If (= (pred x) true), returns x, otherwise nil.
+   Useful in a `clojure.core/some->>` threading form."
+  [pred x]
+  (when (pred x) x))
+
+(defn ^:public contains?->
+  [x set]
+  (when (contains? set x) x))
+
+(defn ^:public contains?->>
+  [set x]
+  (when (contains? set x) x))
+
+(defn synced-themes [s]
+  (when-let [[_ k1 v1 k2 v2] (re-find #"^(light|dark):\s*([^,]+?)\s*,\s*(light|dark):\s*([^,\s](?:[^,]*[^,\s])?)$" s)]
+    ;; Check to make sure no duplicate keys (e.g., light: A, light: B)
+    (when (not= k1 k2)
+      {(keyword k1) v1, 
+       (keyword k2) v2})))
+
+(defn valid-synced-themes? [m]
+  (when (map? m)
+          (or (and (-> m :dark (str/ends-with? " Dark"))
+                   (-> m :light (str/ends-with? " Light")))
+              (and (-> m :dark (str/ends-with? " Neutral"))
+                   (-> m :light (str/ends-with? " Neutral"))))))
+
+(def valid-theme-re 
+  #"^[a-zA-Z][^\n\t\r]* (?:light|Light|dark|Dark|neutral|Neutral)$")
+
+(defn valid-theme
+  "All valid:
+   \"Zenburn Dark\", \"zenburn dark\"
+   \"Zenburn Light\", \"Zenburn light\"
+   \"Zenburn Neutral\", \"Zenburn neutral\"
+   \"Zenburn3 Dark\",
+
+   Not valid:
+   \"Zenburn\"        ;<- ambigous
+   \"Zenburn Darkk\"  ;<- typo in suffix
+   \"Zenburn Dark \"  ;<- trailing whitespace
+   \" Zenburn Dark \" ;<- leading whitespace"
+  [s]
+  (re-find valid-theme-re s))
+
+(defn resolve-os-appearance []
+  #_"light"
+  "dark")
+
+
+;; TODO
+;; add some kind of warnings entries to profile:
+;; {:os-mood nil
+;;  :os-mood/report ["An `os-mood` value was not supplied to theme-profile"]
+;;  :theme nil
+;;  :theme/report ["The `s` (theme name) arge supplied to theme-profile was <s>. This is not valid"]}
+
+;; Also:
+;; Mention something about os-mood and literal theme value mismatch
+;; Resolve os-mood vs supplied theme of "light" or "dark" conflict
+
+
+(defn- theme-profile
+  "This expects a string (s) which is the value of the COLOR_THEME env var.
+
+   Optional second argument (os-mood) is a string, one of \"dark\" or \"light\",
+   which is the result of a successfully detected os-level appearance preference
+   from the user's system.
+
+   The `:theme` result respresents a valid name of a syntax coloring theme
+   to be applied to rendered source code or data that is the result of
+   source-code evaluation. A valid theme name must pass `valid-theme-re`.
+
+   If there is a detected mood, and s is a valid synced theme syntax, the value
+   of `:theme` in the result is theme that the user preferrs with the detected
+   os-mood.
+
+   If 
+
+   Returns a map:
+   {:os-mood       \"light\"
+    :theme         \"Alabaster Light\"
+    :synced-themes {:light \"Alabaster Light\" :dark \"Alabaster Dark\"}}  
+   "
+  ([s]
+   (theme-profile s nil))
+  ([s os-mood]
+   (theme-profile s os-mood nil))
+  ([s os-mood report?]
+   (let [os-mood (contains?->> #{"light" "dark"} os-mood)
+         s       (when-> s string?)]
+     (cond 
+       (and (not s) os-mood)
+       {:mood          prefers 
+        :theme         nil 
+        :synced-themes nil}
+
+       (and s os-mood)
+       (let [{:keys [synced-theme-light synced-theme-dark] 
+              :as   synced-themes}
+             (some-> s
+                     (when-> #(str/index-of % ","))
+                     synced-themes
+                     (when-> valid-synced-themes?))
+
+             theme                 
+             (if (and synced-themes os-mood)
+               (if (= os-mood "light") synced-theme-light synced-theme-dark)
+               (valid-theme s))
+             ]
+         {:os-mood       os-mood 
+          :theme         theme 
+          :synced-themes synced-themes})
+       :else
+       {:os-mood       nil 
+        :theme         nil 
+        :synced-themes nil}))))
+
+;; END: For resolving theme profile from COLOR_THEME env var 
+;; -----------------------------------------------------------------------------
+
+
+
 (defmacro let-map
   "Equivalent of
    (let [a 5
@@ -150,7 +285,8 @@
   (use 'clojure.java.io)
   (reset! messaging/warnings-and-errors [])
 
-  (let [bling-mood     (System/getenv "BLING_MOOD")
+  (let [bling-mood       (or (System/getenv "BLING_MOOD")
+                             )
         bling-config     (System/getenv "BLING_CONFIG")
         fireworks-config (System/getenv "FIREWORKS_CONFIG")]
     (if-let [path-to-user-config (or bling-config fireworks-config)]
@@ -195,10 +331,10 @@
                                       (get basethemes/stock-themes theme* nil))]
 
                            ;; To debug theme problems
-                          ;;  (? theme* (->> (s/explain-data ::theme/theme x)
-                          ;;                 :clojure.spec.alpha/problems
-                          ;;                 (take 2)))
-
+                           ;;  (? theme* (->> (s/explain-data ::theme/theme x)
+                           ;;                 :clojure.spec.alpha/problems
+                           ;;                 (take 2)))
+                           
                            (when (s/valid? ::theme/theme x)
                              x))]
 
@@ -236,11 +372,11 @@
                 ;; :theme entry is nil or not supplit, just return user config
                 `~config)))))
 
-    ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, or
-    ;; (System/getenv "BLING_CONFIG") resolves to nil, we set theme to
-    ;; default \"Universal Neutral\"" stock theme,
-    ;; unless (System/getenv "BLING_CONFIG") is "light" or "dark", in which case
-    ;; we assign "Alabaster Light" or "Alabaster Dark" to theme.
+      ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, or
+      ;; (System/getenv "BLING_CONFIG") resolves to nil, we set theme to
+      ;; default \"Universal Neutral\"" stock theme,
+      ;; unless (System/getenv "BLING_CONFIG") is "light" or "dark", in which case
+      ;; we assign "Alabaster Light" or "Alabaster Dark" to theme.
       (let [theme (case bling-mood
                     "light"
                     "Alabaster Light"
