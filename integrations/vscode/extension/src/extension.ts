@@ -99,6 +99,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push({ dispose: () => stopInlineResults() });
+  context.subscriptions.push({ dispose: () => disposeSweep() });
 
   updateStatusBar();
   if (inlineResultsEnabled()) {
@@ -874,7 +875,7 @@ function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } 
           '<br>',
           'Helpful links:',
           '',
-          'See [lein-test-refresh](https://github.com/jakemcc/lein-test-refresh).',
+          'See [lein-test-refresh, Leiningen based projects](https://github.com/jakemcc/test-refresh/blob/master/docs/leiningen.md).',
           '',
         ].join('\n'),
       };
@@ -885,9 +886,9 @@ function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } 
           '# Fireworks: add a `:test-refresh` config',
           '',
           'Your `~/.lein/profiles.clj` `:user` profile has the `lein-test-refresh` plugin but no',
-          '`:test-refresh` config. Add one so Live Code shows the Fireworks banner and tap output.',
+          '`:test-refresh` config.',
           '',
-          'Paste this into your `:user` map (the extension does not edit global config):',
+          'You need to manually add this into your `:user` map (the Fireworks extension will not edit global a global config file):',
           '',
           '```clj',
           cljsLib.leinTestRefreshSnippet(),
@@ -1947,6 +1948,142 @@ async function reuseOrNotify(session: LiveSession): Promise<void> {
   );
 }
 
+// ============================================================================
+// Live Code startup sweep: a brief rainbow highlight that travels down the active
+// editor's visible rows when a session starts or restarts — a "refresh" cue, since
+// launching shows/focuses the terminal and gives the editor no signal of its own.
+// A short fading trail moves top -> bottom (each row lights at the wave front, then
+// fades back to normal), cycling the row color through 9 oklch medium tones at 10%
+// opacity. Paced from the visible row count so the whole sweep lasts ~1s. Active
+// editor only; gated by the hidden fireworks.liveCoding.startupAnimation setting.
+// ============================================================================
+
+const SWEEP_TOTAL_MS = 2000; // target duration of the whole sweep
+const SWEEP_MIN_STEP_MS = 12; // floor on the per-row step so a dense viewport doesn't busy-loop
+const SWEEP_FADE_SPAN = 7; // rows in the fading trail = opacity levels per color
+const SWEEP_MAX_ALPHA = 0.30; // 10% transparency at the bright wave front
+const SWEEP_L = 0.72; // oklch lightness — a medium tone
+const SWEEP_C = 0.16; // oklch chroma
+// Hues for red, orange, yellow, lime, green, cyan, blue, purple, magenta. The row color
+// cycles through these top to bottom (row r -> SWEEP_HUES[r % 9]).
+const SWEEP_HUES = [25, 55, 95, 130, 150, 200, 260, 305, 340];
+
+// [hue][level-1] decoration types: 9 colors x SWEEP_FADE_SPAN opacity levels, each a
+// whole-line background tint. Level k (1..span) -> alpha SWEEP_MAX_ALPHA * k/span, so the
+// wave front (highest level) is brightest and the trail dims behind it. Built once, reused
+// across every start/restart, disposed on deactivation.
+let sweepTypes: vscode.TextEditorDecorationType[][] | undefined;
+let sweepTimer: ReturnType<typeof setInterval> | undefined;
+let sweepEditor: vscode.TextEditor | undefined; // the editor the running sweep paints
+
+// Hidden (JSON-only) opt-out, mirroring fireworks.liveCoding.manageGitignore: read fresh,
+// not declared in package.json so it stays out of the Settings UI.
+function startupAnimEnabled(): boolean {
+  return vscode.workspace
+    .getConfiguration('fireworks')
+    .get<boolean>('liveCoding.startupAnimation', true);
+}
+
+function ensureSweepTypes(): vscode.TextEditorDecorationType[][] {
+  if (sweepTypes) {
+    return sweepTypes;
+  }
+  sweepTypes = SWEEP_HUES.map((hue) =>
+    Array.from({ length: SWEEP_FADE_SPAN }, (_, i) => {
+      const alpha = +((SWEEP_MAX_ALPHA * (i + 1)) / SWEEP_FADE_SPAN).toFixed(3);
+      return vscode.window.createTextEditorDecorationType({
+        isWholeLine: true,
+        backgroundColor: `oklch(${SWEEP_L} ${SWEEP_C} ${hue} / ${alpha})`,
+      });
+    }),
+  );
+  return sweepTypes;
+}
+
+// Clear every sweep decoration from the editor currently being animated.
+function clearSweepDecorations(): void {
+  if (!sweepTypes || !sweepEditor) {
+    return;
+  }
+  for (const row of sweepTypes) {
+    for (const t of row) {
+      sweepEditor.setDecorations(t, []);
+    }
+  }
+}
+
+// Stop any in-flight sweep and wipe its decorations (so a restart mid-sweep leaves no
+// stray bands). Safe to call when nothing is running.
+function stopSweep(): void {
+  if (sweepTimer !== undefined) {
+    clearInterval(sweepTimer);
+    sweepTimer = undefined;
+  }
+  clearSweepDecorations();
+  sweepEditor = undefined;
+}
+
+// Tear-down for deactivation: stop the sweep and dispose the decoration types.
+function disposeSweep(): void {
+  stopSweep();
+  if (sweepTypes) {
+    for (const row of sweepTypes) {
+      for (const t of row) {
+        t.dispose();
+      }
+    }
+    sweepTypes = undefined;
+  }
+}
+
+// Play the startup sweep on `editor`: a fading rainbow band travels from the top of the
+// viewport to the bottom over ~SWEEP_TOTAL_MS, then clears. Pacing derives from the
+// visible row count; whole-line decorations key off line number, so the sweep stays put
+// even though launching focuses the terminal.
+function playStartupSweep(editor: vscode.TextEditor): void {
+  const ranges = editor.visibleRanges;
+  if (ranges.length === 0) {
+    return;
+  }
+  const startLine = ranges[0].start.line;
+  const endLine = ranges[ranges.length - 1].end.line;
+  const rows = endLine - startLine + 1;
+  if (rows <= 0) {
+    return;
+  }
+  stopSweep(); // cancel any prior sweep before starting this one
+  const types = ensureSweepTypes();
+  sweepEditor = editor;
+  const fadeSpan = Math.min(SWEEP_FADE_SPAN, rows);
+  const step = Math.max(SWEEP_TOTAL_MS / rows, SWEEP_MIN_STEP_MS); // ms the front spends per row
+  const totalSteps = rows + fadeSpan; // front sweeps `rows`, then the trail clears over `fadeSpan` more
+  let s = 0;
+  sweepTimer = setInterval(() => {
+    // buckets[hue][level-1] collects the lines to paint this frame.
+    const buckets = types.map((row) => row.map(() => [] as vscode.Range[]));
+    for (let r = 0; r < rows; r++) {
+      const age = s - r; // steps since the front passed row r
+      if (age < 0 || age >= fadeSpan) {
+        continue; // not yet reached, or fully faded
+      }
+      const level = fadeSpan - age; // front (age 0) brightest, oldest trail dimmest
+      const colorIdx = r % SWEEP_HUES.length;
+      const line = startLine + r;
+      buckets[colorIdx][level - 1].push(new vscode.Range(line, 0, line, 0));
+    }
+    // Reassign every type (an empty array clears last frame's rows -> the trail fades).
+    for (let c = 0; c < types.length; c++) {
+      for (let k = 0; k < types[c].length; k++) {
+        editor.setDecorations(types[c][k], buckets[c][k]);
+      }
+    }
+    s++;
+    if (s >= totalSteps) {
+      stopSweep();
+    }
+  }, step);
+}
+
 // Run the watcher for a root + resolved command, registering it as a session so
 // Stop/Restart can act on it. Concurrent sessions for other roots are left untouched.
 async function launchWatcher(
@@ -1954,6 +2091,7 @@ async function launchWatcher(
   command: string,
   testRefresh?: TestRefreshInfo,
 ): Promise<void> {
+  const animEditor = vscode.window.activeTextEditor; // capture before terminal.show() steals focus
   prepareResultsDir(root); // on-disk fresh slate for this root
   clearResultsForRoot(root); // in-memory fresh slate for this root only (not other projects')
   recordRecentRoot(root); // float this project in the pickers' "Recent" section
@@ -1962,6 +2100,9 @@ async function launchWatcher(
   const session: LiveSession = { root, command, terminal, execution: undefined, testRefresh };
   liveSessions.set(root, session);
   terminal.show();
+  if (animEditor && startupAnimEnabled()) {
+    playStartupSweep(animEditor); // fire-and-forget; the shell-integration wait runs in parallel
+  }
 
   const si = await waitForShellIntegration(terminal);
   if (liveSessions.get(root) !== session) {
