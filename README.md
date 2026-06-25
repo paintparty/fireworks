@@ -528,6 +528,8 @@ The actual `config.edn` file should be a map with a bunch of options like this:
  :print-level         3}
 ```
 
+You can use this (comprehensive starter template)[], with all the options + descriptions.
+
 <br>
 <br>
 

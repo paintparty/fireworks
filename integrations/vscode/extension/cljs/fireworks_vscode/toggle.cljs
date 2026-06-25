@@ -389,3 +389,87 @@
                :new-cursor    start
                :reformat?     true})))))
     (catch :default _ nil)))
+
+;; ---------------------------------------------------------------------------
+;; Toggle a flag: add or remove one leading keyword flag (e.g. :trace) on a wrap,
+;; preserving any other flags. A bare form is wrapped with `?` and the flag added.
+;; Generalizes set-form-option (which manages a single leading option, replacing it)
+;; into a multi-flag-aware toggle. Backs the "Toggle (? :trace …)" command. The flag
+;; only widens/narrows line 0, so continuation lines shift by that column delta
+;; (reformat? true lets Calva confirm it), exactly as set-form-option.
+;; ---------------------------------------------------------------------------
+
+(defn- leading-flag-locs
+  "The consecutive keyword-flag locs after the macro head of a Fireworks wrap `zloc`
+   — each a keyword arg that still has a following node (so a lone (? :kw) keeps :kw
+   as the printed value, not a flag; mirrors [[existing-option-loc]])."
+  [zloc]
+  (loop [a   (some-> (z/down zloc) z/right)
+         acc []]
+    (if (and a
+             (keyword? (try (z/sexpr a) (catch :default _ nil)))
+             (z/right a))
+      (recur (z/right a) (conj acc a))
+      acc)))
+
+(defn toggle-flag
+  "Toggle one leading keyword `flag` (a keyword string like \":trace\") on the
+   Fireworks wrap in `text` (the current form), preserving any other flags. On an
+   existing wrap (?, !?, ?>, !?>, head preserved): removes the flag when present (the
+   form stays wrapped), else inserts it right after the macro head (first flag
+   position). On a bare form: wraps it as (? <flag> form). opts {:text :start :end}
+   (0-based positions). Returns an edit plan replacing the whole form (`:reformat?`
+   true to realign continuation lines), or nil (blank or unparseable)."
+  [{:keys [text start end]} flag]
+  (try
+    (when-not (str/blank? text)
+      (let [zloc (z/of-string text)]
+        (if (fireworks-wrap? zloc)
+          (let [mk      (fn [s delta]
+                          {:replace-range {:start start :end end}
+                           :insert-text   (cond
+                                            (zero? delta) s
+                                            (pos? delta)  (indent-continuation s delta)
+                                            :else         (deindent-continuation s (- delta)))
+                           :new-cursor    start
+                           :reformat?     true})
+                present (first (filter #(= flag (z/string %)) (leading-flag-locs zloc)))]
+            (if present
+              ;; Remove the flag (and its trailing space): the form stays wrapped.
+              (mk (z/root-string (z/remove present)) (- (inc (count flag))))
+              ;; Insert the flag right after the macro head (ahead of any other flags).
+              (mk (z/root-string (z/insert-right (z/down zloc) (p/parse-string flag)))
+                  (inc (count flag)))))
+          ;; Not a wrap: wrap with `?` and add the flag.
+          (let [_      (p/parse-string text) ; validate; unparseable -> no-op via catch
+                prefix (str "(? " flag " ")
+                code*  (if (re-find #"\n" text)
+                         (indent-continuation text (count prefix))
+                         text)]
+            {:replace-range {:start start :end end}
+             :insert-text   (str prefix code* ")")
+             :new-cursor    start
+             :reformat?     true}))))
+    (catch :default _ nil)))
+
+;; One named toggle per Fireworks flag, each a thin [[toggle-flag]] wrapper. Backs the
+;; "Toggle (? :<flag> …)" command family.
+(defn toggle-trace
+  "Toggle the :trace flag (\"print intermediary values in threading forms\"). See [[toggle-flag]]."
+  [opts]
+  (toggle-flag opts ":trace"))
+
+(defn toggle-minus
+  "Toggle the :- flag (\"just print the result\"). See [[toggle-flag]]."
+  [opts]
+  (toggle-flag opts ":-"))
+
+(defn toggle-plus
+  "Toggle the :+ flag (\"disable all truncation\"). See [[toggle-flag]]."
+  [opts]
+  (toggle-flag opts ":+"))
+
+(defn toggle-pp
+  "Toggle the :pp flag (\"print with pprint\"). See [[toggle-flag]]."
+  [opts]
+  (toggle-flag opts ":pp"))

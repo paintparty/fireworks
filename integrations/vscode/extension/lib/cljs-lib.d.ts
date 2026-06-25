@@ -63,6 +63,24 @@ export interface SetOptionOpts {
 // form is blank, unparseable, or there is nothing to remove.
 export function setFormOption(opts: SetOptionOpts): EditPlan | null;
 
+// --- Toggle a flag (:trace, :-, :+, :pp) -----------------------------------
+
+export interface FlagOpts {
+  text: string; // the current form's text (from calva.selectCurrentForm)
+  start: Pos; // form start (0-based line/character)
+  end: Pos; // form end
+}
+
+// Toggle one leading flag on the Fireworks wrap at the cursor, preserving any other
+// leading flags: removes the flag when present (form stays wrapped), inserts it ahead
+// of the others when absent. A bare form is wrapped as (? <flag> form). The head
+// (?, !?, ?>, !?>) is preserved. `reformat` is true so the range formatter realigns the
+// column shift. null when the form is blank or unparseable. One function per flag:
+export function toggleTrace(opts: FlagOpts): EditPlan | null; // :trace — intermediary values in threading forms
+export function toggleMinus(opts: FlagOpts): EditPlan | null; // :-    — just print the result
+export function togglePlus(opts: FlagOpts): EditPlan | null; //  :+    — disable all truncation
+export function togglePp(opts: FlagOpts): EditPlan | null; //    :pp   — print with pprint
+
 // --- Add Fireworks Require -------------------------------------------------
 
 export interface RequireEdit {
@@ -117,6 +135,16 @@ export interface TasksResult {
 // (:init/:requires/:enter/:leave) are excluded — only symbol-keyed tasks are returned.
 export function bbTasks(text: string): TasksResult;
 
+// The bb.edn task names wired as Fireworks watchers — those whose body load-files
+// `.fireworks/bb/watch.clj` (a leading `./` is tolerated). This is the opt-in signal that a
+// bb.edn is a live-coding target: `tasks` empty ⇒ bb is not offered as a runtime. The watcher
+// runs `bb <task>`; the extension seeds .fireworks/bb/watch.clj (see bbWatchTemplate) when absent.
+export function bbWatchTasks(text: string): TasksResult;
+
+// The generic Fireworks bb watcher, written into .fireworks/bb/watch.clj when missing. Static
+// text (no substitution); per-project options come from .fireworks/config.edn at runtime.
+export function bbWatchTemplate(): string;
+
 // --- Phase 2: live-coding config (.test-refresh.edn) ----------------------
 //
 // These functions render and edit the small .test-refresh.edn holding the watcher
@@ -132,6 +160,12 @@ export interface TextResult {
 
 export interface ModeResult {
   mode?: Mode;
+  error?: string;
+}
+
+export interface ToggleModeResult {
+  text?: string; // rewritten file text on success
+  mode?: Mode; // the mode toggled to ("tap" => debug, "test")
   error?: string;
 }
 
@@ -151,3 +185,60 @@ export function setMode(
   mode: Mode,
   banners: { tapBanner?: string; testBanner?: string },
 ): TextResult;
+
+// Toggle mode in place: flip :debug and sync :banner from the file's own :debug-banner /
+// :test-banner. Returns the rewritten text and the mode toggled to.
+export function toggleMode(text: string): ToggleModeResult;
+
+// --- Phase 2: live coding (Leiningen project.clj) -------------------------
+//
+// A project.clj is Live-Code-eligible when its defproject :profiles has a profile (any
+// name) whose :plugins carries exactly [com.jakemccrary/lein-test-refresh "0.26.0"]; the
+// watcher then runs `lein with-profile +<profile> test-refresh`. Unlike deps/bb, the
+// extension may edit project.clj's :test-refresh (additive, prompt-then-patch).
+
+export interface LeinProfilesResult {
+  all?: string[]; // every profile name in :profiles order (colon dropped)
+  eligible?: string[]; // those whose :plugins carries the exact coordinate
+  error?: string; // "unparseable"
+}
+
+// Read the profile names from a project.clj string, splitting eligible (carries the
+// coordinate) from all. {all:[], eligible:[]} when there is no :profiles entry.
+export function leinProfiles(text: string): LeinProfilesResult;
+
+export interface ChangedTextResult {
+  text?: string; // new project.clj text on success
+  changed?: boolean; // false when nothing needed changing
+  error?: string;
+}
+
+// Ensure the exact coordinate in `profile`'s :plugins vector: create the vector if absent,
+// replace a wrong-version lein-test-refresh entry, or append. Formatting preserved.
+export function leinAddPlugin(text: string, profile: string): ChangedTextResult;
+
+export interface EnsureTestRefreshResult {
+  text?: string; // new project.clj text on success
+  changed?: boolean; // false when every baseline key was already present
+  addedKeys?: string[]; // the baseline keys added/merged (for the confirm modal)
+  error?: string;
+}
+
+// Ensure the top-level defproject :test-refresh map against the baseline: add the full map
+// when absent, else merge only the missing keys (existing values untouched). Used by the
+// prompt-then-patch flow before project.clj is written.
+export function leinEnsureTestRefresh(text: string): EnsureTestRefreshResult;
+
+export interface UserProfileStatusResult {
+  hasPlugin?: boolean; // the coordinate appears nested anywhere in the :user entry
+  hasTestRefresh?: boolean; // the :user map has a :test-refresh key
+  error?: string;
+}
+
+// Read ~/.lein/profiles.clj (the global fallback, read-only): does the :user entry carry
+// the coordinate, and does it have a :test-refresh key? The extension never writes global config.
+export function leinUserProfileStatus(text: string): UserProfileStatusResult;
+
+// A human-readable `:test-refresh { … }` snippet (from the baseline) for the confirm /
+// global-fallback modals.
+export function leinTestRefreshSnippet(): string;

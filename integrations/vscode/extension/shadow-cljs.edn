@@ -8,14 +8,26 @@
                :unwrapAll            fireworks-vscode.bridge/unwrap-all
                :toggleAllSilent      fireworks-vscode.bridge/toggle-all-silent
                :setFormOption        fireworks-vscode.bridge/set-form-option
+               :toggleTrace          fireworks-vscode.bridge/toggle-trace
+               :toggleMinus          fireworks-vscode.bridge/toggle-minus
+               :togglePlus           fireworks-vscode.bridge/toggle-plus
+               :togglePp             fireworks-vscode.bridge/toggle-pp
                :addFireworksRequire  fireworks-vscode.bridge/add-fireworks-require
                :analyzeInlineResults fireworks-vscode.bridge/analyze-inline-results
                :depsAliases          fireworks-vscode.bridge/deps-aliases
                :bbTasks              fireworks-vscode.bridge/bb-tasks
+               :bbWatchTasks         fireworks-vscode.bridge/bb-watch-tasks
+               :bbWatchTemplate      fireworks-vscode.bridge/bb-watch-template
                :testRefreshTemplate  fireworks-vscode.bridge/test-refresh-template
                :defaultConfig        fireworks-vscode.bridge/default-config
                :readMode             fireworks-vscode.bridge/read-mode
-               :setMode              fireworks-vscode.bridge/set-mode}}
+               :setMode              fireworks-vscode.bridge/set-mode
+               :toggleMode           fireworks-vscode.bridge/toggle-mode
+               :leinProfiles         fireworks-vscode.bridge/lein-profiles
+               :leinAddPlugin        fireworks-vscode.bridge/lein-add-plugin
+               :leinEnsureTestRefresh fireworks-vscode.bridge/lein-ensure-test-refresh
+               :leinUserProfileStatus fireworks-vscode.bridge/lein-user-profile-status
+               :leinTestRefreshSnippet fireworks-vscode.bridge/lein-test-refresh-snippet}}
 
   :test
   {:target    :node-test

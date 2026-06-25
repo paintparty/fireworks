@@ -31,3 +31,6 @@ visual_test/public/js
 visual_test/.clj-kondo/.cache
 .cpcache
 pom.properties
+
+# Fireworks inline-result cache
+.fireworks/

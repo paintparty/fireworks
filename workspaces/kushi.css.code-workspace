@@ -11,6 +11,9 @@
     },
     {
       "path": "../../../kushi/kushi.css"
+    },
+    {
+      "path": "../../lasertag"
     }
   ],
   "settings": {

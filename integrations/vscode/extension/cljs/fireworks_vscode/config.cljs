@@ -11,8 +11,8 @@
             [rewrite-clj.node :as n]
             [rewrite-clj.zip :as z]))
 
-(def ^:private tap-banner-default  "🔥🔥🔥🔥🔥🔥🔥🔥🔥")
-(def ^:private test-banner-default "📋 Running tests...")
+(def ^:private tap-banner-default  "🔥🔥🔥")
+(def ^:private test-banner-default "🧪🧪🧪 Running tests...")
 
 (def template
   "The seed .test-refresh.edn written into a Clojure (deps) project that has no local
@@ -24,11 +24,27 @@
  :quiet             true
  :changes-only      true
  :notify-on-success false
- :debug             true                            ;<- If `true`, runs in debug mode - all tests are skipped
- :banner            \"🔥🔥🔥\" #_\"📋 Running tests...\" ;<- Might want to toggle this for debug mode vs test mode
- :clear             true                            ;<- Clears terminal on each reload, perfect for debug mode
+ :debug             true                       ;<- If `true`, runs in debug mode - all tests are skipped
+ :banner            \"🔥🔥🔥\"                  ;<- This controls the actual banner
+ :debug-banner      \"🔥🔥🔥\"                  ;<- This is for tooling to auto-toggle the :banner entry via rewrite 
+ :test-banner       \"🧪🧪🧪 Running tests...\" ;<- This is for tooling to auto-toggle the :banner entry via rewrite
+ :clear             true                       ;<- Clears terminal on each reload, perfect for debug mode
  }
 ")
+
+(def baseline
+  "The canonical test-refresh option set, as data. Same keys as `template` (which is the
+   commented .test-refresh.edn literal) — kept here as a map so other namespaces can merge it
+   into an existing config (e.g. fireworks-vscode.lein seeding a project.clj :test-refresh).
+   Must stay in sync with `template`; key order here is the order missing keys are added in."
+  {:quiet             true
+   :changes-only      true
+   :notify-on-success false
+   :debug             true
+   :banner            tap-banner-default
+   :debug-banner      tap-banner-default
+   :test-banner       test-banner-default
+   :clear             true})
 
 ;; Rendered key order for a created .test-refresh.edn.
 (def ^:private option-order
@@ -119,4 +135,29 @@
           (assoc-nl :debug tap? 1)
           (assoc-nl :banner banner 1)
           z/root-string))
+    (catch :default _ {:error :unparseable})))
+
+(defn- read-val
+  "The sexpr value of key `k` in the map at top-of-zipper loc `zloc`, or nil if absent."
+  [zloc k]
+  (when-let [l (z/get zloc k)] (z/sexpr l)))
+
+(defn toggle-mode
+  "Toggle .test-refresh.edn text between debug/tap (:debug true) and test (:debug false)
+   mode, in place. Reads the current :debug, flips it, and syncs :banner to the file's
+   own :debug-banner / :test-banner (falling back to the defaults when those keys are
+   absent). Other keys are left as-is. Returns {:text new-text :mode new-mode} where
+   new-mode is :tap | :test, or {:error :unparseable}."
+  [text]
+  (try
+    (let [zloc    (z/of-string text)
+          to-tap? (not (boolean (read-val zloc :debug)))
+          banner  (if to-tap?
+                    (or (read-val zloc :debug-banner) tap-banner-default)
+                    (or (read-val zloc :test-banner) test-banner-default))]
+      {:text (-> (z/of-string text)
+                 (assoc-nl :debug to-tap? 1)
+                 (assoc-nl :banner banner 1)
+                 z/root-string)
+       :mode (if to-tap? :tap :test)})
     (catch :default _ {:error :unparseable})))

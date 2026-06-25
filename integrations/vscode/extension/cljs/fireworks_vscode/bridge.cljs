@@ -13,6 +13,7 @@
             [fireworks-vscode.config :as config]
             [fireworks-vscode.deps :as deps]
             [fireworks-vscode.inline-results :as inline-results]
+            [fireworks-vscode.lein :as lein]
             [fireworks-vscode.ns-require :as ns-require]
             [fireworks-vscode.toggle :as toggle]))
 
@@ -47,6 +48,26 @@
         plan (toggle/set-form-option opts)]
     (when plan (plan->js plan))))
 
+(defn toggle-trace [^js js-opts]
+  (let [opts (js->clj js-opts :keywordize-keys true)
+        plan (toggle/toggle-trace opts)]
+    (when plan (plan->js plan))))
+
+(defn toggle-minus [^js js-opts]
+  (let [opts (js->clj js-opts :keywordize-keys true)
+        plan (toggle/toggle-minus opts)]
+    (when plan (plan->js plan))))
+
+(defn toggle-plus [^js js-opts]
+  (let [opts (js->clj js-opts :keywordize-keys true)
+        plan (toggle/toggle-plus opts)]
+    (when plan (plan->js plan))))
+
+(defn toggle-pp [^js js-opts]
+  (let [opts (js->clj js-opts :keywordize-keys true)
+        plan (toggle/toggle-pp opts)]
+    (when plan (plan->js plan))))
+
 (defn add-fireworks-require [text]
   (when-let [{:keys [replace-range insert-text]} (ns-require/add-fireworks-require text)]
     #js {:replaceRange #js {:start (pos->js (:start replace-range))
@@ -78,6 +99,17 @@
   (let [r (bb/task-names text)]
     (if (nil? r) #js {:error "unparseable"} #js {:tasks (clj->js r)})))
 
+;; The bb.edn task names wired as Fireworks watchers (their body load-files
+;; .fireworks/bb/watch.clj), for the Live Code bb runtime. #js {:tasks [...]} on success
+;; (empty when none are wired, so bb is not offered); #js {:error "unparseable"} on parse failure.
+(defn bb-watch-tasks [text]
+  (let [r (bb/watch-task-names text)]
+    (if (nil? r) #js {:error "unparseable"} #js {:tasks (clj->js r)})))
+
+;; The generic bb watcher text, seeded into .fireworks/bb/watch.clj when absent. Returned verbatim.
+(defn bb-watch-template []
+  bb/watch-template)
+
 ;; --- Phase 2 config (.test-refresh.edn) -----------------------------------
 
 (defn- error? [r] (and (map? r) (:error r)))
@@ -95,8 +127,52 @@
   (let [r (config/read-mode text)]
     (if (error? r) (err->js r) #js {:mode (name r)})))
 
+;; Toggle .test-refresh.edn text between debug/tap and test mode, syncing :banner from the
+;; file's own :debug-banner / :test-banner. #js {:text ... :mode "tap"|"test"} on success;
+;; #js {:error "unparseable"} when the file won't parse.
+(defn toggle-mode [text]
+  (let [r (config/toggle-mode text)]
+    (if (error? r) (err->js r) #js {:text (:text r) :mode (name (:mode r))})))
+
 (defn set-mode [text mode ^js banners]
   (let [b (or banners #js {})
         r (config/set-mode text (keyword mode)
                            {:tap-banner (.-tapBanner b) :test-banner (.-testBanner b)})]
     (if (error? r) (err->js r) #js {:text r})))
+
+;; --- Phase 2 live coding (Leiningen project.clj) --------------------------
+
+;; The profile names in a project.clj string: #js {:all [...] :eligible [...]} where
+;; :eligible carries the exact [com.jakemccrary/lein-test-refresh "0.26.0"] coordinate;
+;; #js {:error "unparseable"} when the project.clj won't parse.
+(defn lein-profiles [text]
+  (let [r (lein/profiles text)]
+    (if (error? r)
+      (err->js r)
+      #js {:all (clj->js (:all r)) :eligible (clj->js (:eligible r))})))
+
+;; Ensure the exact coordinate in `profile`'s :plugins vector in project.clj `text`.
+;; #js {:text ... :changed bool} on success; #js {:error "unparseable"} when it won't parse.
+(defn lein-add-plugin [text profile]
+  (let [r (lein/add-plugin-to-profile text profile)]
+    (if (error? r) (err->js r) #js {:text (:text r) :changed (:changed r)})))
+
+;; Ensure the top-level :test-refresh map in project.clj `text` against the baseline.
+;; #js {:text ... :changed bool :addedKeys [...]} on success; #js {:error "unparseable"}.
+(defn lein-ensure-test-refresh [text]
+  (let [r (lein/ensure-test-refresh text)]
+    (if (error? r)
+      (err->js r)
+      #js {:text (:text r) :changed (:changed r) :addedKeys (clj->js (:added-keys r))})))
+
+;; Read ~/.lein/profiles.clj `text`: #js {:hasPlugin bool :hasTestRefresh bool} (the :user
+;; entry carries the coordinate / a :test-refresh key); #js {:error "unparseable"}.
+(defn lein-user-profile-status [text]
+  (let [r (lein/user-profile-status text)]
+    (if (error? r)
+      (err->js r)
+      #js {:hasPlugin (:has-plugin r) :hasTestRefresh (:has-test-refresh r)})))
+
+;; A human-readable :test-refresh { … } snippet (from the baseline) for the modals.
+(defn lein-test-refresh-snippet []
+  (lein/test-refresh-snippet))

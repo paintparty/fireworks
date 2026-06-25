@@ -22,74 +22,12 @@
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
 
-(defn ^:public when->
-  "If `(= (pred x) true)`, returns x, otherwise nil.
-   Useful in a `clojure.core/some->` threading form."
-  [x pred]
-  (when (pred x) x))
-
-(defn ^:public when->>
-  "If (= (pred x) true), returns x, otherwise nil.
-   Useful in a `clojure.core/some->>` threading form."
-  [pred x]
-  (when (pred x) x))
-
-(defn synced-themes [s]
-  (when-let [[_ k1 v1 k2 v2] (re-find #"^(light|dark):\s*([^,]+?)\s*,\s*(light|dark):\s*([^,\s](?:[^,]*[^,\s])?)$" s)]
-    ;; Check to make sure they didn't provide duplicate keys (e.g., light: A, light: B)
-    (when (not= k1 k2)
-      {(keyword k1) v1, 
-       (keyword k2) v2})))
-
-(defn valid-synced-themes? [m]
-  (when (map? m)
-          (or (and (-> m :dark (str/ends-with? " Dark"))
-                   (-> m :light (str/ends-with? " Light")))
-              (and (-> m :dark (str/ends-with? " Neutral"))
-                   (-> m :light (str/ends-with? " Neutral"))))))
-
-(defn valid-theme?
-  "All valid:
-   \"Zenburn Dark\", \"zenburn dark\"
-   \"Zenburn Light\", \"Zenburn light\"
-   \"Zenburn Neutral\", \"Zenburn neutral\"
-   \"Zenburn3 Dark\",
-
-   Not valid:
-   \"Zenburn\"        ;<- ambigous
-   \"Zenburn Darkk\"  ;<- typo in suffix
-   \"Zenburn Dark \"  ;<- trailing whitespace
-   \" Zenburn Dark \" ;<- leading whitespace"
-  [s]
-  (re-find #"^[a-zA-Z][^\n\t\r]* (?:light|Light|dark|Dark|neutral|Neutral)$" s))
-
-(defn resolve-os-appearance []
-  #_"light"
-  "dark")
-
-(defn- resolve-bling-theme [s]
-  (? (if-let [{:keys [light dark]}
-              (? :trace (some-> s
-                                (when-> #(str/index-of % ","))
-                                synced-themes
-                                (when-> valid-synced-themes?)))]
-       (when-let [prefers (let [x (resolve-os-appearance)]
-                            (when (contains? #{"light" "dark"} x) x))]
-         (if (= prefers "light") light dark))
-       (valid-theme? s))))
 
 
-;; (? (resolve-bling-theme "dark:Atom One Dark, light:Atom One Light"))
-(? (resolve-bling-theme "golden hour light"))
-
-(!? (macroexpand-1 '(? :trace (some-> s
-                                      (when-> #(str/index-of % ","))
-                                      synced-themes
-                                      (when-> valid-synced-themes?)))))
-
-#_(? :trace (let [a "foo"
+(? :trace (let [a "foo"
                 b "gooasdfasdfsafasd"
-                c (java.util.HashSet. #{"a" 1 "b" 2})]))
+                c (java.util.HashSet. #{"a" 1 "basdfasdfasdfa" 233})]))
+
 ;; (def bar nil)
 ;; (? (tag-map #'bar))
 ;; (def my-delay (delay 100))

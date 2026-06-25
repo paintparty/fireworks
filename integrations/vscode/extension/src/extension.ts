@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as cp from 'child_process';
 import * as os from 'os';
 import * as cljsLib from '../lib/cljs-lib';
-import type { EditPlan, RequireEdit, InlineAnalysis, UnwrapAllOpts } from '../lib/cljs-lib';
+import type { EditPlan, RequireEdit, InlineAnalysis, UnwrapAllOpts, FlagOpts } from '../lib/cljs-lib';
 
 let output: vscode.OutputChannel;
 
@@ -18,6 +18,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     output,
     statusBar,
+    registerGuidanceProvider(),
     vscode.commands.registerCommand('fireworks.toggle', () => runToggle('?')),
     vscode.commands.registerCommand('fireworks.toggleTap', () => runToggle('?>')),
     vscode.commands.registerCommand('fireworks.toggleIgnore', () => runToggle('#_')),
@@ -34,12 +35,25 @@ export function activate(context: vscode.ExtensionContext): void {
       runNsEdit(cljsLib.toggleAllSilent, 'toggle-all-silent-in-ns'),
     ),
     vscode.commands.registerCommand('fireworks.withOption', () => runWithOption()),
+    vscode.commands.registerCommand('fireworks.toggleTrace', () =>
+      runToggleFlag(cljsLib.toggleTrace, 'toggle-trace'),
+    ),
+    vscode.commands.registerCommand('fireworks.toggleMinus', () =>
+      runToggleFlag(cljsLib.toggleMinus, 'toggle-minus'),
+    ),
+    vscode.commands.registerCommand('fireworks.togglePlus', () =>
+      runToggleFlag(cljsLib.togglePlus, 'toggle-plus'),
+    ),
+    vscode.commands.registerCommand('fireworks.togglePp', () =>
+      runToggleFlag(cljsLib.togglePp, 'toggle-pp'),
+    ),
     vscode.commands.registerCommand('fireworks.addRequire', () => runAddRequire()),
     vscode.commands.registerCommand('fireworks.toggleInlineResults', () => toggleInlineResults()),
     vscode.commands.registerCommand('fireworks.clearInlineResults', () => clearInlineResults()),
     vscode.commands.registerCommand('fireworks.startLiveCoding', () => startLiveCoding()),
     vscode.commands.registerCommand('fireworks.stopLiveCoding', () => stopLiveCoding()),
     vscode.commands.registerCommand('fireworks.restartLiveCoding', () => restartLiveCoding()),
+    vscode.commands.registerCommand('fireworks.toggleDebugTestMode', () => toggleDebugTestMode()),
     vscode.commands.registerCommand('fireworks.setAutoSaveDelay', () => setAutoSaveDelay()),
     vscode.commands.registerCommand('fireworks.setInlineResultsColor', () => setInlineResultsColor()),
     vscode.commands.registerCommand('fireworks.setInlineResultsBackgroundOpacity', () =>
@@ -253,6 +267,49 @@ async function runWithOption(): Promise<void> {
   }
   if (!plan) {
     log('with-option no-op');
+    return;
+  }
+
+  await applyTogglePlan(editor, plan);
+}
+
+// A pure per-flag toggle: toggleTrace/toggleMinus/togglePlus/togglePp. Adds or removes
+// one leading flag (preserving the others), or wraps a bare form, returning an edit plan
+// or null (no-op).
+type FlagToggle = (opts: FlagOpts) => EditPlan | null;
+
+// Toggle one Fireworks flag (:trace, :-, :+, :pp) on the wrapped form at the cursor (or
+// wrap a bare form), preserving any other leading flags. Same selectCurrentForm + apply
+// flow as runToggle/runWithOption; `toggle` is the pure per-flag function. No picker —
+// each flag has its own command.
+async function runToggleFlag(toggle: FlagToggle, label: string): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || editor.document.languageId !== 'clojure') {
+    return; // silent no-op
+  }
+
+  try {
+    await vscode.commands.executeCommand('calva.selectCurrentForm');
+  } catch (e) {
+    vscode.window.showErrorMessage('Fireworks needs Calva to be active.');
+    output.appendLine(`calva.selectCurrentForm failed: ${String(e)}`);
+    return;
+  }
+
+  const sel = editor.selection;
+  let plan: EditPlan | null;
+  try {
+    plan = toggle({
+      text: editor.document.getText(sel),
+      start: { line: sel.start.line, col: sel.start.character },
+      end: { line: sel.end.line, col: sel.end.character },
+    });
+  } catch (e) {
+    log(`${label} threw, treating as no-op: ${String(e)}`);
+    return;
+  }
+  if (!plan) {
+    log(`${label} no-op`);
     return;
   }
 
@@ -733,12 +790,13 @@ function ensureFireworksDir(root: string): void {
   }
 }
 
-// Ensure <root>/.fireworks is git-ignored so the ephemeral result cache never lands in
-// `git status`. Conservative and idempotent: skipped when the manageGitignore setting is
-// off; `git check-ignore` decides, so it does nothing when the path is already ignored (by
-// any gitignore — this one, a parent, or a global) or when there's no git repo. Only when
-// the path is genuinely untracked does it append one commented entry to <root>/.gitignore
-// (created only if missing). Never rewrites or reorders existing content. Failures log.
+// Ensure <root>/.fireworks/results is git-ignored so the ephemeral result cache never lands in
+// `git status`. Only results/ is ignored — the rest of .fireworks/ (config.edn, bb/watch.clj)
+// is meant to be committed. Conservative and idempotent: skipped when the manageGitignore setting
+// is off; `git check-ignore` decides, so it does nothing when the path is already ignored (by any
+// gitignore — this one, a parent, or a global) or when there's no git repo. Only when the path is
+// genuinely untracked does it append one commented entry to <root>/.gitignore (created only if
+// missing). Never rewrites or reorders existing content. Failures log.
 function ensureGitignored(root: string): void {
   // Deliberately NOT contributed in package.json, so it stays out of the Settings UI —
   // it's a JSON-only escape hatch. get() still honors it from settings.json; the explicit
@@ -749,7 +807,7 @@ function ensureGitignored(root: string): void {
   try {
     // -q exit codes: 0 = already ignored, 1 = not ignored, 128 = not a repo / git error.
     // We act only on 1; a null status (git missing) is likewise left alone.
-    const res = cp.spawnSync('git', ['-C', root, 'check-ignore', '-q', '.fireworks']);
+    const res = cp.spawnSync('git', ['-C', root, 'check-ignore', '-q', '.fireworks/results']);
     if (res.status !== 1) {
       return;
     }
@@ -757,10 +815,131 @@ function ensureGitignored(root: string): void {
     const prior = fs.existsSync(gitignore) ? fs.readFileSync(gitignore, 'utf8') : '';
     // Separate from any prior content with a blank line; don't double up newlines.
     const lead = prior === '' || prior.endsWith('\n') ? '' : '\n';
-    fs.appendFileSync(gitignore, `${lead}\n# Fireworks inline-result cache\n.fireworks/\n`);
-    log(`added .fireworks/ to ${gitignore}`);
+    fs.appendFileSync(gitignore, `${lead}\n# Fireworks inline-result cache\n.fireworks/results/\n`);
+    log(`added .fireworks/results/ to ${gitignore}`);
   } catch (e) {
     log(`could not update .gitignore at ${root}: ${String(e)}`);
+  }
+}
+
+// ============================================================================
+// Setup guidance — rendered Markdown opened to the side. No toasts or popups: when Live Code
+// can't proceed for a setup reason, we open a small readonly Markdown doc in the built-in preview
+// (syntax-highlighted code blocks, clickable links; select-and-copy for the snippets). One reusable
+// surface for every guidance message.
+// ============================================================================
+
+type GuidanceTopic = 'lein-missing-plugin' | 'lein-user-test-refresh' | 'bb-watch-task';
+
+const GUIDANCE_SCHEME = 'fireworks-guide';
+
+// The title (shown in the preview tab) and Markdown body for a topic. Built from single-quoted
+// lines joined with newlines, so the ``` fences need no escaping.
+function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } {
+  switch (topic) {
+    case 'lein-missing-plugin':
+      return {
+        title: 'Fireworks lein-test-refresh setup',
+        markdown: [
+          '# Fireworks: Missing plugin',
+          '',
+          'For Leiningen projects, you need this plugin:',
+          '',
+          '**`[com.jakemccrary/lein-test-refresh "0.26.0"]`**',
+          '',
+          '<br>',
+          '<br>',
+          'These coordinates need to exist in at least one of 2 places:',
+          '',
+          '<br>',
+          '',
+          '**Locally, in your `project.clj`:**',
+          '```clj',
+          '(defproject myproject "0.1.0"',
+          '  :profiles',
+          '  {:my-profile',
+          '   {:plugins',
+          '    [[com.jakemccrary/lein-test-refresh "0.26.0"]]}})',
+          '```',
+          '',
+          '  ~ or ~',
+          '',
+          '**Globally, in your `~/.lein/profiles.clj`:**',
+          '```clj',
+          '{:user',
+          ' {:plugins',
+          '  [[com.jakemccrary/lein-test-refresh "0.26.0"]]}}',
+          '```',
+          '<br>',
+          '<br>',
+          'Helpful links:',
+          '',
+          'See [lein-test-refresh](https://github.com/jakemcc/lein-test-refresh).',
+          '',
+        ].join('\n'),
+      };
+    case 'lein-user-test-refresh':
+      return {
+        title: 'Fireworks test-refresh config',
+        markdown: [
+          '# Fireworks: add a `:test-refresh` config',
+          '',
+          'Your `~/.lein/profiles.clj` `:user` profile has the `lein-test-refresh` plugin but no',
+          '`:test-refresh` config. Add one so Live Code shows the Fireworks banner and tap output.',
+          '',
+          'Paste this into your `:user` map (the extension does not edit global config):',
+          '',
+          '```clj',
+          cljsLib.leinTestRefreshSnippet(),
+          '```',
+          '',
+          'See [lein-test-refresh configuration](https://github.com/jakemcc/lein-test-refresh#configuration).',
+          '',
+        ].join('\n'),
+      };
+    case 'bb-watch-task':
+      return {
+        title: 'Fireworks Babashka watch task',
+        markdown: [
+          '# Fireworks: add a Babashka watch task',
+          '',
+          'To use Fireworks Live Code with Babashka, add a `bb.edn` task that loads the watcher:',
+          '',
+          '```clj',
+          '{:tasks',
+          ' {live {:task (load-file ".fireworks/bb/watch.clj")}}}',
+          '```',
+          '',
+          'Then run Live Code again and pick that task. Fireworks seeds `.fireworks/bb/watch.clj`',
+          'for you, and the watcher self-loads the [fswatcher](https://github.com/babashka/fs) pod —',
+          'no `:pods` entry is needed in your `bb.edn`.',
+          '',
+        ].join('\n'),
+      };
+  }
+}
+
+// Register the virtual-doc provider that backs the guidance previews. Content is deterministic per
+// topic (carried in the URI query), so no change events are needed.
+function registerGuidanceProvider(): vscode.Disposable {
+  return vscode.workspace.registerTextDocumentContentProvider(GUIDANCE_SCHEME, {
+    provideTextDocumentContent(uri) {
+      return guidanceDoc(uri.query as GuidanceTopic).markdown;
+    },
+  });
+}
+
+// Open a topic's guidance as a rendered Markdown preview, to the side of the active editor. The
+// `.md` path makes VS Code treat the virtual doc as Markdown; the topic rides in the query. Falls
+// back to the raw text document if the Markdown preview command is unavailable.
+async function showGuidance(topic: GuidanceTopic): Promise<void> {
+  const { title } = guidanceDoc(topic);
+  const uri = vscode.Uri.parse(`${GUIDANCE_SCHEME}:${encodeURIComponent(title)}.md?${topic}`);
+  try {
+    await vscode.commands.executeCommand('markdown.showPreviewToSide', uri);
+  } catch {
+    const doc = await vscode.workspace.openTextDocument(uri);
+    await vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside);
   }
 }
 
@@ -938,6 +1117,13 @@ function repaintEditor(editor: vscode.TextEditor): void {
     if (overflow > 0) {
       addSegment(SUBSEQUENT_GAP, OVERFLOW_PREFIX, `+ ${overflow} more`);
     }
+    // Trailing 1ch of tinted blank space: widen the content box by one cell and extend
+    // the last band over it, so the row's background ends on a visible pad, not flush
+    // against the final glyph. Only when there's a tint to show (and something painted).
+    if (tint && bands.length > 0) {
+      content += nbsp(1);
+      bands[bands.length - 1].end += 1;
+    }
     const eol = editor.document.lineAt(line).range.end;
     paints.push({
       // Non-breaking spaces: VS Code collapses runs of normal spaces in contentText.
@@ -1096,10 +1282,11 @@ function allocateEven(lengths: number[], budget: number): number[] {
 //
 // Start/Stop/Restart a watcher in an integrated terminal at the picked project root.
 // The flow is two picks and no magic: pick the project root, then pick what to run from
-// that project's own config — a deps.edn alias (`clojure -M:<alias>`) or, for a Babashka
-// project, a bb.edn task (`bb <task>`). The user owns those files — it's on them to
-// make the alias/task pull in test-refresh + Fireworks. Fireworks injects nothing and
-// writes no project files. Leiningen is out of scope (set that up by hand).
+// that project's own config — a deps.edn alias (`clojure -M:<alias>`), a bb.edn task
+// (`bb <task>`), or a Leiningen profile carrying lein-test-refresh
+// (`lein with-profile +<profile> test-refresh`). For deps/bb the user owns those files and
+// Fireworks writes nothing. Leiningen is the one exception: it may patch project.clj's
+// :test-refresh (and add the plugin to a profile) — always prompt-then-patch, additive only.
 // ============================================================================
 
 // The terminal name for a root's session — basename-tagged so concurrent sessions in
@@ -1120,6 +1307,7 @@ interface LiveSession {
   command: string; // the verbatim watcher command it launched with (for restart)
   terminal: vscode.Terminal;
   execution: vscode.TerminalShellExecution | undefined; // tracked when shell integration is available
+  testRefresh?: TestRefreshInfo; // the .test-refresh.edn governing the run (Clojure/deps only)
 }
 const liveSessions = new Map<string, LiveSession>(); // keyed by root
 
@@ -1150,11 +1338,14 @@ function onPath(command: string): boolean {
   }
 }
 
-// Every directory in the workspace that holds a deps.edn or a bb.edn — across all
-// workspace folders and nested subprojects (e.g. a monorepo's repo/foo). The project
-// kind (Clojure CLI vs Babashka) is resolved per-root at launch by projectKind.
+// Every directory in the workspace that holds a deps.edn, bb.edn, or project.clj — across all
+// workspace folders and nested subprojects (e.g. a monorepo's repo/foo). The project kind
+// (Clojure CLI / Babashka / Leiningen) is resolved per-root at launch by projectKind.
 async function findProjectRoots(): Promise<string[]> {
-  const uris = await vscode.workspace.findFiles('**/{deps.edn,bb.edn}', '**/node_modules/**');
+  const uris = await vscode.workspace.findFiles(
+    '**/{deps.edn,bb.edn,project.clj}',
+    '**/node_modules/**',
+  );
   const roots = new Set<string>();
   for (const u of uris) {
     roots.add(path.dirname(u.fsPath));
@@ -1171,31 +1362,81 @@ function tildify(p: string): string {
   return p.startsWith(home + path.sep) ? '~' + p.slice(home.length) : p;
 }
 
+// --- Recent-projects memory (per workspace) -------------------------------
+// The project roots Live Code has launched in, most-recent first, persisted in
+// workspaceState so the pickers can float a "Recent" section to the top. The store is
+// capped so it can't grow unbounded; the pickers only ever surface the first few.
+const RECENT_ROOTS_KEY = 'fireworks.recentLiveRoots';
+const RECENT_SECTION_LIMIT = 3; // how many recent roots a picker shows under the "Recent" header
+const RECENT_STORE_LIMIT = 20; // how many we remember in total
+
+function getRecentRoots(): string[] {
+  return extContext.workspaceState.get<string[]>(RECENT_ROOTS_KEY, []);
+}
+
+// Promote `root` to the front of the recency list (de-duped, capped). Called whenever a
+// watcher launches, so "recent" tracks the last time Live Code ran on each project.
+function recordRecentRoot(root: string): void {
+  const next = [root, ...getRecentRoots().filter((r) => r !== root)].slice(0, RECENT_STORE_LIMIT);
+  void extContext.workspaceState.update(RECENT_ROOTS_KEY, next);
+}
+
+// Lay quick-pick entries out with a "Recent" header: candidates whose root launched recently
+// (freshest first, capped at RECENT_SECTION_LIMIT) move into a top section; the rest keep
+// their given order below a divider. `candidates` pairs each item with its root so recency
+// can be keyed. Separators are never returned as the user's pick.
+function withRecentSection<T extends vscode.QuickPickItem>(
+  candidates: { root: string; item: T }[],
+): (T | vscode.QuickPickItem)[] {
+  const rank = new Map(getRecentRoots().map((r, i) => [r, i] as const));
+  const recent = candidates
+    .filter((c) => rank.has(c.root))
+    .sort((a, b) => rank.get(a.root)! - rank.get(b.root)!)
+    .slice(0, RECENT_SECTION_LIMIT);
+  if (recent.length === 0) {
+    return candidates.map((c) => c.item);
+  }
+  const recentSet = new Set(recent.map((c) => c.root));
+  const rest = candidates.filter((c) => !recentSet.has(c.root));
+  const items: (T | vscode.QuickPickItem)[] = [
+    { label: 'Recent', kind: vscode.QuickPickItemKind.Separator },
+    ...recent.map((c) => c.item),
+  ];
+  if (rest.length > 0) {
+    items.push({ label: '', kind: vscode.QuickPickItemKind.Separator }); // divider
+    items.push(...rest.map((c) => c.item));
+  }
+  return items;
+}
+
+type RootPickItem = vscode.QuickPickItem & { root: string };
+
 // Resolve which project root to act on: the only one, or a pick when the workspace has
 // several. The pick mirrors VS Code's own "new terminal" cwd picker — folder name as the
-// label, the home-abbreviated parent path as the muted description. undefined if none, or
-// the pick was dismissed.
+// label, the home-abbreviated parent path as the muted description — with recently-launched
+// projects floated under a "Recent" header. undefined if none, or the pick was dismissed.
 async function pickProjectRoot(): Promise<string | undefined> {
   const roots = await findProjectRoots();
   if (roots.length === 0) {
-    vscode.window.showErrorMessage('Fireworks: no deps.edn or bb.edn found in this workspace.');
+    vscode.window.showErrorMessage(
+      'Fireworks: no deps.edn, bb.edn, or project.clj found in this workspace.',
+    );
     return undefined;
   }
   if (roots.length === 1) {
     return roots[0];
   }
-  const pick = await vscode.window.showQuickPick(
+  const items = withRecentSection<RootPickItem>(
     roots.map((root) => ({
-      label: path.basename(root),
-      description: tildify(path.dirname(root)),
       root,
+      item: { label: path.basename(root), description: tildify(path.dirname(root)), root },
     })),
-    {
-      placeHolder: 'Select the project for Fireworks live coding',
-      matchOnDescription: true, // typing filters on the path too, like the native picker
-    },
   );
-  return pick?.root;
+  const pick = await vscode.window.showQuickPick(items, {
+    placeHolder: 'Select the project for Fireworks live coding',
+    matchOnDescription: true, // typing filters on the path too, like the native picker
+  });
+  return (pick as RootPickItem | undefined)?.root;
 }
 
 function preflightClojure(): boolean {
@@ -1218,6 +1459,16 @@ function preflightBb(): boolean {
   return false;
 }
 
+function preflightLein(): boolean {
+  if (onPath('lein')) {
+    return true;
+  }
+  vscode.window.showErrorMessage(
+    'Fireworks: the `lein` (Leiningen) command is not on your PATH. Install Leiningen, then try again.',
+  );
+  return false;
+}
+
 // The watcher command for a chosen deps.edn alias (Clojure CLI). The alias supplies its
 // own deps and :main-opts (test-refresh + Fireworks).
 function aliasCommand(alias: string): string {
@@ -1232,23 +1483,47 @@ function taskCommand(task: string): string {
   return `bb ${task}`;
 }
 
+// The watcher command for a Leiningen project. With a profile, `with-profile +<profile>`
+// activates the profile carrying lein-test-refresh (the `+` merges onto defaults rather than
+// replacing). With no profile (the ~/.lein/profiles.clj :user case, which auto-merges), run
+// plain `lein test-refresh`.
+function leinCommand(profile?: string): string {
+  return profile ? `lein with-profile +${profile} test-refresh` : 'lein test-refresh';
+}
+
+type Runtime = 'deps' | 'bb' | 'lein';
+
 // Which runtime to launch for `root`: deps.edn -> Clojure CLI alias; bb.edn -> Babashka
-// task. When a project has both files, ask. undefined if neither exists (shouldn't happen
-// via pickProjectRoot) or the disambiguation pick was dismissed.
-async function projectKind(root: string): Promise<'deps' | 'bb' | undefined> {
-  const hasDeps = fs.existsSync(path.join(root, 'deps.edn'));
-  const hasBb = fs.existsSync(path.join(root, 'bb.edn'));
-  if (hasDeps && hasBb) {
-    const pick = await vscode.window.showQuickPick(
-      [
-        { label: 'Clojure (deps.edn alias)', runtime: 'deps' as const },
-        { label: 'Babashka (bb.edn task)', runtime: 'bb' as const },
-      ],
-      { placeHolder: 'This project has both deps.edn and bb.edn — which runtime?' },
-    );
-    return pick?.runtime;
+// task; project.clj -> Leiningen profile. When a project has more than one of these files,
+// ask. undefined if none exists (shouldn't happen via pickProjectRoot) or the disambiguation
+// pick was dismissed.
+async function projectKind(root: string): Promise<Runtime | undefined> {
+  const kinds: { label: string; runtime: Runtime }[] = [];
+  if (fs.existsSync(path.join(root, 'deps.edn'))) {
+    kinds.push({ label: 'Clojure (deps.edn alias)', runtime: 'deps' });
   }
-  return hasBb ? 'bb' : hasDeps ? 'deps' : undefined;
+  // bb is offered only when wired for it (a task load-files .fireworks/bb/watch.clj), so a
+  // bb.edn kept for build scripts alongside a deps.edn / project.clj isn't mistaken for a watcher.
+  if (fs.existsSync(path.join(root, 'bb.edn')) && bbHasWatchTask(root)) {
+    kinds.push({ label: 'Babashka (.fireworks/bb/watch.clj)', runtime: 'bb' });
+  }
+  if (fs.existsSync(path.join(root, 'project.clj'))) {
+    kinds.push({ label: 'Leiningen (project.clj profile)', runtime: 'lein' });
+  }
+  if (kinds.length === 0) {
+    // Reached only when the sole build file is an unwired bb.edn (deps/lein always qualify).
+    if (fs.existsSync(path.join(root, 'bb.edn'))) {
+      await showGuidance('bb-watch-task');
+    }
+    return undefined;
+  }
+  if (kinds.length === 1) {
+    return kinds[0].runtime;
+  }
+  const pick = await vscode.window.showQuickPick(kinds, {
+    placeHolder: 'This project has multiple build files — which runtime?',
+  });
+  return pick?.runtime;
 }
 
 // Pick an alias defined in `root`'s deps.edn. Reads the file, asks the cljs side for the
@@ -1279,28 +1554,88 @@ async function pickAlias(root: string): Promise<string | undefined> {
   return pick?.alias;
 }
 
-// Pick a task defined in `root`'s bb.edn. Mirrors pickAlias for Babashka projects.
-// undefined when the file is missing/unparseable, defines no tasks, or the pick was dismissed.
-async function pickTask(root: string): Promise<string | undefined> {
+// Whether `root`'s bb.edn is wired as a Fireworks watcher: a task whose body load-files
+// .fireworks/bb/watch.clj. This is the opt-in signal that gates whether bb is offered as a
+// runtime — a bb.edn kept only for build scripts returns false, so it isn't mistaken for a
+// watcher alongside a deps.edn / project.clj. Missing or unparseable bb.edn -> false.
+function bbHasWatchTask(root: string): boolean {
+  const text = readFileOrNull(path.join(root, 'bb.edn'));
+  if (text === null) {
+    return false;
+  }
+  const { tasks } = cljsLib.bbWatchTasks(text);
+  return !!tasks && tasks.length > 0;
+}
+
+// Seed .fireworks/bb/watch.clj from the template when absent (the user's bb.edn task load-files
+// it). Never overwrites an existing file — it may be user-edited and is meant to be committed.
+// Returns false only on a write failure (a message is shown); true when the file is in place.
+function ensureBbWatchFile(root: string): boolean {
+  const file = path.join(root, '.fireworks', 'bb', 'watch.clj');
+  if (fs.existsSync(file)) {
+    return true;
+  }
+  try {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, cljsLib.bbWatchTemplate(), 'utf8');
+    log(`bb watcher: seeded ${tildify(file)}`);
+    return true;
+  } catch (e) {
+    log(`bb watcher: could not write ${tildify(file)}: ${String(e)}`);
+    vscode.window.showErrorMessage(`Fireworks: could not create ${tildify(file)}.`);
+    return false;
+  }
+}
+
+// Resolve the Babashka launch plan for `root`: the watcher task(s) wired to .fireworks/bb/watch.clj
+// (run directly if one, pick if several), seeding the watcher file when missing. bb sessions carry
+// no TestRefreshInfo (config is .fireworks/config.edn, read by watch.clj itself).
+async function resolveBbCommand(root: string): Promise<WatcherPlan | undefined> {
+  if (!preflightBb()) {
+    return undefined;
+  }
   const text = readFileOrNull(path.join(root, 'bb.edn'));
   if (text === null) {
     vscode.window.showErrorMessage(`Fireworks: could not read bb.edn in ${tildify(root)}.`);
     return undefined;
   }
-  const { tasks, error } = cljsLib.bbTasks(text);
+  const { tasks, error } = cljsLib.bbWatchTasks(text);
   if (error || !tasks) {
     vscode.window.showErrorMessage(`Fireworks: could not parse bb.edn in ${tildify(root)}.`);
     return undefined;
   }
   if (tasks.length === 0) {
-    vscode.window.showErrorMessage(
-      `Fireworks: no tasks defined in ${tildify(root)}/bb.edn. Add a task that runs your watcher, then try again.`,
-    );
+    // projectKind gates bb on this, so this is a safety net rather than the usual path.
+    await showGuidance('bb-watch-task');
     return undefined;
   }
-  return vscode.window.showQuickPick(tasks, {
-    placeHolder: 'Select the bb.edn task to run (must start your Fireworks watcher)',
-  });
+  const task =
+    tasks.length === 1
+      ? tasks[0]
+      : await vscode.window.showQuickPick(tasks, {
+          placeHolder: 'Select the bb watch task to run',
+        });
+  if (!task) {
+    return undefined;
+  }
+  if (!ensureBbWatchFile(root)) {
+    return undefined;
+  }
+  return { command: taskCommand(task) };
+}
+
+// Pick a Leiningen profile from a given list (mirrors pickAlias). Auto-returns a single
+// candidate; otherwise shows each as a keyword (`:dev`) but keeps the bare name for the
+// `lein with-profile +<profile>` command. undefined when the pick was dismissed.
+async function pickProfile(profiles: string[], placeHolder: string): Promise<string | undefined> {
+  if (profiles.length === 1) {
+    return profiles[0];
+  }
+  const pick = await vscode.window.showQuickPick(
+    profiles.map((profile) => ({ label: `:${profile}`, profile })),
+    { placeHolder },
+  );
+  return pick?.profile;
 }
 
 // Which .test-refresh.edn governs a Clojure watcher: 'local' (project root), 'global'
@@ -1308,49 +1643,63 @@ async function pickTask(root: string): Promise<string | undefined> {
 // seed write failed — test-refresh falls back to its own defaults).
 type TestRefreshSource = 'local' | 'global' | 'created' | 'error';
 
+// The .test-refresh.edn governing a running Clojure session: which file and how it was
+// resolved. Tracked on the session so the debug/test toggle knows whether it may rewrite
+// the file ('local'/'created') or must defer to the user ('global').
+interface TestRefreshInfo {
+  path: string; // the governing file (a project-root path, or the global ~/.test-refresh.edn)
+  source: TestRefreshSource;
+}
+
 // Ensure a .test-refresh.edn is in effect for a Clojure (deps) project before its watcher
 // launches. test-refresh reads the project-root .test-refresh.edn, falling back to the
 // global ~/.test-refresh.edn. We never overwrite an existing config (local or global);
 // only when neither exists do we seed one in the project root from the Fireworks template.
-// Returns the source so the caller can track which config governs the run.
-function ensureTestRefreshConfig(root: string): TestRefreshSource {
+// Returns which file governs the run and how it was resolved.
+function ensureTestRefreshConfig(root: string): TestRefreshInfo {
   const local = path.join(root, '.test-refresh.edn');
   if (fs.existsSync(local)) {
     log(`.test-refresh.edn: using project-local ${tildify(local)}`);
-    return 'local';
+    return { path: local, source: 'local' };
   }
   const global = path.join(os.homedir(), '.test-refresh.edn');
   if (fs.existsSync(global)) {
     log(`.test-refresh.edn: using global ${tildify(global)}`);
-    return 'global';
+    return { path: global, source: 'global' };
   }
   try {
     fs.writeFileSync(local, cljsLib.testRefreshTemplate(), 'utf8');
     log(`.test-refresh.edn: none found locally or globally — created ${tildify(local)}`);
-    return 'created';
+    return { path: local, source: 'created' };
   } catch (e) {
     log(`.test-refresh.edn: could not create ${tildify(local)}: ${String(e)}`);
     vscode.window.showWarningMessage(
       `Fireworks: could not create .test-refresh.edn in ${tildify(root)}. test-refresh will run with its defaults.`,
     );
-    return 'error';
+    return { path: local, source: 'error' };
   }
 }
 
-// Resolve the verbatim watcher command for `root`: detect the runtime, run its PATH
-// preflight, then pick the alias (deps) or task (bb). undefined aborts the launch (a
-// message was already shown, or a pick/preflight failed).
-async function resolveWatcherCommand(root: string): Promise<string | undefined> {
+// What a launch needs: the verbatim watcher command, plus (Clojure/deps only) the
+// .test-refresh.edn that governs the run so the session can track it.
+interface WatcherPlan {
+  command: string;
+  testRefresh?: TestRefreshInfo;
+}
+
+// Resolve the launch plan for `root`: detect the runtime, run its PATH preflight, then pick
+// the alias (deps) or task (bb). undefined aborts the launch (a message was already shown,
+// or a pick/preflight failed).
+async function resolveWatcherCommand(root: string): Promise<WatcherPlan | undefined> {
   const kind = await projectKind(root);
   if (!kind) {
     return undefined;
   }
   if (kind === 'bb') {
-    if (!preflightBb()) {
-      return undefined;
-    }
-    const task = await pickTask(root);
-    return task ? taskCommand(task) : undefined;
+    return resolveBbCommand(root);
+  }
+  if (kind === 'lein') {
+    return resolveLeinCommand(root);
   }
   if (!preflightClojure()) {
     return undefined;
@@ -1362,8 +1711,157 @@ async function resolveWatcherCommand(root: string): Promise<string | undefined> 
   // Clojure runtime only: make sure a .test-refresh.edn governs the run (seed one from the
   // template if the project has neither a local nor a global config). Done after the alias
   // pick so a dismissed pick writes nothing.
-  ensureTestRefreshConfig(root);
-  return aliasCommand(alias);
+  const testRefresh = ensureTestRefreshConfig(root);
+  return { command: aliasCommand(alias), testRefresh };
+}
+
+// --- Leiningen launch resolution ------------------------------------------
+// Unlike deps/bb, the Leiningen flow may edit the user's project.clj — but only after a
+// confirm modal, and only additively (rewrite-clj preserves formatting/comments). Eligibility:
+// a :profiles entry whose :plugins carries exactly [com.jakemccrary/lein-test-refresh "0.26.0"].
+
+// Confirm a project.clj edit. Modal so it can't be missed; returns true only on the explicit
+// confirm button (Escape/dismiss = false, launch aborts).
+async function confirmProjectCljWrite(detail: string): Promise<boolean> {
+  const confirm = 'Edit project.clj';
+  const pick = await vscode.window.showInformationMessage(
+    'Fireworks: Live Code wants to edit project.clj',
+    { modal: true, detail },
+    confirm,
+  );
+  return pick === confirm;
+}
+
+function writeProjectClj(projectCljPath: string, text: string): boolean {
+  try {
+    fs.writeFileSync(projectCljPath, text, 'utf8');
+    log(`project.clj: patched ${tildify(projectCljPath)}`);
+    return true;
+  } catch (e) {
+    log(`project.clj: could not write ${tildify(projectCljPath)}: ${String(e)}`);
+    vscode.window.showErrorMessage(`Fireworks: could not write ${tildify(projectCljPath)}.`);
+    return false;
+  }
+}
+
+// Ensure project.clj's top-level :test-refresh map against the baseline (prompt-then-patch).
+// Returns true to proceed with the launch, false to abort (parse error, or the user declined).
+async function ensureTestRefreshLein(projectCljPath: string, text: string): Promise<boolean> {
+  const r = cljsLib.leinEnsureTestRefresh(text);
+  if (r.error || r.text === undefined) {
+    vscode.window.showErrorMessage(`Fireworks: could not parse ${tildify(projectCljPath)}.`);
+    return false;
+  }
+  if (!r.changed) {
+    return true; // baseline already satisfied
+  }
+  const keys = (r.addedKeys ?? []).join(', ');
+  if (!(await confirmProjectCljWrite(`Add a :test-refresh config (${keys}) to project.clj.`))) {
+    return false;
+  }
+  return writeProjectClj(projectCljPath, r.text);
+}
+
+// Add the plugin coordinate to the chosen profile AND ensure :test-refresh, in one combined
+// confirm + one write. Returns true to proceed, false to abort.
+async function addPluginAndTestRefresh(
+  projectCljPath: string,
+  text: string,
+  profile: string,
+): Promise<boolean> {
+  const added = cljsLib.leinAddPlugin(text, profile);
+  if (added.error || added.text === undefined) {
+    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(projectCljPath)}.`);
+    return false;
+  }
+  const ensured = cljsLib.leinEnsureTestRefresh(added.text);
+  if (ensured.error || ensured.text === undefined) {
+    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(projectCljPath)}.`);
+    return false;
+  }
+  if (!added.changed && !ensured.changed) {
+    return true; // nothing to do (shouldn't happen for an ineligible profile, but safe)
+  }
+  const parts: string[] = [];
+  if (added.changed) {
+    parts.push(`add [com.jakemccrary/lein-test-refresh "0.26.0"] to the :${profile} profile`);
+  }
+  if (ensured.changed) {
+    parts.push(`add a :test-refresh config (${(ensured.addedKeys ?? []).join(', ')})`);
+  }
+  if (!(await confirmProjectCljWrite(`Fireworks will ${parts.join(' and ')} in project.clj.`))) {
+    return false;
+  }
+  return writeProjectClj(projectCljPath, ensured.text);
+}
+
+// Fall back to ~/.lein/profiles.clj when project.clj defines no profiles. Read-only: the
+// extension never writes global config. Returns a plan (plain `lein test-refresh`, since the
+// :user profile auto-merges) only when :user carries the plugin AND a :test-refresh key;
+// otherwise opens the matching setup guide to the side.
+async function resolveLeinUserProfile(): Promise<WatcherPlan | undefined> {
+  const profilesPath = path.join(os.homedir(), '.lein', 'profiles.clj');
+  const text = readFileOrNull(profilesPath);
+  const status = text === null ? undefined : cljsLib.leinUserProfileStatus(text);
+  if (status && status.error) {
+    vscode.window.showErrorMessage(`Fireworks: could not parse ${tildify(profilesPath)}.`);
+    return undefined;
+  }
+  if (!status || !status.hasPlugin) {
+    await showGuidance('lein-missing-plugin');
+    return undefined;
+  }
+  if (!status.hasTestRefresh) {
+    await showGuidance('lein-user-test-refresh');
+    return undefined;
+  }
+  return { command: leinCommand() };
+}
+
+// Resolve the Leiningen launch plan for `root`. Lein sessions carry no TestRefreshInfo (the
+// config lives in project.clj, not a .test-refresh.edn) — like bb, the debug/test toggle skips them.
+async function resolveLeinCommand(root: string): Promise<WatcherPlan | undefined> {
+  if (!preflightLein()) {
+    return undefined;
+  }
+  const projectCljPath = path.join(root, 'project.clj');
+  const text = readFileOrNull(projectCljPath);
+  if (text === null) {
+    vscode.window.showErrorMessage(`Fireworks: could not read project.clj in ${tildify(root)}.`);
+    return undefined;
+  }
+  const { all, eligible, error } = cljsLib.leinProfiles(text);
+  if (error || !all || !eligible) {
+    vscode.window.showErrorMessage(`Fireworks: could not parse project.clj in ${tildify(root)}.`);
+    return undefined;
+  }
+  // An eligible profile already carries the plugin → pick it, ensure :test-refresh, launch.
+  if (eligible.length > 0) {
+    const profile = await pickProfile(
+      eligible,
+      'Select the profile to run (carries lein-test-refresh)',
+    );
+    if (!profile) {
+      return undefined;
+    }
+    if (!(await ensureTestRefreshLein(projectCljPath, text))) {
+      return undefined;
+    }
+    return { command: leinCommand(profile) };
+  }
+  // No eligible profile, but profiles exist → offer to add the plugin to one.
+  if (all.length > 0) {
+    const profile = await pickProfile(all, 'Add lein-test-refresh to which profile?');
+    if (!profile) {
+      return undefined;
+    }
+    if (!(await addPluginAndTestRefresh(projectCljPath, text, profile))) {
+      return undefined;
+    }
+    return { command: leinCommand(profile) };
+  }
+  // No profiles at all → fall through to ~/.lein/profiles.clj.
+  return resolveLeinUserProfile();
 }
 
 function waitForShellIntegration(
@@ -1419,11 +1917,11 @@ async function startLiveCoding(): Promise<void> {
     await reuseOrNotify(existing);
     return;
   }
-  const command = await resolveWatcherCommand(root);
-  if (!command) {
+  const plan = await resolveWatcherCommand(root);
+  if (!plan) {
     return;
   }
-  await launchWatcher(root, command);
+  await launchWatcher(root, plan.command, plan.testRefresh);
 }
 
 // A session already exists for the picked root. If its process has exited (the terminal
@@ -1434,6 +1932,7 @@ async function reuseOrNotify(session: LiveSession): Promise<void> {
   if (exited) {
     prepareResultsDir(session.root);
     clearResultsForRoot(session.root);
+    recordRecentRoot(session.root); // re-running here counts as recent, too
     session.terminal.show();
     // Wipe the dead session's scrollback first (Cmd-K equivalent) so the new run starts
     // clean. Acts on the active terminal, which show() just made it.
@@ -1450,12 +1949,17 @@ async function reuseOrNotify(session: LiveSession): Promise<void> {
 
 // Run the watcher for a root + resolved command, registering it as a session so
 // Stop/Restart can act on it. Concurrent sessions for other roots are left untouched.
-async function launchWatcher(root: string, command: string): Promise<void> {
+async function launchWatcher(
+  root: string,
+  command: string,
+  testRefresh?: TestRefreshInfo,
+): Promise<void> {
   prepareResultsDir(root); // on-disk fresh slate for this root
   clearResultsForRoot(root); // in-memory fresh slate for this root only (not other projects')
+  recordRecentRoot(root); // float this project in the pickers' "Recent" section
   log(`live coding -> ${command} (cwd ${root})`);
   const terminal = vscode.window.createTerminal({ name: terminalName(root), cwd: root });
-  const session: LiveSession = { root, command, terminal, execution: undefined };
+  const session: LiveSession = { root, command, terminal, execution: undefined, testRefresh };
   liveSessions.set(root, session);
   terminal.show();
 
@@ -1494,27 +1998,91 @@ async function restartLiveCoding(): Promise<void> {
   if (!session) {
     return;
   }
-  const { root, command } = session;
+  const { root, command, testRefresh } = session;
   stopSession(session);
-  await launchWatcher(root, command); // reuse the session's root + command (no re-prompt)
+  await launchWatcher(root, command, testRefresh); // reuse root + command + config (no re-prompt)
 }
 
-// The running session to act on: the only one, or a quick pick when several are running.
-// Caller guarantees liveSessions is non-empty; undefined means the pick was dismissed.
-async function chooseSession(verb: 'stop' | 'restart'): Promise<LiveSession | undefined> {
+// Toggle the picked Clojure session between debug (tap) and test mode by rewriting its
+// .test-refresh.edn in place: flip :debug and sync :banner to the file's own :debug-banner /
+// :test-banner. A 'global' session can't be rewritten from here (the file is the user's
+// shared config), so surface a modal pointing them at it; bb sessions carry no test-refresh
+// config at all. The change takes effect on the watcher's next config read (restart if needed).
+async function toggleDebugTestMode(): Promise<void> {
+  if (liveSessions.size === 0) {
+    flash('Fireworks: no Live Code session is running.');
+    return;
+  }
+  const session = await chooseSession('toggle debug/test mode for');
+  if (!session) {
+    return;
+  }
+  const tr = session.testRefresh;
+  if (!tr) {
+    flash('Fireworks: debug/test mode applies to Clojure (deps) live coding sessions only.');
+    return;
+  }
+  if (tr.source === 'global') {
+    await vscode.window.showInformationMessage(
+      'Fireworks: these settings must be changed in your global ~/.test-refresh.edn.',
+      { modal: true, detail: 'This session runs off the global config. Edit it there, then restart Live Code.' },
+    );
+    return;
+  }
+  const text = readFileOrNull(tr.path);
+  if (text === null) {
+    vscode.window.showErrorMessage(`Fireworks: could not read ${tildify(tr.path)}.`);
+    return;
+  }
+  const { text: out, mode, error } = cljsLib.toggleMode(text);
+  if (error || !out || !mode) {
+    vscode.window.showErrorMessage(`Fireworks: could not parse ${tildify(tr.path)} to toggle mode.`);
+    return;
+  }
+  try {
+    fs.writeFileSync(tr.path, out, 'utf8');
+  } catch (e) {
+    log(`could not write ${tildify(tr.path)}: ${String(e)}`);
+    vscode.window.showErrorMessage(`Fireworks: could not write ${tildify(tr.path)}.`);
+    return;
+  }
+  const label = mode === 'tap' ? 'debug' : 'test';
+  log(`live coding mode -> ${label} (${tildify(tr.path)})`);
+  // test-refresh reads .test-refresh.edn at startup, so restart the watcher to pick up the
+  // new mode: stop this session and relaunch it in place (reusing root/command/config).
+  const { root, command, testRefresh } = session;
+  stopSession(session);
+  await launchWatcher(root, command, testRefresh);
+  flash(`Fireworks: live coding mode → ${label} (restarting watcher)`);
+}
+
+type SessionPickItem = vscode.QuickPickItem & { session: LiveSession };
+
+// The running session to act on: the only one, or a quick pick when several are running
+// (freshest under a "Recent" header). Caller guarantees liveSessions is non-empty; undefined
+// means the pick was dismissed.
+async function chooseSession(
+  verb: 'stop' | 'restart' | 'toggle debug/test mode for',
+): Promise<LiveSession | undefined> {
   const all = [...liveSessions.values()];
   if (all.length === 1) {
     return all[0];
   }
-  const pick = await vscode.window.showQuickPick(
+  const items = withRecentSection<SessionPickItem>(
     all.map((session) => ({
-      label: path.basename(session.root),
-      description: tildify(path.dirname(session.root)),
-      session,
+      root: session.root,
+      item: {
+        label: path.basename(session.root),
+        description: tildify(path.dirname(session.root)),
+        session,
+      },
     })),
-    { placeHolder: `Select the Live Code session to ${verb}`, matchOnDescription: true },
   );
-  return pick?.session;
+  const pick = await vscode.window.showQuickPick(items, {
+    placeHolder: `Select the Live Code session to ${verb}`,
+    matchOnDescription: true,
+  });
+  return (pick as SessionPickItem | undefined)?.session;
 }
 
 // Preset auto-save delays (seconds) offered by fireworks.setAutoSaveDelay. They tune how

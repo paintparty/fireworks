@@ -1,0 +1,309 @@
+ {
+
+  ;; ---------------------------------------------------------------------------
+  ;;  Themes 
+  ;; ---------------------------------------------------------------------------
+
+  :theme                         "Alabaster Light"
+  ;; :theme "Alabaster Dark"
+  ;; :theme "Neutral Light"
+  ;; :theme "Neutral Dark"
+  ;; :theme "Degas Light"
+  ;; :theme "Degas Dark"
+  ;; :theme "Zenburn Light"
+  ;; :theme "Zenburn Dark"
+  ;; :theme "Solarized Light"
+  ;; :theme "Solarized Dark"
+  ;; :theme "Monokai Light"
+  ;; :theme "Monokai Dark"
+
+
+  
+
+  ;; ---------------------------------------------------------------------------
+  ;;  Limits 
+  ;; ---------------------------------------------------------------------------
+
+  ;; Sets the line-height. Only takes effect in browser consoles.
+
+  ;; :line-height                   1.45 ; defaults to 1.45
+
+  
+
+  ;; Sets the max depth of printing for metadata maps that contain nested
+  ;; collections.
+
+  ;; :metadata-print-level          4 ; defaults to 4
+
+  
+
+  ;; Controls how many items are printed in a coll before truncation
+
+  ;; :print-length                  33 ; defaults to 33
+
+  
+
+  ;; Controls how many items are printed in a coll before truncation, for
+  ;; inline results
+
+  ;; :print-length-inline-results   8 ; defaults to 8
+
+  
+
+  ;; Sets the max depth of printing for nested collections.
+
+  ;; :print-level                   7 ; defaults to 7
+
+  
+
+  ;; Sets the max depth of printing for nested collections in inline results
+
+  ;; :print-level-inline-results    3 ; defaults to 3
+
+  
+
+  ;; Sets the max length of a scalar value such as a string, keyword, function
+  ;; name, etc. Only applies when the value is nested one level deep inside the
+  ;; result, which would be a non-associative collection such as a vector or
+  ;; seq.
+
+  ;; :scalar-depth-1-max-length     69 ; defaults to 69
+
+  
+
+  ;; Sets the max length of things like strings, keywords, function names,
+  ;; etc., when they are used as keys in maps. Longer values will be
+  ;; ellipsized.
+
+  ;; :scalar-mapkey-max-length      33 ; defaults to 33
+
+  
+
+  ;; Sets the max length of things like strings, keywords, function names,
+  ;; etc., when they are nested more than one level deep inside a data
+  ;; structure. Values whose length exceeds this will be ellipsized.
+
+  ;; :scalar-max-length             33 ; defaults to 33
+
+  
+
+  ;; Sets the max length of a scalar value such as a string, keyword, function
+  ;; name, etc. Only applies when the value itself is the result of the
+  ;; evaluation (not nested within a data structure).
+
+  ;; :scalar-result-max-length      444 ; defaults to 444
+
+  
+
+  ;; The strlen limit of a single-line coll, before truncation
+
+  ;; :single-line-coll-max-length   33 ; defaults to 33
+
+  
+
+  ;; Intended primarily to used at the call site when you want to turn off all
+  ;; truncation of collections and all truncation (ellipsis) of self-evaluating
+  ;; values (string, keywords, symbols, etc.). If set to `false`, all
+  ;; truncation will be capped at 1000, meaning 1000 things in a collection and
+  ;; a length of 1000 for self-evaluating values.
+
+  ;; :truncate?                     true ; defaults to true
+
+
+  
+
+  ;; ---------------------------------------------------------------------------
+  ;;  Decorations 
+  ;; ---------------------------------------------------------------------------
+
+  ;; Will render the printed output with a `font-weight` of `bold`.
+
+  ;; :bold?                         false ; defaults to false
+
+  
+
+  ;; Sets the level of rainbow bracket intensity to `"high"` or `"low"`.
+  ;; Default value can also be overridden by `:bracket-contrast` entry in a
+  ;; Fireworks theme map.
+
+  ;; :bracket-contrast              "high" ; defaults to "high"
+
+  
+
+  ;; Experimental colorization for :pp mode, which dispatches to pp/pprint
+
+  ;; :colorize?                     true ; defaults to true
+
+  
+
+  ;; Print metadata values.
+
+  ;; :display-metadata?             false ; defaults to false
+
+  
+
+  ;; Whether or not to print out fully qualified namespaces for functions and
+  ;; classes. Note that even if set to `true`, namespaces may get dropped if
+  ;; the count of fully qualified symbol exceeds the `:scalar-print-length` or
+  ;; the `:scalar-mapkey-max-length` (in the case of map keys).
+
+  ;; :display-namespaces?           true ; defaults to true
+
+  
+
+  ;; :dissoc-metadata-keys          nil ; defaults to nil
+
+  
+
+  ;; Whether or not to use rainbow brackets. Rainbow brackets can be customized
+  ;; in your theme.
+
+  ;; :enable-rainbow-brackets?      true ; defaults to true
+
+  
+
+  ;; Find and highlight values in the printed output.
+
+  ;; :find                          nil ; defaults to nil
+
+  
+
+  ;; Determines position of metadata relative to value that is carrying it.
+  ;; Options are `"inline"` (default), or `"block"`.
+
+  ;; :metadata-position             "inline" ; defaults to "inline"
+
+  
+
+  ;; :multi-line-metadata?          true ; defaults to true
+
+  
+
+  ;; :print-detected-color-level?   false ; defaults to false
+
+  
+
+  ;; :quote-lists?                  false ; defaults to false
+
+  
+
+  ;; :quote-symbols?                false ; defaults to false
+
+  
+
+  ;; :regex-theme                   :neutral ; defaults to :neutral
+
+  
+
+  ;; :select-metadata-keys          nil ; defaults to nil
+
+  
+
+  ;; :single-column-map-threshold   44 ; defaults to 44
+
+  
+
+  ;; :single-column-maps?           false ; defaults to false
+
+  
+
+  ;; You should generally not need to set this, as Fireworks automatically
+  ;; detects the host environment's level of color support, and will set this
+  ;; value internally. Most terminal environments support level `3`
+  ;; (truecolor). If set to `2`, Fireworks will convert the hex color values to
+  ;; sgr-rgb codes (x256) for terminal emulators that do not support 24-bit
+  ;; color. If set to `1`, Fireworks will use a b&w theme ("Universal
+  ;; Neutral"). If you find that your host environment's color support level is
+  ;; not being detected, you can set this value explicitly to match a target
+  ;; level of color support.
+
+  ;; :supports-color-level          nil ; defaults to nil
+
+
+  
+
+  ;; ---------------------------------------------------------------------------
+  ;;  Margins 
+  ;; ---------------------------------------------------------------------------
+
+  ;; :margin-bottom                 1 ; defaults to 1
+
+  
+
+  ;; :margin-inline-start           0 ; defaults to 0
+
+  
+
+  ;; :margin-left                   0 ; defaults to 0
+
+  
+
+  ;; :margin-top                    0 ; defaults to 0
+
+
+  
+
+  ;; ---------------------------------------------------------------------------
+  ;;  Fireworks 
+  ;; ---------------------------------------------------------------------------
+
+  ;; If a custom label is not supplied, this will pretty-print the
+  ;; form-to-be-printed, instead of truncating it.
+
+  ;; :format-label-as-code?         false ; defaults to false
+
+  
+
+  ;; Sets the color of the form-to-be-evaled label, or the user label, if
+  ;; supplied. Valid values are `:blue`, `:green`, or `:red`. All stock themes
+  ;; will have a preset color that is synced with the particular theme, so this
+  ;; option is intended to be used as an override at the call site if you have
+  ;; multiple printings from different places in your codebase, and you want an
+  ;; easy way to distinguish them from each other.
+
+  ;; :label-color                   nil ; defaults to nil
+
+  
+
+  ;; Sets the max length of the form-to-be-evaled label, or the user label, if
+  ;; supplied.
+
+  ;; :label-max-length              44 ; defaults to 44
+
+  
+
+  ;; A custom printing formatting / printing function can be passed at the call
+  ;; site. The function must ultimately call a core printing function such as
+  ;; `clojure.core/println`
+
+  ;; :print-with                    nil ; defaults to nil
+
+  
+
+  ;; If supplied, this value should be a predicate. Will only print something
+  ;; if value passes predicate.
+
+  ;; :when                          nil ; defaults to nil
+
+
+  
+
+  ;; ---------------------------------------------------------------------------
+  ;;  Deprecated 
+  ;; ---------------------------------------------------------------------------
+
+  ;; :enable-terminal-font-weights? true ; defaults to true
+
+  
+
+  ;; :enable-terminal-italics?      true ; defaults to true
+
+  
+
+  ;; :enable-terminal-truecolor?    true ; defaults to true
+
+  
+
+  ;; :legacy-terminal?              false ; defaults to false
+
+ }

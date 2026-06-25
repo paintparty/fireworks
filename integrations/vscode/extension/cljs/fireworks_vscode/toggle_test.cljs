@@ -349,3 +349,112 @@
     (is (nil? (toggle/set-form-option (sfo "   " [0 0] [0 3] ":+")))))
   (testing "unparseable selection -> nil (no throw)"
     (is (nil? (toggle/set-form-option (sfo "(? (range" [0 0] [0 9] ":+"))))))
+
+;; ---------------------------------------------------------------------------
+;; Toggle :trace. Add when absent / remove when present, preserving any other
+;; leading flags. A bare form is wrapped with ? and :trace added. Like the option
+;; cases, the flag only changes line 0's width, so :reformat? is always true.
+;; ---------------------------------------------------------------------------
+
+(defn- tt [text [sl sc] [el ec]]
+  {:text text :start {:line sl :col sc} :end {:line el :col ec}})
+
+(deftest toggle-trace-bare-form
+  (testing "a bare form is wrapped as (? :trace form), cursor at start, reformat true"
+    (is (= {:replace-range {:start (pos 0 0) :end (pos 0 11)}
+            :insert-text   "(? :trace (range 100))"
+            :new-cursor    (pos 0 0)
+            :reformat?     true}
+           (toggle/toggle-trace (tt "(range 100)" [0 0] [0 11])))))
+  (testing "multiline bare form: continuation indents under the value"
+    (is (= "(? :trace (+ 1\n             2))"
+           (:insert-text (toggle/toggle-trace (tt "(+ 1\n   2)" [0 0] [1 5])))))))
+
+(deftest toggle-trace-add
+  (testing "adds :trace to a wrap that has no flags"
+    (is (= {:replace-range {:start (pos 0 0) :end (pos 0 15)}
+            :insert-text   "(? :trace (range 100))"
+            :new-cursor    (pos 0 0)
+            :reformat?     true}
+           (toggle/toggle-trace (tt "(? (range 100))" [0 0] [0 15])))))
+  (testing "adds :trace ahead of an existing flag, which is preserved"
+    (is (= "(? :trace :pp (range 100))"
+           (:insert-text (toggle/toggle-trace (tt "(? :pp (range 100))" [0 0] [0 19]))))))
+  (testing "head is preserved (?>, !?, !?>)"
+    (is (= "(?> :trace x)" (:insert-text (toggle/toggle-trace (tt "(?> x)" [0 0] [0 6])))))
+    (is (= "(!? :trace x)" (:insert-text (toggle/toggle-trace (tt "(!? x)" [0 0] [0 6])))))
+    (is (= "(!?> :trace x)" (:insert-text (toggle/toggle-trace (tt "(!?> x)" [0 0] [0 7])))))))
+
+(deftest toggle-trace-remove
+  (testing "removes :trace, form stays wrapped, cursor at start, reformat true"
+    (is (= {:replace-range {:start (pos 0 0) :end (pos 0 22)}
+            :insert-text   "(? (range 100))"
+            :new-cursor    (pos 0 0)
+            :reformat?     true}
+           (toggle/toggle-trace (tt "(? :trace (range 100))" [0 0] [0 22])))))
+  (testing "removes only :trace, leaving other flags intact"
+    (is (= "(? :pp (range 100))"
+           (:insert-text (toggle/toggle-trace (tt "(? :trace :pp (range 100))" [0 0] [0 26])))))
+    (is (= "(? :pp (range 100))"
+           (:insert-text (toggle/toggle-trace (tt "(? :pp :trace (range 100))" [0 0] [0 26]))))))
+  (testing "head is preserved on remove"
+    (is (= "(?> x)" (:insert-text (toggle/toggle-trace (tt "(?> :trace x)" [0 0] [0 13])))))))
+
+(deftest toggle-trace-multiline
+  (testing "add shifts continuation lines right by the :trace width"
+    (is (= "(? :trace (+ 1\n             2))"
+           (:insert-text (toggle/toggle-trace (tt "(? (+ 1\n      2))" [0 0] [1 9]))))))
+  (testing "remove shifts continuation lines left by the :trace width"
+    (is (= "(? (+ 1\n      2))"
+           (:insert-text (toggle/toggle-trace (tt "(? :trace (+ 1\n             2))" [0 0] [1 16])))))))
+
+(deftest toggle-trace-no-ops
+  (testing "blank selection -> nil"
+    (is (nil? (toggle/toggle-trace (tt "   " [0 0] [0 3])))))
+  (testing "unparseable selection -> nil (no throw)"
+    (is (nil? (toggle/toggle-trace (tt "(? (range" [0 0] [0 9]))))))
+
+;; ---------------------------------------------------------------------------
+;; The other flag toggles (:-, :+, :pp) share toggle-flag with :trace (covered
+;; above), so these assert the per-flag wrappers wire the right keyword and the
+;; add/remove/preserve behavior holds for each.
+;; ---------------------------------------------------------------------------
+
+(deftest toggle-minus-flag
+  (testing "wraps a bare form as (? :- form)"
+    (is (= "(? :- (range 100))"
+           (:insert-text (toggle/toggle-minus (tt "(range 100)" [0 0] [0 11]))))))
+  (testing "adds :- ahead of an existing flag, preserved"
+    (is (= "(? :- :pp (range 100))"
+           (:insert-text (toggle/toggle-minus (tt "(? :pp (range 100))" [0 0] [0 19]))))))
+  (testing "removes :-, leaving other flags intact, form stays wrapped"
+    (is (= "(? :pp (range 100))"
+           (:insert-text (toggle/toggle-minus (tt "(? :- :pp (range 100))" [0 0] [0 22])))))))
+
+(deftest toggle-plus-flag
+  (testing "wraps a bare form as (? :+ form)"
+    (is (= "(? :+ (range 100))"
+           (:insert-text (toggle/toggle-plus (tt "(range 100)" [0 0] [0 11]))))))
+  (testing "adds :+ to a wrap that has none"
+    (is (= "(? :+ (range 100))"
+           (:insert-text (toggle/toggle-plus (tt "(? (range 100))" [0 0] [0 15]))))))
+  (testing "removes :+ (head preserved)"
+    (is (= "(?> x)"
+           (:insert-text (toggle/toggle-plus (tt "(?> :+ x)" [0 0] [0 9])))))))
+
+(deftest toggle-pp-flag
+  (testing "wraps a bare form as (? :pp form)"
+    (is (= "(? :pp (range 100))"
+           (:insert-text (toggle/toggle-pp (tt "(range 100)" [0 0] [0 11]))))))
+  (testing "adds :pp ahead of an existing flag, preserved"
+    (is (= "(? :pp :trace (range 100))"
+           (:insert-text (toggle/toggle-pp (tt "(? :trace (range 100))" [0 0] [0 22]))))))
+  (testing "removes :pp, leaving other flags intact"
+    (is (= "(? :trace (range 100))"
+           (:insert-text (toggle/toggle-pp (tt "(? :pp :trace (range 100))" [0 0] [0 26])))))))
+
+(deftest toggle-flag-no-ops
+  (testing "blank selection -> nil for each flag"
+    (is (nil? (toggle/toggle-minus (tt "   " [0 0] [0 3]))))
+    (is (nil? (toggle/toggle-plus (tt "   " [0 0] [0 3]))))
+    (is (nil? (toggle/toggle-pp (tt "   " [0 0] [0 3]))))))
