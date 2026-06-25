@@ -3,6 +3,7 @@
    [clojure.set :as set]
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
+   [fireworks.pp :refer [?pp]]
    [fireworks.browser]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
@@ -1035,25 +1036,37 @@
   (symbol (str "#'" ns-str "/" defd)))
 
 
-(defn- _p2-call [og-x m x+ i]
-  (list
-   'do 
-   (list 
-    'when
-     true #_(if (zero? i) true x+)
-    (list 'fireworks.core/_p2 
-          (merge {:qf                  (string/replace (str og-x)
-                                                       #"p[0-9]+__[0-9]+#" "%")
-                  :margin-inline-start 2
-                  :template            [:form-or-label :result]}
-                 (when (map? m)
-                   {:user-opts m}))
-          (list 'if (list 'nil? x+)
-                ;; TODO - figure out annotation styling here
-                (list 'symbol "nil  \033[38;5;244;3m; <- short circuited\033[m")
-                x+)
-          ))
-   x+))
+(defn- _p2-call
+  "For tracing macro construction"
+  [og-x m x+ i &env]
+  (list 'try
+        (list 'do
+              (list 'when
+                    true #_(if (zero? i) true x+)
+                    (list 'fireworks.core/_p2
+                          (merge {:qf                  (string/replace 
+                                                        (str og-x)
+                                                        #"p[0-9]+__[0-9]+#" "%")
+                                  :margin-inline-start 2
+                                  :template            [:form-or-label :result]}
+                                 (when (map? m)
+                                   {:user-opts m}))
+                          (list 'if (list 'nil? x+)
+                                ;; TODO - figure out annotation styling here
+                                (list 'symbol "nil  \033[38;5;244;3m; <- short circuited\033[m")
+                                x+)))
+              x+)
+        (list 'catch (if (:ns &env) 'js/Object 'Exception)
+              'e
+              (list 'fireworks.core/_p2
+                    (merge {:qf                  (string/replace (str og-x)
+                                                                 #"p[0-9]+__[0-9]+#" "%")
+                            :margin-inline-start 2
+                            :template            [:form-or-label :result]}
+                           (when (map? m)
+                             {:user-opts m}))
+                    (list 'symbol "nil  \033[38;5;244;3m; <- short circuited\033[m")))))
+
 
 ;; cc-destructure fn from Snitch - https://github.com/AbhinavOmprakash/snitch
 (defn- cc-destructure
@@ -1202,7 +1215,7 @@
                       {:fw/hide-brackets? true})))))
 
 
-(defn- thread-form->let-binding [thread-sym m i x]
+(defn- thread-form->let-binding [&env thread-sym m i x ]
   [(symbol (str "_" i))
    (let [og-x x
          x+   (if (pos? i)
@@ -1213,7 +1226,7 @@
                     (concat (list f previous-binding) rs)
                     (list 'when previous-binding (concat x [previous-binding]))))
                 x)]
-     (_p2-call og-x m x+ i))])
+     (_p2-call og-x m x+ i &env))])
 
 
 (defn- threading-form? [%]
@@ -1226,8 +1239,8 @@
        (contains? #{'let}
                   (first %))))
 
-(defn- as-let* [thread-sym rest-of-threading-form a]
-  (let [as-let* (map-indexed (partial thread-form->let-binding thread-sym a)
+(defn- as-let* [&env thread-sym rest-of-threading-form a]
+  (let [as-let* (map-indexed (partial thread-form->let-binding &env thread-sym a)
                              rest-of-threading-form)
         as-let  (list 
                  'let
@@ -1401,7 +1414,8 @@
                bindings? (boolean let-bindings)
                as-let    (if bindings?
                            (prep-bindings let-bindings supplied-user-opts)
-                           (as-let* thread-sym 
+                           (as-let* &env
+                                    thread-sym 
                                     rest-of-threading-form 
                                     supplied-user-opts))]
 
