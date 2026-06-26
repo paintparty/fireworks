@@ -818,7 +818,7 @@
       {:keys [line column ns-str] 
        :as   m}]
      (when (.exists (io/file ".fireworks/"))
-       (let [s    (util/safety-subs
+       (let [s    (util/safe-str
                    x
                    {:start        0
                     :end          1000 ;; <- max string length
