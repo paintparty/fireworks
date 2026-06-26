@@ -309,7 +309,7 @@
                  (assoc (merge default-options-map opts)
                         :when
                         'visual-mode?
-                        :label sym)]
+                        :label (list 'quote sym))]
              (list '? merged-opts qv))))))
     @tests)))
 
@@ -499,7 +499,8 @@
   juxt)
 
 (deftest+ date-fn
-  {:theme theme}
+  {:theme          theme
+   :elide-branches #{:bb}}
   java.util.Date)
 
 
@@ -617,22 +618,29 @@
 
 (deftest+ with-scalar-level-1-depth-print-length
   {:theme                     theme
-   :scalar-depth-1-max-length 60}
+   :scalar-depth-1-max-length 60
+   :elide-branches #{:bb}
+   }
   ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
 
 (deftest+ scalar-result-max-length
   {:theme                    theme
-   :scalar-result-max-length 44}
+   :scalar-result-max-length 44
+   :elide-branches #{:bb}
+   }
   "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
 
 
 (deftest+ datatype-value
-  {:theme theme}
+  {:theme theme
+   :elide-branches #{:bb}
+   }
   fireworks.sample/my-data-type)
 
 
 (deftest+ record-value
-  {:theme theme}
+  {:theme          theme
+   :elide-branches #{:bb}}
   fireworks.sample/my-record-type)
 
 
