@@ -1034,6 +1034,10 @@ Babashka tests:
 bb test:bb
 ```
 
+ClojureScript tests:
+Coming soon.
+
+
 ### Dev / Testing
 
 The `clj` and `bb` tests are automatically generated from `fireworks.core-test`, check out
