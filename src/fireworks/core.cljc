@@ -924,6 +924,7 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
+  (write-to-store x (assoc (:form-meta opts) :ns-str (:ns-str opts)))
   (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
         config-before (when debug-config? @state/config)]
@@ -977,7 +978,7 @@
           (when (and print?
                      (not (:fw/log? opts))
                      (:log? opts))
-            (println "_p2, logging-branch")
+            #_(println "_p2, logging-branch")
             #?(:cljs (if node?
                        (fireworks.core/pprint x)
                        (js/console.log x))
@@ -985,7 +986,7 @@
 
           (reset! state/formatting-form-to-be-evaled? false)
           (when return-result? x)
-          #?(:clj (write-to-store x printing-opts)))))))
+          #_#?(:clj (write-to-store x printing-opts)))))))
 
 
 (defn- cfg-opts
