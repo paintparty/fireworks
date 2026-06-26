@@ -848,7 +848,8 @@ function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } 
       return {
         title: 'Fireworks lein-test-refresh setup',
         markdown: [
-          '# Fireworks: Missing plugin',
+          '### ⚠️ Fireworks: Live Code',
+          '# Missing plugin',
           '',
           'For Leiningen projects, you need this plugin:',
           '',
@@ -889,7 +890,9 @@ function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } 
       return {
         title: 'Fireworks test-refresh config',
         markdown: [
-          '# Fireworks: add a `:test-refresh` config',
+
+          '### ⚠️ Fireworks: Live Code',
+          '# Add a `:test-refresh` config',
           '',
           'Your `~/.lein/profiles.clj` `:user` profile has the `lein-test-refresh` plugin but no',
           '`:test-refresh` config.',
@@ -908,7 +911,7 @@ function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } 
       return {
         title: 'Fireworks Babashka watch task',
         markdown: [
-          '### ⚠️ Fireworks:',
+          '### ⚠️ Fireworks: Live Code',
           '# Add a Babashka watch task',
           '',
           'To use `Fireworks: Live Code` with Babashka, add a task to your `bb.edn` that loads the watcher:',
