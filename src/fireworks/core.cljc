@@ -1306,25 +1306,29 @@
                              (if ~defd (cast-var ~defd ~cfg-opts) ~x))))
 
      :else
-     (let [
-           args                   (into [] args)
+     (let [args                   (into [] args)
            x                      (peek args)
            ;;  debug?                 (= x :foo)
            mods                   (pop args)
+           single-mod?            (= 1 (count mods))
            last-mod               (peek mods)
            supplied-user-opts     (when (map? last-mod) last-mod)
+           mods                   (if (and supplied-user-opts single-mod?)
+                                    []
+                                    mods)
            flags                  (into #{} (filter keyword? mods))
-           label                  (or 
-                                   ;; The first mod that is not a keyword 
-                                   (first (filter #(not (keyword? %)) mods))
-                                   ;; Only one mod and it is not a known flag 
-                                   ;; e.g. (? :wtf (+ 1 1))
-                                   (when (and (= 1 (count mods))
-                                         (not (contains? all-flags
-                                                         (first mods))))
-                                     (first mods))
-                                   ;; explicit :label option 
-                                   (some-> supplied-user-opts :label))
+           label                  (when (seq mods)
+                                    (or 
+                                     ;; The first mod that is not a keyword 
+                                     (first (filter #(not (keyword? %)) mods))
+                                     ;; Only one mod and it is not a known flag
+                                     ;; e.g. (? :wtf (+ 1 1))
+                                     (when (= 1 (count mods))
+                                       (let [label (nth mods 0)]
+                                         (not (contains? all-flags label))))
+                                     ;; explicit :label option 
+                                     ;; e.g. (? {:label "hi"} (+ 1 1))
+                                     (some-> supplied-user-opts :label)))
            just-results-flag?     (contains? flags :-)
            resolve-option         (fn resolve-option [flag-kw opts-kw pred]
                                     (or (contains? flags flag-kw) 
