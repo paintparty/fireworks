@@ -337,6 +337,11 @@ async function runFormEdit(transform: RegionEdit, label: string): Promise<void> 
     return; // silent no-op
   }
 
+  // Remember the caret/selection before selectCurrentForm, so a no-op restores it (rather than
+  // leaving Calva's whole-form selection highlighted) and a successful edit can return the caret
+  // to where the user was instead of the region start.
+  const original = editor.selection;
+
   // No manual selection -> select the current form, as the other toggle commands do.
   if (editor.selection.isEmpty) {
     try {
@@ -350,6 +355,7 @@ async function runFormEdit(transform: RegionEdit, label: string): Promise<void> 
 
   const sel = editor.selection;
   if (sel.isEmpty) {
+    restoreSelection(editor, original);
     return; // no form at the cursor
   }
 
@@ -362,13 +368,15 @@ async function runFormEdit(transform: RegionEdit, label: string): Promise<void> 
     });
   } catch (e) {
     log(`${label} threw, treating as no-op: ${String(e)}`);
+    restoreSelection(editor, original);
     return;
   }
   if (!plan) {
     log(`${label} no-op`);
+    restoreSelection(editor, original); // nothing changed -> drop the selection, restore the caret
     return;
   }
-  await applyEditPlan(editor, plan);
+  await applyEditPlan(editor, plan, original.active);
 }
 
 // Namespace-scoped driver: hand the whole document to `transform`. Needs no selection and
@@ -381,6 +389,7 @@ async function runNsEdit(transform: RegionEdit, label: string): Promise<void> {
   }
   const doc = editor.document;
   const end = doc.lineAt(doc.lineCount - 1).range.end;
+  const originalCursor = editor.selection.active; // so the caret stays put, not at file start
 
   let plan: EditPlan | null;
   try {
@@ -397,14 +406,18 @@ async function runNsEdit(transform: RegionEdit, label: string): Promise<void> {
     log(`${label} no-op`);
     return;
   }
-  await applyEditPlan(editor, plan);
+  await applyEditPlan(editor, plan, originalCursor);
 }
 
 // Apply a structural EditPlan: replace the range, optionally realign it with the editor's
 // range formatter (Calva), then collapse the cursor to the plan's target. Shared by the
 // form- and namespace-scoped bulk commands. formatSelection is a no-op/throws if no clojure
 // range formatter is registered — the text is already structurally correct without it.
-async function applyEditPlan(editor: vscode.TextEditor, plan: EditPlan): Promise<void> {
+async function applyEditPlan(
+  editor: vscode.TextEditor,
+  plan: EditPlan,
+  preferredCursor?: vscode.Position,
+): Promise<void> {
   const range = new vscode.Range(
     new vscode.Position(plan.replaceRange.start.line, plan.replaceRange.start.col),
     new vscode.Position(plan.replaceRange.end.line, plan.replaceRange.end.col),
@@ -425,8 +438,40 @@ async function applyEditPlan(editor: vscode.TextEditor, plan: EditPlan): Promise
       log(`formatSelection failed: ${String(e)}`);
     }
   }
-  const cursor = new vscode.Position(plan.newCursor.line, plan.newCursor.col);
-  editor.selection = new vscode.Selection(cursor, cursor);
+  // Keep Vim in normal mode (an edit makes vscodevim re-assert its caret; its Escape nudges it),
+  // then set the caret on a later tick so it isn't clobbered by that re-assert — mirroring
+  // applyTogglePlan. Prefer the caller's original caret (clamped to the rewritten doc) so it
+  // returns to where the user was, falling back to the plan's region-start cursor.
+  if (isVimActive()) {
+    await vscode.commands.executeCommand('extension.vim_escape');
+  }
+  const target = preferredCursor
+    ? clampToDoc(editor.document, preferredCursor)
+    : new vscode.Position(plan.newCursor.line, plan.newCursor.col);
+  setTimeout(() => {
+    editor.selection = new vscode.Selection(target, target);
+  }, 50);
+}
+
+// Restore a previously captured selection — used when a bulk command is a no-op, so Calva's
+// whole-form selection isn't left highlighted and the caret returns to where it was. Escape
+// first under Vim (land in normal mode, not a lingering visual selection) and set on a later
+// tick to dodge the same vscodevim re-assert applyTogglePlan works around.
+function restoreSelection(editor: vscode.TextEditor, selection: vscode.Selection): void {
+  if (isVimActive()) {
+    void vscode.commands.executeCommand('extension.vim_escape');
+  }
+  setTimeout(() => {
+    editor.selection = selection;
+  }, 50);
+}
+
+// Clamp a Position into `doc`'s bounds. The preferred caret is in pre-edit coordinates, so after
+// an unwrap shortens the text it may point past the end — clamp rather than throw or jump.
+function clampToDoc(doc: vscode.TextDocument, pos: vscode.Position): vscode.Position {
+  const line = Math.max(0, Math.min(pos.line, doc.lineCount - 1));
+  const maxCol = doc.lineAt(line).range.end.character;
+  return new vscode.Position(line, Math.min(pos.character, maxCol));
 }
 
 // The end Position of `text` inserted at `start` (0-based line/col).
