@@ -210,30 +210,54 @@
      (take n x))))
 
 
-(defn safety-subs 
-  "Safely get a substring, with optional ellipsis"
-  [x {:keys [start end print-length print-level ellipsis?] 
-      :or {start 0
-           end 10
+(defn safe-str
+  "Pass any value and safely get a print representation.
+
+   Optional truncation and ellipsis.
+
+   You can pass options to get a substring as
+   well, with guarded index-out-of-bounds checks.
+
+   Unprintable custom objects that would normally throw an AbstractMethodError
+   in clojure are returned as (str \"<Print Error: \" (.getMessage e) \">\"),
+   or equivalent for target platform"
+  [x
+   {:keys [start end print-length print-level ellipsis?] 
+    :or   {start        0
+           end          10
            print-length 10 ;<- max length of colls
-           print-level 10
-           ellipsis? false}}]
-  (binding [*print-length* print-length
-            *print-level* print-level]
-    (let [lazy-seq?  (lasertag.cached/lazyish-seq? x)
-          s          (pr-str (if lazy-seq?
-                               ;; TODO - util fn (seq-overflow?) to compute '...+5,
-                               ;; How to make safe for infinite, etc
-                               (truncated-seq print-length x '...)
-                               x))
-          len        (count s)
-          start+     (max 0 (min start len))
-          end+       (max start+ (min end len))
-          target-len (- end+ start+)
-          overflows? (> len end+)]
-      (if (and ellipsis? overflows? (>= target-len 3))
-        (str (subs s start+ (- end+ 3)) "...")
-        (subs s start+ end+)))))
+           print-level  10
+           ellipsis?    false}}]
+  (try (binding [*print-length* print-length
+                 *print-level*  print-level]
+         (let [lazy-seq?  (lasertag.cached/lazyish-seq? x)
+               s          (pr-str (if lazy-seq?
+                                    ;; TODO - util fn (seq-overflow?) to compute '...+5,
+                                    ;; How to make safe for infinite, etc
+                                    (truncated-seq print-length x '...)
+                                    x))
+               len        (count s)
+               start+     (max 0 (min start len))
+               end+       (max start+ (min end len))
+               target-len (- end+ start+)
+               overflows? (> len end+)]
+           (if (and ellipsis? overflows? (>= target-len 3))
+             (str (subs s start+ (- end+ 3)) "...")
+             (subs s start+ end+))))
+
+       ;; Catch the missing impl error for each platform
+       (catch #?(:clj AbstractMethodError :cljs js/TypeError) _
+         (str "<Unprintable Custom Type: " 
+              #?(:clj  (.getName (class x))
+                 :cljs (if-let [t (type x)] (.-name t) "Unknown")) 
+              ">"))
+
+       ;; Catch standard exceptions for other printing failures
+       (catch #?(:clj Exception :cljs js/Error) e
+         (str "<Print Error: " 
+              #?(:clj  (.getMessage e)
+                 :cljs (.-message e)) 
+              ">")) ))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
