@@ -538,7 +538,7 @@
       (cond 
         (= term-program "iTerm.app")
         (if-let [v (some-> (System/getenv "TERM_PROGRAM_VERSION")
-;                              str
+                           str
                            (str/split #"\.")
                            first
                            Integer/parseInt)]

@@ -16,6 +16,8 @@
               compile-time-warnings-and-errors]])
    #?(:clj [fireworks.macros :refer [keyed get-user-config-edn-dynamic]])
    #?(:clj [clojure.java.io :as io])
+  ;;  #?(:cljs [fireworks.debug :refer-macros [?]])
+   #?(:clj [fireworks.debug :refer [?] :rename {? ?pp}])
    [clojure.string :as string]
    [fireworks.config :as config]
    [fireworks.util :as util] 
@@ -1279,6 +1281,8 @@
   "Passes value to clojure.core/tap> and returns value."
   ([x] `(do (tap> ~x) ~x)))
 
+(def all-flags
+  #{:pp :println :print :prn :+ :- :log :trace :data :no-file :no-label})
 
 (defmacro ?
   [& args]
@@ -1304,13 +1308,22 @@
      (let [
            args                   (into [] args)
            x                      (peek args)
-          ;;  debug?                 (= x :foo)
+           ;;  debug?                 (= x :foo)
            mods                   (pop args)
            last-mod               (peek mods)
            supplied-user-opts     (when (map? last-mod) last-mod)
            flags                  (into #{} (filter keyword? mods))
-           label                  (or (first (filter string? mods))
-                                      (some-> supplied-user-opts :label))
+           label                  (or 
+                                   ;; The first mod that is not a keyword 
+                                   (first (filter #(not (keyword? %)) mods))
+                                   ;; Only one mod and it is not a known flag 
+                                   ;; e.g. (? :wtf (+ 1 1))
+                                   (when (and (= 1 (count mods))
+                                         (not (contains? all-flags
+                                                         (first mods))))
+                                     (first mods))
+                                   ;; explicit :label option 
+                                   (some-> supplied-user-opts :label))
            just-results-flag?     (contains? flags :-)
            resolve-option         (fn resolve-option [flag-kw opts-kw pred]
                                     (or (contains? flags flag-kw) 

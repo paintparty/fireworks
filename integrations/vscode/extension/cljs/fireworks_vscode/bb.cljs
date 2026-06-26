@@ -59,12 +59,16 @@
    results under .fireworks/results/), with optional -main / test runs driven by config."
   ";; Fireworks Live Code watcher (Babashka), managed by the Fireworks VS Code extension.
 ;; Invoked by a bb.edn task that runs (load-file \".fireworks/bb/watch.clj\"). On each save it
-;; reloads the changed file so its `?` forms re-run and write inline results under
-;; .fireworks/results/. Safe to edit; the extension won't overwrite it once present.
+;; reloads the saved file and runs an entry `-main` so its `?` forms execute — printing to this
+;; terminal and, when a .fireworks/results/ dir exists, writing inline results there. The entry
+;; is :entry-ns from config, else the first watched file defining -main; it also runs once at
+;; startup, pre-loading Fireworks so the first save reloads instantly (no slow double-reload).
+;; Safe to edit; the extension won't overwrite it once present.
 ;;
 ;; Optional settings, read from .fireworks/config.edn at runtime (all optional):
 ;;   {:clear true :banner \"🔥🔥🔥\" :watch-paths [\"src\" \"test\"]
-;;    :entry-ns my.app.core :test-ns my.app.core-test :run-entry true :run-tests false}
+;;    :entry-ns my.app.core   ; pin a fixed ns to run instead of the saved file's
+;;    :test-ns my.app.core-test :run-entry true :run-tests false}
 
 ;; Load the filesystem-watcher pod here, so this works without a :pods entry in bb.edn.
 ;; load-pod is fine even when bb.edn already declares the pod.
@@ -86,9 +90,29 @@
 (def clear       (get config :clear true))
 (def banner      (get config :banner \"🔥🔥🔥\"))
 (def watch-paths (get config :watch-paths [\"src\" \"test\"]))
-(def entry-ns    (some-> (get config :entry-ns) symbol))
+
+(defn- ns-of-file
+  \"The namespace symbol declared at the top of the file at `path`, or nil.\"
+  [path]
+  (try
+    (let [form (read-string (slurp path))]
+      (when (and (seq? form) (= 'ns (first form))) (second form)))
+    (catch Throwable _ nil)))
+
+(defn- detect-entry-ns
+  \"The namespace of the first watched .clj(c) file that defines a `-main`, or nil. Used as the
+   default entry when :entry-ns isn't set, so the loop runs (and prints) out of the box.\"
+  []
+  (some (fn [f]
+          (when (and (.isFile f)
+                     (re-find #\"\\.cljc?$\" (.getName f))
+                     (re-find #\"\\(defn-?\\s[^\\n]*-main\" (slurp f)))
+            (ns-of-file (.getPath f))))
+        (mapcat #(when (.exists (io/file %)) (file-seq (io/file %))) watch-paths)))
+
+(def entry-ns    (or (some-> (get config :entry-ns) symbol) (detect-entry-ns)))
 (def test-ns     (some-> (get config :test-ns) symbol))
-(def run-entry?  (get config :run-entry (boolean entry-ns)))
+(def run-entry?  (get config :run-entry true))
 (def run-tests?  (get config :run-tests false))
 
 (defn show-banner []
@@ -96,30 +120,45 @@
   (when-not (str/blank? banner) (println banner))
   (flush))
 
-(def debounce-ms 75)
-(def last-fired (atom 0))
+;; A single save can surface as several fswatcher events — e.g. a :write followed by a metadata
+;; :chmod up to ~1s later — which a short time-debounce can't coalesce. Dedup on content instead:
+;; reload only when the file's bytes actually changed since we last reloaded it, so a trailing
+;; :chmod (or a re-save of identical content) doesn't fire a second reload.
+(def last-hash (atom {}))
+
+(defn- content-changed? [path]
+  (let [h (hash (slurp path))]
+    (when (not= h (get @last-hash path))
+      (swap! last-hash assoc path h)
+      true)))
 
 (defn reload! [path]
   (show-banner)
   (try
-    (when (and path (.exists (io/file path)))
-      (load-file path))
-    (when (and run-entry? entry-ns)
-      (require entry-ns :reload-all)
-      ((requiring-resolve (symbol (name entry-ns) \"-main\"))))
-    (when (and run-tests? test-ns)
-      (require test-ns :reload-all)
-      (t/run-tests test-ns))
+    (let [reloaded (when (and path (.exists (io/file path)))
+                     (load-file path)
+                     (ns-of-file path))
+          target   (or entry-ns reloaded)]
+      ;; Run the entry's `-main` so its `?` forms execute (load-file only redefines them).
+      ;; Targets the saved file's ns, or :entry-ns / the detected entry. The saved file is
+      ;; already loaded above; otherwise (startup, or editing a non-entry file) require the
+      ;; entry once — which also pre-loads Fireworks so the first save reloads instantly.
+      (when (and run-entry? target)
+        (when-not (find-ns target) (require target))
+        (when-let [main (resolve (symbol (name target) \"-main\"))]
+          (main)))
+      (when (and run-tests? test-ns)
+        (require test-ns :reload-all)
+        (t/run-tests test-ns)))
     (catch Throwable e
       (println \"Reload failed:\" (ex-message e)))))
 
-;; fswatcher reports different event types per save style (:chmod / :write / :remove+:create);
-;; the debounce collapses a save's burst into a single reload.
+;; fswatcher reports varied event types per save style (:write / :chmod / :remove+:create),
+;; sometimes spread over ~1s. content-changed? collapses them to one reload per real edit.
 (defn on-event [event]
-  (let [now (System/currentTimeMillis)]
-    (when (> (- now @last-fired) debounce-ms)
-      (reset! last-fired now)
-      (reload! (:path event)))))
+  (let [path (:path event)]
+    (when (and path (.exists (io/file path)) (content-changed? path))
+      (reload! path))))
 
 (def watch-opts {:recursive true :delay-ms 50})
 
