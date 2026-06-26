@@ -195,7 +195,8 @@
           :record                                       :definition
           :multimethod                                  :definition
           :uuid                                         :string
-          :inst                                         :string
+          :inst                                         :string ;<- deprecate?
+          :datetime                                     :string
           :js-object-key                                :foreground
           :nan                                          :constant
           :infinity                                     :constant

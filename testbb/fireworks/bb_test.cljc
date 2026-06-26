@@ -52,6 +52,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 40,
+  :label 'no-truncation,
   :multi-line-metadata? true,
   :truncate? false,
   :enable-terminal-font-weights? true,
@@ -102,6 +103,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'string-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -150,6 +152,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'regex-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -198,6 +201,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'uuid-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -246,6 +250,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'symbol-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -294,6 +299,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'symbol+meta-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -342,6 +348,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'boolean-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -390,6 +397,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'keyword-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -438,6 +446,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'nil-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -486,6 +495,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'Nan-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -534,6 +544,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'Inf-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -582,6 +593,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label '-Inf-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -630,6 +642,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'int-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -678,6 +691,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'float-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -726,6 +740,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'core-fn,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -774,54 +789,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :print-level-inline-results 3,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
-  :print-length-inline-results 8,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- java.util.Date)
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :quote-lists? false,
-  :scalar-depth-1-max-length 69,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 444,
-  :theme "Alabaster Light",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 33,
-  :print-length 33,
+  :label 'map-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -870,6 +838,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'multiline-map,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -920,6 +889,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'rainbow-brackets,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -968,6 +938,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'vector-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1016,6 +987,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'vector+meta-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1064,6 +1036,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'set-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1112,6 +1085,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'list-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1160,6 +1134,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'lazy-seq-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1208,6 +1183,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'atom-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1267,6 +1243,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'volatile!-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1315,6 +1292,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'volatile,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1363,6 +1341,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'transient-vector2,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1411,6 +1390,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'transient-set2,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1459,6 +1439,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'transient-map2,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1507,6 +1488,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'single-line-coll-print-length-50-19,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1555,6 +1537,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'single-line-coll-print-length-50-20,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1603,6 +1586,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'array-map-order,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1651,6 +1635,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'symbol-with-meta,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1699,6 +1684,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'rainbow-brackets,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1747,6 +1733,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'rainbow-brackets-low-contrast,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -1780,198 +1767,6 @@
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
   :quote-lists? false,
-  :scalar-depth-1-max-length 60,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 444,
-  :theme "Alabaster Light",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 33,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :print-level-inline-results 3,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
-  :print-length-inline-results 8,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :quote-lists? false,
-  :scalar-depth-1-max-length 69,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 44,
-  :theme "Alabaster Light",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 33,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :print-level-inline-results 3,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
-  :print-length-inline-results 8,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :quote-lists? false,
-  :scalar-depth-1-max-length 69,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 444,
-  :theme "Alabaster Light",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 33,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :print-level-inline-results 3,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
-  :print-length-inline-results 8,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- fireworks.sample/my-data-type)
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :quote-lists? false,
-  :scalar-depth-1-max-length 69,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 444,
-  :theme "Alabaster Light",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 33,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :print-level-inline-results 3,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
-  :print-length-inline-results 8,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- fireworks.sample/my-record-type)
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1987,6 +1782,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 100,
+  :label 'java-interop-types,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -2035,6 +1831,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'java-util-hashmap,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -2083,6 +1880,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'java-util-arraylist,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -2131,6 +1929,7 @@
   :label-color nil,
   :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'java-util-hashset,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
@@ -3262,63 +3061,65 @@
    "〠38;2;77;109;186〠clojure.core/juxt〠0〠")))
 
 
-(deftest
- date-fn
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :quote-lists? false,
-      :scalar-depth-1-max-length 69,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 444,
-      :theme "Alabaster Light",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 33,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :print-level-inline-results 3,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :print-length-inline-results 8,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     java.util.Date)
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠38;2;77;109;186〠java.util.Date〠0〠")))
-
+#?(:bb nil
+   :clj
+   (deftest
+    date-fn
+    (is
+     (=
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level nil,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 69,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        java.util.Date)
+       :formatted
+       :string
+       escape-sgr
+       string/join)
+      "〠38;2;77;109;186〠java.util.Date〠0〠"))))
 
 (deftest
  map-value
@@ -4493,237 +4294,245 @@
    "〠38;5;245〠[〠0〠〠38;5;74〠[〠0〠〠38;5;179〠[〠0〠〠38;5;106〠[〠0〠〠38;5;177〠[〠0〠〠38;5;177〠]〠0〠〠38;5;106〠]〠0〠〠38;5;179〠]〠0〠〠38;5;74〠]〠0〠〠38;5;245〠]〠0〠")))
 
 
-(deftest
- with-scalar-level-1-depth-print-length
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :quote-lists? false,
-      :scalar-depth-1-max-length 60,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 444,
-      :theme "Alabaster Light",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 33,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :print-level-inline-results 3,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :print-length-inline-results 8,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠38;5;102〠[〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44〠0〠〠3;38;2;140;140;140〠...〠0〠〠38;2;68;140;39〠\"〠0〠〠38;5;102〠]〠0〠")))
+#?(:bb nil
+   :clj
+   (deftest
+    with-scalar-level-1-depth-print-length
+    (is
+     (=
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level nil,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 60,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
+       :formatted
+       :string
+       escape-sgr
+       string/join)
+      "〠38;5;102〠[〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44〠0〠〠3;38;2;140;140;140〠...〠0〠〠38;2;68;140;39〠\"〠0〠〠38;5;102〠]〠0〠"))))
 
+#?(:bb nil
+   :clj
+   (deftest
+    scalar-result-max-length
+    (is
+     (=
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level nil,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 69,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 44,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
+       :formatted
+       :string
+       escape-sgr
+       string/join)
+      "〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfa〠0〠...〠38;2;68;140;39〠\"〠0〠"))))
 
-(deftest
- scalar-result-max-length
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :quote-lists? false,
-      :scalar-depth-1-max-length 69,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 44,
-      :theme "Alabaster Light",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 33,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :print-level-inline-results 3,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :print-length-inline-results 8,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfa〠0〠...〠38;2;68;140;39〠\"〠0〠")))
+#?(:bb nil
+   :clj
+   (deftest
+    datatype-value
+    (is
+     (=
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level nil,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 69,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        fireworks.sample/my-data-type)
+       :formatted
+       :string
+       escape-sgr
+       string/join)
+      "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyType〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠a〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠b〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠c〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠d〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠e〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠f〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠g〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠h〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠i〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠j〠0〠〠〠 〠0〠〠38;2;122;62;157〠10〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠k〠0〠〠〠 〠0〠〠38;2;122;62;157〠11〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠"))))
 
-
-(deftest
- datatype-value
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :quote-lists? false,
-      :scalar-depth-1-max-length 69,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 444,
-      :theme "Alabaster Light",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 33,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :print-level-inline-results 3,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :print-length-inline-results 8,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     fireworks.sample/my-data-type)
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyType〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠a〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠b〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠c〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠d〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠e〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠f〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠g〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠h〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠i〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠j〠0〠〠〠 〠0〠〠38;2;122;62;157〠10〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠k〠0〠〠〠 〠0〠〠38;2;122;62;157〠11〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
-
-
-(deftest
- record-value
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :quote-lists? false,
-      :scalar-depth-1-max-length 69,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 444,
-      :theme "Alabaster Light",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 33,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :print-level-inline-results 3,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :print-length-inline-results 8,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     fireworks.sample/my-record-type)
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyRecordType〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠const__22〠0〠〠〠 〠0〠〠〠#'clojure.core/imap-cons〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠a〠0〠〠〠        〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__4〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/some〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__21〠0〠〠〠 〠0〠〠〠#'clojure.core/class〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__hash〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__23〠0〠〠〠 〠0〠〠〠#'clojure.core/str〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__16〠0〠〠〠 〠0〠〠〠#'clojure.core/assoc〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__14〠0〠〠〠 〠0〠〠〠#'clojure.core/not-empty〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__meta〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__13〠0〠〠〠 〠0〠〠〠#'clojure.core/into〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__18〠0〠〠〠 〠0〠〠〠#'clojure.core/seq〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__8〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__10〠0〠〠〠 〠0〠〠38;5;32〠#{〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;122;62;157〠:a〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__1〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/vals〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__19〠0〠〠〠 〠0〠〠〠#'clojure.core/concat〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__9〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠:a〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__11〠0〠〠〠 〠0〠〠〠#'clojure.core/dissoc〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__7〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/contains?〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__20〠0〠〠〠 〠0〠〠〠#'clojure.core/not〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__hasheq〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__17〠0〠〠〠 〠0〠〠38;5;32〠[〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠38;5;32〠]〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__2〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/keys〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__12〠0〠〠〠 〠0〠〠〠#'clojure.core/with-meta〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠b〠0〠〠〠        〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠bbbbbbbbbbbbbb〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__extmap〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__0〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/set〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__15〠0〠〠〠 〠0〠〠〠#'clojure.core/identical?〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
-
+#?(:bb nil
+   :clj
+   (deftest
+    record-value
+    (is
+     (=
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level nil,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 69,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        fireworks.sample/my-record-type)
+       :formatted
+       :string
+       escape-sgr
+       string/join)
+      "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyRecordType〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠const__22〠0〠〠〠 〠0〠〠〠#'clojure.core/imap-cons〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠a〠0〠〠〠        〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__4〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/some〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__21〠0〠〠〠 〠0〠〠〠#'clojure.core/class〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__hash〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__23〠0〠〠〠 〠0〠〠〠#'clojure.core/str〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__16〠0〠〠〠 〠0〠〠〠#'clojure.core/assoc〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__14〠0〠〠〠 〠0〠〠〠#'clojure.core/not-empty〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__meta〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__13〠0〠〠〠 〠0〠〠〠#'clojure.core/into〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__18〠0〠〠〠 〠0〠〠〠#'clojure.core/seq〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__8〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__10〠0〠〠〠 〠0〠〠38;5;32〠#{〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;122;62;157〠:a〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__1〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/vals〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__19〠0〠〠〠 〠0〠〠〠#'clojure.core/concat〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__9〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠:a〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__11〠0〠〠〠 〠0〠〠〠#'clojure.core/dissoc〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__7〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/contains?〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__20〠0〠〠〠 〠0〠〠〠#'clojure.core/not〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__hasheq〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__17〠0〠〠〠 〠0〠〠38;5;32〠[〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠38;5;32〠]〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__2〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/keys〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__12〠0〠〠〠 〠0〠〠〠#'clojure.core/with-meta〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠b〠0〠〠〠        〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠bbbbbbbbbbbbbb〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__extmap〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__0〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/set〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__15〠0〠〠〠 〠0〠〠〠#'clojure.core/identical?〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠"))))
 
 (deftest
  java-interop-types
