@@ -13,7 +13,8 @@
    [fireworks.state :as state]
    [fireworks.util :as util :refer [maybe->]]
    [lasertag.core]
-   [lasertag.cached]))
+   [lasertag.cached]
+   [fireworks.debug :refer [?]]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -522,11 +523,11 @@
             :array-map?     (contains? (:all-tags tag-map) :array-map)
             :top-level-sev? (and sev? (zero? depth))}))) 
 
-(defn truncate-type-to-map [obj max-fields]
+#_(defn truncate-type-to-map [obj max-fields]
   #?(:cljs
      ()
      :clj
-     (->> (.getDeclaredFields (.getClass obj))
+     (->> (util/object-fields obj)
           (take max-fields)
           (reduce (fn [m field]
                     (.setAccessible field true) ; <- Overrides private visibility
@@ -573,7 +574,7 @@
                 (truncated-coll m x)
 
                 (= t :datatype)
-                (truncate-type-to-map x 10)
+                (util/datatype->map x)
 
                 (= classname "java.math.BigDecimal")
                 (symbol (str x "M"))

@@ -239,9 +239,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Raw datatype objects start 
 
-(defn- object-fields 
-  "Returns true if the given object instance has one or more named fields 
-   declared in its underlying structure across JVM, CLJS, and Babashka."
+(defn object-fields 
+  "If the given object instance has one or more named fields declared in its
+   underlying structure (across JVM, CLJS, and Babashka), returns a list of
+   those names."
   [obj]
   (if (nil? obj)
     false
@@ -255,7 +256,7 @@
        :clj  (.getDeclaredFields (.getClass obj))
        :cljs (js/Object.keys obj))))
 
-(defn- object-field-count
+(defn object-field-count
   "Returns true if the given object instance has one or more named fields 
    declared in its underlying structure across JVM, CLJS, and Babashka."
   [obj]
@@ -269,36 +270,31 @@
   "Turns a raw datatype with declared fields into a map.
    If no declared fields are detected, just returns the object.
    Set :skip-declared-fields check to `true` to skip check for perf."
-  [obj {:keys [skip-object-has-fields-check?]
-        :or   {skip-object-has-fields-check? false}}]
-  (if-not (or skip-object-has-fields-check?
-              (pos? (object-field-count obj)))
-    obj
-    #?(:bb
-       ;; Pure Babashka path
-       (->> (r/reflect obj)
-            :members
-            (filter :flags)
-            (reduce (fn [m member]
-                      (let [k (keyword (:name member))]
-                        (assoc m k (get obj k))))
-                    {}))
+  ([obj]
+   (datatype->map obj nil))
+  ([obj {:keys [skip-object-has-fields-check?]
+         :or   {skip-object-has-fields-check? false}}]
+   (if-not (or skip-object-has-fields-check?
+               (pos? (object-field-count obj)))
+     obj
+     #?(:bb
+        {}
 
-       ;; => (:a :b)
-       :clj
-       ;; Standard Clojure JVM path
-       (->> (.getDeclaredFields (.getClass obj))
-            (reduce (fn [m field]
-                      (.setAccessible field true)
-                      (assoc m (symbol (.getName field)) (.get field obj)))
-                    {}))
+        ;; => (:a :b)
+        :clj
+        ;; Standard Clojure JVM path
+        (->> (.getDeclaredFields (.getClass obj))
+             (reduce (fn [m field]
+                       (.setAccessible field true)
+                       (assoc m (symbol (.getName field)) (.get field obj)))
+                     {}))
 
-       :cljs
-       ;; ClojureScript path
-       (->> (js/Object.keys obj)
-            (reduce (fn [m k]
-                      (assoc m (keyword k) (aget obj k)))
-                    {})))))
+        :cljs
+        ;; ClojureScript path
+        (->> (js/Object.keys obj)
+             (reduce (fn [m k]
+                       (assoc m (keyword k) (aget obj k)))
+                     {}))))))
 
 ;; Raw datatype objects end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

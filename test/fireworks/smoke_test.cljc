@@ -24,9 +24,9 @@
 
 
 
-(? :trace (let [a "foo"
-                b "gooasdfasdfsafasd"
-                c (java.util.HashSet. #{"a" 1 "basdfasdfasdfa" 233})]))
+(let [a "foo"
+      b "gooasdfasdfsafasd"
+      c (java.util.HashSet. #{"a" 1 "basdfasdfasdfa" 233})])
 
 ;; (def bar nil)
 ;; (? (tag-map #'bar))

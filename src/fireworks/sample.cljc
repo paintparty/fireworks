@@ -13,6 +13,7 @@
      (:require-macros [fireworks.sample :refer [qc]])
      ))
 
+
 ;; Definitions to use in samples -----------------------------------------------
 
 #?(:bb
@@ -34,7 +35,7 @@
        ;;  (count [_] (count m))
        (assoc [this _ _] this))
      
-     (def custom-vector-datatype (->CustomVector [:a 1 :b 3]))
+     (def custom-vector-datatype (? (->CustomVector [:a 1 :b 3])))
      (def custom-map-datatype (->CustomMap {:a 1 :b 3}))
 
      (def vector-with-custom-datatypes 
@@ -658,7 +659,4 @@
                ]]
 
     (println "\nSample output, in Universal Neutral, with various :path based :find highlighting\n")
-    (? {
-        :theme "Alabaster Light"
-        :find  finds}
-       (assoc-in array-map-of-everything-cljc [:map :b] "asdfgasdfasdfasdfasdfadsfasfasfas"))))
+    (assoc-in array-map-of-everything-cljc [:map :b] "asdfgasdfasdfasdfasdfadsfasfasfas")))

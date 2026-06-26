@@ -616,12 +616,12 @@
   [[[[[]]]]])
 
 (deftest+ with-scalar-level-1-depth-print-length
-  {:theme                         theme
+  {:theme                     theme
    :scalar-depth-1-max-length 60}
   ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
 
 (deftest+ scalar-result-max-length
-  {:theme                         theme
+  {:theme                    theme
    :scalar-result-max-length 44}
   "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
 
