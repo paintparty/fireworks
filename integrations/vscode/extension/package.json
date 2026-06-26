@@ -103,7 +103,7 @@
             "Green — adapts to light/dark.",
             "Neutral gray — adapts to light/dark."
           ],
-          "markdownDescription": "Color of the inline `?` value and its background tint. The light- or dark-theme variant is chosen automatically. Intensity: `#fireworks.inlineResults.opacity#`; tint strength: `#fireworks.inlineResults.backgroundOpacity#`.",
+          "markdownDescription": "Color of the inline `?` value and its background tint. The light- or dark-theme variant is chosen automatically. Intensity: `#fireworks.inlineResults.opacity#`; tint strength: `#fireworks.inlineResults.backgroundOpacity.light#` / `#fireworks.inlineResults.backgroundOpacity.dark#`.",
           "order": 2
         },
         "fireworks.inlineResults.opacity": {
@@ -114,13 +114,21 @@
           "markdownDescription": "Opacity of the inline `?` value. Clamped to the range 0.5–1.0 so the value stays legible.",
           "order": 3
         },
-        "fireworks.inlineResults.backgroundOpacity": {
+        "fireworks.inlineResults.backgroundOpacity.light": {
           "type": "number",
-          "default": 0.03,
+          "default": 0.07,
           "minimum": 0,
           "maximum": 0.3,
-          "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`). Clamped to 0–0.3; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`.",
+          "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`) when a **light** theme is active. The active theme selects this or `#fireworks.inlineResults.backgroundOpacity.dark#` automatically. Clamped to 0–0.3; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`.",
           "order": 4
+        },
+        "fireworks.inlineResults.backgroundOpacity.dark": {
+          "type": "number",
+          "default": 0.18,
+          "minimum": 0,
+          "maximum": 0.3,
+          "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`) when a **dark** theme is active. The active theme selects this or `#fireworks.inlineResults.backgroundOpacity.light#` automatically. Clamped to 0–0.3; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`.",
+          "order": 5
         },
         "fireworks.inlineResults.gap": {
           "type": "number",
@@ -128,7 +136,7 @@
           "minimum": 1,
           "maximum": 300,
           "markdownDescription": "Spaces between the last character of code on a line and the inline `?` value.",
-          "order": 5
+          "order": 6
         },
         "fireworks.inlineResults.maxLength": {
           "type": "number",
@@ -136,7 +144,7 @@
           "minimum": 0,
           "maximum": 300,
           "markdownDescription": "Character budget for inline `?` values on a single line, shared as evenly as possible when a line has more than one result (truncated with `...`). At most 3 results show per line; the rest collapse into a `+ n more` tail. Set to `0` for no limit.",
-          "order": 6
+          "order": 7
         },
         "fireworks.inlineResults.fadeInMs": {
           "type": "number",
@@ -144,13 +152,13 @@
           "minimum": 0,
           "maximum": 500,
           "markdownDescription": "Duration in milliseconds of the fade-in when an inline `?` value appears. Set to `0` to show values instantly without animation.",
-          "order": 7
+          "order": 8
         },
         "fireworks.debug": {
           "type": "boolean",
           "default": false,
           "description": "Write diagnostic traces to the Fireworks output channel.",
-          "order": 8
+          "order": 9
         }
       }
     }

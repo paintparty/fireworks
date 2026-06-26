@@ -24,7 +24,7 @@
   (testing "test defaults: :debug false, running banner, no :debug-mode-opts"
     (let [o (edn/read-string (cfg/default-config :test))]
       (is (= false (:debug o)))
-      (is (= "🧪🧪🧪 Running tests..." (:banner o)))
+      (is (= "🧪 Running tests..." (:banner o)))
       (is (not (contains? o :debug-mode-opts))))))
 
 ;; ---------------------------------------------------------------------------
@@ -39,9 +39,9 @@
       (is (= true (:changes-only o)))
       (is (= false (:notify-on-success o)))
       (is (= true (:clear o)))
-      (is (= "🔥🔥🔥" (:banner o)))                  ; active banner == :debug-banner in tap mode
-      (is (= "🔥🔥🔥" (:debug-banner o)))             ; banner sources the toggle reads
-      (is (= "🧪🧪🧪 Running tests..." (:test-banner o)))
+      (is (= "🔥" (:banner o)))                  ; active banner == :debug-banner in tap mode
+      (is (= "🔥" (:debug-banner o)))             ; banner sources the toggle reads
+      (is (= "🧪 Running tests..." (:test-banner o)))
       (is (not (contains? o :debug-mode-opts)))))
   (testing "guidance comments survive in the literal text"
     (is (str/includes? cfg/template "runs in debug mode"))
@@ -103,9 +103,9 @@
           o   (edn/read-string (:text out))]
       (is (= :test (:mode out)))
       (is (= false (:debug o)))
-      (is (= "🧪🧪🧪 Running tests..." (:banner o)))      ; pulled from :test-banner
-      (is (= "🔥🔥🔥" (:debug-banner o)))                 ; banner sources left intact
-      (is (= "🧪🧪🧪 Running tests..." (:test-banner o)))
+      (is (= "🧪 Running tests..." (:banner o)))      ; pulled from :test-banner
+      (is (= "🔥" (:debug-banner o)))                 ; banner sources left intact
+      (is (= "🧪 Running tests..." (:test-banner o)))
       (is (= true (:quiet o)))
       (is (str/includes? (:text out) "runs in debug mode")) ; comments survive
       (is (= :test (cfg/read-mode (:text out))))))
@@ -115,14 +115,14 @@
           o         (edn/read-string (:text out))]
       (is (= :tap (:mode out)))
       (is (= true (:debug o)))
-      (is (= "🔥🔥🔥" (:banner o)))                       ; pulled from :debug-banner
+      (is (= "🔥" (:banner o)))                       ; pulled from :debug-banner
       (is (= :tap (cfg/read-mode (:text out))))))
   (testing "absent banner sources fall back to defaults"
     (let [out (cfg/toggle-mode "{:debug false}\n")
           o   (edn/read-string (:text out))]
       (is (= :tap (:mode out)))
       (is (= true (:debug o)))
-      (is (= "🔥🔥🔥" (:banner o)))))                      ; tap-banner-default
+      (is (= "🔥" (:banner o)))))                      ; tap-banner-default
   (testing "absent :debug reads as test -> toggles to debug"
     (is (= :tap (:mode (cfg/toggle-mode "{:quiet true}\n")))))
   (testing "unparseable -> error"

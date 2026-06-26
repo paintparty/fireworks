@@ -567,6 +567,10 @@ const INLINE_PALETTE: Record<string, { light: string; dark: string }> = {
 };
 const DEFAULT_INLINE_COLOR = 'Purple';
 
+// Per-theme defaults for the background tint opacity. Kept in sync with the
+// `inlineResults.backgroundOpacity.{light,dark}` defaults declared in package.json.
+const DEFAULT_BG_OPACITY: Record<'light' | 'dark', number> = { light: 0.07, dark: 0.18 };
+
 // Which palette variant the active theme calls for. High-contrast light maps to light,
 // plain high-contrast (dark) maps to dark.
 function themeVariant(): 'light' | 'dark' {
@@ -592,7 +596,12 @@ function inlineBgColor(): string {
 // The background tint: inlineBgColor mixed into transparent at backgroundOpacity
 // (clamped 0–0.2). undefined when the opacity is 0 (no tint).
 function inlineBackground(): string | undefined {
-  const op = clamp(cfg().get<number>('inlineResults.backgroundOpacity', 0.03), 0, 0.3);
+  const variant = themeVariant();
+  const op = clamp(
+    cfg().get<number>(`inlineResults.backgroundOpacity.${variant}`, DEFAULT_BG_OPACITY[variant]),
+    0,
+    0.3,
+  );
   if (op <= 0) {
     return undefined;
   }
@@ -914,14 +923,14 @@ function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } 
           '### ⚠️ Fireworks: Live Code',
           '# Add a Babashka watch task',
           '',
-          'To use `Fireworks: Live Code` with Babashka, add a task to your `bb.edn` that loads the watcher:',
+          'To use `Fireworks: Live Code` with Babashka, add a task to your `bb.edn` that loads the seeded `watch.clj` from within the `.fireworks` dir in your project:',
           '',
           '```clj',
           '{:tasks',
-          ' {live {:task (load-file ".fireworks/bb/watch.clj")}}}',
+          ' {my-task {:task (load-file ".fireworks/bb/watch.clj")}}}',
           '```',
           '',
-          'Then run Live Code again and pick that task.',
+          'Then run `Live Code` again and pick that task.',
           '',
           ' Fireworks seeds `.fireworks/bb/watch.clj`',
           'for you, and the watcher self-loads the [fswatcher](https://github.com/babashka/fs) pod —',
@@ -2570,16 +2579,26 @@ async function pickWithLivePreview(
 // Preset scales offered by each picker. Keep values within the setting's declared range in
 // package.json so the chosen value isn't flagged as invalid in the Settings UI.
 const INLINE_COLORS = ['Purple', 'Blue', 'Cyan', 'Green', 'Neutral'];
-const INLINE_BG_OPACITIES = [0, 0.03, 0.04, 0.5, 0.06, 0.7, 0.8, 0.09, 0.11, 0.13, 0.18, 0.22];
+const INLINE_BG_OPACITIES = [0, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.1, 0.12, 0.16, 0.18, 0.22];
 const INLINE_FG_OPACITIES = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65];
 const INLINE_GAP = [1, 2, 4, 6, 8, 10, 12, 14, 16];
 const INLINE_MAX_LENGTH = [16, 24, 32, 40, 52, 70, 100, 200];
 const INLINE_FADE = [0, 40, 80, 120, 200, 300, 450];
 
+// Label formatters for the scales above. The stored value is unchanged; only the
+// QuickPick label differs. Math.round because 0.07 * 100 === 7.000000000000001 in JS.
+const asPercent = (v: string | number) => `${Math.round(Number(v) * 100)}%`;
+const asMs = (v: string | number) => `${v}ms`;
+
 // Build the live-preview items for a preset scale, tagging the active value "(current)".
-function previewItems(values: (string | number)[], current: string | number): PreviewItem[] {
+// formatLabel defaults to the raw value, so callers that don't pass one are unchanged.
+function previewItems(
+  values: (string | number)[],
+  current: string | number,
+  formatLabel: (v: string | number) => string = (v) => `${v}`,
+): PreviewItem[] {
   return values.map((v) => ({
-    label: `${v}`,
+    label: formatLabel(v),
     description: v === current ? '(current)' : undefined,
     value: v,
   }));
@@ -2596,11 +2615,13 @@ async function setInlineResultsColor(): Promise<void> {
 }
 
 async function setInlineResultsBackgroundOpacity(): Promise<void> {
-  const current = cfg().get<number>('inlineResults.backgroundOpacity', 0.03);
+  const variant = themeVariant();
+  const key = `inlineResults.backgroundOpacity.${variant}`;
+  const current = cfg().get<number>(key, DEFAULT_BG_OPACITY[variant]);
   await pickWithLivePreview(
-    'inlineResults.backgroundOpacity',
-    'Inline Results Background Opacity',
-    previewItems(INLINE_BG_OPACITIES, current),
+    key,
+    `Inline Results Background Opacity — ${variant} theme`,
+    previewItems(INLINE_BG_OPACITIES, current, asPercent),
     current,
   );
 }
@@ -2610,7 +2631,7 @@ async function setInlineResultsOpacity(): Promise<void> {
   await pickWithLivePreview(
     'inlineResults.opacity',
     'Inline Results Opacity',
-    previewItems(INLINE_FG_OPACITIES, current),
+    previewItems(INLINE_FG_OPACITIES, current, asPercent),
     current,
   );
 }
@@ -2640,7 +2661,7 @@ async function setInlineResultsFadeIn(): Promise<void> {
   await pickWithLivePreview(
     'inlineResults.fadeInMs',
     'Inline Results Fade-In (ms)',
-    previewItems(INLINE_FADE, current),
+    previewItems(INLINE_FADE, current, asMs),
     current,
   );
 }

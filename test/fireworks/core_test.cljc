@@ -300,7 +300,7 @@
   (string/join
    "\n\n"
    (keep
-    (fn [{:keys [opts qv]}]
+    (fn [{:keys [opts qv sym]}]
       (when-not (= (:elide-branches opts)
                    #{:bb})
         (with-out-str
@@ -308,7 +308,8 @@
            (let [merged-opts 
                  (assoc (merge default-options-map opts)
                         :when
-                        'visual-mode?)]
+                        'visual-mode?
+                        :label sym)]
              (list '? merged-opts qv))))))
     @tests)))
 

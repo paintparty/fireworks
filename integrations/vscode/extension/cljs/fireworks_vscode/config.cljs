@@ -11,8 +11,8 @@
             [rewrite-clj.node :as n]
             [rewrite-clj.zip :as z]))
 
-(def ^:private tap-banner-default  "🔥🔥🔥")
-(def ^:private test-banner-default "🧪🧪🧪 Running tests...")
+(def ^:private tap-banner-default  "🔥")
+(def ^:private test-banner-default "🧪 Running tests...")
 
 (def template
   "The seed .test-refresh.edn written into a Clojure (deps) project that has no local
@@ -27,7 +27,7 @@
  :debug             true                       ;<- If `true`, runs in debug mode - all tests are skipped
  :banner            \"🔥🔥🔥\"                  ;<- This controls the actual banner
  :debug-banner      \"🔥🔥🔥\"                  ;<- This is for tooling to auto-toggle the :banner entry via rewrite 
- :test-banner       \"🧪🧪🧪 Running tests...\" ;<- This is for tooling to auto-toggle the :banner entry via rewrite
+ :test-banner       \"🧪 Running tests...\" ;<- This is for tooling to auto-toggle the :banner entry via rewrite
  :clear             true                       ;<- Clears terminal on each reload, perfect for debug mode
  }
 ")
