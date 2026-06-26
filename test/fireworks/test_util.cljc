@@ -2,8 +2,8 @@
   (:require [clojure.string :as string]))
 
 ;; Toggle this true / false to generate tests 
-;; (def write-tests? false)
-(def write-tests? true)
+(def write-tests? false)
+;; (def write-tests? true)
 
 ;; Toggle this true / false to see tests
 ;; (def visual-mode? true)

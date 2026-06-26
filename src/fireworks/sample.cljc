@@ -35,7 +35,7 @@
        ;;  (count [_] (count m))
        (assoc [this _ _] this))
      
-     (def custom-vector-datatype (? (->CustomVector [:a 1 :b 3])))
+     (def custom-vector-datatype (->CustomVector [:a 1 :b 3]))
      (def custom-map-datatype (->CustomMap {:a 1 :b 3}))
 
      (def vector-with-custom-datatypes 
@@ -44,8 +44,8 @@
 
      #_(? :pp vector-with-custom-datatypes)
      #_(? :pp
-        {:label "my-label"} 
-        custom-vector-datatype)
+          {:label "my-label"} 
+          custom-vector-datatype)
 
      ))
 
