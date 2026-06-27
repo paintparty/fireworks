@@ -13,8 +13,7 @@
    [fireworks.state :as state]
    [fireworks.util :as util :refer [maybe->]]
    [lasertag.core]
-   [lasertag.cached]
-   [fireworks.debug :refer [?]]))
+   [lasertag.cached]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -573,7 +572,7 @@
                 ;;    (symbol "wtf?"))
                 
                 coll-type?
-                (truncated-coll m x)
+                (if (empty? x) x (truncated-coll m x))
 
                 (= t :datatype)
                 (util/datatype->map x)
