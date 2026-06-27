@@ -8,6 +8,9 @@
     },
     {
       "path": "../../bb-live"
+    },
+    {
+      "path": "../../../../../.claude"
     }
   ],
   "settings": {}

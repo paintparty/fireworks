@@ -3,13 +3,13 @@
   "Pure logic for the inline-results feature. Given a whole-document string,
    returns the document's namespace name and one entry per Fireworks `?` call —
    the `(? …)` lists whose head symbol is exactly `?`. Each entry is
-   {:key \"<start-row>:<start-col>\" :row <end-row>} (all 1-based): `:key` is the
+   {:key \"<start-row>_<start-col>\" :row <end-row>} (all 1-based): `:key` is the
    opening `(`, which is the filename the `?` macro writes under
    .fireworks/results/<ns>/; `:row` is the form's last row, where the TS side
    anchors the inline decoration (so multi-line forms show their value at the end).
    Knows nothing about VS Code.
 
-   Returns {:namespace \"my.ns\" | nil :positions [{:key \"12:3\" :row 14} …]}.
+   Returns {:namespace \"my.ns\" | nil :positions [{:key \"12_3\" :row 14} …]}.
    Never throws — malformed source yields {:namespace nil :positions []}."
   (:require [clojure.string :as str]
             [rewrite-clj.zip :as z]))
@@ -38,7 +38,9 @@
 
 (defn- collect-positions
   "Depth-first walk from `zloc`, collecting {:key \"<start-row>:<start-col>\"
-   :row <end-row>} (1-based) for every `(? …)` list."
+   :row <end-row>} (1-based) for every `(? …)` list. The `<row>_<col>` key is the
+   filename the `?` macro writes under .fireworks/results/<ns>/ (underscore, not
+   colon, so the name is valid on Windows)."
   [zloc]
   (loop [loc zloc
          acc []]
@@ -47,7 +49,7 @@
       (recur (z/next loc)
              (if (list-head= loc '?)
                (let [[[sr sc] [er _ec]] (z/position-span loc)]
-                 (conj acc {:key (str sr ":" sc) :row er}))
+                 (conj acc {:key (str sr "_" sc) :row er}))
                acc)))))
 
 (defn analyze

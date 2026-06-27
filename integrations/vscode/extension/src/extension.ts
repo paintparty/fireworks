@@ -515,7 +515,7 @@ async function runAddRequire(): Promise<void> {
 // Inline results: watch .fireworks/results/ and paint `?` values inline.
 //
 // When the side-effecting `?` macro runs, Fireworks writes the value to
-// .fireworks/results/<ns>/<line>:<col> (1-based, at the opening `(`). When that
+// .fireworks/results/<ns>/<line>_<col> (1-based, at the opening `(`). When that
 // file appears/changes we re-analyze the matching visible editors (pure cljs
 // gives us the ns + the live `(? …)` positions) and repaint a read-only inline
 // decoration at the end of each line. Toggled by fireworks.toggleInlineResults
@@ -525,6 +525,15 @@ async function runAddRequire(): Promise<void> {
 // ============================================================================
 
 const RESULTS_DIR = '.fireworks/results';
+
+// When true, the "Clear Inline Results" command also deletes the on-disk result
+// files (every known root's .fireworks/results tree), not just the in-memory cache
+// and decorations. This makes the clear permanent: a value reappears only after the
+// form is re-evaluated, not on the next repaint. It also reaps orphans — files for
+// forms that have since moved or been removed, and stale files left from before the
+// `<line>:<col>` -> `<line>_<col>` rename. Flip to false to make Clear a transient,
+// in-memory-only visual reset (the original behavior); nothing else depends on this.
+const CLEAR_INLINE_RESULTS_WIPES_DISK = true;
 
 let inlineDecoration: vscode.TextEditorDecorationType | undefined;
 let resultsWatcher: vscode.FileSystemWatcher | undefined;
@@ -744,7 +753,7 @@ function startInlineResults(): void {
   // HSL is baked into the decoration type — so recreate it on theme switches too.
   themeSub = vscode.window.onDidChangeActiveColorTheme(() => refreshDecoration());
   // Clear (don't repaint) on edits: any edit can shift a form's coordinates, and
-  // reading result files by the new <line>:<col> would surface stale values from
+  // reading result files by the new <line>_<col> would surface stale values from
   // other forms (phantoms). Values reappear via the watcher on the next eval, when
   // the files are fresh and at correct coordinates.
   docChangeSub = vscode.workspace.onDidChangeTextDocument((e) => {
@@ -793,9 +802,21 @@ function stopInlineResults(): void {
 }
 
 // Manual wipe: empty the session cache and clear decorations from every visible
-// editor (does not delete any result files). Bound to fireworks.clearInlineResults.
+// editor. Bound to fireworks.clearInlineResults. When CLEAR_INLINE_RESULTS_WIPES_DISK
+// is set (the default) it also deletes each known root's on-disk result tree, so the
+// clear is permanent and reaps orphan/stale files; flip that constant off to keep this
+// an in-memory-only visual reset.
 function clearInlineResults(): void {
   resultsCache.clear();
+  // Disk wipe (toggleable): remove the .fireworks/results tree under every root we've
+  // seen results from. Best-effort and per-root (clearResultFiles swallows its own
+  // errors); roots we never observed results for are simply not in the set, so we
+  // never touch an unrelated project.
+  if (CLEAR_INLINE_RESULTS_WIPES_DISK) {
+    for (const root of fireworksRoots) {
+      clearResultFiles(root);
+    }
+  }
   if (!inlineDecoration) {
     return;
   }
@@ -1032,7 +1053,7 @@ function prepareResultsDir(root: string): void {
   ensureResultsDir(root); // recreate empty results/ after the wipe so the library writes into it
 }
 
-// A result file changed. Its path is <root>/.fireworks/results/<ns>/<line>:<col>.
+// A result file changed. Its path is <root>/.fireworks/results/<ns>/<line>_<col>.
 // Thin filesystem adapter: parse the logical (root, ns, posKey) identity off the
 // path, read the value (null = deleted/unreadable), and hand it to ingestResult.
 function onResultChanged(uri: vscode.Uri): void {
@@ -1078,7 +1099,7 @@ function namespaceFromResultPath(fsPath: string): string | null {
   if (i < 0) {
     return null;
   }
-  const rest = fsPath.slice(i + marker.length); // "<ns>/<line>:<col>"
+  const rest = fsPath.slice(i + marker.length); // "<ns>/<line>_<col>"
   const ns = rest.split(/[\\/]/)[0];
   return ns || null;
 }

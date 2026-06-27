@@ -14,28 +14,28 @@
     (is (nil? (:namespace (ir/analyze "(defn f [] (? 1))"))))))
 
 (deftest single-position
-  (is (= [{:key "3:1" :row 3}]
+  (is (= [{:key "3_1" :row 3}]
          (:positions (ir/analyze "(ns my.ns)\n\n(? (+ 1 2))")))))
 
 (deftest multiple-positions
   (let [text "(ns my.ns)\n(? :a)\n(def x (? (inc 1)))\n"]
-    (is (= [{:key "2:1" :row 2} {:key "3:8" :row 3}]
+    (is (= [{:key "2_1" :row 2} {:key "3_8" :row 3}]
            (:positions (ir/analyze text))))))
 
 (deftest multi-line-form-anchors-on-end-row
   (testing ":key is the start (file key); :row is the form's last row"
-    (is (= [{:key "2:1" :row 4}]
+    (is (= [{:key "2_1" :row 4}]
            (:positions (ir/analyze "(ns my.ns)\n(?\n  (+ 1\n     2))"))))))
 
 (deftest nested-positions
   (testing "a `?` nested inside another form is collected"
-    (is (= [{:key "1:1" :row 1} {:key "1:4" :row 1}]
+    (is (= [{:key "1_1" :row 1} {:key "1_4" :row 1}]
            (:positions (ir/analyze "(? (? 1))"))))))
 
 (deftest only-question-mark-matched
   (testing "?>, !? and !?> are not treated as `?`"
     (let [text "(ns my.ns)\n(?> :tap)\n(!? :p)\n(!?> :pt)\n(? :hit)"]
-      (is (= [{:key "5:1" :row 5}] (:positions (ir/analyze text))))))
+      (is (= [{:key "5_1" :row 5}] (:positions (ir/analyze text))))))
   (testing "a symbol merely starting with ? is not `?`"
     (is (= [] (:positions (ir/analyze "(?foo 1)"))))))
 
