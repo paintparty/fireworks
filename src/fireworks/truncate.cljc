@@ -4,7 +4,6 @@
   ;;  #?(:clj [fireworks.debug :refer [?]])
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
-   #?(:clj [clojure.reflect :as r])
    [clojure.string :as string]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.order :refer [seq->sorted-map]]
@@ -132,8 +131,6 @@
                  (reduce (partial js-kv (assoc m :x x :js-map? js-map?))
                          []
                          keys)))))))
-
-
 
 (declare truncate)
 
@@ -321,52 +318,6 @@
         (for [n (take (resolve-print-length) (range (count x)))]
           (nth x n))))
     x))
-
-(defn- truncate-datatype-to-map
-  "Takes a deftype instance known to have named fields and converts the first `max-fields` 
-   into a standard, flat Clojure persistent map."
-  [obj max-fields]
-  (if (nil? obj)
-    {}
-    #?(:bb
-       ;; Pure Babashka path
-       (->> (r/reflect obj)
-            :members
-            (filter :flags)
-            (take max-fields)
-            (reduce (fn [m member]
-                      (let [k (keyword (:name member))]
-                        (assoc m k (get obj k))))
-                    {}))
-
-       ;; (defn field-names-fast [obj]
-       ;;   (->> (.getDeclaredFields (.getClass obj))
-       ;;        (map #(keyword (.getName %)))))
-       
-       ;; ;; Test it out:
-       ;; (field-names-fast my-data-type)
-       
-       ;; => (:a :b)
-       :clj
-       ;; Standard Clojure JVM path
-       (do 
-         (println obj)
-         (do 
-           (println (type obj))
-           (->> (.getDeclaredFields (.getClass obj))
-                (take max-fields)
-                (reduce (fn [m field]
-                          (.setAccessible field true)
-                          (assoc m (keyword (.getName field)) (.get field obj)))
-                        {}))))
-
-       :cljs
-       ;; ClojureScript path
-       (->> (js/Object.keys obj)
-            (take max-fields)
-            (reduce (fn [m k]
-                      (assoc m (keyword k) (aget obj k)))
-                    {})))))
 
 
 (defn- container-for-unknown-coll-size
@@ -644,7 +595,7 @@
                     :too-deep?           false,
                     :coll-size           8,
                     :all-tags            #{:coll :seq},
-                    :print-length          5,
+                    :print-length        5,
                     :coll-size-adjust    8,
                     :sev?                false,
                     :num-dropped         3,
@@ -689,7 +640,7 @@
         ;; TODO - Use this instead of what is happening in fireworks.profile
         ;; mm*
         ;; (with-badge-and-ellipsized x kv? mm*)
-
+        
         meta-to-attach
         (merge {:fw/truncated mm*
                 :fw/user-meta #?(:cljs user-meta
@@ -699,5 +650,3 @@
                         :user-meta? 
                         (hash-map :fw/user-meta-map?)))]
     (with-meta truncated-x meta-to-attach)))
-
-
