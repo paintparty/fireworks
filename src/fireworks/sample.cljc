@@ -249,29 +249,29 @@
    :keyword
    :nil
    nil
-   :##Nan
-   ##NaN
-   :##Inf
-   ##Inf
-   :##-Inf
-   ##-Inf
-   :map
-   {:a 1
-    :b 2
-    :c "three"}
-   :vector
-   [1 2 3]
-   :vector+meta
-   ^{:meta-on-coll 1}
-   ['foo
-    (with-meta 'bar {:meta-on-sym 2})
-    'baz]
-   :list
-   '(1 2 3)
-   :lazy-seq
-   (range 10)
-   :rainbow
-   [[[[[[]]]]]]
+  ;;  :##Nan
+  ;;  ##NaN
+  ;;  :##Inf
+  ;;  ##Inf
+  ;;  :##-Inf
+  ;;  ##-Inf
+  ;;  :map
+  ;;  {:a 1
+  ;;   :b 2
+  ;;   :c "three"}
+  ;;  :vector
+  ;;  [1 2 3]
+  ;;  :vector+meta
+  ;;  ^{:meta-on-coll 1}
+  ;;  ['foo
+  ;;   (with-meta 'bar {:meta-on-sym 2})
+  ;;   'baz]
+  ;;  :list
+  ;;  '(1 2 3)
+  ;;  :lazy-seq
+  ;;  (range 10)
+  ;;  :rainbow
+  ;;  [[[[[[]]]]]]
    :set
    #{1 :2 "three"}))
 

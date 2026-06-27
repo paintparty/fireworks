@@ -2,13 +2,13 @@
   (:require [fireworks.config]
             [fireworks.themes]
             [fireworks.sample :as sample :refer []]
-            [clojure.pprint :refer [pprint]]
             [bling.core :refer [print-bling bling ?sgr callout]]
             [bling.hifi :refer [hifi print-hifi]]
             [lasertag.core :refer [tag tag-map]]
             [lasertag.fns]
             ;; [taoensso.tufte :as tufte :refer [p profile]]
-            [fireworks.core :refer [? !? ?> !?> pprint]]
+            [fireworks.util]
+            [fireworks.core :refer [? !? ?> !?>]]
             [lasertag.cached :as cached]))
 
 (def everything sample/array-map-of-everything-cljc)
@@ -30,26 +30,32 @@
 
        (js/console.clear)
 
-       ;;  #_(? :- '[js/decodeURI
-       ;;            js/isFinite
-       ;;            js/EvalError
-       ;;            js/Date])     
+       ;;  (? (tag-map (transient #{:a 1})))
+       (? (transient (hash-map :a 1)))
+
+       (!? everything)
+
+       (!? #(inc %))
+
+       #_(? :- '[js/decodeURI
+                 js/isFinite
+                 js/EvalError
+                 js/Date])     
        
        ;;  (? cached/by-type-frequent)
        
        ;;  (?  #_{:a 1 :b 2} (tag-map 2))
        
-       (let [v       (aget "foo" "concat")
-             tag-map (tag-map v)
-             fn-info (lasertag.fns/fn-info v (:tag tag-map))]
+       #_(let [v       (aget "foo" "concat")
+               tag-map (tag-map v)
+               fn-info (lasertag.fns/fn-info v (:tag tag-map))]
 
-         (pprint 
-          (type (with-meta {:a 1} {:type 2})))
+           ;;  (pprint 
+           ;;   (type (with-meta {:a 1} {:type 2})))
+           
+           
 
-         (? #(inc 2))
-
-         (? cached/by-class)
-         )
+           (? cached/by-class))
 
        ;;  (pprint (tag-map 12))
        
