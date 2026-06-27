@@ -1,6 +1,7 @@
 (ns fireworks.debug
   (:require [clojure.string :as str]
-            [clojure.pprint :refer [pprint]]))
+            [fireworks.pp :refer [pprint]])
+  #?(:cljs (:require-macros [fireworks.debug :refer [?]])))
 
 
 (defn- regex? [v]
