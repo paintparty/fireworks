@@ -11,6 +11,7 @@
      :node             (try (.isDirectory (fs/statSync p)) (catch :default _ false))
      :cljs             false))
 
+;; TODO - what if one of parts is nil?
 (defn join-path [& parts]
   #?(:clj              (.getPath (apply io/file parts))
      :org.babashka/nbb (apply path/join parts)
