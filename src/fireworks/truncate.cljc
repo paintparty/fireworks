@@ -482,9 +482,11 @@
                                         (map-entry? x)))
         tag-map              (when-not kv? (util/tag-map* x))
         x                    (or (when (:object-like-datatype? tag-map)
-                                   (util/datatype->map
-                                    x
-                                    {:skip-object-has-fields-check? true}))
+                                   (if (record? x)
+                                     (into {} x)
+                                     (util/datatype->map
+                                      x
+                                      {:skip-object-has-fields-check? true})))
                                  (container-for-unknown-coll-size tag-map)
                                  (reify-if-transient x tag-map))
         too-deep?            (> depth (:print-level @state/config))
