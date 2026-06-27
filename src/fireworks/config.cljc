@@ -250,7 +250,7 @@
     :display-form-or-label?
     :data?
     :trace?
-    })
+    :perf})
 
 ;; Option keys
 (def option-keys

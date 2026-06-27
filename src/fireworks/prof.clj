@@ -213,21 +213,36 @@
             (find-node (:children n) start-path)))
         nodes))
 
-(defn- print-mean-bar [samples start-path]
+
+
+(defn- header-mean
+  "Returns [label ms] for the top of the current view.
+   One root -> measured total; several -> sum of root means."
+  [roots]
+  (if (= 1 (count roots))
+    ["total" (:mean (first roots))]
+    ["Σ roots" (reduce + (map :mean roots))]))
+
+(defn- header-line
+  "── profile [mode]  ·  <label> <dur> (n <count>) ──"
+  [mode-name roots n]
+  (let [[lbl ms] (header-mean roots)]
+    (format "\n── profile [%s]  ·  %s %s (n %d) ──"
+            mode-name lbl (fmt-dur ms) (or n 0))))
+
+(defn- print-mean-bar [samples start-path mode-name]
   (let [items   (aggregate samples)
         maxv    (apply max (map :mean items))
         width   (term-width)
         tree    (build-tree items)
         roots   (if (seq start-path)
-                  (if-let [n (find-node tree (vec start-path))]
-                    [n]
-                    nil)
+                  (if-let [n (find-node tree (vec start-path))] [n] nil)
                   tree)]
     (if (nil? roots)
       (println (format "(no node at start-path %s — top-level paths: %s)"
-                       (pr-str start-path)
-                       (pr-str (map :path tree))))
-      (let [gaps    (max 0 (dec (count roots)))
+                       (pr-str start-path) (pr-str (map :path tree))))
+      (let [n-samples (:n (first roots))
+            gaps    (max 0 (dec (count roots)))
             sum-m   (reduce + (map :mean roots))
             max-bar (max 1 (Math/round (* (/ (- width gaps) (double sum-m)) maxv)))
             placed  (->> (layout-nodes roots maxv 0 width 0 max-bar)
@@ -235,32 +250,33 @@
                                              :label-text (str (last (:path n)))
                                              :val (fmt-dur (:mean n))))))
             max-d   (apply max (map :depth placed))]
+        (println (header-line mode-name roots n-samples))
         (doseq [d (range (inc max-d))]
           (let [row (filter #(= d (:depth %)) placed)]
             (println)
             (println (emit-label-line row))
             (println (emit-bar-line row))))))))
 
-
-
 (defn report
   ([] (report :full nil))
   ([style] (report style nil))
   ([style start-path]
-   (let [m @mode
+   (let [m       @mode
          samples (case m :sequential (mark-intervals) :nested (span-samples) nil nil)]
      (if (nil? samples)
        (println "\n(no active profiling mode)")
-       (do
-         (println (format "\n── profile [%s] ──" (name m)))
-         (cond
-           (= style :mean-bar)
-           (if (= m :nested)
-             (print-mean-bar samples start-path)
-             (println "(mean-bar requires :nested mode)"))
+       (cond
+         (= style :mean-bar)
+         (if (= m :nested)
+           (print-mean-bar samples start-path (name m))
+           (println "(mean-bar requires :nested mode)"))
 
-           :else
-           (doseq [{:keys [path n sum mean min max]} (aggregate samples)]
+         :else
+         (let [items (aggregate samples)
+               roots (filter #(= 1 (count (:path %))) items)
+               n     (:n (first roots))]
+           (println (header-line (name m) roots n))
+           (doseq [{:keys [path n sum mean min max]} items]
              (let [indent (apply str (repeat (dec (count path)) "  "))
                    label  (str indent (last path))]
                (case style
@@ -276,11 +292,3 @@
                                  (tok "max"  max)))))))))))))
 
                
-(do
-  (println "COLUMNS env:" (System/getenv "COLUMNS"))
-(println "stty:" (try (:out (clojure.java.shell/sh "bash" "-c" "stty size < /dev/tty"))
-                      (catch Exception e (str "ERR " (.getMessage e)))))
-(println "tput:" (try (:out (clojure.java.shell/sh "bash" "-c" "tput cols < /dev/tty"))
-                      (catch Exception e (str "ERR " (.getMessage e)))))
-(println "term-width:" (#'fireworks.prof/term-width))
-  )
