@@ -5,7 +5,8 @@
  [fireworks.state :as state]
  [fireworks.specs.config :as specs.config]
  #?(:cljs [fireworks.macros :refer-macros [keyed]])
- #?(:clj [fireworks.macros :refer [keyed]])))
+ #?(:clj [fireworks.macros :refer [keyed]])
+ [fireworks.debug :refer [?]]))
 
 (defn- len
   [x]
@@ -38,7 +39,6 @@
            lambda?
            classname]
     :as   m}]
-  ;; (!? m)
   (let [result-map      (fn [nm ecc trunc?]
                           {:fn-display-name       nm
                            :drop-ns?              false ;; <- krft?
@@ -67,11 +67,14 @@
                                          (str (if java-lang-class? "." "/"))))
                                fn-name))
         nm              (if lambda?
-                          (str nm (or (some-> classname
-                                              (str/split #"\$fn__")
-                                              last
-                                              (->> (str "fn__")))
-                                      badge))
+                          (str nm 
+                               (if (= classname "Function")
+                                 defs/lambda-badge
+                                 (or (some-> classname
+                                             (str/split #"\$fn__")
+                                             last
+                                             (->> (str "fn__")))
+                                     badge)))
                           nm)
         diff            (budge-diff nm)
 
