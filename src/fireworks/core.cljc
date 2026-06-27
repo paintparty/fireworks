@@ -4,6 +4,7 @@
    [clojure.data :as data]
    [clojure.spec.alpha :as s]
    [fireworks.browser]
+   [fireworks.fs]
    [fireworks.messaging :as messaging]
    [fireworks.serialize :as serialize]
    [fireworks.specs.config :as specs.config]
@@ -811,23 +812,41 @@
          (tagged-string-data printing-opts :formatted+)))
 
 
-
-#?(:clj
-   (defn write-to-store 
-     [x
-      {:keys [line column ns-str] 
-       :as   m}]
-     (when (.exists (io/file ".fireworks/"))
-       (let [s    (util/safe-str
-                   x
-                   {:start        0
+(defn- safe-str*
+  "Calls util/safe-str with options specific to Fireworks Live Code inline
+   results."
+  [x]
+  (util/safe-str x {:start        0
                     :end          1000 ;; <- max string length
                     :print-length (:print-length-inline-results @state/config)
                     :print-level  (:print-level-inline-results @state/config)
-                    :ellipsis?    true})
-             path (str ".fireworks/results/" ns-str "/" line ":" column)]
-         (io/make-parents path)
-         (spit path s)))))
+                    :ellipsis?    true}))
+
+
+(def hidden-dir
+  "This is the name of the hidden dir in the root of the user's project folder.
+   It must be present in order to utilize tooling or extensions which implement
+   the Fireworks Live Code pattern."
+  ".fireworks")
+
+
+(def results-subdir 
+  "The subdir within the hidden dir, where the truncated results of each eval
+   are stored."
+  "results")
+
+
+(defn write-to-store 
+  [x
+   {:keys [line column ns-str] 
+    :as   m}]
+  (when (fireworks.fs/path-exists? hidden-dir)
+    (let [fpath (fireworks.fs/join-path hidden-dir
+                                        results-subdir
+                                        ns-str 
+                                        (str line "_" column))]
+      (fireworks.fs/ensure-dir! fpath)
+      (fireworks.fs/write-file! fpath (safe-str* x)))))
 
 
 ;; TODO - maybe we can remove this and just use _p2
@@ -985,8 +1004,7 @@
                :clj (fireworks.core/pprint x)))
 
           (reset! state/formatting-form-to-be-evaled? false)
-          (when return-result? x)
-          #_#?(:clj (write-to-store x printing-opts)))))))
+          (when return-result? x))))))
 
 
 (defn- cfg-opts
