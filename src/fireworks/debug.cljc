@@ -1,8 +1,9 @@
 (ns fireworks.debug
   (:require [clojure.string :as str]
-            [fireworks.pp :refer [pprint]])
+            [fireworks.pp])
   #?(:cljs (:require-macros [fireworks.debug :refer [?]])))
 
+(def pp fireworks.pp/pprint)
 
 (defn- regex? [v]
   (-> v type str (= "class java.util.regex.Pattern")))
@@ -66,7 +67,7 @@
            (str "\n"
                 (str ~ns-str "\n")
                 (str (shortened (quote ~x) 25) "\n")
-                (with-out-str (pprint ~x))))
+                (with-out-str (fireworks.debug/pp ~x))))
           ~x)))
     ([label x]
      (let [label  (accented (or (:label label) label))
@@ -76,5 +77,5 @@
            (str "\n"
                 (str ~ns-str "\n")
                 (str ~label "\n")
-                (with-out-str (pprint ~x))))
+                (with-out-str (fireworks.debug/pp ~x))))
           ~x))))
