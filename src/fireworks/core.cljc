@@ -17,8 +17,8 @@
               compile-time-warnings-and-errors]])
    #?(:clj [fireworks.macros :refer [keyed get-user-config-edn-dynamic]])
    #?(:clj [clojure.java.io :as io])
-  ;;  #?(:cljs [fireworks.debug :refer-macros [?]])
-   #?(:clj [fireworks.debug :refer [?] :rename {? ?pp}])
+   ;;  #?(:cljs [fireworks.debug :refer-macros [?]])
+  ;;  [fireworks.debug :refer [?] :rename {? ?pp}]
    [clojure.string :as string]
    [fireworks.config :as config]
    [fireworks.util :as util] 
@@ -759,6 +759,7 @@
                           {:include-function-info?           false
                            :include-js-built-in-object-info? false})]
        (when (or (and coll-type? 
+                      (not (record? x))
                       (or (contains? all-tags :js)
                           (not (string/starts-with? classname "cljs.core"))))
 
