@@ -5,7 +5,8 @@
             [lasertag.fns :as fns]
             [lasertag.cached]
             [lasertag.core :as lasertag]
-            #?(:bb [clojure.reflect :as r])))
+            #?(:bb [clojure.reflect :as r])
+            [fireworks.debug :refer [?]]))
 
 (defn spaces [n] (string/join (repeat n " ")))
 
@@ -270,15 +271,10 @@
   [obj]
   (if (nil? obj)
     false
-    #?(:bb   (let [members (:members (r/reflect obj))]
-               ;; Filter for members that represent the fields
-               (->> members
-                    (filter :flags)
-                    (map :name)
-                    vec  ; isolates names
-                    ))
+    #?(:bb   nil
        :clj  (.getDeclaredFields (.getClass obj))
-       :cljs (js/Object.keys obj))))
+       :cljs (when (seq (.getBasis (.-constructor obj)))
+               (keys (into {} obj))))))
 
 (defn object-field-count
   "Returns true if the given object instance has one or more named fields 
@@ -286,8 +282,7 @@
   [obj]
   (if (nil? obj)
     false
-    #?(:bb   (->> (object-fields obj) count)
-       :clj  (alength (object-fields obj))
+    #?(:clj  (some-> obj object-fields alength)
        :cljs (alength (object-fields obj)))))
 
 (defn datatype->map 
