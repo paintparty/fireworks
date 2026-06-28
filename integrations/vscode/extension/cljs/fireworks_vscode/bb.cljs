@@ -59,16 +59,23 @@
    results under .fireworks/results/), with optional -main / test runs driven by config."
   ";; Fireworks Live Code watcher (Babashka), managed by the Fireworks VS Code extension.
 ;; Invoked by a bb.edn task that runs (load-file \".fireworks/bb/watch.clj\"). On each save it
-;; reloads the saved file and runs an entry `-main` so its `?` forms execute — printing to this
-;; terminal and, when a .fireworks/results/ dir exists, writing inline results there. The entry
-;; is :entry-ns from config, else the first watched file defining -main; it also runs once at
-;; startup, pre-loading Fireworks so the first save reloads instantly (no slow double-reload).
+;; reloads the saved file so its top-level `?` forms re-run, printing to this terminal and,
+;; when a .fireworks/results/ dir exists, writing inline results there. Reload-only: running an
+;; entry `-main` and tests are opt-in (:run-entry / :run-tests, both off by default). At startup
+;; it loads the entry ns once, pre-loading Fireworks so the first save is instant and the entry's
+;; top-level `?` forms paint on launch. The entry is :entry-ns, else the first watched file with a
+;; -main. NOTE: -main runs synchronously on the watch thread, so a long-running -main blocks
+;; reloads. Keep it short, or leave :run-entry false and drive `?` from top-level forms.
+;; Before each reload it clears the saved file's .fireworks/results/<ns>/ dir, so a `?` in an
+;; unreached branch (e.g. a cond arm not taken this run) doesn't keep showing a stale value, and
+;; results for moved/deleted `?` forms don't linger. Opt out with :clear-stale-results false.
 ;; Safe to edit; the extension won't overwrite it once present.
 ;;
 ;; Optional settings, read from .fireworks/config.edn at runtime (all optional):
 ;;   {:clear true :banner \"🔥\" :watch-paths [\"src\" \"test\"]
 ;;    :entry-ns my.app.core   ; pin a fixed ns to run instead of the saved file's
-;;    :test-ns my.app.core-test :run-entry true :run-tests false}
+;;    :test-ns my.app.core-test :run-entry false :run-tests false
+;;    :clear-stale-results true}
 
 ;; Load the filesystem-watcher pod here, so this works without a :pods entry in bb.edn.
 ;; load-pod is fine even when bb.edn already declares the pod.
@@ -99,6 +106,19 @@
       (when (and (seq? form) (= 'ns (first form))) (second form)))
     (catch Throwable _ nil)))
 
+(defn- clear-results!
+  \"Delete .fireworks/results/<ns>/ for `nsym` so only `?` forms evaluated in the next reload
+   repopulate it. Stale results from unreached branches (a cond arm not taken this run) and from
+   moved/deleted `?` forms are removed. No-op when the dir is absent; never throws.\"
+  [nsym]
+  (when (and (get config :clear-stale-results true) nsym)
+    (try
+      (let [dir (io/file \".fireworks/results\" (str nsym))]
+        (when (.isDirectory dir)
+          ;; reverse file-seq = depth-first, so children are deleted before their parent dir.
+          (doseq [f (reverse (file-seq dir))] (.delete f))))
+      (catch Throwable _ nil))))
+
 (defn- detect-entry-ns
   \"The namespace of the first watched .clj(c) file that defines a `-main`, or nil. Used as the
    default entry when :entry-ns isn't set, so the loop runs (and prints) out of the box.\"
@@ -112,10 +132,13 @@
 
 (def entry-ns    (or (some-> (get config :entry-ns) symbol) (detect-entry-ns)))
 (def test-ns     (some-> (get config :test-ns) symbol))
-(def run-entry?  (get config :run-entry true))
+(def run-entry?  (get config :run-entry false))
 (def run-tests?  (get config :run-tests false))
 
 (defn show-banner []
+  ;; Header: clear the screen, then print the banner (with a couple of blank lines above it for
+  ;; breathing room) BEFORE the reload's `?` output. With more than a screenful of output the
+  ;; banner can scroll up into scrollback; keep per-reload output short to keep it pinned on top.
   (when clear (print \"\\033[H\\033[2J\")) ; home + clear, preserving scrollback
   (when-not (str/blank? banner) (println banner))
   (flush))
@@ -132,26 +155,43 @@
       (swap! last-hash assoc path h)
       true)))
 
+(defn- run-extras! [target]
+  ;; Opt-in, config-driven work after a reload: run an entry -main and/or tests. Both are OFF
+  ;; by default. -main runs synchronously on the watch thread, so a long-running -main blocks
+  ;; reloads. Keep it short, or leave :run-entry false and drive `?` from top-level forms.
+  (when (and run-entry? target)
+    (when-not (find-ns target) (require target))
+    (when-let [main (resolve (symbol (name target) \"-main\"))]
+      (main)))
+  (when (and run-tests? test-ns)
+    (require test-ns :reload-all)
+    (t/run-tests test-ns)))
+
 (defn reload! [path]
+  ;; Reload the saved file so its top-level `?` forms re-run (writing inline results), then any
+  ;; opt-in extras. load-file redefines the file's vars; its top-level forms are what execute the
+  ;; `?` calls. A function's inner `?` only writes when top-level code (or -main) calls it.
   (show-banner)
   (try
     (let [reloaded (when (and path (.exists (io/file path)))
-                     (load-file path)
-                     (ns-of-file path))
-          target   (or entry-ns reloaded)]
-      ;; Run the entry's `-main` so its `?` forms execute (load-file only redefines them).
-      ;; Targets the saved file's ns, or :entry-ns / the detected entry. The saved file is
-      ;; already loaded above; otherwise (startup, or editing a non-entry file) require the
-      ;; entry once — which also pre-loads Fireworks so the first save reloads instantly.
-      (when (and run-entry? target)
-        (when-not (find-ns target) (require target))
-        (when-let [main (resolve (symbol (name target) \"-main\"))]
-          (main)))
-      (when (and run-tests? test-ns)
-        (require test-ns :reload-all)
-        (t/run-tests test-ns)))
+                     (let [nsym (ns-of-file path)]
+                       ;; Clear before load-file: only `?` forms run this reload repopulate the cache.
+                       (clear-results! nsym)
+                       (load-file path)
+                       nsym))]
+      (run-extras! (or entry-ns reloaded)))
     (catch Throwable e
       (println \"Reload failed:\" (ex-message e)))))
+
+(defn warmup! []
+  ;; Startup pass: load the entry ns once so Fireworks is pre-loaded (first save is instant) and
+  ;; the entry's top-level `?` forms paint on launch. Reload-only: no -main unless :run-entry.
+  (show-banner)
+  (try
+    (when (and entry-ns (not (find-ns entry-ns))) (require entry-ns))
+    (run-extras! entry-ns)
+    (catch Throwable e
+      (println \"Startup failed:\" (ex-message e)))))
 
 ;; fswatcher reports varied event types per save style (:write / :chmod / :remove+:create),
 ;; sometimes spread over ~1s. content-changed? collapses them to one reload per real edit.
@@ -163,9 +203,10 @@
 (def watch-opts {:recursive true :delay-ms 50})
 
 (println \"Fireworks: watching\" (str/join \", \" watch-paths)
-         \"— edit and save to reload. Ctrl-C to quit.\")
-(reload! nil) ; run once at startup
+         \". Edit and save to reload. Ctrl-C to quit.\")
+;; Establish the watch BEFORE the startup warmup, so no save during startup is missed.
 (doseq [p watch-paths]
   (when (.exists (io/file p)) (fw/watch p on-event watch-opts)))
+(warmup!)
 @(promise)
 ")

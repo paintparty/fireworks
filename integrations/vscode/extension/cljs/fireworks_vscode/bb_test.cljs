@@ -79,5 +79,8 @@
     ;; self-loads the fswatcher pod, so no :pods entry is required in the user's bb.edn
     (is (str/includes? bb/watch-template "load-pod"))
     (is (str/includes? bb/watch-template "org.babashka/fswatcher"))
+    ;; clears the saved file's result dir before reload, so unreached `?` forms don't go stale
+    (is (str/includes? bb/watch-template "clear-results!"))
+    (is (str/includes? bb/watch-template ".fireworks/results"))
     ;; rewrite-clj parses every form without throwing — catches a botched escape
     (is (some? (p/parse-string-all bb/watch-template)))))
