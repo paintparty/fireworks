@@ -6,8 +6,7 @@
 
 (ns fireworks.themes 
   (:require
-   [fireworks.defs :as defs :refer [bling-css-color]]
-   #_[fireworks.pp :refer [?pp]]))
+   [fireworks.defs :as defs :refer [bling-css-color]]))
 
 
 

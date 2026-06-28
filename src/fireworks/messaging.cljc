@@ -1,6 +1,6 @@
 (ns fireworks.messaging
   (:require [clojure.string :as string]
-            [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
+            [fireworks.pp :refer [pprint]]
             [expound.alpha :as expound]
             [fireworks.util :as util :refer [maybe->]]
             #?(:clj [clojure.main])))

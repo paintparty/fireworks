@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]
             [clojure.test]))
 
-(def visual-mode? true)
+(def visual-mode? false)
 
 ;; The ANSI escape (CSI introducer) as a string, built from its char code so no
 ;; raw control byte lives in this source file.

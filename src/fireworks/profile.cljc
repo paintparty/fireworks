@@ -1,7 +1,6 @@
 (ns ^:dev/always fireworks.profile
   (:require
    [fireworks.defs :as defs]
-   [fireworks.pp :refer [?pp] :rename {?pp ?}]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
