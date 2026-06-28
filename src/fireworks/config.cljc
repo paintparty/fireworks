@@ -12,9 +12,9 @@
                                    :updates-theme? true
                                    :category       :theme
                                    :tags           [:theme]}
-   :truncate?                     {:spec    ::config/truncate
-                                   :default true
-                                   :desc    "Intended primarily to used at the call site when you want to turn off all truncation of collections and all truncation (ellipsis) of self-evaluating values (string, keywords, symbols, etc.). If set to `false`, all truncation will be capped at 1000, meaning 1000 things in a collection and a length of 1000 for self-evaluating values."
+   :truncate?                     {:spec     ::config/truncate
+                                   :default  true
+                                   :desc     "Intended primarily to used at the call site when you want to turn off all truncation of collections and all truncation (ellipsis) of self-evaluating values (string, keywords, symbols, etc.). If set to `false`, all truncation will be capped at 1000, meaning 1000 things in a collection and a length of 1000 for self-evaluating values."
                                    :category :limits
                                    :tags     [:limits :collections :strings]}
    :bold?                         {:spec           ::config/bold
@@ -23,81 +23,81 @@
                                    :desc           "Will render the printed output with a `font-weight` of `bold`."
                                    :category       :decorations
                                    :tags           [:decorations :theme]}
-   :print-length                  {:spec    ::config/print-length
-                                   :default 33
-                                   :desc    "Controls how many items are printed in a coll before truncation"
+   :print-length                  {:spec     ::config/print-length
+                                   :default  33
+                                   :desc     "Controls how many items are printed in a coll before truncation"
                                    :category :limits
                                    :tags     [:limits :collections]}
-   :print-length-inline-results   {:spec    ::config/print-length-inline-results
-                                   :default 8
-                                   :desc    "Controls how many items are printed in a coll before truncation, for inline results"
+   :print-length-inline-results   {:spec     ::config/print-length-inline-results
+                                   :default  8
+                                   :desc     "Controls how many items are printed in a coll before truncation, for inline results"
                                    :category :limits
                                    :tags     [:limits :collections :inline-results]}
-   :single-line-coll-max-length   {:spec    ::config/single-line-coll-max-length
-                                   :default 33
-                                   :desc    "The strlen limit of a single-line coll, before truncation"
+   :single-line-coll-max-length   {:spec     ::config/single-line-coll-max-length
+                                   :default  33
+                                   :desc     "The strlen limit of a single-line coll, before truncation"
                                    :category :limits
                                    :tags     [:limits :collections]}
-   :scalar-result-max-length      {:spec    ::config/scalar-result-max-length
-                                   :default 444
-                                   :desc    "Sets the max length of a scalar value such as a string, keyword, function name, etc. Only applies when the value itself is the result of the evaluation (not nested within a data structure)."
+   :scalar-result-max-length      {:spec     ::config/scalar-result-max-length
+                                   :default  444
+                                   :desc     "Sets the max length of a scalar value such as a string, keyword, function name, etc. Only applies when the value itself is the result of the evaluation (not nested within a data structure)."
                                    :category :limits
                                    :tags     [:limits :scalars]}
-   :scalar-depth-1-max-length     {:spec    ::config/scalar-depth-1-max-length
-                                   :default 69
-                                   :desc    "Sets the max length of a scalar value such as a string, keyword, function name, etc. Only applies when the value is nested one level deep inside the result, which would be a non-associative collection such as a vector or seq."
+   :scalar-depth-1-max-length     {:spec     ::config/scalar-depth-1-max-length
+                                   :default  69
+                                   :desc     "Sets the max length of a scalar value such as a string, keyword, function name, etc. Only applies when the value is nested one level deep inside the result, which would be a non-associative collection such as a vector or seq."
                                    :category :limits
                                    :tags     [:limits :scalars]}
-   :scalar-max-length             {:spec    ::config/scalar-max-length
-                                   :default 33
-                                   :desc    "Sets the max length of things like strings, keywords, function names, etc., when they are nested more than one level deep inside a data structure. Values whose length exceeds this will be ellipsized."
+   :scalar-max-length             {:spec     ::config/scalar-max-length
+                                   :default  33
+                                   :desc     "Sets the max length of things like strings, keywords, function names, etc., when they are nested more than one level deep inside a data structure. Values whose length exceeds this will be ellipsized."
                                    :category :limits
                                    :tags     [:limits :scalars]}
-   :scalar-mapkey-max-length      {:spec    ::config/scalar-mapkey-max-length
-                                   :default 33
-                                   :desc    "Sets the max length of things like strings, keywords, function names, etc., when they are used as keys in maps. Longer values will be ellipsized."
+   :scalar-mapkey-max-length      {:spec     ::config/scalar-mapkey-max-length
+                                   :default  33
+                                   :desc     "Sets the max length of things like strings, keywords, function names, etc., when they are used as keys in maps. Longer values will be ellipsized."
                                    :category :limits
                                    :tags     [:limits :scalars :maps]}
-   :single-column-maps?           {:spec    ::config/single-column-maps?
-                                   :default false
+   :single-column-maps?           {:spec     ::config/single-column-maps?
+                                   :default  false
                                    :category :decorations
                                    :tags     [:decorations :maps]}
-   :single-column-map-threshold   {:spec    ::config/single-column-map-threshold
-                                   :default 44
+   :single-column-map-threshold   {:spec     ::config/single-column-map-threshold
+                                   :default  44
                                    :category :decorations
                                    :tags     [:decorations :maps]}
-   :print-level                   {:spec    ::config/print-level
-                                   :default 7
-                                   :desc    "Sets the max depth of printing for nested collections."
+   :print-level                   {:spec     ::config/print-level
+                                   :default  7
+                                   :desc     "Sets the max depth of printing for nested collections."
                                    :category :limits
                                    :tags     [:limits :nesting]}
-   :print-level-inline-results    {:spec    ::config/print-level-inline-results
-                                   :default 3
-                                   :desc    "Sets the max depth of printing for nested collections in inline results"
+   :print-level-inline-results    {:spec     ::config/print-level-inline-results
+                                   :default  3
+                                   :desc     "Sets the max depth of printing for nested collections in inline results"
                                    :category :limits
                                    :tags     [:limits :nesting :inline-results]}
-   :metadata-print-level          {:spec    ::config/metadata-print-level
-                                   :default 4
-                                   :desc    "Sets the max depth of printing for metadata maps that contain nested collections."
+   :metadata-print-level          {:spec     ::config/metadata-print-level
+                                   :default  4
+                                   :desc     "Sets the max depth of printing for metadata maps that contain nested collections."
                                    :category :limits
                                    :tags     [:limits :metadata :nesting]}
-   :display-namespaces?           {:spec    ::config/display-namespaces?
-                                   :default true
-                                   :desc    "Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:scalar-print-length` or the `:scalar-mapkey-max-length` (in the case of map keys)."
+   :display-namespaces?           {:spec     ::config/display-namespaces?
+                                   :default  true
+                                   :desc     "Whether or not to print out fully qualified namespaces for functions and classes. Note that even if set to `true`, namespaces may get dropped if the count of fully qualified symbol exceeds the `:scalar-print-length` or the `:scalar-mapkey-max-length` (in the case of map keys)."
                                    :category :decorations
                                    :tags     [:decorations :namespaces]}
-   :display-metadata?             {:spec    ::config/display-metadata?
-                                   :default false
-                                   :desc    "Print metadata values."
+   :display-metadata?             {:spec     ::config/display-metadata?
+                                   :default  false
+                                   :desc     "Print metadata values."
                                    :category :decorations
                                    :tags     [:decorations :metadata]}
-   :metadata-position             {:spec    ::config/metadata-position
-                                   :default "inline"
-                                   :desc    "Determines position of metadata relative to value that is carrying it. Options are `\"inline\"` (default), or `\"block\"`."
+   :metadata-position             {:spec     ::config/metadata-position
+                                   :default  "inline"
+                                   :desc     "Determines position of metadata relative to value that is carrying it. Options are `\"inline\"` (default), or `\"block\"`."
                                    :category :decorations
                                    :tags     [:decorations :metadata]}
-   :regex-theme                   {:spec    ::config/regex-theme
-                                   :default :neutral
+   :regex-theme                   {:spec     ::config/regex-theme
+                                   :default  :neutral
                                    :category :decorations
                                    :tags     [:decorations :theme]}
    :enable-rainbow-brackets?      {:spec           ::config/enable-rainbow-brackets?
@@ -118,8 +118,8 @@
                                    :desc           "You should generally not need to set this, as Fireworks automatically detects the host environment's level of color support, and will set this value internally. Most terminal environments support level `3` (truecolor). If set to `2`, Fireworks will convert the hex color values to sgr-rgb codes (x256) for terminal emulators that do not support 24-bit color. If set to `1`, Fireworks will use a b&w theme (\"Universal Neutral\"). If you find that your host environment's color support level is not being detected, you can set this value explicitly to match a target level of color support."
                                    :category       :decorations
                                    :tags           [:decorations :theme :color]}
-   :print-detected-color-level?   {:spec    ::config/print-detected-color-level?
-                                   :default false
+   :print-detected-color-level?   {:spec     ::config/print-detected-color-level?
+                                   :default  false
                                    :category :decorations
                                    :tags     [:decorations :color]}
    :line-height                   {:spec           ::config/line-height
@@ -128,77 +128,83 @@
                                    :desc           "Sets the line-height. Only takes effect in browser consoles."
                                    :category       :limits
                                    :tags           [:limits :theme]}
-   :label-max-length              {:spec    ::config/label-max-length
-                                   :default 44
-                                   :desc    "Sets the max length of the form-to-be-evaled label, or the user label, if supplied."
+   :label-max-length              {:spec     ::config/label-max-length
+                                   :default  44
+                                   :desc     "Sets the max length of the form-to-be-evaled label, or the user label, if supplied."
                                    :category :fireworks
                                    :tags     [:fireworks :labels :limits]}
-   :format-label-as-code?         {:spec    ::config/format-label-as-code?
-                                   :default false
-                                   :desc    "If a custom label is not supplied, this will pretty-print the form-to-be-printed, instead of truncating it."
+   :format-label-as-code?         {:spec     ::config/format-label-as-code?
+                                   :default  false
+                                   :desc     "If a custom label is not supplied, this will pretty-print the form-to-be-printed, instead of truncating it."
                                    :category :fireworks
                                    :tags     [:fireworks :labels]}
-   :label-color                   {:spec    ::config/label-color
-                                   :desc    "Sets the color of the form-to-be-evaled label, or the user label, if supplied. Valid values are `:blue`, `:green`, or `:red`. All stock themes will have a preset color that is synced with the particular theme, so this option is intended to be used as an override at the call site if you have multiple printings from different places in your codebase, and you want an easy way to distinguish them from each other."
-                                   :default nil
+   :label-color                   {:spec     ::config/label-color
+                                   :desc     "Sets the color of the form-to-be-evaled label, or the user label, if supplied. Valid values are `:blue`, `:green`, or `:red`. All stock themes will have a preset color that is synced with the particular theme, so this option is intended to be used as an override at the call site if you have multiple printings from different places in your codebase, and you want an easy way to distinguish them from each other."
+                                   :default  nil
                                    :category :fireworks
                                    :tags     [:fireworks :labels :theme]}
-   :margin-bottom                 {:spec    ::config/margin-bottom
-                                   :default 1
+   :margin-bottom                 {:spec     ::config/margin-bottom
+                                   :default  1
                                    :category :margins
                                    :tags     [:margins]}
-   :margin-top                    {:spec    ::config/margin-top
-                                   :default 0
+   :margin-top                    {:spec     ::config/margin-top
+                                   :default  0
                                    :category :margins
                                    :tags     [:margins]}
-   :margin-left                   {:spec    ::config/margin-inline-start
-                                   :default 0
+   :margin-left                   {:spec     ::config/margin-inline-start
+                                   :default  0
                                    :category :margins
                                    :tags     [:margins]}
-   :margin-inline-start           {:spec    ::config/margin-inline-start
-                                   :default 0
+   :margin-inline-start           {:spec     ::config/margin-inline-start
+                                   :default  0
                                    :category :margins
                                    :tags     [:margins]}
-   :print-with                    {:spec    ::config/print-with
-                                   :default nil
-                                   :desc    "A custom printing formatting / printing function can be passed at the call site. The function must ultimately call a core printing function such as `clojure.core/println`"
+   :print-with                    {:spec     ::config/print-with
+                                   :default  nil
+                                   :desc     "A custom printing formatting / printing function can be passed at the call site. The function must ultimately call a core printing function such as `clojure.core/println`"
                                    :category :fireworks
                                    :tags     [:fireworks :call-site]}
-   :find                          {:spec    ::config/find
-                                   :default nil
-                                   :desc    "Find and highlight values in the printed output."
+   :find                          {:spec     ::config/find
+                                   :default  nil
+                                   :desc     "Find and highlight values in the printed output."
                                    :category :decorations
                                    :tags     [:decorations]}
-   :when                          {:spec    ::config/when
-                                   :default nil
-                                   :desc    "If supplied, this value should be a predicate. Will only print something if value passes predicate."
+   :when                          {:spec     ::config/when
+                                   :default  nil
+                                   :desc     "If supplied, this value should be a predicate. Will only print something if value passes predicate."
                                    :category :fireworks
                                    :tags     [:fireworks :call-site]}
-   :dissoc-metadata-keys          {:spec    ::config/dissoc-metadata-keys
-                                   :default nil
+   :dissoc-metadata-keys          {:spec     ::config/dissoc-metadata-keys
+                                   :default  nil
                                    :category :decorations
                                    :tags     [:decorations :metadata]}
-   :select-metadata-keys          {:spec    ::config/select-metadata-keys
-                                   :default nil
+   :select-metadata-keys          {:spec     ::config/select-metadata-keys
+                                   :default  nil
                                    :category :decorations
                                    :tags     [:decorations :metadata]}
-   :multi-line-metadata?          {:spec    ::config/multi-line-metadata?
-                                   :default true
+   :multi-line-metadata?          {:spec     ::config/multi-line-metadata?
+                                   :default  true
                                    :category :decorations
                                    :tags     [:decorations :metadata]}
-   :quote-symbols?                {:spec    ::config/quote-symbols?
-                                   :default false
+   :quote-symbols?                {:spec     ::config/quote-symbols?
+                                   :default  false
                                    :category :decorations
                                    :tags     [:decorations :symbols]}
-   :quote-lists?                  {:spec    ::config/quote-lists?
-                                   :default false
+   :quote-lists?                  {:spec     ::config/quote-lists?
+                                   :default  false
                                    :category :decorations
                                    :tags     [:decorations :lists]}
-   :colorize?                     {:spec    ::config/colorize?
-                                   :default true
-                                   :desc    "Experimental colorization for :pp mode, which dispatches to pp/pprint"
+   :colorize?                     {:spec     ::config/colorize?
+                                   :default  true
+                                   :desc     "Experimental colorization for :pp mode, which dispatches to pp/pprint"
                                    :category :decorations
                                    :tags     [:decorations]}
+
+   :perf?                         {:spec     ::config/perf?
+                                   :default  false
+                                   :desc     "Rough quick-bench mean result is included below the file-info line and the form/label. Also prepends the result e.g. \"(69ns)\" to the inline result."
+                                   :category :fireworks
+                                   :tags     [:perf :fireworks]}
 
 
    ;; Deprecated / Internal dev only

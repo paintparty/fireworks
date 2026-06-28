@@ -185,3 +185,5 @@
 (s/def ::quote-lists? boolean?)
 
 (s/def ::colorize? boolean?)
+
+(s/def ::perf? boolean?)
