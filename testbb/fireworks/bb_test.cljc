@@ -1955,6 +1955,7 @@
     custom-vector-datatype
     (is
      (=
+      "〠38;5;102〠[〠0〠〠38;5;61〠...〠0〠〠38;5;102〠]〠0〠"
       (->
        (?
         :data
@@ -1962,7 +1963,7 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
@@ -2006,8 +2007,7 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠38;5;102〠[〠0〠〠38;2;77;109;186〠...〠0〠〠38;5;102〠]〠0〠"))))
+       string/join)))))
 
 #?(:bb nil
    :clj
@@ -2015,6 +2015,7 @@
     custom-map-datatype
     (is
      (=
+      "〠38;5;102〠{〠0〠〠38;5;61〠 ...〠0〠〠〠 〠0〠〠38;5;61〠〠0〠〠38;5;102〠}〠0〠"
       (->
        (?
         :data
@@ -2022,7 +2023,7 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
@@ -2066,8 +2067,7 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠38;5;102〠{〠0〠〠38;2;77;109;186〠 ...〠0〠〠〠 〠0〠〠38;2;77;109;186〠〠0〠〠38;5;102〠}〠0〠"))))
+       string/join)))))
 
 #?(:bb nil
    :clj
@@ -2075,6 +2075,7 @@
     vector-with-custom-datatype
     (is
      (=
+      "〠38;5;102〠[〠0〠〠38;5;32〠[〠0〠〠38;5;61〠...〠0〠〠38;5;32〠]〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;5;61〠 ...〠0〠〠〠 〠0〠〠38;5;61〠〠0〠〠38;5;32〠}〠0〠〠38;5;102〠]〠0〠"
       (->
        (?
         :data
@@ -2082,7 +2083,7 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
@@ -2126,8 +2127,7 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠38;5;102〠[〠0〠〠38;5;32〠[〠0〠〠38;2;77;109;186〠...〠0〠〠38;5;32〠]〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;77;109;186〠 ...〠0〠〠〠 〠0〠〠38;2;77;109;186〠〠0〠〠38;5;32〠}〠0〠〠38;5;102〠]〠0〠"))))
+       string/join)))))
 
 #?(:bb nil
    :clj
@@ -2135,6 +2135,7 @@
     user-fn-names
     (is
      (=
+      "〠38;5;102〠{〠0〠〠38;5;97〠:user-fn〠0〠〠〠       〠0〠〠〠 〠0〠〠38;5;61〠fireworks.sample/xy〠0〠〠〠\n 〠0〠〠38;5;97〠:really-long-fn〠0〠〠〠 〠0〠〠38;5;61〠fireworks.sample/xyasldfasldkf〠0〠〠3;38;5;245〠...〠0〠〠38;5;102〠}〠0〠"
       (->
        (?
         :data
@@ -2142,7 +2143,7 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
@@ -2186,13 +2187,13 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠38;5;102〠{〠0〠〠38;2;122;62;157〠:user-fn〠0〠〠〠       〠0〠〠〠 〠0〠〠38;2;77;109;186〠fireworks.sample/xy〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:really-long-fn〠0〠〠〠 〠0〠〠38;2;77;109;186〠fireworks.sample/xyasldfasldkf〠0〠〠3;38;2;140;140;140〠...〠0〠〠38;5;102〠}〠0〠"))))
+       string/join)))))
 
 (deftest
  no-truncation
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠adsfasdfasdfasdfasdfadsfsdfasdfadsfadsfasdfasdfasdfadsfasdfasdfsadfxxx〠0〠〠38;5;64〠\"〠0〠〠〠\n 〠0〠〠38;5;97〠0〠0〠〠〠\n 〠0〠〠38;5;97〠1〠0〠〠〠\n 〠0〠〠38;5;97〠2〠0〠〠〠\n 〠0〠〠38;5;97〠3〠0〠〠〠\n 〠0〠〠38;5;97〠4〠0〠〠〠\n 〠0〠〠38;5;97〠5〠0〠〠〠\n 〠0〠〠38;5;97〠6〠0〠〠〠\n 〠0〠〠38;5;97〠7〠0〠〠〠\n 〠0〠〠38;5;97〠8〠0〠〠〠\n 〠0〠〠38;5;97〠9〠0〠〠〠\n 〠0〠〠38;5;97〠10〠0〠〠〠\n 〠0〠〠38;5;97〠11〠0〠〠〠\n 〠0〠〠38;5;97〠12〠0〠〠〠\n 〠0〠〠38;5;97〠13〠0〠〠〠\n 〠0〠〠38;5;97〠14〠0〠〠〠\n 〠0〠〠38;5;97〠15〠0〠〠〠\n 〠0〠〠38;5;97〠16〠0〠〠〠\n 〠0〠〠38;5;97〠17〠0〠〠〠\n 〠0〠〠38;5;97〠18〠0〠〠〠\n 〠0〠〠38;5;97〠19〠0〠〠〠\n 〠0〠〠38;5;97〠20〠0〠〠〠\n 〠0〠〠38;5;97〠21〠0〠〠〠\n 〠0〠〠38;5;97〠22〠0〠〠〠\n 〠0〠〠38;5;97〠23〠0〠〠〠\n 〠0〠〠38;5;97〠24〠0〠〠〠\n 〠0〠〠38;5;97〠25〠0〠〠〠\n 〠0〠〠38;5;97〠26〠0〠〠〠\n 〠0〠〠38;5;97〠27〠0〠〠〠\n 〠0〠〠38;5;97〠28〠0〠〠〠\n 〠0〠〠38;5;97〠29〠0〠〠〠\n 〠0〠〠38;5;97〠30〠0〠〠〠\n 〠0〠〠38;5;97〠31〠0〠〠〠\n 〠0〠〠38;5;97〠32〠0〠〠〠\n 〠0〠〠38;5;97〠33〠0〠〠〠\n 〠0〠〠38;5;97〠34〠0〠〠〠\n 〠0〠〠38;5;97〠35〠0〠〠〠\n 〠0〠〠38;5;97〠36〠0〠〠〠\n 〠0〠〠38;5;97〠37〠0〠〠〠\n 〠0〠〠38;5;97〠38〠0〠〠〠\n 〠0〠〠38;5;97〠39〠0〠〠〠\n 〠0〠〠38;5;97〠40〠0〠〠〠\n 〠0〠〠38;5;97〠41〠0〠〠〠\n 〠0〠〠38;5;97〠42〠0〠〠〠\n 〠0〠〠38;5;97〠43〠0〠〠〠\n 〠0〠〠38;5;97〠44〠0〠〠〠\n 〠0〠〠38;5;97〠45〠0〠〠〠\n 〠0〠〠38;5;97〠46〠0〠〠〠\n 〠0〠〠38;5;97〠47〠0〠〠〠\n 〠0〠〠38;5;97〠48〠0〠〠〠\n 〠0〠〠38;5;97〠49〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -2200,7 +2201,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2245,14 +2246,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠(〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠adsfasdfasdfasdfasdfadsfsdfasdfadsfadsfasdfasdfasdfadsfasdfasdfsadfxxx〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠1〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠2〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠3〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠4〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠5〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠6〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠7〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠8〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠9〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠10〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠11〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠12〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠13〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠14〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠15〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠16〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠17〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠18〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠19〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠20〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠21〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠22〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠23〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠24〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠25〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠26〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠27〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠28〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠29〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠30〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠31〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠32〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠33〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠34〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠35〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠36〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠37〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠38〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠39〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠40〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠41〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠42〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠43〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠44〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠45〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠46〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠47〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠48〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠49〠0〠〠38;5;102〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  string-value
  (is
   (=
+   "〠38;5;64〠\"〠0〠〠38;5;64〠string〠0〠〠38;5;64〠\"〠0〠"
    (->
     (?
      :data
@@ -2260,7 +2261,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2303,14 +2304,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠string〠0〠〠38;2;68;140;39〠\"〠0〠")))
+    string/join))))
 
 
 (deftest
  regex-value
  (is
   (=
+   "〠3;38;5;166;48;5;231〠〠0〠〠38;5;64〠〠〠#〠0〠〠〠\"〠0〠〠〠^〠0〠〠48;5;255〠(〠0〠〠48;5;255〠?〠0〠〠48;5;255〠:〠0〠〠48;5;255〠a〠0〠〠48;5;255〠b〠0〠〠48;5;255〠c〠0〠〠38;5;249;48;5;255〠\\〠0〠〠48;5;255〠\\〠0〠〠38;5;249;48;5;255〠\\〠0〠〠48;5;255〠(〠0〠〠48;5;255〠〠0〠〠38;5;249;48;5;255〠\\〠0〠〠48;5;255〠[〠0〠〠48;5;255〠〠0〠〠48;5;255〠\\d〠0〠〠48;5;255〠)〠0〠〠〠+〠0〠〠48;5;255〠[〠0〠〠48;5;255〠^〠0〠〠48;5;255〠a〠0〠〠48;5;255〠-〠0〠〠48;5;255〠z〠0〠〠48;5;255〠0〠0〠〠48;5;255〠-〠0〠〠48;5;255〠9〠0〠〠48;5;255〠\\w〠0〠〠48;5;255〠]〠0〠〠〠*〠0〠〠〠$〠0〠〠〠|〠0〠〠〠^〠0〠〠〠f〠0〠〠〠o〠0〠〠〠o〠0〠〠〠b〠0〠〠〠a〠0〠〠〠r〠0〠〠〠{〠0〠〠〠1〠0〠〠〠}〠0〠〠〠s〠0〠〠〠?〠0〠〠〠$〠0〠〠〠\"〠0〠〠0〠"
    (->
     (?
      :data
@@ -2318,7 +2319,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2361,14 +2362,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠〠0〠〠38;2;68;140;39〠〠〠#〠0〠〠〠\"〠0〠〠〠^〠0〠〠48;2;235;235;235〠(〠0〠〠48;2;235;235;235〠?〠0〠〠48;2;235;235;235〠:〠0〠〠48;2;235;235;235〠a〠0〠〠48;2;235;235;235〠b〠0〠〠48;2;235;235;235〠c〠0〠〠38;2;178;178;178;48;2;235;235;235〠\\〠0〠〠48;2;235;235;235〠\\〠0〠〠38;2;178;178;178;48;2;235;235;235〠\\〠0〠〠48;2;235;235;235〠(〠0〠〠48;2;235;235;235〠〠0〠〠38;2;178;178;178;48;2;235;235;235〠\\〠0〠〠48;2;235;235;235〠[〠0〠〠48;2;235;235;235〠〠0〠〠48;2;235;235;235〠\\d〠0〠〠48;2;235;235;235〠)〠0〠〠〠+〠0〠〠48;2;235;235;235〠[〠0〠〠48;2;235;235;235〠^〠0〠〠48;2;235;235;235〠a〠0〠〠48;2;235;235;235〠-〠0〠〠48;2;235;235;235〠z〠0〠〠48;2;235;235;235〠0〠0〠〠48;2;235;235;235〠-〠0〠〠48;2;235;235;235〠9〠0〠〠48;2;235;235;235〠\\w〠0〠〠48;2;235;235;235〠]〠0〠〠〠*〠0〠〠〠$〠0〠〠〠|〠0〠〠〠^〠0〠〠〠f〠0〠〠〠o〠0〠〠〠o〠0〠〠〠b〠0〠〠〠a〠0〠〠〠r〠0〠〠〠{〠0〠〠〠1〠0〠〠〠}〠0〠〠〠s〠0〠〠〠?〠0〠〠〠$〠0〠〠〠\"〠0〠〠0〠")))
+    string/join))))
 
 
 (deftest
  uuid-value
  (is
   (=
+   "〠3;38;5;166;48;5;231〠#uuid 〠0〠〠38;5;64〠\"4fe5d828-6444-11e8-8222-720007e40350\"〠0〠"
    (->
     (?
      :data
@@ -2376,7 +2377,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2419,14 +2420,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠#uuid 〠0〠〠38;2;68;140;39〠\"4fe5d828-6444-11e8-8222-720007e40350\"〠0〠")))
+    string/join))))
 
 
 (deftest
  symbol-value
  (is
   (=
+   "〠38;5;61〠mysym〠0〠"
    (->
     (?
      :data
@@ -2434,7 +2435,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2477,14 +2478,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;77;109;186〠mysym〠0〠")))
+    string/join))))
 
 
 (deftest
  symbol+meta-value
  (is
   (=
+   "〠38;5;61〠mysym〠0〠 〠38;5;133;48;5;231〠    〠0〠〠38;5;133;48;5;231〠^{〠0〠〠38;5;133;48;5;231〠:foo〠0〠〠38;5;133;48;5;231〠 〠0〠〠38;5;133;48;5;231〠\"〠0〠〠38;5;133;48;5;231〠bar〠0〠〠38;5;133;48;5;231〠\"〠0〠〠38;5;133;48;5;231〠}〠0〠"
    (->
     (?
      :data
@@ -2492,7 +2493,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2535,14 +2536,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;77;109;186〠mysym〠0〠 〠38;2;190;85;187;48;2;252;240;255〠    〠0〠〠38;2;190;85;187;48;2;252;240;255〠^{〠0〠〠38;2;190;85;187;48;2;252;240;255〠:foo〠0〠〠38;2;190;85;187;48;2;252;240;255〠 〠0〠〠38;2;190;85;187;48;2;252;240;255〠\"〠0〠〠38;2;190;85;187;48;2;252;240;255〠bar〠0〠〠38;2;190;85;187;48;2;252;240;255〠\"〠0〠〠38;2;190;85;187;48;2;252;240;255〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  boolean-value
  (is
   (=
+   "〠38;5;97〠true〠0〠"
    (->
     (?
      :data
@@ -2550,7 +2551,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2593,14 +2594,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;122;62;157〠true〠0〠")))
+    string/join))))
 
 
 (deftest
  keyword-value
  (is
   (=
+   "〠38;5;97〠:keyword〠0〠"
    (->
     (?
      :data
@@ -2608,7 +2609,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2651,14 +2652,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;122;62;157〠:keyword〠0〠")))
+    string/join))))
 
 
 (deftest
  nil-value
  (is
   (=
+   "〠38;5;97〠nil〠0〠"
    (->
     (?
      :data
@@ -2666,7 +2667,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2709,14 +2710,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;122;62;157〠nil〠0〠")))
+    string/join))))
 
 
 (deftest
  Nan-value
  (is
   (=
+   "〠38;5;97〠NaN〠0〠"
    (->
     (?
      :data
@@ -2724,7 +2725,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2767,14 +2768,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;122;62;157〠NaN〠0〠")))
+    string/join))))
 
 
 (deftest
  Inf-value
  (is
   (=
+   "〠38;5;97〠Infinity〠0〠"
    (->
     (?
      :data
@@ -2782,7 +2783,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2825,14 +2826,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;122;62;157〠Infinity〠0〠")))
+    string/join))))
 
 
 (deftest
  -Inf-value
  (is
   (=
+   "〠38;5;97〠-Infinity〠0〠"
    (->
     (?
      :data
@@ -2840,7 +2841,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2883,14 +2884,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;122;62;157〠-Infinity〠0〠")))
+    string/join))))
 
 
 (deftest
  int-value
  (is
   (=
+   "〠38;5;97〠1234〠0〠"
    (->
     (?
      :data
@@ -2898,7 +2899,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2941,14 +2942,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;122;62;157〠1234〠0〠")))
+    string/join))))
 
 
 (deftest
  float-value
  (is
   (=
+   "〠38;5;97〠〠38;5;97〠3.〠0〠〠38;5;97〠33〠0〠〠0〠"
    (->
     (?
      :data
@@ -2956,7 +2957,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -2999,14 +3000,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;122;62;157〠〠38;2;122;62;157〠3.〠0〠〠38;2;122;62;157〠33〠0〠〠0〠")))
+    string/join))))
 
 
 (deftest
  core-fn
  (is
   (=
+   "〠38;5;61〠clojure.core/juxt〠0〠"
    (->
     (?
      :data
@@ -3014,7 +3015,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3057,8 +3058,7 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;77;109;186〠clojure.core/juxt〠0〠")))
+    string/join))))
 
 
 #?(:bb nil
@@ -3067,6 +3067,7 @@
     date-fn
     (is
      (=
+      "〠38;5;61〠java.util.Date〠0〠"
       (->
        (?
         :data
@@ -3074,7 +3075,7 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
@@ -3118,13 +3119,13 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠38;2;77;109;186〠java.util.Date〠0〠"))))
+       string/join)))))
 
 (deftest
  map-value
  (is
   (=
+   "〠38;5;102〠{〠0〠〠38;5;97〠:a〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠:b〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠:c〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠three〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3132,7 +3133,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3175,14 +3176,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠:c〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠three〠0〠〠38;2;68;140;39〠\"〠0〠〠38;5;102〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  multiline-map
  (is
   (=
+   "〠38;5;102〠{〠0〠〠38;5;97〠:a〠0〠〠〠    〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠abcdefghijklmnopqrstuv〠0〠〠38;5;64〠\"〠0〠〠〠\n 〠0〠〠38;5;97〠:ab〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠abcdefghijklmnopqrstuv12345〠0〠〠38;5;64〠\"〠0〠〠〠\n 〠0〠〠38;5;97〠:abcde〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠xyz〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3190,7 +3191,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3235,14 +3236,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠    〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠abcdefghijklmnopqrstuv〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:ab〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠abcdefghijklmnopqrstuv12345〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:abcde〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠xyz〠0〠〠38;2;68;140;39〠\"〠0〠〠38;5;102〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  rainbow-brackets
  (is
   (=
+   "〠38;5;102〠[〠0〠〠38;5;32〠[〠0〠〠38;5;172〠[〠0〠〠38;5;71〠[〠0〠〠38;5;170〠[〠0〠〠38;5;170〠]〠0〠〠38;5;71〠]〠0〠〠38;5;172〠]〠0〠〠38;5;32〠]〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -3250,7 +3251,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3293,14 +3294,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠[〠0〠〠38;5;32〠[〠0〠〠38;5;172〠[〠0〠〠38;5;71〠[〠0〠〠38;5;170〠[〠0〠〠38;5;170〠]〠0〠〠38;5;71〠]〠0〠〠38;5;172〠]〠0〠〠38;5;32〠]〠0〠〠38;5;102〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  vector-value
  (is
   (=
+   "〠38;5;102〠[〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -3308,7 +3309,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3351,14 +3352,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠38;5;102〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  vector+meta-value
  (is
   (=
+   "〠38;5;102〠[〠0〠 〠38;5;133;48;5;231〠    〠0〠〠38;5;133;48;5;231〠^{〠0〠〠38;5;133;48;5;231〠:meta-on-coll〠0〠〠38;5;133;48;5;231〠 〠0〠〠38;5;133;48;5;231〠1〠0〠〠38;5;133;48;5;231〠}〠0〠〠〠\n 〠0〠〠38;5;97〠:foo〠0〠〠〠\n 〠0〠〠38;5;97〠:baz〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -3366,7 +3367,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3409,14 +3410,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102;48;2;252;240;255〠[〠0〠 〠38;2;190;85;187;48;2;252;240;255〠    〠0〠〠38;2;190;85;187;48;2;252;240;255〠^{〠0〠〠38;2;190;85;187;48;2;252;240;255〠:meta-on-coll〠0〠〠38;2;190;85;187;48;2;252;240;255〠 〠0〠〠38;2;190;85;187;48;2;252;240;255〠1〠0〠〠38;2;190;85;187;48;2;252;240;255〠}〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:foo〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:baz〠0〠〠38;5;102;48;2;252;240;255〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  set-value
  (is
   (=
+   "〠38;5;102〠#{〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠three〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠:2〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3424,7 +3425,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3467,14 +3468,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠#{〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠three〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠:2〠0〠〠38;5;102〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  list-value
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -3482,7 +3483,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3525,14 +3526,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠(〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠38;5;102〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  lazy-seq-value
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;97〠0〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -3540,7 +3541,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3583,14 +3584,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠(〠0〠〠38;2;122;62;157〠0〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠38;5;102〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  atom-value
  (is
   (=
+   "〠3;38;5;166;48;5;231〠Atom〠0〠\n〠38;5;102〠{〠0〠〠38;5;97〠:status〠0〠〠〠 〠0〠〠38;5;97〠:ready〠0〠〠〠\n 〠0〠〠38;5;97〠:val〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;5;97〠:orange〠0〠〠〠 〠0〠〠〠 〠0〠〠38;5;97〠172〠0〠〠〠\n          〠0〠〠38;5;97〠:gray〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;97〠247〠0〠〠〠\n          〠0〠〠38;5;97〠:white〠0〠〠〠  〠0〠〠〠 〠0〠〠38;5;97〠231〠0〠〠〠\n          〠0〠〠38;5;97〠:yellow〠0〠〠〠 〠0〠〠〠 〠0〠〠38;5;97〠178〠0〠〠〠\n          〠0〠〠38;5;97〠:green〠0〠〠〠  〠0〠〠〠 〠0〠〠38;5;97〠76〠0〠〠〠\n          〠0〠〠38;5;97〠:red〠0〠〠〠    〠0〠〠〠 〠0〠〠38;5;97〠196〠0〠〠〠\n          〠0〠〠38;5;97〠:blue〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;97〠75〠0〠〠〠\n          〠0〠〠38;5;97〠:magenta〠0〠〠〠 〠0〠〠38;5;97〠171〠0〠〠〠\n          〠0〠〠38;5;97〠:purple〠0〠〠〠 〠0〠〠〠 〠0〠〠38;5;97〠141〠0〠〠〠\n          〠0〠〠38;5;97〠:olive〠0〠〠〠  〠0〠〠〠 〠0〠〠38;5;97〠106〠0〠〠〠\n          〠0〠〠38;5;97〠:black〠0〠〠〠  〠0〠〠〠 〠0〠〠38;5;97〠16〠0〠〠38;5;32〠}〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3598,7 +3599,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3652,14 +3653,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠Atom〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;122;62;157〠:status〠0〠〠〠 〠0〠〠38;2;122;62;157〠:ready〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:val〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;122;62;157〠:orange〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠172〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:gray〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠247〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:white〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;122;62;157〠231〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:yellow〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠178〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:green〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;122;62;157〠76〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:red〠0〠〠〠    〠0〠〠〠 〠0〠〠38;2;122;62;157〠196〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:blue〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠75〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:magenta〠0〠〠〠 〠0〠〠38;2;122;62;157〠171〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:purple〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠141〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:olive〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;122;62;157〠106〠0〠〠〠\n          〠0〠〠38;2;122;62;157〠:black〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;122;62;157〠16〠0〠〠38;5;32〠}〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  volatile!-value
  (is
   (=
+   "〠3;38;5;166;48;5;231〠Volatile〠0〠\n〠38;5;102〠{〠0〠〠38;5;97〠:status〠0〠〠〠 〠0〠〠38;5;97〠:ready〠0〠〠〠 〠0〠〠38;5;97〠:val〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3667,7 +3668,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3710,14 +3711,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠Volatile〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;122;62;157〠:status〠0〠〠〠 〠0〠〠38;2;122;62;157〠:ready〠0〠〠〠 〠0〠〠38;2;122;62;157〠:val〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  volatile
  (is
   (=
+   "〠3;38;5;166;48;5;231〠Volatile〠0〠\n〠38;5;102〠{〠0〠〠38;5;97〠:status〠0〠〠〠 〠0〠〠38;5;97〠:ready〠0〠〠〠 〠0〠〠38;5;97〠:val〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3725,7 +3726,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3768,14 +3769,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠Volatile〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;122;62;157〠:status〠0〠〠〠 〠0〠〠38;2;122;62;157〠:ready〠0〠〠〠 〠0〠〠38;2;122;62;157〠:val〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  transient-vector2
  (is
   (=
+   "〠3;38;5;166;48;5;231〠TransientVector〠0〠\n〠38;5;102〠{〠0〠〠3;38;5;245〠〠〠...+4〠0〠〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3783,7 +3784,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3826,14 +3827,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠TransientVector〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠3;38;2;140;140;140〠〠〠...+4〠0〠〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  transient-set2
  (is
   (=
+   "〠3;38;5;166;48;5;231〠TransientHashSet〠0〠〠〠#{}〠0〠"
    (->
     (?
      :data
@@ -3841,7 +3842,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3884,14 +3885,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠TransientHashSet〠0〠〠〠#{}〠0〠")))
+    string/join))))
 
 
 (deftest
  transient-map2
  (is
   (=
+   "〠3;38;5;166;48;5;231〠TransientArrayMap〠0〠\n〠38;5;102〠{〠0〠〠3;38;5;245〠 〠〠...+2〠0〠〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3899,7 +3900,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -3942,14 +3943,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠TransientArrayMap〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠3;38;2;140;140;140〠 〠〠...+2〠0〠〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  single-line-coll-print-length-50-19
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;97〠0〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠〠 〠0〠〠38;5;97〠10〠0〠〠〠 〠0〠〠38;5;97〠11〠0〠〠〠 〠0〠〠38;5;97〠12〠0〠〠〠 〠0〠〠38;5;97〠13〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -3957,7 +3958,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4000,14 +4001,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠(〠0〠〠38;2;122;62;157〠0〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠 〠0〠〠38;2;122;62;157〠10〠0〠〠〠 〠0〠〠38;2;122;62;157〠11〠0〠〠〠 〠0〠〠38;2;122;62;157〠12〠0〠〠〠 〠0〠〠38;2;122;62;157〠13〠0〠〠38;5;102〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  single-line-coll-print-length-50-20
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;97〠0〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠〠 〠0〠〠38;5;97〠10〠0〠〠〠 〠0〠〠38;5;97〠11〠0〠〠〠 〠0〠〠38;5;97〠12〠0〠〠〠 〠0〠〠38;5;97〠13〠0〠〠〠 〠0〠〠38;5;97〠14〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -4015,7 +4016,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4058,14 +4059,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠(〠0〠〠38;2;122;62;157〠0〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠 〠0〠〠38;2;122;62;157〠10〠0〠〠〠 〠0〠〠38;2;122;62;157〠11〠0〠〠〠 〠0〠〠38;2;122;62;157〠12〠0〠〠〠 〠0〠〠38;2;122;62;157〠13〠0〠〠〠 〠0〠〠38;2;122;62;157〠14〠0〠〠38;5;102〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  array-map-order
  (is
   (=
+   "〠38;5;102〠{〠0〠〠38;5;97〠:a〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠\n 〠0〠〠38;5;97〠:b〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠\n 〠0〠〠38;5;97〠:c〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠\n 〠0〠〠38;5;97〠:d〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠\n 〠0〠〠38;5;97〠:e〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠\n 〠0〠〠38;5;97〠:f〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠\n 〠0〠〠38;5;97〠:g〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠\n 〠0〠〠38;5;97〠:h〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠\n 〠0〠〠38;5;97〠:i〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠〠\n 〠0〠〠38;5;97〠:j〠0〠〠〠 〠0〠〠38;5;97〠10〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -4073,7 +4074,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4116,14 +4117,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠{〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:c〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:d〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:e〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:f〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:g〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:h〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:i〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠\n 〠0〠〠38;2;122;62;157〠:j〠0〠〠〠 〠0〠〠38;2;122;62;157〠10〠0〠〠38;5;102〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  symbol-with-meta
  (is
   (=
+   "〠38;5;61〠mysym〠0〠"
    (->
     (?
      :data
@@ -4131,7 +4132,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4174,14 +4175,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;77;109;186〠mysym〠0〠")))
+    string/join))))
 
 
 (deftest
  rainbow-brackets
  (is
   (=
+   "〠38;5;102〠[〠0〠〠38;5;32〠[〠0〠〠38;5;172〠[〠0〠〠38;5;71〠[〠0〠〠38;5;170〠[〠0〠〠38;5;170〠]〠0〠〠38;5;71〠]〠0〠〠38;5;172〠]〠0〠〠38;5;32〠]〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -4189,7 +4190,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4232,14 +4233,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠[〠0〠〠38;5;32〠[〠0〠〠38;5;172〠[〠0〠〠38;5;71〠[〠0〠〠38;5;170〠[〠0〠〠38;5;170〠]〠0〠〠38;5;71〠]〠0〠〠38;5;172〠]〠0〠〠38;5;32〠]〠0〠〠38;5;102〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  rainbow-brackets-low-contrast
  (is
   (=
+   "〠38;5;245〠[〠0〠〠38;5;74〠[〠0〠〠38;5;179〠[〠0〠〠38;5;106〠[〠0〠〠38;5;177〠[〠0〠〠38;5;177〠]〠0〠〠38;5;106〠]〠0〠〠38;5;179〠]〠0〠〠38;5;74〠]〠0〠〠38;5;245〠]〠0〠"
    (->
     (?
      :data
@@ -4247,7 +4248,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4290,8 +4291,7 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;245〠[〠0〠〠38;5;74〠[〠0〠〠38;5;179〠[〠0〠〠38;5;106〠[〠0〠〠38;5;177〠[〠0〠〠38;5;177〠]〠0〠〠38;5;106〠]〠0〠〠38;5;179〠]〠0〠〠38;5;74〠]〠0〠〠38;5;245〠]〠0〠")))
+    string/join))))
 
 
 #?(:bb nil
@@ -4300,6 +4300,7 @@
     with-scalar-level-1-depth-print-length
     (is
      (=
+      "〠38;5;102〠[〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44〠0〠〠3;38;5;245〠...〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠]〠0〠"
       (->
        (?
         :data
@@ -4307,7 +4308,7 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
@@ -4351,8 +4352,7 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠38;5;102〠[〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44〠0〠〠3;38;2;140;140;140〠...〠0〠〠38;2;68;140;39〠\"〠0〠〠38;5;102〠]〠0〠"))))
+       string/join)))))
 
 #?(:bb nil
    :clj
@@ -4360,6 +4360,7 @@
     scalar-result-max-length
     (is
      (=
+      "〠38;5;64〠\"〠0〠〠38;5;64〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfa〠0〠...〠38;5;64〠\"〠0〠"
       (->
        (?
         :data
@@ -4367,7 +4368,7 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
@@ -4411,8 +4412,7 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfa〠0〠...〠38;2;68;140;39〠\"〠0〠"))))
+       string/join)))))
 
 #?(:bb nil
    :clj
@@ -4420,6 +4420,7 @@
     datatype-value
     (is
      (=
+      "〠3;38;5;166;48;5;231〠fireworks.sample.MyType〠0〠\n〠38;5;102〠{〠0〠〠38;5;61〠a〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠\n 〠0〠〠38;5;61〠b〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠\n 〠0〠〠38;5;61〠c〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠\n 〠0〠〠38;5;61〠d〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠\n 〠0〠〠38;5;61〠e〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠\n 〠0〠〠38;5;61〠f〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠\n 〠0〠〠38;5;61〠g〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠\n 〠0〠〠38;5;61〠h〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠\n 〠0〠〠38;5;61〠i〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠〠\n 〠0〠〠38;5;61〠j〠0〠〠〠 〠0〠〠38;5;97〠10〠0〠〠〠\n 〠0〠〠38;5;61〠k〠0〠〠〠 〠0〠〠38;5;97〠11〠0〠〠38;5;102〠}〠0〠"
       (->
        (?
         :data
@@ -4427,7 +4428,7 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
@@ -4471,8 +4472,7 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyType〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠a〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠b〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠c〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠d〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠e〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠f〠0〠〠〠 〠0〠〠38;2;122;62;157〠6〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠g〠0〠〠〠 〠0〠〠38;2;122;62;157〠7〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠h〠0〠〠〠 〠0〠〠38;2;122;62;157〠8〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠i〠0〠〠〠 〠0〠〠38;2;122;62;157〠9〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠j〠0〠〠〠 〠0〠〠38;2;122;62;157〠10〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠k〠0〠〠〠 〠0〠〠38;2;122;62;157〠11〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠"))))
+       string/join)))))
 
 #?(:bb nil
    :clj
@@ -4480,6 +4480,7 @@
     record-value
     (is
      (=
+      "〠3;38;5;166;48;5;231〠fireworks.sample.MyRecordType〠0〠\n〠38;5;102〠{〠0〠〠38;5;97〠:a〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠:b〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠bbbbbbbbbbbbbb〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠}〠0〠"
       (->
        (?
         :data
@@ -4487,7 +4488,7 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
@@ -4531,13 +4532,13 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠3;38;2;199;104;35;48;2;255;249;245〠fireworks.sample.MyRecordType〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;77;109;186〠const__22〠0〠〠〠 〠0〠〠〠#'clojure.core/imap-cons〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠a〠0〠〠〠        〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__4〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/some〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__21〠0〠〠〠 〠0〠〠〠#'clojure.core/class〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__hash〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__23〠0〠〠〠 〠0〠〠〠#'clojure.core/str〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__16〠0〠〠〠 〠0〠〠〠#'clojure.core/assoc〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__14〠0〠〠〠 〠0〠〠〠#'clojure.core/not-empty〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__meta〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__13〠0〠〠〠 〠0〠〠〠#'clojure.core/into〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__18〠0〠〠〠 〠0〠〠〠#'clojure.core/seq〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__8〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__10〠0〠〠〠 〠0〠〠38;5;32〠#{〠0〠〠38;2;122;62;157〠:b〠0〠〠〠 〠0〠〠38;2;122;62;157〠:a〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__1〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/vals〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__19〠0〠〠〠 〠0〠〠〠#'clojure.core/concat〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__9〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠:a〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__11〠0〠〠〠 〠0〠〠〠#'clojure.core/dissoc〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__7〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/contains?〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__20〠0〠〠〠 〠0〠〠〠#'clojure.core/not〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__hasheq〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__17〠0〠〠〠 〠0〠〠38;5;32〠[〠0〠〠38;2;122;62;157〠:a〠0〠〠〠 〠0〠〠38;2;122;62;157〠:b〠0〠〠38;5;32〠]〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__2〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/keys〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__12〠0〠〠〠 〠0〠〠〠#'clojure.core/with-meta〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠b〠0〠〠〠        〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠bbbbbbbbbbbbbb〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠__extmap〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;122;62;157〠nil〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__0〠0〠〠〠 〠0〠〠〠 〠0〠〠〠#'clojure.core/set〠0〠〠〠\n 〠0〠〠38;2;77;109;186〠const__15〠0〠〠〠 〠0〠〠〠#'clojure.core/identical?〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠"))))
+       string/join)))))
 
 (deftest
  java-interop-types
  (is
   (=
+   "〠38;5;102〠{〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠Java collection types〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;5;61〠java.util.ArrayList〠0〠〠〠 〠0〠〠3;38;5;166;48;5;231〠java.util.ArrayList〠0〠\n                                              〠38;5;172〠[〠0〠〠38;5;97〠0〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠38;5;172〠]〠0〠〠〠\n                          〠0〠〠38;5;61〠java.util.HashMap〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;5;166;48;5;231〠java.util.HashMap〠0〠\n                                              〠38;5;172〠{〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠b〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠38;5;172〠}〠0〠〠〠\n                          〠0〠〠38;5;61〠java.util.HashSet〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;5;166;48;5;231〠java.util.HashSet〠0〠\n                                              〠38;5;172〠#{〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠b〠0〠〠38;5;64〠\"〠0〠〠38;5;172〠}〠0〠〠〠\n                          〠0〠〠38;5;61〠java.lang.String〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠welcome〠0〠〠38;5;64〠\"〠0〠〠〠\n                          〠0〠〠38;5;61〠array〠0〠〠〠              〠0〠〠〠 〠0〠〠3;38;5;166;48;5;231〠Ljava.lang.Object〠0〠\n                                              〠38;5;172〠[〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠38;5;172〠]〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠Java numbers〠0〠〠38;5;64〠\"〠0〠〠〠         〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;5;97〠:ratio〠0〠〠〠               〠0〠〠〠 〠0〠〠38;5;97〠1/3〠0〠〠〠\n                          〠0〠〠38;5;97〠:byte〠0〠〠〠                〠0〠〠〠 〠0〠〠38;5;97〠0〠0〠〠〠\n                          〠0〠〠38;5;97〠:short〠0〠〠〠               〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠\n                          〠0〠〠38;5;97〠:double〠0〠〠〠              〠0〠〠〠 〠0〠〠38;5;97〠〠38;5;97〠23.〠0〠〠38;5;97〠44〠0〠〠0〠〠〠\n                          〠0〠〠38;5;97〠:decimal〠0〠〠〠             〠0〠〠〠 〠0〠〠38;5;97〠1M〠0〠〠〠\n                          〠0〠〠38;5;97〠:int〠0〠〠〠                 〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠\n                          〠0〠〠38;5;97〠:float〠0〠〠〠               〠0〠〠〠 〠0〠〠38;5;97〠〠38;5;97〠1.〠0〠〠38;5;97〠5〠0〠〠0〠〠〠\n                          〠0〠〠38;5;97〠:char〠0〠〠〠                〠0〠〠〠 〠0〠〠〠a〠0〠〠〠\n                          〠0〠〠38;5;97〠:java.math.BigInteger〠0〠〠〠 〠0〠〠38;5;97〠171〠0〠〠38;5;32〠}〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -4545,7 +4546,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4588,14 +4589,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;102〠{〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠Java collection types〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;77;109;186〠java.util.ArrayList〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠java.util.ArrayList〠0〠\n                                              〠38;5;172;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠0〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠38;5;172;48;2;255;249;245〠]〠0〠〠〠\n                          〠0〠〠38;2;77;109;186〠java.util.HashMap〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠java.util.HashMap〠0〠\n                                              〠38;5;172;48;2;255;249;245〠{〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠b〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠38;5;172;48;2;255;249;245〠}〠0〠〠〠\n                          〠0〠〠38;2;77;109;186〠java.util.HashSet〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠java.util.HashSet〠0〠\n                                              〠38;5;172;48;2;255;249;245〠#{〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠b〠0〠〠38;2;68;140;39〠\"〠0〠〠38;5;172;48;2;255;249;245〠}〠0〠〠〠\n                          〠0〠〠38;2;77;109;186〠java.lang.String〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠welcome〠0〠〠38;2;68;140;39〠\"〠0〠〠〠\n                          〠0〠〠38;2;77;109;186〠array〠0〠〠〠              〠0〠〠〠 〠0〠〠3;38;2;199;104;35;48;2;255;249;245〠Ljava.lang.Object〠0〠\n                                              〠38;5;172;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠 〠0〠〠38;2;122;62;157〠4〠0〠〠〠 〠0〠〠38;2;122;62;157〠5〠0〠〠38;5;172;48;2;255;249;245〠]〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠Java numbers〠0〠〠38;2;68;140;39〠\"〠0〠〠〠         〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;2;122;62;157〠:ratio〠0〠〠〠               〠0〠〠〠 〠0〠〠38;2;122;62;157〠1/3〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:byte〠0〠〠〠                〠0〠〠〠 〠0〠〠38;2;122;62;157〠0〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:short〠0〠〠〠               〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:double〠0〠〠〠              〠0〠〠〠 〠0〠〠38;2;122;62;157〠〠38;2;122;62;157〠23.〠0〠〠38;2;122;62;157〠44〠0〠〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:decimal〠0〠〠〠             〠0〠〠〠 〠0〠〠38;2;122;62;157〠1M〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:int〠0〠〠〠                 〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:float〠0〠〠〠               〠0〠〠〠 〠0〠〠38;2;122;62;157〠〠38;2;122;62;157〠1.〠0〠〠38;2;122;62;157〠5〠0〠〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:char〠0〠〠〠                〠0〠〠〠 〠0〠〠〠a〠0〠〠〠\n                          〠0〠〠38;2;122;62;157〠:java.math.BigInteger〠0〠〠〠 〠0〠〠38;2;122;62;157〠171〠0〠〠38;5;32〠}〠0〠〠38;5;102〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  java-util-hashmap
  (is
   (=
+   "〠3;38;5;166;48;5;231〠java.util.HashMap〠0〠\n〠38;5;102〠{〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠b〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -4603,7 +4604,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4646,14 +4647,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠java.util.HashMap〠0〠\n〠38;5;102;48;2;255;249;245〠{〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠b〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  java-util-arraylist
  (is
   (=
+   "〠3;38;5;166;48;5;231〠java.util.ArrayList〠0〠\n〠38;5;102〠[〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -4661,7 +4662,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4704,14 +4705,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠java.util.ArrayList〠0〠\n〠38;5;102;48;2;255;249;245〠[〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;122;62;157〠3〠0〠〠38;5;102;48;2;255;249;245〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  java-util-hashset
  (is
   (=
+   "〠3;38;5;166;48;5;231〠java.util.HashSet〠0〠\n〠38;5;102〠#{〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠b〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -4719,7 +4720,7 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
@@ -4762,5 +4763,4 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;199;104;35;48;2;255;249;245〠java.util.HashSet〠0〠\n〠38;5;102;48;2;255;249;245〠#{〠0〠〠38;2;122;62;157〠1〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠a〠0〠〠38;2;68;140;39〠\"〠0〠〠〠 〠0〠〠38;2;122;62;157〠2〠0〠〠〠 〠0〠〠38;2;68;140;39〠\"〠0〠〠38;2;68;140;39〠b〠0〠〠38;2;68;140;39〠\"〠0〠〠38;5;102;48;2;255;249;245〠}〠0〠")))
+    string/join))))

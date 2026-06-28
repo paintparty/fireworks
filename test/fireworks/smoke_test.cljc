@@ -23,6 +23,8 @@
             #?(:clj [clojure.test :refer :all])))
 
 
+#_(? :perf {:perfs? true} :fooo)
+
 
 (let [a "foo"
       b "gooasdfasdfsafasd"
@@ -32,7 +34,6 @@
 ;; (? (tag-map #'bar))
 ;; (def my-delay (delay 100))
 ;; (? (tag-map my-delay))
-;; (? (tag-map (range 3)))
 ;; (? (lasertag.core/tag-map (java.util.HashSet. #{"a" 1 "b" 2})))
 ;; (? (seqable? (java.util.HashSet. #{"a" 1 "b" 2})))
 
