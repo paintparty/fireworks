@@ -1,6 +1,7 @@
 (ns fireworks.profiling
   (:require [fireworks.prof :as p]
             [fireworks.sample :as sample]
+            [lasertag.core]
             [clojure.pprint :refer [pprint]]
             [fireworks.core :refer [?]]))   ; <- your real entry-point ns
 
@@ -29,7 +30,11 @@
 (? {:perf 500} (let [s (re-find (:regex sample/everything2) "ataa")]
                  (str s (+ 2 333))))
 
+
+(println (lasertag.core/tag-map (range 10)))
+
 #_(profile-macro {:mode  :nested  ;<- :nested or :sequential
+
                   :chart :mean-bar        ;<- :full or :mean (for report style)
                   ;; :start-path ['formatted]
                   ;; :start-path ['reset-state!]

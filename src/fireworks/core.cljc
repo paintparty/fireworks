@@ -24,7 +24,7 @@
    [fireworks.util :as util] 
    [lasertag.core :as lasertag]
    [fireworks.defs :as defs]
-   [fireworks.prof :as p]
+  ;;  [fireworks.prof :as p]
    [clojure.walk :as walk]
    [fireworks.pp :refer [?pp]])
   #?(:cljs (:require-macros 
@@ -220,137 +220,137 @@
        :clj
        (+ 1 true)))
 
-  (p/prof 'formatted (let [user-print-fn
-                           (:print-with user-opts)
+  (let [user-print-fn
+        (:print-with user-opts)
 
-                           label*
-                           label
+        label*
+        label
 
-                           label
-                           (if (coll? label)
-                             (with-out-str (pprint label))
-                             label)
+        label
+        (if (coll? label)
+          (with-out-str (pprint label))
+          label)
 
-                           mll?
-                           (when (string? label) (re-find #"\n" label))
+        mll?
+        (when (string? label) (re-find #"\n" label))
 
-                           #_ml-qf?
-                           #_(when (string? qf) (re-find #"\n" qf))
+        #_ml-qf?
+        #_(when (string? qf) (re-find #"\n" qf))
 
-                           file-info-first?
-                           (or 
-                            ;; NEW - just go first line if :file info in there at all
-                            (contains? (into #{} template) :file-info))
+        file-info-first?
+        (or 
+         ;; NEW - just go first line if :file info in there at all
+         (contains? (into #{} template) :file-info))
 
-                           just-result?
-                           (and log? (= template [:result]))
+        just-result?
+        (and log? (= template [:result]))
 
-                           label?
-                           (not (or just-result? (= template [:file-info :result])))
+        label?
+        (not (or just-result? (= template [:file-info :result])))
 
-                           {:keys [form
-                                   label
-                                   file-info
-                                   file-info*]}
-                           (when-not just-result?
-                             (let [[label form]           
-                                   (when label? (user-label-or-form! 
-                                                 (merge opts
-                                                        (keyed [
-                                                                ;;  file-info-first?
-                                                                mll? 
-                                                                label
-                                                                label?]))))
+        {:keys [form
+                label
+                file-info
+                file-info*]}
+        (when-not just-result?
+          (let [[label form]           
+                (when label? (user-label-or-form! 
+                              (merge opts
+                                     (keyed [
+                                             ;;  file-info-first?
+                                             mll? 
+                                             label
+                                             label?]))))
 
-                                   [file-info* file-info] 
-                                   (file-info opts)]
-                               (keyed [label
-                                       form
-                                       file-info*
-                                       file-info])))
+                [file-info* file-info] 
+                (file-info opts)]
+            (keyed [label
+                    form
+                    file-info*
+                    file-info])))
 
-                           result-header
-                           (when-not (or (contains? #{[:result] [:form-or-label :file-info]}
-                                                    template)
-                                         log?
-                                         threading?)
-                             ;; TODO - is the space before the newline necessary?
-                             (tag/tag-entity " \n" :result-header))
+        result-header
+        (when-not (or (contains? #{[:result] [:form-or-label :file-info]}
+                                 template)
+                      log?
+                      threading?)
+          ;; TODO - is the space before the newline necessary?
+          (tag/tag-entity " \n" :result-header))
 
-                           fmt           
-                           (if (:lasertag.core/unknown-coll-size opts)
-                             (with-out-str (pprint source))
-                             (when-not (or log?
-                                           threading?
-                                           (= template [:form-or-label :file-info]))
-                               (if (fn? user-print-fn)
-                                 (with-out-str (user-print-fn source))
+        fmt           
+        (if (:lasertag.core/unknown-coll-size opts)
+          (with-out-str (pprint source))
+          (when-not (or log?
+                        threading?
+                        (= template [:form-or-label :file-info]))
+            (if (fn? user-print-fn)
+              (with-out-str (user-print-fn source))
 
-                                 ;; This is where you feed the source to the formatting engine
-                                 (let [user-opts (merge (or (some-> opts :user-opts)
-                                                            {})
-                                                        (when (false? truncate?)
-                                                          {:truncate? false}))]
-                                   (serialize/formatted* source user-opts)))))
+              ;; This is where you feed the source to the formatting engine
+              (let [user-opts (merge (or (some-> opts :user-opts)
+                                         {})
+                                     (when (false? truncate?)
+                                       {:truncate? false}))]
+                (serialize/formatted* source user-opts)))))
 
-                           label-or-form
-                           (or label form)
+        label-or-form
+        (or label form)
 
-                           perf
-                           (some-> opts :perf (tag/tag-entity :eval-label-red))
+        perf
+        (some-> opts :perf (tag/tag-entity :eval-label-red))
 
-                           fmt+          
-                           (when-not just-result?
-                             (if file-info-first?
-                               (str 
-                                file-info
-                                (when perf "\n")
-                                perf
-                                (when label-or-form "\n")
-                                label-or-form
-                                result-header
-                                fmt)
-                               (str label-or-form
-                                    (when label-or-form
-                                      (when-not (re-find #"\n" label-or-form) "  "))
-                                    (when (and mll? file-info)
-                                      "\n")
-                                    file-info
-                                    result-header
-                                    fmt)))
-                           ]
-                       
-                       ;; TODO Change this to (= mode :data)
-                       ;; TODO - Change if post-replace works - cljs stuff below
-                       (if  p-data?
-                         ;; If p-data, return a map of preformatted values
-                         (merge
-                          {:ns-str              ns-str
-                           :user-supplied-label label*
-                           :display-label       (or label form)
-                           :template            template
-                           :quoted-form         qf
-                           :file-info-str       file-info*
-                           :formatted+          {:string fmt+}
-                           :formatted           {:string fmt}
-                           :threading?          threading?
-                           :truncate?           truncate?}
-                          form-meta)
+        fmt+          
+        (when-not just-result?
+          (if file-info-first?
+            (str 
+             file-info
+             (when perf "\n")
+             perf
+             (when label-or-form "\n")
+             label-or-form
+             result-header
+             fmt)
+            (str label-or-form
+                 (when label-or-form
+                   (when-not (re-find #"\n" label-or-form) "  "))
+                 (when (and mll? file-info)
+                   "\n")
+                 file-info
+                 result-header
+                 fmt)))
+        ]
+    
+    ;; TODO Change this to (= mode :data)
+    ;; TODO - Change if post-replace works - cljs stuff below
+    (if  p-data?
+      ;; If p-data, return a map of preformatted values
+      (merge
+       {:ns-str              ns-str
+        :user-supplied-label label*
+        :display-label       (or label form)
+        :template            template
+        :quoted-form         qf
+        :file-info-str       file-info*
+        :formatted+          {:string fmt+}
+        :formatted           {:string fmt}
+        :threading?          threading?
+        :truncate?           truncate?}
+       form-meta)
 
-                         ;; Else if print-and-return fns, return printing opts
-                         (merge 
-                          {:ns-str ns-str} ;; <-new
-                          
-                          {:fmt           fmt+
-                           :file-info-str file-info*
-                           :log?          log?
+      ;; Else if print-and-return fns, return printing opts
+      (merge 
+       {:ns-str ns-str} ;; <-new
+       
+       {:fmt           fmt+
+        :file-info-str file-info*
+        :log?          log?
 
-                           ;; Defaults to {:margin-bottom 1 :margin-top 0}
-                           ;; If :result flag is used it will be {:margin-bottom 0 :margin-top 0}
-                           ;; If :result flag is used w call-site opts for :margin-*, those will win
-                           :margin-bottom (margin-block-str opts :margin-bottom)
-                           :margin-top    (margin-block-str opts :margin-top)
-                           :template      template})))))
+        ;; Defaults to {:margin-bottom 1 :margin-top 0}
+        ;; If :result flag is used it will be {:margin-bottom 0 :margin-top 0}
+        ;; If :result flag is used w call-site opts for :margin-*, those will win
+        :margin-bottom (margin-block-str opts :margin-bottom)
+        :margin-top    (margin-block-str opts :margin-top)
+        :template      template}))))
 
 
 #?(:cljs 
@@ -571,7 +571,7 @@
     (when state/debug-config?
       (messaging/fw-debug-report-template
        "Resetting fireworks.state/config atom to"
-       (p/prof 'merged-config (state/merged-config))
+       (state/merged-config)
        :magenta))
 
     ;; Reset config & potentially reset/remerge the theme
@@ -900,7 +900,7 @@
    (_p nil opts x))
 
   ([a opts x]
-   (p/prof 'write-to-store (write-to-store x (assoc (:form-meta opts) :ns-str (:ns-str opts))))
+   (write-to-store x (assoc (:form-meta opts) :ns-str (:ns-str opts)))
    (let [opts (if (map? a)
                 (merge (dissoc opts x :label) a)
                 opts)
@@ -982,81 +982,78 @@
      Example: `(? {:print-with prn} (+ 1 1))`
    "
   [opts x]
-  (p/prof '_p2
+  (let [debug-config? (or state/debug-config?
+                          (-> opts :user-opts :fw/debug-config? true?)) 
+        config-before (when debug-config? @state/config)]
+    ;; Maybe write truncated string representation to .fireworks/results
+    ;; This is opt-in by user, based on the existance of that path,
+    ;; relative to the root of the project  
+    (write-to-store x
+                    (assoc (:form-meta opts)
+                           :ns-str
+                           (:ns-str opts)
+                           :perf
+                           (:perf opts)))
+    
+    ;; Reset the state if user is passing options that override defaults
+    ;; in state.
+    (reset-state! opts)
+
+    (let [native-logging (try (native-logging* x opts)
+                              (catch #?(:cljs js/Object :clj Throwable)
+                                     e
+                                (fw-throwable e x opts)))
+
+          ;; TODO - Need a better way to do threading 
+          opts           (merge opts
+                                native-logging
+                                (when (some-> opts :label :threading?)
+                                  {:label (or (some-> opts :label :label)
+                                              "threading:")}))
+
+          printing-opts  (try (formatted x opts)
+                              (catch #?(:cljs js/Object :clj Throwable)
+                                     e
+                                (fw-throwable e x opts)))
+
+          return-result? (when-not (= (:template opts)
+                                      [:form-or-label :file-info])
+                           x)]
+
+      (when debug-config? 
+        (fw-debug-report config-before opts "fireworks.core/_p2")) 
+
+      (when (or state/print-config?
+                (-> opts :user-opts :fw/print-config? true?))
+        (fw-config-report))
+
+      (if (:p-data? opts) 
+        ;; user asked for data, don't print
+        (as-data printing-opts)
+        
+        (let [print? (if (contains? opts :when) (:when opts) true)]
+          (when print?
+            #_(println "_p2, normal printing brach")
+            (print-formatted printing-opts 
+                             #?(:cljs (when-not node? js-print))))
           
-          (let [debug-config? (or state/debug-config?
-                                  (-> opts :user-opts :fw/debug-config? true?)) 
-                config-before (when debug-config? @state/config)]
-            ;; Maybe write truncated string representation to .fireworks/results
-            ;; This is opt-in by user, based on the existance of that path,
-            ;; relative to the root of the project  
-            (p/prof 'write-to-store
-                    (write-to-store x
-                                    (assoc (:form-meta opts)
-                                           :ns-str
-                                           (:ns-str opts)
-                                           :perf
-                                           (:perf opts))))
-            
-            ;; Reset the state if user is passing options that override defaults
-            ;; in state.
-            (p/prof 'reset-state! (reset-state! opts))
+          ;; WHEN DOES THIS BRANCH GET CALLED? 
+          ;; TODO should we reverse the order here, and put in a cond
+          ;; Fireworks formatting and printing of does not happen when:
+          ;; - Value being printed is non-cljs or non-clj data-structure
+          ;; - :log :log- is used
+          ;; - :pp or :pp- is used
+          (when (and print?
+                     (not (:fw/log? opts))
+                     (:log? opts))
+            #_(println "_p2, logging-branch")
+            #?(:cljs (if node?
+                       (fireworks.core/pprint x)
+                       (js/console.log x))
+               :clj (fireworks.core/pprint x)))
 
-            (let [native-logging (try (native-logging* x opts)
-                                      (catch #?(:cljs js/Object :clj Throwable)
-                                             e
-                                        (fw-throwable e x opts)))
-
-                  ;; TODO - Need a better way to do threading 
-                  opts           (merge opts
-                                        native-logging
-                                        (when (some-> opts :label :threading?)
-                                          {:label (or (some-> opts :label :label)
-                                                      "threading:")}))
-
-                  printing-opts  (try (formatted x opts)
-                                      (catch #?(:cljs js/Object :clj Throwable)
-                                             e
-                                        (fw-throwable e x opts)))
-
-                  return-result? (when-not (= (:template opts)
-                                              [:form-or-label :file-info])
-                                   x)]
-
-              (when debug-config? 
-                (fw-debug-report config-before opts "fireworks.core/_p2")) 
-
-              (when (or state/print-config?
-                        (-> opts :user-opts :fw/print-config? true?))
-                (fw-config-report))
-
-              (if (:p-data? opts) 
-                ;; user asked for data, don't print
-                (p/prof 'as-data (as-data printing-opts))
-                
-                (let [print? (if (contains? opts :when) (:when opts) true)]
-                  (when print?
-                    #_(println "_p2, normal printing brach")
-                    (print-formatted printing-opts 
-                                     #?(:cljs (when-not node? js-print))))
-                  
-                  ;; WHEN DOES THIS BRANCH GET CALLED? 
-                  ;; TODO should we reverse the order here, and put in a cond
-                  ;; Fireworks formatting and printing of does not happen when:
-                  ;; - Value being printed is non-cljs or non-clj data-structure
-                  ;; - :log :log- is used
-                  ;; - :pp or :pp- is used
-                  (when (and print?
-                             (not (:fw/log? opts))
-                             (:log? opts))
-                    #_(println "_p2, logging-branch")
-                    #?(:cljs (if node?
-                               (fireworks.core/pprint x)
-                               (js/console.log x))
-                       :clj (fireworks.core/pprint x)))
-
-                  (reset! state/formatting-form-to-be-evaled? false)
-                  (when return-result? x)))))))
+          (reset! state/formatting-form-to-be-evaled? false)
+          (when return-result? x))))))
 
 
 (defn- cfg-opts
