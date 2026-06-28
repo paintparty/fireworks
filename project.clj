@@ -11,6 +11,11 @@
                  [expound "0.9.0"]
                  [io.github.paintparty/lasertag "0.12.0"]]
   :repl-options {:init-ns fireworks.core}
+
+  ;; rewrite-clj is dev/test-only: it backs the experimental golden-snapshotter
+  ;; in fireworks.test-util (snapshot!). Not a runtime dependency of the library.
+  :profiles {:dev {:dependencies [[rewrite-clj "1.1.47"]]}}
+
   :deploy-repositories [["clojars" {:url           "https://clojars.org/repo"
                                     :sign-releases false}]])
 
