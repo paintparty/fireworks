@@ -906,7 +906,7 @@
 
   (when (fireworks.fs/path-exists? hidden-dir)
     (let [fpath
-          (str hidden-dir "/" results-subdir "/" (some-> ns-str (str "/" )) line ":" column)
+          (str hidden-dir "/" results-subdir "/" (some-> ns-str (str "/" )) line "_" column)
           #_(fireworks.fs/join-path (? hidden-dir)
                                     (? results-subdir)
                                     (? ns-str) 
