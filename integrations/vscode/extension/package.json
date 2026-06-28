@@ -20,9 +20,9 @@
   "extensionDependencies": ["betterthantomorrow.calva"],
   "contributes": {
     "commands": [
-      { "command": "fireworks.toggle", "title": "Toggle ? (print and return)", "category": "Fireworks" },
-      { "command": "fireworks.toggleTap", "title": "Toggle ?> (tap and return)", "category": "Fireworks" },
-      { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (ignore)", "category": "Fireworks" },
+      { "command": "fireworks.toggle", "title": "Toggle ? (Print & Return)", "category": "Fireworks" },
+      { "command": "fireworks.toggleTap", "title": "Toggle ?> (Tap & Return)", "category": "Fireworks" },
+      { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (Ignore)", "category": "Fireworks" },
       { "command": "fireworks.withOption", "title": "? With Option", "category": "Fireworks" },
       { "command": "fireworks.toggleTrace", "title": "Toggle (? :trace …)", "category": "Fireworks" },
       { "command": "fireworks.toggleMinus", "title": "Toggle (? :- …)", "category": "Fireworks" },
