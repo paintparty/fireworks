@@ -27,11 +27,10 @@
     (p/report chart start-path)
     (finally (p/disable!))))
 
-(? {:perf 500} (let [s (re-find (:regex sample/everything2) "ataa")]
-                 (str s (+ 2 333))))
+;; (? {:perf 500} 
+;;    (let [s (re-find (:regex sample/everything2) "ataa")]
+;;      (str s (+ 2 333))))
 
-
-(println (lasertag.core/tag-map (range 10)))
 
 #_(profile-macro {:mode  :nested  ;<- :nested or :sequential
 

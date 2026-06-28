@@ -33,7 +33,7 @@
        ;;  (? (tag-map (transient #{:a 1})))
        (? (transient (hash-map :a 1)))
 
-       (!? everything)
+       (? everything)
 
        (!? #(inc %))
 

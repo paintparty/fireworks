@@ -1,0 +1,10 @@
+{;; The bb test-util mirror installs its colored-diff report hook via a
+ ;; top-level (alter-var-root #'clojure.test/report ...) inside a `defonce`
+ ;; side effect. Under the bb feature set kondo flags alter-var-root /
+ ;; clojure.test as unresolved (false positives) and the defonce as an unused
+ ;; private var. Scope the suppressions to this namespace only.
+ :config-in-ns
+ {fireworks.test-util
+  {:linters {:unresolved-symbol    {:exclude [alter-var-root]}
+             :unresolved-namespace {:exclude [clojure.test]}
+             :unused-private-var   {:level :off}}}}}
