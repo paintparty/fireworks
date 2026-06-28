@@ -17,16 +17,13 @@
               compile-time-warnings-and-errors]])
    #?(:clj [fireworks.macros :refer [keyed get-user-config-edn-dynamic]])
    #?(:clj [clojure.java.io :as io])
-   ;;  #?(:cljs [fireworks.debug :refer-macros [?]])
-   ;;  [fireworks.debug :refer [?] :rename {? ?pp}]
    [clojure.string :as string]
    [fireworks.config :as config]
    [fireworks.util :as util] 
    [lasertag.core :as lasertag]
    [fireworks.defs :as defs]
-  ;;  [fireworks.prof :as p]
    [clojure.walk :as walk]
-   [fireworks.pp :refer [?pp]])
+   )
   #?(:cljs (:require-macros 
             [fireworks.core :refer [? !? ?> !?>]])))
 
