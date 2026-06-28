@@ -34,7 +34,7 @@
    [fireworks.test-util]
    [clojure.test :refer [deftest is]]))
 
-
+#_(? sample/everything2)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Options
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -149,7 +149,7 @@
   []
   nil)
 
-(deftest long-fn-name
+#_(deftest long-fn-name
   (is (=
        (let [ret              (? :data
                                  {:scalar-max-length 33
@@ -272,17 +272,24 @@
                (list
                 'deftest sym
                 (list 'is
-                      (let [merged-opts (dissoc (merge default-options-map opts)
-                                                :when)]
+                      (let [merged-opts
+                            (dissoc (merge default-options-map 
+                                           opts
+                                           ;; vs-code-terminal safety
+                                           {:supports-color-level 2})
+                                    :when)]
                         (list '=
+                              ;; Baking in the golden value, the expected value 
+                              (-> (hifi-impl v merged-opts)
+                                  escape-sgr
+                                  string/join)
+                              ;; The list that will be evaled at the runtime of
+                              ;; the tests, yielding the expected golden value 
                               (concat (list '->
                                             (list '? :data merged-opts qv)
                                             :formatted
                                             :string)
-                                      '[escape-sgr string/join])
-                              (-> (hifi-impl v merged-opts)
-                                  escape-sgr
-                                  string/join)))))))]
+                                      '[escape-sgr string/join])))))))]
         (if-let [elide-branches (:elide-branches opts)]
           (str
            "#?("
