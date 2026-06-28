@@ -66,7 +66,7 @@
 ;; Safe to edit; the extension won't overwrite it once present.
 ;;
 ;; Optional settings, read from .fireworks/config.edn at runtime (all optional):
-;;   {:clear true :banner \"🔥🔥🔥\" :watch-paths [\"src\" \"test\"]
+;;   {:clear true :banner \"🔥\" :watch-paths [\"src\" \"test\"]
 ;;    :entry-ns my.app.core   ; pin a fixed ns to run instead of the saved file's
 ;;    :test-ns my.app.core-test :run-entry true :run-tests false}
 
@@ -88,7 +88,7 @@
       {})))
 
 (def clear       (get config :clear true))
-(def banner      (get config :banner \"🔥🔥🔥\"))
+(def banner      (get config :banner \"🔥\"))
 (def watch-paths (get config :watch-paths [\"src\" \"test\"]))
 
 (defn- ns-of-file

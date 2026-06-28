@@ -25,8 +25,8 @@
  :changes-only      true
  :notify-on-success false
  :debug             true                       ;<- If `true`, runs in debug mode - all tests are skipped
- :banner            \"🔥🔥🔥\"                  ;<- This controls the actual banner
- :debug-banner      \"🔥🔥🔥\"                  ;<- This is for tooling to auto-toggle the :banner entry via rewrite 
+ :banner            \"🔥\"                  ;<- This controls the actual banner
+ :debug-banner      \"🔥\"                  ;<- This is for tooling to auto-toggle the :banner entry via rewrite 
  :test-banner       \"🧪 Running tests...\" ;<- This is for tooling to auto-toggle the :banner entry via rewrite
  :clear             true                       ;<- Clears terminal on each reload, perfect for debug mode
  }
