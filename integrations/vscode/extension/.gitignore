@@ -14,13 +14,12 @@ pom.xml.asc
 .hg/
 .lsp
 .lein-repl-history
-.clj-kondo/.cache
+**/.clj-kondo/.cache/
 .calva
 .joyride
 .vscode
 .idea
 .ls
-.clj-kondo/.cache
 /public/js
 .cpcache
 pom.properties
