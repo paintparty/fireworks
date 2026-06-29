@@ -18,6 +18,7 @@
   (:require [clojure.string :as str]
             [fireworks-vscode.config :as config]
             [rewrite-clj.node :as n]
+            [rewrite-clj.parser :as p]
             [rewrite-clj.zip :as z]))
 
 (def ^:private plugin-sym 'com.jakemccrary/lein-test-refresh)
@@ -135,24 +136,38 @@
           {:text (z/root-string loc) :changed changed})))
     (catch :default _ {:error :unparseable})))
 
+(def ^:private test-refresh-block
+  "The exact :test-refresh block ensure-test-refresh splices in when a project.clj has none:
+   a leading newline, the 2-space-indented comment header, and an aligned map. The values
+   mirror fireworks-vscode.config/baseline; the key order here is intentional (changes-only
+   first). Parsed and inserted verbatim so the comments and alignment are preserved."
+  "
+  ;; `test-refresh` options.
+  ;; The Fireworks extension keeps this map present.
+  ;; If it is not present when the user runs the `Fireworks: Live Code` command,
+  ;; the extension will ask the user for permission to add it to the `project.clj`
+  :test-refresh {:changes-only      true
+                 :quiet             true
+                 :notify-on-success false
+                 :debug             true
+                 :banner            \"🔥\"
+                 :debug-banner      \"🔥\"
+                 :test-banner       \"🧪 Running tests...\"
+                 :clear             true}")
+
 (defn ensure-test-refresh
   "Ensure the top-level defproject :test-refresh map in project.clj `text` against
-   config/baseline. Absent -> add the full baseline on its own line; present -> assoc only
-   the missing baseline keys (existing values untouched). Returns
+   config/baseline. Absent -> splice in test-refresh-block (the commented, aligned map);
+   present -> assoc only the missing baseline keys (existing values untouched). Returns
    {:text new-text :changed bool :added-keys [\"quiet\" …]} or {:error :unparseable}."
   [text]
   (try
     (let [trz (find-key (body-kv-start (z/of-string text)) :test-refresh)]
       (if (nil? trz)
-        {:text       (-> (z/of-string text)
-                         z/down            ; defproject
-                         z/rightmost       ; last body element
-                         (z/insert-right* (n/coerce config/baseline))
-                         (z/insert-right* (n/spaces 1))
-                         (z/insert-right* (n/keyword-node :test-refresh))
-                         (z/insert-right* (n/spaces 2))
-                         (z/insert-right* (n/newlines 1))
-                         z/root-string)
+        {:text       (let [children (n/children (p/parse-string-all test-refresh-block))
+                           end      (-> (z/of-string text) z/down z/rightmost)]
+                       (z/root-string
+                        (reduce z/insert-right* end (reverse children))))
          :changed    true
          :added-keys (mapv name (keys config/baseline))}
         (let [present (set (keys (z/sexpr trz)))

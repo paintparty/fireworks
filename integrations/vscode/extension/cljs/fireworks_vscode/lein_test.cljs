@@ -94,7 +94,11 @@
       (is (= (mapv name (keys config/baseline)) added-keys))
       (is (str/includes? text ":test-refresh"))
       ;; the new map round-trips as the top-level :test-refresh
-      (is (str/includes? text ":quiet")))))
+      (is (str/includes? text ":quiet"))
+      ;; the commented, aligned block is inserted verbatim (multi-line, not a flat map)
+      (is (str/includes? text ";; `test-refresh` options."))
+      (is (str/includes? text ":changes-only      true"))
+      (is (str/includes? text ":notify-on-success false")))))
 
 (deftest ensure-test-refresh-merges-missing
   (testing "merges only the missing baseline keys, leaving existing values untouched"
