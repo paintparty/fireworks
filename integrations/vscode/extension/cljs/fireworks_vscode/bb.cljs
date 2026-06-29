@@ -139,7 +139,7 @@
   ;; Header: clear the screen, then print the banner (with a couple of blank lines above it for
   ;; breathing room) BEFORE the reload's `?` output. With more than a screenful of output the
   ;; banner can scroll up into scrollback; keep per-reload output short to keep it pinned on top.
-  (when clear (print \"\\033[H\\033[2J\")) ; home + clear, preserving scrollback
+  (when clear (println \"\\033[H\\033[2J\")) ; home + clear, preserving scrollback
   (when-not (str/blank? banner) (println banner))
   (flush))
 

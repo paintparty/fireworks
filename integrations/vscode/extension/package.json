@@ -78,9 +78,9 @@
         { "command": "fireworks.togglePlus", "when": "editorLangId == clojure" },
         { "command": "fireworks.togglePp", "when": "editorLangId == clojure" },
         { "command": "fireworks.unwrapAll", "when": "editorLangId == clojure" },
-        { "command": "fireworks.unwrapAllInNs", "when": "editorLangId == clojure" },
+        { "command": "fireworks.unwrapAllInNs", "when": "false" },
         { "command": "fireworks.toggleAllSilent", "when": "editorLangId == clojure" },
-        { "command": "fireworks.toggleAllSilentInNs", "when": "editorLangId == clojure" },
+        { "command": "fireworks.toggleAllSilentInNs", "when": "false" },
         { "command": "fireworks.addRequire", "when": "editorLangId == clojure" }
       ]
     },
