@@ -3,7 +3,7 @@
 
   ;; Fireworks is a real dependency because this project's code calls `?`.
   :dependencies [[org.clojure/clojure "1.12.0"]
-                 [io.github.paintparty/fireworks "0.20.0"]]
+                 [io.github.paintparty/fireworks "0.21.0-SNAPSHOT"]]
 
   ;; test-refresh options. The extension keeps this map present.
   :test-refresh {:changes-only true}

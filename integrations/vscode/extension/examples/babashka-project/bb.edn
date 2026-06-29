@@ -1,7 +1,7 @@
 {:paths ["src" "test"]
 
  ;; Fireworks is a real dependency because this project's code calls `?`.
- :deps {io.github.paintparty/fireworks {:mvn/version "0.20.0"}}
+ :deps {io.github.paintparty/fireworks {:mvn/version "0.21.0-SNAPSHOT"}}
 
  :tasks
  ;; Live Code runs `bb dev`. The task calls `load-file` on the Fireworks
