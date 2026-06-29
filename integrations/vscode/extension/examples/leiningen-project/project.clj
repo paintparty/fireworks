@@ -5,10 +5,8 @@
   :dependencies [[org.clojure/clojure "1.12.0"]
                  [io.github.paintparty/fireworks "0.21.0-SNAPSHOT"]]
 
-  ;; test-refresh options. The extension keeps this map present.
-  :test-refresh {:changes-only true}
 
-  ;; Live Code runs `lein with-profile +fireworks test-refresh`. The plugin
+  ;; Live Code runs `lein with-profile +live-code test-refresh`. The plugin
   ;; lives in a profile (not top-level :plugins) so the extension detects it as
   ;; an eligible profile and it stays out of the default build.
-  :profiles {:fireworks {:plugins [[com.jakemccrary/lein-test-refresh "0.26.0"]]}})
+  :profiles {:live-code {:plugins [[com.jakemccrary/lein-test-refresh "0.26.0"]]}})

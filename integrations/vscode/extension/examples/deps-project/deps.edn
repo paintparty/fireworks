@@ -9,7 +9,7 @@
  ;; test/, reloads on save (re-running top-level `?` forms) and runs tests.
  ;; Scoped to this alias so the dev tool stays out of the project's normal
  ;; dependency set.
- {:test-refresh
+ {:live-code
   {:extra-paths ["test"]
    :extra-deps  {com.jakemccrary/test-refresh {:mvn/version "0.26.0"}}
    :main-opts   ["-m" "com.jakemccrary.test-refresh"]}}}

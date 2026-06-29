@@ -1,24 +1,41 @@
 (ns example.core
   (:require [fireworks.core :refer [? !? ?> !?>]]))
 
-(defn greet
-  "Build a greeting string."
-  [name]
-  (str "Hello, " name "!"))
 
-(defn fib
-  "The nth Fibonacci number."
-  [n]
-  (loop [a 0 b 1 n n]
-    (if (zero? n) a (recur b (+ a b) (dec n)))))
+(defn fizz-buzz [n]
+  (cond
+    (? (zero? (mod n (* 5 3))))
+    "FizzBuzz"
 
-;; With Fireworks Live Code running, save this file. Each top-level `?` form
-;; re-runs and its value paints inline at the end of the line. Toggle a wrap
-;; with cmd/ctrl + '.
-(? (greet "Fireworks"))
+    (? (zero? (mod n 5)))
+    "Buzz"
 
-(? (map fib (range 10)))
+    (? (zero? (mod n 3)))
+    "Fizz"
 
-(? (->> (range 1 20)
-        (filter even?)
-        (reduce +)))
+    :else n))
+
+
+;; With Fireworks Live Code running, save this file.
+;; Each top-level `?` form re-runs and its value paints inline.
+
+;; Toggle a wrap with `cmd/ctrl + '`
+;; If caret is on the  `?` form itself, the command toggles `?` ↔ `!?` (loud ↔ silent)
+;; Change the default keybinding to suit your needs.
+
+(? (fizz-buzz 15))
+
+;; Change the arg in the above call to fizz-buzz from `7` to `15`,
+;; the inline results up in fizz-buzz defn should change as well.
+
+
+;;----------------------
+
+;; An example of using `(?)` to display inline results within trace form
+;; Bonus: `cmd/ctrl + ;` (command + semicolon). This will toggle `#_` or form.
+#_(? (->> (range 1 20)
+          (?)
+          (filter even?)
+          (?)
+          (reduce +)))
+
