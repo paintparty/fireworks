@@ -19,7 +19,7 @@
 ;; With Fireworks Live Code running, save this file.
 ;; Each top-level `?` form re-runs and its value paints inline.
 
-;; Toggle a wrap with `cmd/ctrl + '`
+;; Toggle a `?` wrap with `cmd/ctrl + '`
 ;; If caret is on the  `?` form itself, the command toggles `?` ↔ `!?` (loud ↔ silent)
 ;; Change the default keybinding to suit your needs.
 
