@@ -4,9 +4,6 @@
       "path": "../../../sandbox/test-project"
     },
     {
-      "path": ".."
-    },
-    {
       "path": "../../bb-live"
     },
     {
@@ -14,6 +11,9 @@
     },
     {
       "path": "../../lasertag"
+    },
+    {
+      "path": "../integrations/vscode/extension"
     }
   ],
   "settings": {

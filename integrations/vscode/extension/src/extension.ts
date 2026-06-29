@@ -56,8 +56,11 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.toggleDebugTestMode', () => toggleDebugTestMode()),
     vscode.commands.registerCommand('fireworks.setAutoSaveDelay', () => setAutoSaveDelay()),
     vscode.commands.registerCommand('fireworks.setInlineResultsColor', () => setInlineResultsColor()),
-    vscode.commands.registerCommand('fireworks.setInlineResultsBackgroundOpacity', () =>
-      setInlineResultsBackgroundOpacity(),
+    vscode.commands.registerCommand('fireworks.setInlineResultsBackgroundOpacityLight', () =>
+      setInlineResultsBackgroundOpacity('light'),
+    ),
+    vscode.commands.registerCommand('fireworks.setInlineResultsBackgroundOpacityDark', () =>
+      setInlineResultsBackgroundOpacity('dark'),
     ),
     vscode.commands.registerCommand('fireworks.setInlineResultsOpacity', () =>
       setInlineResultsOpacity(),
@@ -2691,7 +2694,7 @@ async function pickWithLivePreview(
 // Preset scales offered by each picker. Keep values within the setting's declared range in
 // package.json so the chosen value isn't flagged as invalid in the Settings UI.
 const INLINE_COLORS = ['Purple', 'Blue', 'Cyan', 'Green', 'Neutral'];
-const INLINE_BG_OPACITIES = [0, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.1, 0.12, 0.16, 0.18, 0.22];
+const INLINE_BG_OPACITIES = [0, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.1, 0.12, 0.16, 0.18, 0.22, 0.26, 0.30];
 const INLINE_FG_OPACITIES = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65];
 const INLINE_GAP = [1, 2, 4, 6, 8, 10, 12, 14, 16];
 const INLINE_MAX_LENGTH = [16, 24, 32, 40, 52, 70, 100, 200];
@@ -2726,8 +2729,11 @@ async function setInlineResultsColor(): Promise<void> {
   );
 }
 
-async function setInlineResultsBackgroundOpacity(): Promise<void> {
-  const variant = themeVariant();
+// Edits the named variant's background-opacity setting (light or dark), independent of the
+// active theme — each variant has its own setting and its own command. The live preview only
+// shows on screen when `variant` matches the active theme (the decoration reads the active
+// theme's variant); the off-theme variant is still updated, just without a visible preview.
+async function setInlineResultsBackgroundOpacity(variant: 'light' | 'dark'): Promise<void> {
   const key = `inlineResults.backgroundOpacity.${variant}`;
   const current = cfg().get<number>(key, DEFAULT_BG_OPACITY[variant]);
   await pickWithLivePreview(

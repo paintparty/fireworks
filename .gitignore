@@ -32,5 +32,5 @@ visual_test/.clj-kondo/.cache
 .cpcache
 pom.properties
 
-# Fireworks inline-result cache
-.fireworks/
+# Fireworks inline-result cache (only the results, not config.edn / bb/watch.clj)
+.fireworks/results/

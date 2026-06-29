@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Clojure / Babashka caches and build output
+.cpcache/
+target/
+out/
+.nrepl-port
+
+# clj-kondo and clojure-lsp caches (keep any config.edn that lives alongside)
+.clj-kondo/.cache/
+.lsp/.cache/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Fireworks writes inline results at runtime; track the dir, not the results.
+.fireworks/results/*
+!.fireworks/results/.gitkeep
+
+# Fireworks inline-result cache
+.fireworks/results/
