@@ -260,7 +260,7 @@ You can also add relevant entries from the sample `project.clj` to your `~/.lein
                 :debug             true
 
                 ;; With a hot-reload workflow, it is nice to use a simple custom banner.
-                :banner            "🔥🔥🔥🔥🔥🔥🔥🔥🔥"
+                :banner            "🔥"
 
                 ;; With a hot-reload workflow, it is nice to clear the terminal on refresh. 
                 :clear             true}
@@ -272,9 +272,23 @@ You can also add relevant entries from the sample `project.clj` to your `~/.lein
 
 
 ### VSCode
-Get the official VSCode Fireworks extension here. This the best way do live coding with Fireworks.
+Get the official VSCode Fireworks extension here.
+
+This the best way do live coding with Fireworks.
+
+It provides commands to control all the form manipulation, as well as a Live Code framework that drives inline results as you type.
+
+[View the Fireworks VSCode Extension Docs](integrations/vscode/extension/README.md) 
+
+![Fireworks VSCode Extenstion: Toggle ?](integrations/vscode/extension/resources/gifs/toggle.gif)
+
+
+
+<br>
 
 There is also an example of [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md) integration. This was created as a proof-of-concept prototype, ahead of the actual VSCode extension.
+
+<br>
 
 ### IntelliJ
 
@@ -286,7 +300,7 @@ as well as toggle the silencing of wrapped forms.
 <br>
 <br>
 
-## Usage
+## Basic Usage
 This section outlines the four public macros that fireworks offers:<br>
 **`?`**, **`!?`**, **`?>`**, and **`!?>`**.
 
@@ -373,7 +387,7 @@ Because Fireworks is designed to provide quick, rapid feedback to the terminal o
 
 The `?` macro also provides a bevy of functionality that can be controlled an optional leading keyword flag and/or a map of options. For example, when it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:+`, or `:pp`, or `:js` as the leading argument to **`fireworks.core/?`**.
 
-All the available alternate printing modes for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing an optional leading keyword flag. Unless noted otherwise, **`fireworks.core/?`** will always return the value passed to it.
+All the available alternate printing modes for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing one or more optional leading keyword flags. They are fully composable. Unless noted otherwise, **`fireworks.core/?`** will always return the value passed to it.
 
 <br>
 
@@ -387,6 +401,7 @@ All the available alternate printing modes for **`fireworks.core/?`** and their 
 | `:js`       | `js/console.log`* | ✓             | ✓                 | value   |       |
 | `:pp`       | `pp/pprint`       | ✓             | ✓                 | value   |       |
 | `:trace`    | N/A               | ×             | ×                 | value   | Traces forms      |
+| `:perf`     | Fireworks         | ✓             | ✓                 | value   | Adds a rough perf estimate |
 | `:data`     | N/A               | ×             | ×                 | map     |       |
 <!-- | `:comment`  | N/A               | ✓             | ✓                 | nil     |       | -->
 
@@ -408,6 +423,9 @@ Some annotated examples using modes outlined in the above table:
 
 ;; Prints the label, file info, and the result. Uses pprint instead of fireworks. 
 (? :pp (+ 1 1))
+
+;; Prints the file info and the result. Uses pprint instead of fireworks. 
+(? :no-label :pp (+ 1 1))
 
 ;; Prints a custom label, file info, and the result. Uses pprint instead of fireworks. 
 (? :pp "My label" (+ 1 1))
