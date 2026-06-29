@@ -6,6 +6,18 @@ For a list of breaking changes, check [here](#breaking-changes)
 <br>
 <br>
 
+## 0.21.0
+2026-6-29
+
+#### Added
+- Always print file-info on top [#136](https://github.com/paintparty/fireworks/issues/136)
+- Print raw datatypes with named fields as maps [#135](https://github.com/paintparty/fireworks/issues/135)
+- Add `:perf` flag and option [#134](https://github.com/paintparty/fireworks/issues/134)
+- Make leading option flags composable [#133](https://github.com/paintparty/fireworks/issues/133)
+- Print anonymous functions with provided gensym-based name [#131](https://github.com/paintparty/fireworks/issues/131)
+- Use quoted syntax for colls [#129](https://github.com/paintparty/fireworks/issues/129)
+
+
 ## 0.20.0
 2026-3-16
 
