@@ -11,6 +11,9 @@
     },
     {
       "path": "../../../../../.claude"
+    },
+    {
+      "path": "../../lasertag"
     }
   ],
   "settings": {}
