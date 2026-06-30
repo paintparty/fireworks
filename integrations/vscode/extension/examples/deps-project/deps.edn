@@ -2,7 +2,7 @@
 
  ;; Fireworks is a real dependency because this project's code calls `?`.
  :deps {org.clojure/clojure            {:mvn/version "1.12.0"}
-        io.github.paintparty/fireworks {:mvn/version "0.21.0-SNAPSHOT"}}
+        io.github.paintparty/fireworks {:mvn/version "0.21.0"}}
 
  :aliases
  ;; Live Code runs `clojure -M:test-refresh`. test-refresh watches src/ +

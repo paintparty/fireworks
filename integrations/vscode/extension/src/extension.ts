@@ -79,6 +79,7 @@ export function activate(context: vscode.ExtensionContext): void {
       rainbowTracerHorizontal(),
     ),
     vscode.commands.registerCommand('fireworks.rainbowTracerCross', () => rainbowTracerCross()),
+    vscode.commands.registerCommand('fireworks.setTerminalLocation', () => setTerminalLocation()),
     vscode.window.onDidCloseTerminal((t) => {
       for (const [root, s] of liveSessions) {
         if (s.terminal === t) {
@@ -927,13 +928,21 @@ function ensureGitignored(root: string): void {
 // surface for every guidance message.
 // ============================================================================
 
-type GuidanceTopic = 'lein-missing-plugin' | 'lein-user-test-refresh' | 'bb-watch-task';
+type GuidanceTopic =
+  | 'lein-missing-plugin'
+  | 'lein-user-test-refresh'
+  | 'bb-watch-task'
+  | 'external-terminal';
 
 const GUIDANCE_SCHEME = 'fireworks-guide';
 
 // The title (shown in the preview tab) and Markdown body for a topic. Built from single-quoted
-// lines joined with newlines, so the ``` fences need no escaping.
-function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } {
+// lines joined with newlines, so the ``` fences need no escaping. `params` carries any per-open
+// data (e.g. the external-terminal command + dir) decoded from the URI query.
+function guidanceDoc(
+  topic: GuidanceTopic,
+  params?: URLSearchParams,
+): { title: string; markdown: string } {
   switch (topic) {
     case 'lein-missing-plugin':
       return {
@@ -1020,6 +1029,28 @@ function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } 
           '',
         ].join('\n'),
       };
+    case 'external-terminal': {
+      const cmd = params?.get('cmd') ?? '';
+      const dir = params?.get('dir') ?? '';
+      return {
+        title: 'Fireworks: Run in external terminal',
+        markdown: [
+          '### ⚡ Fireworks: Live Code',
+          '# Run in an external terminal',
+          '',
+          'Open your favorite terminal and run the following:',
+          '',
+          '```sh',
+          `cd ${dir}`,
+          cmd,
+          '```',
+          '',
+          'Inline results still appear in your editor while the watcher runs (when',
+          '`Fireworks: Toggle Inline Results` is on).',
+          '',
+        ].join('\n'),
+      };
+    }
   }
 }
 
@@ -1028,7 +1059,8 @@ function guidanceDoc(topic: GuidanceTopic): { title: string; markdown: string } 
 function registerGuidanceProvider(): vscode.Disposable {
   return vscode.workspace.registerTextDocumentContentProvider(GUIDANCE_SCHEME, {
     provideTextDocumentContent(uri) {
-      return guidanceDoc(uri.query as GuidanceTopic).markdown;
+      const params = new URLSearchParams(uri.query);
+      return guidanceDoc(params.get('t') as GuidanceTopic, params).markdown;
     },
   });
 }
@@ -1036,9 +1068,15 @@ function registerGuidanceProvider(): vscode.Disposable {
 // Open a topic's guidance as a rendered Markdown preview, to the side of the active editor. The
 // `.md` path makes VS Code treat the virtual doc as Markdown; the topic rides in the query. Falls
 // back to the raw text document if the Markdown preview command is unavailable.
-async function showGuidance(topic: GuidanceTopic): Promise<void> {
-  const { title } = guidanceDoc(topic);
-  const uri = vscode.Uri.parse(`${GUIDANCE_SCHEME}:${encodeURIComponent(title)}.md?${topic}`);
+async function showGuidance(
+  topic: GuidanceTopic,
+  params?: Record<string, string>,
+): Promise<void> {
+  const sp = new URLSearchParams({ t: topic, ...(params ?? {}) });
+  const { title } = guidanceDoc(topic, sp);
+  const uri = vscode.Uri.parse(
+    `${GUIDANCE_SCHEME}:${encodeURIComponent(title)}.md?${sp.toString()}`,
+  );
   try {
     await vscode.commands.executeCommand('markdown.showPreviewToSide', uri);
   } catch {
@@ -2013,20 +2051,59 @@ async function sendWatcherCommand(
 }
 
 async function startLiveCoding(): Promise<void> {
+  const location = await resolveTerminalLocation();
+  if (!location) {
+    return; // cancelled the terminal-location pick
+  }
   const root = await pickProjectRoot();
   if (!root) {
     return;
   }
-  const existing = liveSessions.get(root);
-  if (existing) {
-    await reuseOrNotify(existing);
-    return;
+  // The integrated terminal owns the session lifecycle (reuse/stop/restart). External mode runs
+  // the watcher in the user's own terminal, so it creates no session and skips the reuse check.
+  if (location === 'integrated') {
+    const existing = liveSessions.get(root);
+    if (existing) {
+      await reuseOrNotify(existing);
+      return;
+    }
   }
   const plan = await resolveWatcherCommand(root);
   if (!plan) {
     return;
   }
-  await launchWatcher(root, plan.command, plan.testRefresh);
+  if (location === 'integrated') {
+    await launchWatcher(root, plan.command, plan.testRefresh);
+  } else {
+    // resolveWatcherCommand already seeded configs / patched the build file; we just hand the
+    // user the command instead of spawning a terminal. Keep .fireworks ready for the
+    // inline-results watcher and record the root, mirroring launchWatcher's bookkeeping.
+    prepareResultsDir(root);
+    clearResultsForRoot(root);
+    recordRecentRoot(root);
+    await showGuidance('external-terminal', { cmd: plan.command, dir: root });
+  }
+}
+
+// Resolve where Live Code should run from. Honors the fireworks.terminalLocation setting; when it's
+// "Always ask" (the default) prompts with a two-option pick before the project picker. Returns
+// undefined if the user dismisses the pick.
+async function resolveTerminalLocation(): Promise<'integrated' | 'external' | undefined> {
+  const setting = cfg().get<string>('terminalLocation', 'Always ask');
+  if (setting === 'Run from integrated terminal') {
+    return 'integrated';
+  }
+  if (setting === 'Run from external terminal') {
+    return 'external';
+  }
+  const pick = await vscode.window.showQuickPick(
+    [
+      { label: 'Run from integrated terminal', value: 'integrated' as const },
+      { label: 'Run from external terminal', value: 'external' as const },
+    ],
+    { placeHolder: 'Run Fireworks Live Code from…' },
+  );
+  return pick?.value;
 }
 
 // A session already exists for the picked root. If its process has exited (the terminal
@@ -2601,6 +2678,31 @@ async function setAutoSaveDelay(): Promise<void> {
     `Fireworks: auto-save delay set to ${pick.seconds}s` +
       (wasOn ? '.' : ' (auto-save turned on: after delay).'),
   );
+}
+
+// The fireworks.terminalLocation values, shared verbatim by the package.json enum, this picker,
+// and the start-flow "Always ask" prompt — no value↔label mapping.
+const TERMINAL_LOCATIONS = [
+  'Always ask',
+  'Run from integrated terminal',
+  'Run from external terminal',
+] as const;
+
+// Pick a terminal location and write it to fireworks.terminalLocation (user settings).
+async function setTerminalLocation(): Promise<void> {
+  const current = cfg().get<string>('terminalLocation', 'Always ask');
+  const pick = await vscode.window.showQuickPick(
+    TERMINAL_LOCATIONS.map((label) => ({
+      label,
+      description: label === current ? '(current)' : undefined,
+    })),
+    { placeHolder: 'Where should Fireworks: Live Code run the watcher?' },
+  );
+  if (!pick) {
+    return;
+  }
+  await cfg().update('terminalLocation', pick.label, vscode.ConfigurationTarget.Global);
+  flash(`Fireworks: terminal location set to “${pick.label}”.`);
 }
 
 interface PreviewItem extends vscode.QuickPickItem {

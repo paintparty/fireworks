@@ -3,7 +3,7 @@
 
   ;; Fireworks is a real dependency because this project's code calls `?`.
   :dependencies [[org.clojure/clojure "1.12.0"]
-                 [io.github.paintparty/fireworks "0.21.0-SNAPSHOT"]]
+                 [io.github.paintparty/fireworks "0.21.0"]]
 
 
   ;; Live Code runs `lein with-profile +live-code test-refresh`. The plugin

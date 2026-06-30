@@ -54,7 +54,8 @@
       { "command": "fireworks.setInlineResultsFadeIn", "title": "Set Inline Results Fade-In", "category": "Fireworks" },
       { "command": "fireworks.rainbowTracerVertical", "title": "Rainbow Tracer (top-to-bottom)", "category": "Fireworks" },
       { "command": "fireworks.rainbowTracerHorizontal", "title": "Rainbow Tracer (left-to-right)", "category": "Fireworks" },
-      { "command": "fireworks.rainbowTracerCross", "title": "Rainbow Tracer (cross)", "category": "Fireworks" }
+      { "command": "fireworks.rainbowTracerCross", "title": "Rainbow Tracer (cross)", "category": "Fireworks" },
+      { "command": "fireworks.setTerminalLocation", "title": "Set Terminal Location", "category": "Fireworks" }
     ],
     "keybindings": [
       {
@@ -166,6 +167,18 @@
           "default": false,
           "description": "Write diagnostic traces to the Fireworks output channel.",
           "order": 9
+        },
+        "fireworks.terminalLocation": {
+          "type": "string",
+          "enum": ["Always ask", "Run from integrated terminal", "Run from external terminal"],
+          "default": "Always ask",
+          "enumDescriptions": [
+            "Ask each time Live Code starts.",
+            "Run the watcher in an integrated VS Code terminal.",
+            "Show the command to run in your own external terminal."
+          ],
+          "markdownDescription": "Where `Fireworks: Live Code` runs the test-refresh watcher. Set with the `Fireworks: Set Terminal Location` command.",
+          "order": 10
         }
       }
     }
