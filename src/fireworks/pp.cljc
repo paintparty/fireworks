@@ -1,7 +1,3 @@
-;; TODO - Experiment with adding shortened semantics for custom objects
-;;      - Consistent multi-line maps
-;;      - Justified values via cljfmt
-
 (ns fireworks.pp
   "A pretty-printer for Clojure data structures.
 
@@ -12,15 +8,34 @@
   {:author "Eero Helenius"
    :license "MIT"
    :git/url "https://github.com/eerohele/pp.git"}
-  (:require [fireworks.util :as util]
-            [lasertag.core :as lasertag]
-            [clojure.string :as string])
+  (:require [clojure.string :as string]
+            [lasertag.core]
+            [lasertag.cached]
+            [clojure.pprint])
   #?(:clj (:import [clojure.lang Compiler]))
   #?(:cljs (:require-macros 
             [fireworks.pp :refer [?pp]])))
 
+#?(:clj
+   (do
+     (set! *warn-on-reflection* true)
+     (set! *unchecked-math* :warn-on-boxed)))
+
 
 ;; Colors ----------------------------------------------------------------------
+(defn ? 
+  "Debugging macro internal to lib"
+  ([x]
+   (? nil x))
+  ([l x]
+   (try (if l
+          (println (str " " l "\n") x)
+          (println x))
+        (catch #?(:cljs js/Object :clj Throwable)
+               e
+          (println "WARNING [lasertag.core/?] Unable to print value")))
+   x))
+
 (def sgr-codes-by-color
   {:red        196
    :orange     172
@@ -35,7 +50,7 @@
    :white      231})
 
 (def colors-by-tag
-  {:keyword  :purple
+  {:keyword  :neutral
    :string   :olive
    :number   :orange
    :symbol   :blue
@@ -44,6 +59,7 @@
    :atom     :yellow
    :class    :blue
    :function :blue
+   :delim    :blue
    })
 
 (defn- cljc-atom?
@@ -90,13 +106,37 @@
                   s)
           ;; object? (string/starts-with? (str s) "#object")
           s (if (= k :string) (str "\"" s "\"") s)]
-      (symbol (str "\033[38;5;" sgr "m" s "\033[m")))
+      ((if (= k :delim) str symbol)
+       (str "\033[38;5;" sgr "m" s "\033[m")))
     s))
 
+
+(def esc "\u001b\\[")
+
+(def sgr-text-decoration-base
+  "(?:9|4(?::[1-5])?)")
+
+(def sgr-freeform
+  (str "(?:[0-9]|;|" sgr-text-decoration-base ")*m"))
+
+(def sgr-re (re-pattern (str esc sgr-freeform)))
+
+(defn sgr-count
+  "Given a string containing ANSI SGR tags, returns the character count of the
+   ANSI SGR tags"
+  [s]
+  (or (some->> s
+               (re-seq sgr-re)
+               (reduce (fn [n s] (unchecked-add-int n (count s))) 0))
+      0))
+
+;; -----------------------------------------------------------------------------
 ;; -----------------------------------------------------------------------------
 
 
-#?(:clj (set! *warn-on-reflection* true))
+
+
+
 
 (defn ^:private strip-ns
   "Given a (presumably qualified) ident, return an unqualified version
@@ -125,25 +165,35 @@
   [x]
   `(some-> ~x class .isArray))
 
-(defn ^:private open-delim
+(defn ^:private ^:bling open-delim
   "Return the opening delimiter (a string) of coll."
-  ^String [coll]
-  (cond
-    (map? coll) "{"
-    (vector? coll) "["
-    (set? coll) "#{"
-    (array? coll) "["
-    :else "("))
+  ;; Bling - added opts
+  ^String [coll opts]
+  ;; Bling - colorized delimeter
+  (let [delim (cond
+                (map? coll) "{"
+                (vector? coll) "["
+                (set? coll) "#{"
+                (array? coll) "["
+                :else "(")]
+    (if (:colorize? opts)
+      (colorized delim :delim)
+      delim)))
 
-(defn ^:private close-delim
+(defn ^:private ^:bling close-delim
   "Return the closing delimiter (a string) of coll."
-  ^String [coll]
-  (cond
-    (map? coll) "}"
-    (vector? coll) "]"
-    (set? coll) "}"
-    (array? coll) "]"
-    :else ")"))
+  ;; Bling - added opts
+  ^String [coll opts]
+  ;; Bling - colorized delimeter
+  (let [delim (cond
+                 (map? coll) "}"
+                 (vector? coll) "]"
+                 (set? coll) "}"
+                 (array? coll) "]"
+                 :else ")")]
+    (if (:colorize? opts)
+      (colorized delim :delim)
+      delim)))
 
 (defprotocol CountKeepingWriter
   (^:private write [this s]
@@ -166,28 +216,16 @@
   #?(:clj (.write ^java.io.Writer writer ^String s)
      :cljs (-write writer s)))
 
-(def esc "\u001b\\[")
-(def sgr-text-decoration-base
-  "(?:9|4(?::[1-5])?)")
-(def sgr-freeform
-  (str "(?:[0-9]|;|" sgr-text-decoration-base ")*m"))
-(def sgr-re (re-pattern (str esc sgr-freeform)))
-(defn sgr-count
-  "Given a string containing ANSI SGR tags, returns the character count of the
-   ANSI SGR tags"
-  [s]
-  (some->> s
-           (re-seq sgr-re)
-           (reduce (fn [n s] (+ n (count s))) 0)))
+
 
 (defn ^:private strlen
   "Given a string, return the length of the string.
 
   Since java.lang.String isn't counted?, (.length s) is faster than (count s)."
-  [s]
+  ^long [s]
   #?(:clj (.length ^String s) :cljs (.-length s)))
 
-(defn ^:public count-keeping-writer
+(defn count-keeping-writer
   "Given a java.io.Writer and an options map, wrap the java.io.Writer
   such that it becomes a CountKeepingWriter: a writer that keeps count
   of the length of the strings written into each line.
@@ -201,12 +239,18 @@
         c (volatile! 0)]
     (reify CountKeepingWriter
       (write [_ s]
-        (write-into writer ^String s)
-        ;; Added sgr-count
-        (vswap! c #(+ % (- (strlen ^String s) (or (sgr-count s) 0))))
-        nil)
+             (write-into writer ^String s)
+             ;; Bling - Added sgr-count for colorize option
+             (vswap! c 
+                     (fn [^long n] 
+                       (unchecked-add-int 
+                        n
+                        (unchecked-subtract-int
+                         (strlen ^String s)
+                         (or (sgr-count s) 0)))))
+             nil)
       (remaining [_]
-        (- max-width @c))
+        (unchecked-subtract-int max-width @c))
       (nl [_]
         (write-into writer "\n")
         (vreset! c 0)
@@ -225,7 +269,7 @@
   #?(:clj (-> record class .getName)
      :cljs (-> record type pr-str)))
 
-(defn ^:private open-delim+form
+(defn ^:private ^:bling open-delim+form
   "Given a coll, return a tuple where the first item is the coll's
   opening delimiter and the second item is the coll.
 
@@ -235,7 +279,9 @@
 
   If the coll is a record, the open delimiter includes the record name
   prefix."
-  [coll]
+
+  ;; Bling added opts
+  [coll opts]
   (if (record? coll)
     [(str "#" (record-name coll) "{") coll]
     ;; If all keys in the map share a namespace and *print-
@@ -249,7 +295,7 @@
 
           coll (if ns ns-map coll)
 
-          o (if ns (str "#:" ns "{") (open-delim coll))]
+          o (if ns (str "#:" ns "{") (open-delim coll opts))]
       [o coll])))
 
 (defn ^:private meets-print-level?
@@ -283,13 +329,32 @@
       (write-into writer " ")
       (-print (val this) writer opts))))
 
+(defn ^:private printable-meta [form]
+  (when (and *print-meta* *print-readably*)
+    ;; prn does not print empty meta; clojure.pprint does.
+    (when-some [m (-> form meta not-empty)]
+      ;; As per https://github.com/clojure/clojure/blob/6975553804b0f8da9e196e6fb97838ea4e153564/src/clj/clojure/core_print.clj#L78-L80
+      (if (and (= (count m) 1) (:tag m))
+        (:tag m)
+        m))))
+
+(defn ^:private print-meta [writer form opts]
+  ;; Must print meta when linear-printing to account for cases where the form
+  ;; being printed is a coll that contains a nested IObj with meta.
+  (when-some [m (printable-meta form)]
+    (write-into writer "^")
+    (-print m writer opts)
+    (write-into writer " ")))
+
 (defn ^:private -print-map
   "Like -print, but only for maps."
   [coll writer opts]
   (if (meets-print-level? (:level opts 0))
     (write-into writer "#")
 
-    (let [[^String o form] (open-delim+form coll)]
+    (let [[^String o form] (open-delim+form coll opts)]
+      (print-meta writer coll opts)
+
       (write-into writer o)
 
       (when (seq form)
@@ -304,7 +369,8 @@
                 (write-into writer " ")
                 (recur n (inc index)))))))
 
-      (write-into writer (close-delim form)))))
+      ;; Bling - added opts
+      (write-into writer (close-delim form opts)))))
 
 (defn ^:private -print-coll
   "Like -print, but only for lists, vectors, and sets."
@@ -312,7 +378,9 @@
   (if (meets-print-level? (:level opts 0))
     (write-into writer "#")
 
-    (let [[^String o form] (open-delim+form coll)]
+    (let [[^String o form] (open-delim+form coll opts)]
+      (print-meta writer coll opts)
+
       (write-into writer o)
 
       (when (seq form)
@@ -326,7 +394,8 @@
                 (write-into writer " ")
                 (recur n (inc index)))))))
 
-      (write-into writer (close-delim form)))))
+      ;; Bling - added opts
+      (write-into writer (close-delim form opts)))))
 
 (defn ^:private -print-seq
   [this writer opts]
@@ -411,27 +480,15 @@
        (str sb))))
 
 (defn ^:private print-linear
-  "Print a form in linear style (without regard to line length).
-
-  Given one arg (a form), print the form into a string using the
-  default options.
-
-  Given two args (a form and an options map), print the form into a
-  string using the given options.
-
-  Given three args (a java.io.Writer, a form, and an options map), print
-  the form into the writer using the given options.
+  "Given a form and an options map, print the given form in linear style
+  (without regard to line length).
 
   Options:
 
     :level (long)
       The current nesting level."
-  ([form]
-   (print-linear form nil))
-  (^String [form opts]
-   (with-str-writer (fn [writer] (print-linear writer form opts))))
-  ([writer form opts]
-   (-print form writer opts)))
+  ^String [form opts]
+  (with-str-writer (fn [writer] (-print form writer opts))))
 
 (defn ^:private print-mode
   "Given a CountKeepingWriter, a form, and an options map, return a keyword
@@ -439,14 +496,25 @@
   [writer form opts]
   (let [reserve-chars   (:reserve-chars opts)
         s               (print-linear form opts)
+        ;; Bling - adjust for ansi-sgr
         s-len           (strlen s)
         sgr-count       (or (sgr-count s) 0)
-        len-minus-sgr   (- s-len sgr-count)
+        len-minus-sgr   (unchecked-subtract-int s-len sgr-count)
         remaining-count (remaining writer)
-        mode            (if (<= len-minus-sgr (- remaining-count reserve-chars))
+        mode            (if (<= len-minus-sgr
+                                (unchecked-subtract-int remaining-count
+                                                        reserve-chars))
                           :linear
                           :miser)]
-    #_(println [(str "s") s-len sgr-count len-minus-sgr remaining-count reserve-chars mode])
+
+    #_(println [(str "s")
+                s-len
+                sgr-count 
+                len-minus-sgr 
+                remaining-count 
+                reserve-chars
+                mode])
+
     ;; If, after (possibly) reserving space for any closing delimiters of
     ;; ancestor S-expressions, there's enough space to print the entire
     ;; form in linear style on this line, do so.
@@ -485,144 +553,171 @@
           The number of characters reserved for closing delimiters of
           S-expressions above the current nesting level.")))
 
-(defn ^:private pprint-meta
-  [form writer opts mode]
-  (when (and *print-meta* *print-readably*)
-    (when-some [m (meta form)]
-      (when (seq m)
-        (write writer "^")
-        ;; As per https://github.com/clojure/clojure/blob/6975553804b0f8da9e196e6fb97838ea4e153564/src/clj/clojure/core_print.clj#L78-L80
-        (let [m (if (and (= (count m) 1) (:tag m)) (:tag m) m)]
-          (-pprint m writer opts))
-        (write-sep writer mode)))))
+(defn ^:private -pprint-with-meta
+  [meta form writer opts]
+  (if (meets-print-level? (:level opts))
+    (write writer "#")
+    (do
+      (write writer "^")
+      ;; Account for the meta dispatch character (^) in the indentation.
+      (let [m-mode (-pprint meta writer (update opts :indentation str " "))
+            mode (case m-mode
+                   ;; If the meta map was printed using miser mode, always use
+                   ;; miser mode for the form as well. Without this, if there's
+                   ;; room to print the entire form and the closing delimiter
+                   ;; on the last line of a multi-line meta map, pp will do so.
+                   :miser :miser
+                   (print-mode writer form (update opts :reserve-chars inc)))]
+        (write-sep writer mode)
+        (when (= :miser mode) (write writer (:indentation opts)))
+        (-pprint form writer opts)))))
 
-(defn ^:private pprint-opts
+(defn ^:private ^:bling pprint-opts
   [open-delim opts]
+  ;; (println "\n\n" :strlen (strlen open-delim))
+  ;; (println "\n\n" :sgr-count (sgr-count open-delim))
+  
   (let [;; The indentation level is the indentation level of the
         ;; parent S-expression plus a number of spaces equal to the
         ;; length of the open delimiter (e.g. one for "(", two for
         ;; "#{").
-        indentation (str (:indentation opts) (.repeat " " (strlen open-delim)))]
+        
+        ;; Bling - Added colorize to delimeter
+        open-delim-strlen (unchecked-subtract-int (strlen open-delim)
+                                                  (sgr-count open-delim))
+        indentation       (str (:indentation opts) (.repeat " "
+                                                            open-delim-strlen))]
     (-> opts (assoc :indentation indentation) (update :level inc))))
 
+(defn ^:private without-meta [form]
+  (with-meta form nil))
+
+(defn ^:private -maybe-colorize-form [form opts]
+  (let [f*  (first form)
+        tag (when-not (coll? f*) (lasertag.core/tag f*))]
+    (if (:colorize? opts)
+      (some->> tag (colorized f*))
+      f*)))
+                  
 (defn ^:private -pprint-coll
   "Like -pprint, but only for lists, vectors and sets."
   [this writer opts]
   (if (meets-print-level? (:level opts))
     (write writer "#")
-    (let [[^String o form] (open-delim+form this)
-          mode (print-mode writer this opts)
-          opts (pprint-opts o opts)]
-      ;; Print possible meta
-      (pprint-meta form writer opts mode)
+    (if-some [m (printable-meta this)]
+      (-pprint-with-meta m (without-meta this) writer opts)
+      (let [[^String o form] (open-delim+form this opts)
+            mode (print-mode writer this opts)
+            opts (pprint-opts o opts)]
 
-      ;; Print open delimiter
-      (write writer o)
+        ;; Print open delimiter
+        (write writer o)
 
-      ;; Print S-expression content
-      (if (= *print-length* 0)
-        (write writer "...")
-        (when (seq form)
-          (loop [form form index 0]
-            (if (= index *print-length*)
-              (do
-                (when (= mode :miser) (write writer (:indentation opts)))
-                (write writer "..."))
+        ;; Print S-expression content
+        (if (= *print-length* 0)
+          (write writer "...")
+          (when (seq form)
+            (loop [form form index 0]
+              (if (= index *print-length*)
+                (do
+                  (when (= mode :miser) (write writer (:indentation opts)))
+                  (write writer "..."))
 
-              (do
-                ;; In miser mode, prepend indentation to every form
-                ;; except the first one. We don't want to prepend
-                ;; indentation for the first form, because it
-                ;; immediately follows the open delimiter.
-                (when (and (= mode :miser) (pos? index))
-                  (write writer (:indentation opts)))
+                (do
+                  ;; In miser mode, prepend indentation to every form
+                  ;; except the first one. We don't want to prepend
+                  ;; indentation for the first form, because it
+                  ;; immediately follows the open delimiter.
+                  (when (and (= mode :miser) (pos? index))
+                    (write writer (:indentation opts)))
 
-                (let [f (first form)
-                      n (next form)
-                      tag   (when (not (coll? f)) (lasertag/tag f))
-                      f     (if (:colorize? opts)
-                              (some->> tag (colorized f))
-                              f)]
-                  (if (empty? n)
-                    ;; This is the last child, so reserve an additional
-                    ;; slot for the closing delimiter of the parent
-                    ;; S-expression.
-                    (-pprint f writer (update opts :reserve-chars inc))
-                    (do
-                      (-pprint f writer (assoc opts :reserve-chars 0))
-                      (write-sep writer mode)
-                      (recur n (inc index))))))))))
+                  (let [f (-maybe-colorize-form form opts)
+                        n (next form)
+                        ;; Bling - -maybe-colorize-form
+                        ]
+                    (if (empty? n)
+                      ;; This is the last child, so reserve an additional
+                      ;; slot for the closing delimiter of the parent
+                      ;; S-expression.
+                      (-pprint f writer (update opts :reserve-chars inc))
+                      (do
+                        (-pprint f writer (assoc opts :reserve-chars 0))
+                        (write-sep writer mode)
+                        (recur n (inc index))))))))))
 
-      ;; Print close delimiter
-      (write writer (close-delim form)))))
+        ;; Print close delimiter
+        ;; Bling - Added opts
+        (write writer (close-delim form opts))
+        mode))))
+
+(defn ^:private ^:bling -maybe-colorize [this f opts]
+  (if (:colorize? opts)
+    (let [[k*]  this
+          k-str (f this)
+          tag   (when (not (coll? k*)) (lasertag.core/tag k-str))
+          k     (or (some->> tag (colorized k-str))
+                    k-str)]
+      k)
+    (f this)))
 
 (defn ^:private -pprint-map-entry
   "Pretty-print a map entry within a map."
   [this writer opts]
   (if (meets-print-level? (:level opts))
     (write writer "#")
-    (let [k     (if (:colorize? opts)
-                  (let [[k*]  this
-                        k-str (key this)
-                        tag   (when (not (coll? k*)) (lasertag/tag k*))
-                        k     (or (some->> tag (colorized k-str))
-                                  k-str)]
-                    k)
-                  (key this))
-          opts  (update opts :level inc)]
-      (-pprint k writer opts)
-
-      (let [v    (if (:colorize? opts)
-                   (let [[_ v*] this
-                         v-str  (val this)
-                         tag    (when (not (coll? v*)) (lasertag/tag v*))
-                         v      (or (some->> tag (colorized v-str))
-                                    v-str)]
-                     v)
-                   (val this))
-            ;; If, after writing the map entry key, there's enough space to
-            ;; write the val on the same line, do so. Otherwise, write
-            ;; indentation followed by val on the following line.
-            mode (print-mode writer v (update opts :reserve-chars inc))]
-        (write-sep writer mode)
-        (when (= :miser mode) (write writer (:indentation opts)))
-        (-pprint v writer opts)))))
+    ;; Bling - maybe colorize key and value
+    (let [k      (-maybe-colorize this key opts)
+          opts   (update opts :level inc)
+          k-mode (-pprint k writer opts)
+          v      (-maybe-colorize this val opts)
+          ;; If, after writing the map entry key, there's enough space to
+          ;; write the val on the same line, do so. Otherwise, write
+          ;; indentation followed by val on the following line.
+          mode   (case k-mode
+                   :miser :miser
+                   (print-mode writer v (update opts :reserve-chars inc)))]
+      (write-sep writer mode)
+      (when (= :miser mode) (write writer (:indentation opts)))
+      (-pprint v writer opts))))
 
 (defn ^:private -pprint-map
   "Like -pprint, but only for maps."
   [this writer opts]
   (if (meets-print-level? (:level opts))
     (write writer "#")
-    (let [[^String o form] (open-delim+form this)
-          mode (print-mode writer this opts)
-          opts (pprint-opts o opts)]
-      (pprint-meta form writer opts mode)
-      (write writer o)
-      (if (= *print-length* 0)
-        (write writer "...")
-        (when (seq form)
-          (loop [form form index 0]
-            (if (= index *print-length*)
-              (do
-                (when (= mode :miser) (write writer (:indentation opts)))
-                (write writer "..."))
+    (if-some [m (printable-meta this)]
+      (-pprint-with-meta m (without-meta this) writer opts)
+      (let [[^String o form] (open-delim+form this opts)
+            mode (print-mode writer this opts)
+            opts (pprint-opts o opts)]
+        (write writer o)
+        (if (= *print-length* 0)
+          (write writer "...")
+          (when (seq form)
+            (loop [form form index 0]
+              (if (= index *print-length*)
+                (do
+                  (when (= mode :miser) (write writer (:indentation opts)))
+                  (write writer "..."))
 
-              (do
-                (when (and (= mode :miser) (pos? index))
-                  (write writer (:indentation opts)))
+                (do
+                  (when (and (= mode :miser) (pos? index))
+                    (write writer (:indentation opts)))
 
-                (let [f (first form)
-                      n (next form)]
-                  (if (empty? n)
-                    (-pprint-map-entry f writer (update opts :reserve-chars inc))
-                    (let [^String map-entry-separator (:map-entry-separator opts)]
-                      ;; Reserve a slot for the map entry separator.
-                      (-pprint-map-entry f writer (assoc opts :reserve-chars (strlen map-entry-separator)))
-                      (write writer map-entry-separator)
-                      (write-sep writer mode)
-                      (recur n (inc index))))))))))
+                  (let [f (first form)
+                        n (next form)]
+                    (if (empty? n)
+                      (-pprint-map-entry f writer (update opts :reserve-chars inc))
+                      (let [^String map-entry-separator (:map-entry-separator opts)]
+                        ;; Reserve a slot for the map entry separator.
+                        (-pprint-map-entry f writer (assoc opts :reserve-chars (strlen map-entry-separator)))
+                        (write writer map-entry-separator)
+                        (write-sep writer mode)
+                        (recur n (inc index))))))))))
 
-      (write writer (close-delim form)))))
+        ;; Bling - added opts
+        (write writer (close-delim form opts))
+        mode))))
 
 (defn ^:private -pprint-seq
   [this writer opts]
@@ -741,7 +836,15 @@
 
    (letfn
      [(pp [writer]
-        (let [writer (count-keeping-writer writer {:max-width max-width})]
+        ;; Allowing ##Inf was a mistake, because it's a double.
+        ;;
+        ;; If the user passes ##Inf, convert it to Integer/MAX_VALUE, which is
+        ;; functionally the same in this case.
+        (let [max-width (case max-width
+                          ##Inf #?(:clj Integer/MAX_VALUE
+                                   :cljs js/Number.MAX_SAFE_INTEGER)
+                          max-width)
+              writer (count-keeping-writer writer {:max-width max-width})]
           (-pprint x writer
             (assoc opts
               :map-entry-separator map-entry-separator
@@ -778,16 +881,49 @@
             (when *flush-on-newline* (-flush writer))))))))
 
 
+;; -----------------------------------------------------------------------------
+
 ;; ?pp and supporting ns-str are add-on macros for basic print-and-return fn 
 ;; Intended to be used for development of fireworks itself.
+
+;; TODO - move to string-utils
+(defn string-like? [v]
+  (or (string? v)
+      #?(:clj (-> v type str (= "java.util.regex.Pattern"))
+         :cljs (-> v type str (= "#object[RegExp]")))
+      (symbol? v)
+      (keyword? v)
+      (number? v)))
+
+;; TODO - move to string-utils
+(defn shortened
+  "Stringifies a collection and truncates the result with ellipsis 
+   so that it fits on one line."
+  [v limit]
+  (let [limit  (unchecked-long limit)
+        as-str (str v)]
+    (if (> limit (unchecked-long (count as-str)))
+      as-str
+      (let [shortened*      (-> as-str
+                                (clojure.string/split #"\n")
+                                first)
+            shortened       (if (< limit (unchecked-long (count shortened*)))
+                              (let [ret          (take limit shortened*)
+                                    string-like? (string-like? v)]
+                                (str (clojure.string/join ret)
+                                     (when-not string-like? " ")
+                                     "..."))
+                              shortened*)]
+        shortened))))
+
+
 (defn- ns-str
   [form-meta]
   (let [{:keys [line column]} form-meta
         ns-str                (some-> *ns*
                                       ns-name
                                       str
-                                      (str ":" line ":" column))
-        ns-str                (str "\033[3;38;5;39m" ns-str "\033[0m")]
+                                      (str ":" line ":" column))]
     ns-str))
 
 (defn !?pp
@@ -796,25 +932,49 @@
   ([label x]
    x))
 
+(defn ns+label+result [ns-str form-or-label x]
+  (str ns-str
+       "\n"
+       form-or-label
+       "\n"
+       (with-out-str (fireworks.pp/pprint 
+                      (if (lasertag.cached/hash-map? x)
+                        (into (sorted-map) x)
+                        x)
+                      #_{:colorize? true}
+                      ))))
+
 (defmacro ?pp 
   ([x]
-   (let [ns-str (ns-str (meta &form))]
-     `(do
-        (println
-         (str ~ns-str
-              "\n"
-              (util/shortened (quote ~x) 66)
-              "\n"
-              (with-out-str (fireworks.pp/pprint ~x))))
-        ~x)))
+   (let [ns-str (ns-str (meta &form))
+         x (if (map? x) (into (sorted-map) x) x)]
+     
+     (if (:ns &env)
+       `(do
+          (js/console.log (fireworks.pp/ns+label+result 
+                           ~ns-str
+                           (shortened (quote ~x) 66) 
+                           ~x))
+          ~x)
+       `(do 
+          (println (fireworks.pp/ns+label+result
+                    (str "\033[3;38;5;39m" ~ns-str "\033[0m")
+                    (shortened (quote ~x) 66) 
+                    ~x))
+          ~x))))
   ([label x]
-   (let [label (or (:label label) label)
+   (let [label  (or (:label label) label)
          ns-str (ns-str (meta &form))]
-     `(do
-        (println
-         (str ~ns-str
-              "\n"
-              (with-out-str (fireworks.pp/pprint ~label))
-              "\n"
-              (with-out-str (fireworks.pp/pprint ~x))))
-        ~x))))
+     (if (:ns &env)
+       `(do
+          (js/console.log (fireworks.pp/ns+label+result 
+                           ~ns-str
+                           (with-out-str (fireworks.pp/pprint ~label)) 
+                           ~x))
+          ~x)
+       `(do 
+          (println (fireworks.pp/ns+label+result 
+                    (str "\033[3;38;5;39m" ~ns-str "\033[0m")
+                    (with-out-str (fireworks.pp/pprint ~label)) 
+                    ~x))
+          ~x)))))

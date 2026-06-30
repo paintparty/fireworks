@@ -7,10 +7,12 @@
 
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [? !? ?> !?> pprint]]
+            #?(:cljs [fireworks.macros :refer-macros [keyed]])
+            #?(:clj [fireworks.macros :refer [keyed]])
             [fireworks.themes :as themes]
             [fireworks.state]
             [fireworks.color]
-            [clojure.string :as string]
+            [clojure.string :as str]
             [fireworks.pp :as pp]
             [clojure.walk :as walk]
             [fireworks.util :as util]
@@ -19,6 +21,109 @@
             [lasertag.core :as lt :refer [tag-map tag]]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
+
+
+#_(? :perf {:perfs? true} :fooo)
+
+
+(let [a "foo"
+      b "gooasdfasdfsafasd"
+      c (java.util.HashSet. #{"a" 1 "basdfasdfasdfa" 233})])
+
+;; (def bar nil)
+;; (? (tag-map #'bar))
+;; (def my-delay (delay 100))
+;; (? (tag-map my-delay))
+;; (? (lasertag.core/tag-map (java.util.HashSet. #{"a" 1 "b" 2})))
+;; (? (seqable? (java.util.HashSet. #{"a" 1 "b" 2})))
+
+(def lb "\n\n ")
+(def lb2 "\n")
+(def xx {:a (take 10 (map inc (range 18))) :b "foo"})
+(defn my-custom-printer [x] (println (str "HIHIHIH " x)))
+
+#_(do 
+  (println lb "DEFAULT" lb2)
+  (? xx)
+  
+  (println lb "JUST-RESULT, from opts" lb2)
+  (? {:display-file-info? false :display-label-or-form? false} :foo)
+
+  (println lb "NO-LABEL, from opts" lb2)
+  (? {:display-label-or-form? false} xx)
+
+  (println lb "NO-FILE" lb2)
+  (? {:display-file-info? false} xx)
+
+  (println  lb "CUSTOM LABEL, from opts" lb2)
+  (? {:label "custom label as string"} xx)
+
+  (println lb "PRN, from opts" lb2)
+  (? {:print-with prn} "ln1\nln2")
+
+  (println lb "PRINT, from opts" lb2)
+  (? {:print-with print} "ln1\nln2")
+
+  (println lb "PP, from opts" lb2)
+  (? {:print-with pprint} xx)
+
+  (println lb "CUSOM PRINTING FN, from opts" lb2)
+  (? {:print-with my-custom-printer} :foo)
+
+
+  (println lb "log?, from opts" lb2)
+  (? {:log? true} xx)
+
+  #_(println lb "NO TRUNCATION, from opts" lb2)
+  #_(? {:truncate? false} (assoc xx :c (range 100)))
+
+  #_(println lb "RESULT OF DATA, from opts.\n  (`:formatted` and `:formatted-with-header` dissoc'd)" lb2)
+  #_(pprint (dissoc (? {:data? true} :fooo) :formatted :formatted-with-header))
+
+  #_(? :pp :fooo)
+
+  ;; (? :+ (map inc (range 444)))
+  )
+
+;; (? :no-file {:label "wtf"} (take 10 (map inc (range 18))))
+
+#_(? :no-label "wow chick" :trace (-> 1 inc (+ 3)))
+
+#_(? :no-file "wow chick" {:print-length 6} [1 2 3 4 5 6 7 8 9])
+
+#_(? {:truncate? true} (range 108))
+
+#_(? {:label "girlssss"
+    ;; :no-file? true
+    ;; :no-label? true
+    }
+ :fooo)
+
+;; (? (def foo 'bar))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 (def my-atom (atom nil))
 (def my-volatile (volatile! nil))
@@ -369,21 +474,21 @@
    (-> my-map
        (assoc :bango :bongo)
        (keys)
-       (->> (mapv #(-> % name string/upper-case)))))
+       (->> (mapv #(-> % name str/upper-case)))))
 
 (println "\n\n---------- testing :trace with ->")
 (? :trace
    (-> my-map
        (assoc :bango :bongo)
        (keys)
-       (->> (mapv #(-> % name string/upper-case)))))
+       (->> (mapv #(-> % name str/upper-case)))))
 
 (println "\n\n---------- testing :trace with some->")
 (? :trace
    (some-> my-map
        (assoc :bango :bongo)
        (keys)
-       (->> (mapv #(-> % name string/upper-case)))))
+       (->> (mapv #(-> % name str/upper-case)))))
 
 (println "\n\n---------- testing :trace with ->, 3-arity")
 (? :trace
@@ -391,7 +496,7 @@
    (-> my-map
        (assoc :bango :bongo)
        (keys)
-       (->> (mapv #(-> % name string/upper-case)))))
+       (->> (mapv #(-> % name str/upper-case)))))
 
 
 (println "\n\n---------- testing :trace with normal fn, should not trace")
@@ -964,5 +1069,4 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 

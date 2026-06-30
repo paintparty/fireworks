@@ -6,8 +6,7 @@
 
 (ns fireworks.themes 
   (:require
-   [fireworks.defs :as defs :refer [bling-css-color]]
-   #_[fireworks.pp :refer [?pp]]))
+   [fireworks.defs :as defs :refer [bling-css-color]]))
 
 
 
@@ -316,8 +315,8 @@
                       :label      {:color            "#c76823"
                                    :background-color "#fff9f5"
                                    :font-style       :italic}
-                      :eval-label {:color            "#3764cd"
-                                   :background-color "#f3f7feff"
+                      :eval-label {:color            "#818eee"
+                                   :background-color "#e7effe"
                                    :font-style       :italic}}
             :syntax  (merge {:js-object-key {:color "#888888"}}
                             (highlighted-regex-syntax regex-syntax-neutral-light))
@@ -361,9 +360,7 @@
                       :metadata2  {:color            "#a08a40"
                                    :text-shadow      "0 0 2px #003538"
                                    :background-color "#351d1d"}
-                      :label      {:color            "#797979"
-                                  ;;  :background-color "#000"
-                                   :font-style       :italic}
+                      :label      :annotation
                       :eval-label {:color            "#85b7e5"
                                    :font-style       :italic
                                    :background-color "#00345c"}}
@@ -823,6 +820,7 @@
                             (highlighted-regex-syntax regex-syntax-minimal))
 
             :printer {:file-info     :annotation
+                      :eval-label    :annotation
                       :comment       {:font-style :italic}}}})
 
 (def alabaster-light-legacy

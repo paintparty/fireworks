@@ -1,0 +1,188 @@
+{
+  "name": "fireworks",
+  "displayName": "Fireworks",
+  "description": "Live Coding for Clojure",
+  "version": "0.0.1",
+  "publisher": "paintparty",
+  "license": "EPL-2.0",
+  "categories": ["Programming Languages", "Other"],
+  "engines": {
+    "vscode": "^1.75.0",
+    "node": "^22.0.0"
+  },
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "workspaceContains:**/deps.edn",
+    "workspaceContains:**/bb.edn",
+    "workspaceContains:**/project.clj",
+    "workspaceContains:**/.fireworks/**"
+  ],
+  "extensionDependencies": ["betterthantomorrow.calva"],
+  "contributes": {
+    "commands": [
+      { "command": "fireworks.toggle", "title": "Toggle ? (Print & Return)", "category": "Fireworks" },
+      { "command": "fireworks.toggleTap", "title": "Toggle ?> (Tap & Return)", "category": "Fireworks" },
+      { "command": "fireworks.toggleIgnore", "title": "Toggle #_ (Ignore)", "category": "Fireworks" },
+      { "command": "fireworks.withOption", "title": "? With Option", "category": "Fireworks" },
+      { "command": "fireworks.toggleTrace", "title": "Toggle (? :trace …)", "category": "Fireworks" },
+      { "command": "fireworks.toggleMinus", "title": "Toggle (? :- …)", "category": "Fireworks" },
+      { "command": "fireworks.togglePlus", "title": "Toggle (? :+ …)", "category": "Fireworks" },
+      { "command": "fireworks.togglePp", "title": "Toggle (? :pp …)", "category": "Fireworks" },
+      { "command": "fireworks.unwrapAll", "title": "Unwrap All ? in Form", "category": "Fireworks" },
+      { "command": "fireworks.unwrapAllInNs", "title": "Unwrap All ? in Namespace", "category": "Fireworks" },
+      { "command": "fireworks.toggleAllSilent", "title": "Toggle All Silent In Form", "category": "Fireworks" },
+      { "command": "fireworks.toggleAllSilentInNs", "title": "Toggle All Silent In Namespace", "category": "Fireworks" },
+      { "command": "fireworks.addRequire", "title": "Add Fireworks Require", "category": "Fireworks" },
+      { "command": "fireworks.toggleInlineResults", "title": "Toggle Inline Results", "category": "Fireworks" },
+      { "command": "fireworks.clearInlineResults", "title": "Clear Inline Results", "category": "Fireworks" },
+      { "command": "fireworks.startLiveCoding", "title": "Live Code (Start)", "category": "Fireworks" },
+      { "command": "fireworks.stopLiveCoding", "title": "Live Code (Stop)", "category": "Fireworks" },
+      { "command": "fireworks.restartLiveCoding", "title": "Live Code (Restart)", "category": "Fireworks" },
+      { "command": "fireworks.toggleDebugTestMode", "title": "Toggle Debug / Test Mode", "category": "Fireworks" },
+      { "command": "fireworks.setAutoSaveDelay", "title": "Set Auto-Save Delay", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsColor", "title": "Set Inline Results Color", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsBackgroundOpacityLight", "title": "Set Inline Results Background Opacity (Light Theme)", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsBackgroundOpacityDark", "title": "Set Inline Results Background Opacity (Dark Theme)", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsOpacity", "title": "Set Inline Results Foreground Opacity", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsGap", "title": "Set Inline Results Gap", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsMaxLength", "title": "Set Inline Results Max Length", "category": "Fireworks" },
+      { "command": "fireworks.setInlineResultsFadeIn", "title": "Set Inline Results Fade-In", "category": "Fireworks" },
+      { "command": "fireworks.rainbowTracerVertical", "title": "Rainbow Tracer (top-to-bottom)", "category": "Fireworks" },
+      { "command": "fireworks.rainbowTracerHorizontal", "title": "Rainbow Tracer (left-to-right)", "category": "Fireworks" },
+      { "command": "fireworks.rainbowTracerCross", "title": "Rainbow Tracer (cross)", "category": "Fireworks" }
+    ],
+    "keybindings": [
+      {
+        "command": "fireworks.toggle",
+        "key": "ctrl+'", "mac": "cmd+'",
+        "when": "editorTextFocus && editorLangId == clojure"
+      },
+      {
+        "command": "fireworks.toggleTap",
+        "key": "ctrl+shift+'", "mac": "cmd+shift+'",
+        "when": "editorTextFocus && editorLangId == clojure"
+      },
+      {
+        "command": "fireworks.toggleIgnore",
+        "key": "ctrl+;", "mac": "cmd+;",
+        "when": "editorTextFocus && editorLangId == clojure"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        { "command": "fireworks.toggle", "when": "editorLangId == clojure" },
+        { "command": "fireworks.toggleTap", "when": "editorLangId == clojure" },
+        { "command": "fireworks.toggleIgnore", "when": "editorLangId == clojure" },
+        { "command": "fireworks.withOption", "when": "editorLangId == clojure" },
+        { "command": "fireworks.toggleTrace", "when": "editorLangId == clojure" },
+        { "command": "fireworks.toggleMinus", "when": "editorLangId == clojure" },
+        { "command": "fireworks.togglePlus", "when": "editorLangId == clojure" },
+        { "command": "fireworks.togglePp", "when": "editorLangId == clojure" },
+        { "command": "fireworks.unwrapAll", "when": "editorLangId == clojure" },
+        { "command": "fireworks.unwrapAllInNs", "when": "false" },
+        { "command": "fireworks.toggleAllSilent", "when": "editorLangId == clojure" },
+        { "command": "fireworks.toggleAllSilentInNs", "when": "false" },
+        { "command": "fireworks.addRequire", "when": "editorLangId == clojure" }
+      ]
+    },
+    "configuration": {
+      "title": "Fireworks",
+      "properties": {
+        "fireworks.inlineResults.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "When on, the extension watches the project's `.fireworks/results/` directory and shows each `?` call's value as a read-only inline decoration at the end of its source line. Toggle with the `Fireworks: Toggle Inline Results` command.",
+          "order": 1
+        },
+        "fireworks.inlineResults.color": {
+          "type": "string",
+          "enum": ["Purple", "Blue", "Cyan", "Green", "Neutral"],
+          "default": "Purple",
+          "enumDescriptions": [
+            "Purple — adapts to light/dark.",
+            "Blue — adapts to light/dark.",
+            "Cyan — adapts to light/dark.",
+            "Green — adapts to light/dark.",
+            "Neutral gray — adapts to light/dark."
+          ],
+          "markdownDescription": "Color of the inline `?` value and its background tint. The light- or dark-theme variant is chosen automatically. Intensity: `#fireworks.inlineResults.opacity#`; tint strength: `#fireworks.inlineResults.backgroundOpacity.light#` / `#fireworks.inlineResults.backgroundOpacity.dark#`.",
+          "order": 2
+        },
+        "fireworks.inlineResults.opacity": {
+          "type": "number",
+          "default": 0.75,
+          "minimum": 0.5,
+          "maximum": 1,
+          "markdownDescription": "Opacity of the inline `?` value. Clamped to the range 0.5–1.0 so the value stays legible.",
+          "order": 3
+        },
+        "fireworks.inlineResults.backgroundOpacity.light": {
+          "type": "number",
+          "default": 0.07,
+          "minimum": 0,
+          "maximum": 0.3,
+          "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`) when a **light** theme is active. The active theme selects this or `#fireworks.inlineResults.backgroundOpacity.dark#` automatically. Clamped to 0–0.3; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`.",
+          "order": 4
+        },
+        "fireworks.inlineResults.backgroundOpacity.dark": {
+          "type": "number",
+          "default": 0.18,
+          "minimum": 0,
+          "maximum": 0.3,
+          "markdownDescription": "Opacity of the background tint (the `#fireworks.inlineResults.color#` mixed into transparent via CSS `color-mix`) when a **dark** theme is active. The active theme selects this or `#fireworks.inlineResults.backgroundOpacity.light#` automatically. Clamped to 0–0.3; set to `0` for no background. Requires a VS Code build whose Chromium supports `color-mix`.",
+          "order": 5
+        },
+        "fireworks.inlineResults.gap": {
+          "type": "number",
+          "default": 7,
+          "minimum": 1,
+          "maximum": 300,
+          "markdownDescription": "Spaces between the last character of code on a line and the inline `?` value.",
+          "order": 6
+        },
+        "fireworks.inlineResults.maxLength": {
+          "type": "number",
+          "default": 80,
+          "minimum": 0,
+          "maximum": 300,
+          "markdownDescription": "Character budget for inline `?` values on a single line, shared as evenly as possible when a line has more than one result (truncated with `...`). At most 3 results show per line; the rest collapse into a `+ n more` tail. Set to `0` for no limit.",
+          "order": 7
+        },
+        "fireworks.inlineResults.fadeInMs": {
+          "type": "number",
+          "default": 90,
+          "minimum": 0,
+          "maximum": 500,
+          "markdownDescription": "Duration in milliseconds of the fade-in when an inline `?` value appears. Set to `0` to show values instantly without animation.",
+          "order": 8
+        },
+        "fireworks.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Write diagnostic traces to the Fireworks output channel.",
+          "order": 9
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile-cljs": "shadow-cljs compile :cljs-lib",
+    "release-cljs": "shadow-cljs release :cljs-lib",
+    "watch-cljs": "shadow-cljs watch :cljs-lib",
+    "test-cljs": "shadow-cljs compile :test",
+    "compile-ts": "tsc -p ./",
+    "watch-ts": "tsc -watch -p ./",
+    "compile": "npm run compile-cljs && npm run compile-ts",
+    "bundle": "node esbuild.mjs",
+    "vscode:prepublish": "npm run release-cljs && npm run bundle",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.75.0",
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.28.1",
+    "shadow-cljs": "^3.4.11",
+    "typescript": "^6.0.3"
+  }
+}

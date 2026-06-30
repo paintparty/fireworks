@@ -1,9 +1,12 @@
 (ns fireworks.util
   (:require [clojure.string :as string]
-            [clojure.pprint :refer [pprint]]
             [fireworks.defs :as defs]
             [clojure.set :as set]
-            [lasertag.core :as lasertag]))
+            [lasertag.fns :as fns]
+            [lasertag.cached]
+            [lasertag.core :as lasertag]
+            #?(:bb [clojure.reflect :as r])
+            [fireworks.debug :refer [?]]))
 
 (defn spaces [n] (string/join (repeat n " ")))
 
@@ -110,20 +113,29 @@
   ([x]
    (tag-map* x nil))
   ([x opts]
-   (let [{:keys [all-tags classname]
+   (let [{:keys [all-tags classname t]
           :as   tag-map}
          (-> x
              (lasertag/tag-map opts)
              (set/rename-keys {:tag :t}))]
      (merge tag-map
+
+            ;; This is where we get the coll-size or collection size
+            (when (contains? all-tags :coll-like)
+              {:coll-type? true
+               :coll-size  (lasertag.core/coll-size* (assoc tag-map :x x))})
+            (when (contains? #{:function :class :defmulti} t) (fns/fn-info x t))
+
+            (when (and (contains? all-tags :map-like)
+                       (contains? all-tags :datatype)) 
+              {:object-like-datatype? true})
+            ;; TODO - try to eliminate these and look into all-tags instead
             (when (contains? all-tags :carries-meta) {:carries-meta? true})
-            (when (or (contains? all-tags :coll-type) ;<- deprecate in lasertag
-                      (contains? all-tags :coll-like))
-              {:coll-type? true})
             (when (contains? all-tags :map-like) {:map-like? true})
             (when (contains? all-tags :set-like) {:set-like? true})
             (when (contains? all-tags :transient) {:transient? true})
             (when (contains? all-tags :number) {:number-type? true})
+            (when (contains? all-tags :lambda) {:lambda? true})
             #?(:cljs nil
                :clj (when (some->> classname java-lang-class?)
                       {:java-lang-class? true}))
@@ -169,3 +181,139 @@
 (defn insert-at [vc i elem]
   (into (conj (subvec vc 0 i) elem)
         (subvec vc i)))
+
+
+(defn longer-than?
+  "Returns true if `coll` has more than `n` elements.
+
+  Avoids fully realizing lazy sequences — walks at most (inc n) elements.
+
+  Examples:
+    (longer-than? 5 (range 3))   ;=> false
+    (longer-than? 5 (range 5))   ;=> false
+    (longer-than? 5 (range 6))   ;=> true
+    (longer-than? 5 (range 1e9)) ;=> true"
+  [n coll]
+  (some? (nth coll n nil)))
+
+(defn truncated-seq 
+  "Truncates a seq without realizing it.
+   
+   Optional trucation label or symbol is
+   appended to result (useful for printing).
+   (truncated-seq 3 '(1 2 3 4 5) '...) => '(1 2 3 ...)"
+  ([n x]
+   (truncated-seq n x nil))
+  ([n x label]
+   (longer-than? n x)
+   (if (longer-than? n x)
+     (concat (take n x) [label])
+     (take n x))))
+
+
+(defn safe-str
+  "Pass any value and safely get a print representation.
+
+   Optional truncation and ellipsis.
+
+   You can pass options to get a substring as
+   well, with guarded index-out-of-bounds checks.
+
+   Unprintable custom objects that would normally throw an AbstractMethodError
+   in clojure are returned as (str \"<Print Error: \" (.getMessage e) \">\"),
+   or equivalent for target platform"
+  [x
+   {:keys [start end print-length print-level ellipsis?] 
+    :or   {start        0
+           end          10
+           print-length 10 ;<- max length of colls
+           print-level  10
+           ellipsis?    false}}]
+  (try (binding [*print-length* print-length
+                 *print-level*  print-level]
+         (let [lazy-seq?  (lasertag.cached/lazyish-seq? x)
+               s          (pr-str (if lazy-seq?
+                                    ;; TODO - util fn (seq-overflow?) to compute '...+5,
+                                    ;; How to make safe for infinite, etc
+                                    (truncated-seq print-length x '...)
+                                    x))
+               len        (count s)
+               start+     (max 0 (min start len))
+               end+       (max start+ (min end len))
+               target-len (- end+ start+)
+               overflows? (> len end+)]
+           (if (and ellipsis? overflows? (>= target-len 3))
+             (str (subs s start+ (- end+ 3)) "...")
+             (subs s start+ end+))))
+
+       ;; Catch the missing impl error for each platform
+       (catch #?(:clj AbstractMethodError :cljs js/TypeError) _
+         (str "<Unprintable Custom Type: " 
+              #?(:clj  (.getName (class x))
+                 :cljs (if-let [t (type x)] (.-name t) "Unknown")) 
+              ">"))
+
+       ;; Catch standard exceptions for other printing failures
+       (catch #?(:clj Exception :cljs js/Error) e
+         (str "<Print Error: " 
+              #?(:clj  (.getMessage e)
+                 :cljs (.-message e)) 
+              ">")) ))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Raw datatype objects start 
+
+(defn object-fields 
+  "If the given object instance has one or more named fields declared in its
+   underlying structure (across JVM, CLJS, and Babashka), returns a list of
+   those names."
+  [obj]
+  (if (nil? obj)
+    false
+    #?(:bb   nil
+       :clj  (.getDeclaredFields (.getClass obj))
+       :cljs (when (seq (.getBasis (.-constructor obj)))
+               (keys (into {} obj))))))
+
+(defn object-field-count
+  "Returns true if the given object instance has one or more named fields 
+   declared in its underlying structure across JVM, CLJS, and Babashka."
+  [obj]
+  (if (nil? obj)
+    false
+    #?(:clj  (some-> obj object-fields alength)
+       :cljs (alength (object-fields obj)))))
+
+(defn datatype->map 
+  "Turns a raw datatype with declared fields into a map.
+   If no declared fields are detected, just returns the object.
+   Set :skip-declared-fields check to `true` to skip check for perf."
+  ([obj]
+   (datatype->map obj nil))
+  ([obj {:keys [skip-object-has-fields-check?]
+         :or   {skip-object-has-fields-check? false}}]
+   (if-not (or skip-object-has-fields-check?
+               (pos? (object-field-count obj)))
+     obj
+     #?(:bb
+        {}
+
+        ;; => (:a :b)
+        :clj
+        ;; Standard Clojure JVM path
+        (->> (.getDeclaredFields (.getClass obj))
+             (reduce (fn [m field]
+                       (.setAccessible field true)
+                       (assoc m (symbol (.getName field)) (.get field obj)))
+                     {}))
+
+        :cljs
+        ;; ClojureScript path
+        (->> (js/Object.keys obj)
+             (reduce (fn [m k]
+                       (assoc m (keyword k) (aget obj k)))
+                     {}))))))
+
+;; Raw datatype objects end
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

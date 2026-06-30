@@ -1,7 +1,6 @@
 (ns fireworks.browser
   (:require [clojure.string :as string]
             [fireworks.ansi :as ansi]
-            [fireworks.pp :refer [?pp]]
             [fireworks.state :as state]
             [fireworks.color]))
 
@@ -144,29 +143,30 @@
   ```
   "
   [s]
-  (let [
-        ;; This removes redundant unstyled spaces
-        ;; TODO - test perf with and without
-        ;; s             
-        ;; (string/replace s ansi-sgr-unstyled-spaces-re "")
+  (when (and (string? s) (not (string/blank? s)))
+    (let [
+                ;; This removes redundant unstyled spaces
+                ;; TODO - test perf with and without
+                ;; s             
+                ;; (string/replace s ansi-sgr-unstyled-spaces-re "")
+                
+                ;; Replaces all ANSI SGR tags with CSS format specifier tag
+                with-format-specifiers 
+                (string/replace s ansi/sgr-re "%c")
 
-        ;; Replaces all ANSI SGR tags with CSS format specifier tag
-        with-format-specifiers 
-        (string/replace s ansi/sgr-re "%c")
+                ;; This analyzes all ansi-sgr escape sequences and produces vector of
+                ;; css style strings
+                vc                     
+                (->> s
+                     (re-seq ansi/sgr-re)
+                     (reduce (fn [vc s]
+                               (->> s
+                                    ansi-sgr->style-map
+                                    style-map->css-style-str
+                                    (conj vc)))
+                             [with-format-specifiers]))]
 
-        ;; This analyzes all ansi-sgr escape sequences and produces vector of
-        ;; css style strings
-        vc                     
-        (->> s
-             (re-seq ansi/sgr-re)
-             (reduce (fn [vc s]
-                       (->> s
-                            ansi-sgr->style-map
-                            style-map->css-style-str
-                            (conj vc)))
-                     [with-format-specifiers]))]
-
-    #?(:cljs (into-array vc) :clj vc)))
+            #?(:cljs (into-array vc) :clj vc))))
 
 
 

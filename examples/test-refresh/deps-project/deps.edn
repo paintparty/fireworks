@@ -1,6 +1,8 @@
-{:paths   ["src"]
- :deps    {org.clojure/clojure            {:mvn/version "1.12.3"}
-           io.github.paintparty/fireworks {:mvn/version "0.16.1"}}
- :aliases {:test-refresh {:extra-paths ["test"]
-                          :extra-deps  {com.jakemccrary/test-refresh {:mvn/version "0.26.0"}}
-                          :main-opts   ["-m" "com.jakemccrary.test-refresh"]}}}
+{:alias {:test-refresh {:extra-paths   ["test"]
+                        :extra-deps    {com.jakemccrary/test-refresh {:mvn/version "0.26.0"}}
+                        :override-deps {io.github.paintparty/bling     {:local/root "../../../cljc/bling"}
+                                        io.github.paintparty/fireworks {:local/root "../../../cljc/fireworks"}
+                                        io.github.paintparty/lasertag  {:local/root "../../../cljc/lasertag"}}
+                        :main-opts     ["-m" "com.jakemccrary.test-refresh"]}} 
+ :paths ["src" "test"]
+ :deps  {io.github.paintparty/fireworks {:mvn/version "0.20.0"}}}

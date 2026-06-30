@@ -1,0 +1,20 @@
+{
+	"folders": [
+    {
+      "path": "../integrations/vscode/extension"
+    },
+    {
+      "path": "../../../editor-extensions/vsc/themes"
+    },
+    {
+      "path": "../../bb-live"
+    },
+    {
+      "path": "../../../../../.claude"
+    },
+    {
+      "path": "../../lasertag"
+    }
+  ],
+  "settings": {}
+}

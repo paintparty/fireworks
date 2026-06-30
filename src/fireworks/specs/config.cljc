@@ -70,6 +70,9 @@
 (s/def ::print-length
   ::fw-print-length)
 
+(s/def ::print-length-inline-results
+  ::fw-print-length)
+
 (s/def ::scalar-extended-print-length
   (s/and int? #(<= 10 % scalar-max-length)))
 
@@ -93,6 +96,9 @@
 
 (s/def ::print-level
   (s/and int? #(<= 1 % 20)))
+
+(s/def ::print-level-inline-results
+  (s/and int? #(<= 1 % 10)))
 
 (s/def ::metadata-print-level
   (s/and int? #(<= 1 % 10)))
@@ -176,4 +182,8 @@
 
 (s/def ::quote-symbols? boolean?)
 
+(s/def ::quote-lists? boolean?)
+
 (s/def ::colorize? boolean?)
+
+(s/def ::perf? boolean?)

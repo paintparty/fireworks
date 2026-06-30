@@ -1,7 +1,6 @@
 (ns ^:dev/always fireworks.profile
   (:require
    [fireworks.defs :as defs]
-   [fireworks.pp :refer [?pp] :rename {?pp ?}]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.state :as state]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
@@ -58,6 +57,9 @@
                   (= t :uuid)
                   defs/uuid-badge
 
+                  ;; Leave this off for now...
+                  ;; Probably better to display "my.ns/fn__983098" than just "λ" 
+                  #_#_
                   (= t :lambda)
                   defs/lambda-badge
 
@@ -103,7 +105,7 @@
 (defn target-path-is-ancestor-coll?
   [tp vp tp-list]
   (let [debug?
-        false
+        false #_true
         #_(boolean (and (= tp [:map :c])
                       (= vp [:map :c :fireworks.highlight/map-key])))
 
@@ -127,7 +129,7 @@
                 (not map-key-for-a-target-value?))))]
 
     #_(when debug?
-      (?pp (keyed [value-path-has-more-nodes-than-target-path?
+      (? (keyed [value-path-has-more-nodes-than-target-path?
                    target-path-is-potentially-an-ancestor?
                    map-key-for-a-target-value?
                    rest-of-value-path
@@ -144,12 +146,16 @@
    {:keys       [pred style]
     target-path :path
     :as         m}]
-  (when (or (and pred (pred x))
-            (and target-path (= target-path value-path))
-            (target-path-is-ancestor-coll? target-path
-                                           value-path
-                                           (apply list target-path)))
-    {:highlighting style}))
+  (let [target-path (or target-path @state/highlight-target-path)]
+    (when  (or (let [matches-pred? (and pred (pred x))]
+                 (when matches-pred?
+                   (reset! state/highlight-target-path value-path))
+                 matches-pred?)
+               (and target-path (= target-path value-path))
+               (target-path-is-ancestor-coll? target-path
+                                              value-path
+                                              (apply list target-path)))
+      {:highlighting style})))
 
 
 (defn- highlighting
@@ -197,13 +203,12 @@
            encapsulation-closing-bracket-len)]
 
     #_(when-not (not (coll? x)) #_@state/formatting-form-to-be-evaled?
-                (?pp
-                 (keyed [str-len-with-badge
-                         val-str-len
-                         badge-str-len
-                         x
-                         encapsulation-closing-bracket-len
-                         ])))
+                (? (keyed [str-len-with-badge
+                           val-str-len
+                           badge-str-len
+                           x
+                           encapsulation-closing-bracket-len
+                           ])))
 
     (keyed [str-len-with-badge
             badge-str-len
@@ -295,9 +300,10 @@
                        (mutable-wrapper-count meta-map)
                        str-len-val-ellipsized)
 
+                    ;; TODO - Remove?
                     ;; _ (when-not @state/formatting-form-to-be-evaled?
-                    ;;     (?pp x)
-                    ;;     (?pp (keyed [m
+                    ;;     (? x)
+                    ;;     (? (keyed [m
                     ;;                  badge-str-len
                     ;;                  atom-wrap-count
                     ;;                  ellipsized-char-count
@@ -470,16 +476,11 @@
           (vec
                 (map-indexed 
                  (fn [i [k v]]
-                   ;;  (?pp (meta k))
-                   ;;  (?pp k)
                    (let [k (f k {:key?             true
                                  :associated-value v
                                  :js-map-like-key? (:js-map-like? meta-map)
                                  :index            i})
                          v (vary-meta v assoc-in [:fw/truncated :map-value?] true)]
-
-                     ;;  (?pp k)
-                     ;;  (?pp (meta k))
                      [k v]))
                  x))]
       ret)

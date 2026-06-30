@@ -7,4 +7,12 @@
                   :task             (exec 'cognitect.test-runner.api/test)
                   :exec-args        {:dirs ["testbb"]}
                   :org.babashka/cli {:coerce {:nses [:symbol]
-                                              :vars [:symbol]}}}}}
+                                              :vars [:symbol]}}}
+
+         gen-example-config
+         {:doc        "Regenerate docs/example-bling-config/config.edn from fireworks.config/options."
+          :extra-paths ["src"]
+          :extra-deps {expound/expound               {:mvn/version "0.9.0"}
+                       io.github.paintparty/lasertag {:local/root "../lasertag"}}
+          :requires   ([fireworks.config])
+          :task       (fireworks.config/generate-example-config!)}}}

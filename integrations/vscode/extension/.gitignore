@@ -1,0 +1,45 @@
+.DS_Store
+/target
+/classes
+/checkouts
+profiles.clj
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+/.prepl-port
+.hgignore
+.hg/
+.lsp
+.lein-repl-history
+**/.clj-kondo/.cache/
+.calva
+.joyride
+.vscode
+.idea
+.ls
+/public/js
+.cpcache
+pom.properties
+
+
+# shadow-cljs output (the hand-written lib/cljs-lib.d.ts is committed)
+/lib/cljs-lib.js
+/lib/cljs-lib.js.map
+.shadow-cljs/
+
+# tsc / esbuild output
+/out/
+
+# node
+/node_modules/
+
+# clojure cli dep cache
+/.cpcache/
+
+# packaged extension
+*.vsix
+
+*.md

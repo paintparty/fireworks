@@ -36,6 +36,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -45,21 +46,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 40,
+  :label 'no-truncation,
   :multi-line-metadata? true,
   :truncate? false,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -83,6 +87,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -92,21 +97,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'string-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -128,6 +136,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -137,21 +146,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 100,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'regex-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -173,6 +185,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -182,21 +195,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 100,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'uuid-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -218,6 +234,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -227,21 +244,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'symbol-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -263,6 +283,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -272,21 +293,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'symbol+meta-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? true,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -308,6 +332,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -317,21 +342,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'boolean-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -353,6 +381,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -362,21 +391,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'keyword-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -398,6 +430,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -407,21 +440,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'nil-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -443,6 +479,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -452,21 +489,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'Nan-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -488,6 +528,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -497,21 +538,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'Inf-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -533,6 +577,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -542,21 +587,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label '-Inf-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -578,6 +626,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -587,21 +636,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'int-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -623,6 +675,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -632,21 +685,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'float-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -668,6 +724,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -677,66 +734,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'core-fn,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- (fn []))
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :scalar-depth-1-max-length 69,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 20,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -758,6 +773,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -767,66 +783,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'map-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- java.util.Date)
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :scalar-depth-1-max-length 69,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 20,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -848,6 +822,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -857,21 +832,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'multiline-map,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -895,6 +873,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -904,21 +883,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'rainbow-brackets,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -940,6 +922,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -949,21 +932,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'vector-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -985,6 +971,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -994,21 +981,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'vector+meta-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? true,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1030,6 +1020,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1039,21 +1030,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'set-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1075,6 +1069,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1084,21 +1079,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'list-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1120,6 +1118,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1129,21 +1128,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'lazy-seq-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1165,6 +1167,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1174,21 +1177,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'atom-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1221,6 +1227,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1230,21 +1237,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'volatile!-value,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1266,6 +1276,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1275,21 +1286,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'volatile,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1311,6 +1325,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1320,21 +1335,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'transient-vector2,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1356,6 +1374,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1365,21 +1384,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'transient-set2,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1401,6 +1423,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1410,21 +1433,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'transient-map2,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1446,6 +1472,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1455,21 +1482,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'single-line-coll-print-length-50-19,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1491,6 +1521,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1500,21 +1531,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'single-line-coll-print-length-50-20,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1536,6 +1570,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1545,21 +1580,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'array-map-order,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1581,6 +1619,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1590,21 +1629,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'symbol-with-meta,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1626,6 +1668,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1635,21 +1678,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'rainbow-brackets,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1671,6 +1717,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1680,21 +1727,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'rainbow-brackets-low-contrast,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1716,96 +1766,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
-  :scalar-depth-1-max-length 60,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 20,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :scalar-depth-1-max-length 69,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 44,
-  :theme "Alabaster Dark",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 20,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1815,111 +1776,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- fireworks.sample/my-data-type)
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :scalar-depth-1-max-length 69,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 20,
-  :print-length 33,
-  :multi-line-metadata? true,
-  :truncate? true,
-  :enable-terminal-font-weights? true,
-  :dissoc-metadata-keys nil,
-  :legacy-terminal? false,
-  :quote-symbols? false,
-  :colorize? true,
-  :label-max-length 44,
-  :margin-inline-start 0,
-  :display-metadata? false,
-  :margin-bottom 1,
-  :metadata-position "inline",
-  :print-detected-color-level? false,
-  :bracket-contrast "high"}
- fireworks.sample/my-record-type)
-
-
-(?
- {:regex-theme :neutral,
-  :line-height 1.45,
-  :find nil,
-  :single-column-maps? false,
-  :supports-color-level nil,
-  :enable-terminal-italics? true,
-  :print-with nil,
-  :display-namespaces? true,
-  :when visual-mode?,
-  :enable-rainbow-brackets? true,
-  :select-metadata-keys nil,
-  :enable-terminal-truecolor? true,
-  :scalar-depth-1-max-length 69,
-  :margin-left 0,
-  :bold? false,
-  :margin-top 0,
-  :print-level 7,
-  :single-line-coll-max-length 33,
-  :format-label-as-code? false,
-  :single-column-map-threshold 44,
-  :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
-  :metadata-print-level 4,
-  :scalar-max-length 33,
-  :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 100,
+  :label 'java-interop-types,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1941,6 +1815,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1950,21 +1825,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'java-util-hashmap,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -1986,6 +1864,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -1995,21 +1874,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'java-util-arraylist,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -2031,6 +1913,7 @@
   :enable-rainbow-brackets? true,
   :select-metadata-keys nil,
   :enable-terminal-truecolor? true,
+  :quote-lists? false,
   :scalar-depth-1-max-length 69,
   :margin-left 0,
   :bold? false,
@@ -2040,21 +1923,24 @@
   :format-label-as-code? false,
   :single-column-map-threshold 44,
   :scalar-result-max-length 444,
-  :theme "Alabaster Dark",
+  :theme "Alabaster Light",
   :metadata-print-level 4,
   :scalar-max-length 33,
   :label-color nil,
-  :scalar-mapkey-max-length 20,
+  :scalar-mapkey-max-length 33,
   :print-length 33,
+  :label 'java-util-hashset,
   :multi-line-metadata? true,
   :truncate? true,
   :enable-terminal-font-weights? true,
   :dissoc-metadata-keys nil,
+  :print-level-inline-results 3,
   :legacy-terminal? false,
   :quote-symbols? false,
   :colorize? true,
   :label-max-length 44,
   :margin-inline-start 0,
+  :print-length-inline-results 8,
   :display-metadata? false,
   :margin-bottom 1,
   :metadata-position "inline",
@@ -2069,6 +1955,7 @@
     custom-vector-datatype
     (is
      (=
+      "〠38;5;102〠[〠0〠〠38;5;61〠...〠0〠〠38;5;102〠]〠0〠"
       (->
        (?
         :data
@@ -2076,13 +1963,14 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
          :enable-rainbow-brackets? true,
          :select-metadata-keys nil,
          :enable-terminal-truecolor? true,
+         :quote-lists? false,
          :scalar-depth-1-max-length 69,
          :margin-left 0,
          :bold? false,
@@ -2092,21 +1980,23 @@
          :format-label-as-code? false,
          :single-column-map-threshold 44,
          :scalar-result-max-length 444,
-         :theme "Alabaster Dark",
+         :theme "Alabaster Light",
          :metadata-print-level 4,
          :scalar-max-length 33,
          :label-color nil,
-         :scalar-mapkey-max-length 20,
+         :scalar-mapkey-max-length 33,
          :print-length 40,
          :multi-line-metadata? true,
          :truncate? true,
          :enable-terminal-font-weights? true,
          :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
          :legacy-terminal? false,
          :quote-symbols? false,
          :colorize? true,
          :label-max-length 44,
          :margin-inline-start 0,
+         :print-length-inline-results 8,
          :display-metadata? false,
          :margin-bottom 1,
          :elide-branches #{:bb},
@@ -2117,8 +2007,7 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠3;38;2;167;148;206;48;2;43;22;97〠fireworks.sample.CustomVector〠0〠\n〠38;5;250;48;2;43;22;97〠[〠0〠〠38;2;110;171;237〠...〠0〠〠38;5;250;48;2;43;22;97〠]〠0〠"))))
+       string/join)))))
 
 #?(:bb nil
    :clj
@@ -2126,6 +2015,7 @@
     custom-map-datatype
     (is
      (=
+      "〠38;5;102〠{〠0〠〠38;5;61〠 ...〠0〠〠〠 〠0〠〠38;5;61〠〠0〠〠38;5;102〠}〠0〠"
       (->
        (?
         :data
@@ -2133,13 +2023,14 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
          :enable-rainbow-brackets? true,
          :select-metadata-keys nil,
          :enable-terminal-truecolor? true,
+         :quote-lists? false,
          :scalar-depth-1-max-length 69,
          :margin-left 0,
          :bold? false,
@@ -2149,21 +2040,23 @@
          :format-label-as-code? false,
          :single-column-map-threshold 44,
          :scalar-result-max-length 444,
-         :theme "Alabaster Dark",
+         :theme "Alabaster Light",
          :metadata-print-level 4,
          :scalar-max-length 33,
          :label-color nil,
-         :scalar-mapkey-max-length 20,
+         :scalar-mapkey-max-length 33,
          :print-length 40,
          :multi-line-metadata? true,
          :truncate? true,
          :enable-terminal-font-weights? true,
          :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
          :legacy-terminal? false,
          :quote-symbols? false,
          :colorize? true,
          :label-max-length 44,
          :margin-inline-start 0,
+         :print-length-inline-results 8,
          :display-metadata? false,
          :margin-bottom 1,
          :elide-branches #{:bb},
@@ -2174,8 +2067,7 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠3;38;2;167;148;206;48;2;43;22;97〠fireworks.sample.CustomMap〠0〠\n〠38;5;250;48;2;43;22;97〠{〠0〠〠38;2;110;171;237〠 ...〠0〠〠〠 〠0〠〠38;2;110;171;237〠〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠"))))
+       string/join)))))
 
 #?(:bb nil
    :clj
@@ -2183,6 +2075,7 @@
     vector-with-custom-datatype
     (is
      (=
+      "〠38;5;102〠[〠0〠〠38;5;32〠[〠0〠〠38;5;61〠...〠0〠〠38;5;32〠]〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;5;61〠 ...〠0〠〠〠 〠0〠〠38;5;61〠〠0〠〠38;5;32〠}〠0〠〠38;5;102〠]〠0〠"
       (->
        (?
         :data
@@ -2190,13 +2083,14 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
          :enable-rainbow-brackets? true,
          :select-metadata-keys nil,
          :enable-terminal-truecolor? true,
+         :quote-lists? false,
          :scalar-depth-1-max-length 69,
          :margin-left 0,
          :bold? false,
@@ -2206,21 +2100,23 @@
          :format-label-as-code? false,
          :single-column-map-threshold 44,
          :scalar-result-max-length 444,
-         :theme "Alabaster Dark",
+         :theme "Alabaster Light",
          :metadata-print-level 4,
          :scalar-max-length 33,
          :label-color nil,
-         :scalar-mapkey-max-length 20,
+         :scalar-mapkey-max-length 33,
          :print-length 40,
          :multi-line-metadata? true,
          :truncate? true,
          :enable-terminal-font-weights? true,
          :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
          :legacy-terminal? false,
          :quote-symbols? false,
          :colorize? true,
          :label-max-length 44,
          :margin-inline-start 0,
+         :print-length-inline-results 8,
          :display-metadata? false,
          :margin-bottom 1,
          :elide-branches #{:bb},
@@ -2231,8 +2127,7 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠38;5;250〠[〠0〠〠3;38;2;167;148;206;48;2;43;22;97〠fireworks.sample.CustomVector〠0〠\n 〠38;5;38;48;2;43;22;97〠[〠0〠〠38;2;110;171;237〠...〠0〠〠38;5;38;48;2;43;22;97〠]〠0〠〠〠\n 〠0〠〠3;38;2;167;148;206;48;2;43;22;97〠fireworks.sample.CustomMap〠0〠\n 〠38;5;38;48;2;43;22;97〠{〠0〠〠38;2;110;171;237〠 ...〠0〠〠〠 〠0〠〠38;2;110;171;237〠〠0〠〠38;5;38;48;2;43;22;97〠}〠0〠〠38;5;250〠]〠0〠"))))
+       string/join)))))
 
 #?(:bb nil
    :clj
@@ -2240,6 +2135,7 @@
     user-fn-names
     (is
      (=
+      "〠38;5;102〠{〠0〠〠38;5;97〠:user-fn〠0〠〠〠       〠0〠〠〠 〠0〠〠38;5;61〠fireworks.sample/xy〠0〠〠〠\n 〠0〠〠38;5;97〠:really-long-fn〠0〠〠〠 〠0〠〠38;5;61〠fireworks.sample/xyasldfasldkf〠0〠〠3;38;5;245〠...〠0〠〠38;5;102〠}〠0〠"
       (->
        (?
         :data
@@ -2247,13 +2143,14 @@
          :line-height 1.45,
          :find nil,
          :single-column-maps? false,
-         :supports-color-level nil,
+         :supports-color-level 2,
          :enable-terminal-italics? true,
          :print-with nil,
          :display-namespaces? true,
          :enable-rainbow-brackets? true,
          :select-metadata-keys nil,
          :enable-terminal-truecolor? true,
+         :quote-lists? false,
          :scalar-depth-1-max-length 69,
          :margin-left 0,
          :bold? false,
@@ -2263,21 +2160,23 @@
          :format-label-as-code? false,
          :single-column-map-threshold 44,
          :scalar-result-max-length 444,
-         :theme "Alabaster Dark",
+         :theme "Alabaster Light",
          :metadata-print-level 4,
          :scalar-max-length 33,
          :label-color nil,
-         :scalar-mapkey-max-length 20,
+         :scalar-mapkey-max-length 33,
          :print-length 40,
          :multi-line-metadata? true,
          :truncate? true,
          :enable-terminal-font-weights? true,
          :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
          :legacy-terminal? false,
          :quote-symbols? false,
          :colorize? true,
          :label-max-length 44,
          :margin-inline-start 0,
+         :print-length-inline-results 8,
          :display-metadata? false,
          :margin-bottom 1,
          :elide-branches #{:bb},
@@ -2288,13 +2187,13 @@
        :formatted
        :string
        escape-sgr
-       string/join)
-      "〠38;5;250〠{〠0〠〠38;2;182;150;181〠:user-fn〠0〠〠〠       〠0〠〠〠 〠0〠〠38;2;110;171;237〠fireworks.sample/xy〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:really-long-fn〠0〠〠〠 〠0〠〠38;2;110;171;237〠xyasldfasldkfaslkjfzzzzzzzzzzz〠0〠〠38;2;210;140;109〠...〠0〠〠38;5;250〠}〠0〠"))))
+       string/join)))))
 
 (deftest
  no-truncation
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠adsfasdfasdfasdfasdfadsfsdfasdfadsfadsfasdfasdfasdfadsfasdfasdfsadfxxx〠0〠〠38;5;64〠\"〠0〠〠〠\n 〠0〠〠38;5;97〠0〠0〠〠〠\n 〠0〠〠38;5;97〠1〠0〠〠〠\n 〠0〠〠38;5;97〠2〠0〠〠〠\n 〠0〠〠38;5;97〠3〠0〠〠〠\n 〠0〠〠38;5;97〠4〠0〠〠〠\n 〠0〠〠38;5;97〠5〠0〠〠〠\n 〠0〠〠38;5;97〠6〠0〠〠〠\n 〠0〠〠38;5;97〠7〠0〠〠〠\n 〠0〠〠38;5;97〠8〠0〠〠〠\n 〠0〠〠38;5;97〠9〠0〠〠〠\n 〠0〠〠38;5;97〠10〠0〠〠〠\n 〠0〠〠38;5;97〠11〠0〠〠〠\n 〠0〠〠38;5;97〠12〠0〠〠〠\n 〠0〠〠38;5;97〠13〠0〠〠〠\n 〠0〠〠38;5;97〠14〠0〠〠〠\n 〠0〠〠38;5;97〠15〠0〠〠〠\n 〠0〠〠38;5;97〠16〠0〠〠〠\n 〠0〠〠38;5;97〠17〠0〠〠〠\n 〠0〠〠38;5;97〠18〠0〠〠〠\n 〠0〠〠38;5;97〠19〠0〠〠〠\n 〠0〠〠38;5;97〠20〠0〠〠〠\n 〠0〠〠38;5;97〠21〠0〠〠〠\n 〠0〠〠38;5;97〠22〠0〠〠〠\n 〠0〠〠38;5;97〠23〠0〠〠〠\n 〠0〠〠38;5;97〠24〠0〠〠〠\n 〠0〠〠38;5;97〠25〠0〠〠〠\n 〠0〠〠38;5;97〠26〠0〠〠〠\n 〠0〠〠38;5;97〠27〠0〠〠〠\n 〠0〠〠38;5;97〠28〠0〠〠〠\n 〠0〠〠38;5;97〠29〠0〠〠〠\n 〠0〠〠38;5;97〠30〠0〠〠〠\n 〠0〠〠38;5;97〠31〠0〠〠〠\n 〠0〠〠38;5;97〠32〠0〠〠〠\n 〠0〠〠38;5;97〠33〠0〠〠〠\n 〠0〠〠38;5;97〠34〠0〠〠〠\n 〠0〠〠38;5;97〠35〠0〠〠〠\n 〠0〠〠38;5;97〠36〠0〠〠〠\n 〠0〠〠38;5;97〠37〠0〠〠〠\n 〠0〠〠38;5;97〠38〠0〠〠〠\n 〠0〠〠38;5;97〠39〠0〠〠〠\n 〠0〠〠38;5;97〠40〠0〠〠〠\n 〠0〠〠38;5;97〠41〠0〠〠〠\n 〠0〠〠38;5;97〠42〠0〠〠〠\n 〠0〠〠38;5;97〠43〠0〠〠〠\n 〠0〠〠38;5;97〠44〠0〠〠〠\n 〠0〠〠38;5;97〠45〠0〠〠〠\n 〠0〠〠38;5;97〠46〠0〠〠〠\n 〠0〠〠38;5;97〠47〠0〠〠〠\n 〠0〠〠38;5;97〠48〠0〠〠〠\n 〠0〠〠38;5;97〠49〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -2302,13 +2201,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2318,21 +2218,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 40,
       :multi-line-metadata? true,
       :truncate? false,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2344,14 +2246,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠(〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠adsfasdfasdfasdfasdfadsfsdfasdfadsfadsfasdfasdfasdfadsfasdfasdfsadfxxx〠0〠〠38;2;210;140;109〠\"〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠0〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠1〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠2〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠3〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠4〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠5〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠6〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠7〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠8〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠9〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠10〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠11〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠12〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠13〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠14〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠15〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠16〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠17〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠18〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠19〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠20〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠21〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠22〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠23〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠24〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠25〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠26〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠27〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠28〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠29〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠30〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠31〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠32〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠33〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠34〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠35〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠36〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠37〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠38〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠39〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠40〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠41〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠42〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠43〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠44〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠45〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠46〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠47〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠48〠0〠〠〠\n 〠0〠〠38;2;110;171;237〠49〠0〠〠38;5;250〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  string-value
  (is
   (=
+   "〠38;5;64〠\"〠0〠〠38;5;64〠string〠0〠〠38;5;64〠\"〠0〠"
    (->
     (?
      :data
@@ -2359,13 +2261,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2375,21 +2278,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2399,14 +2304,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠string〠0〠〠38;2;210;140;109〠\"〠0〠")))
+    string/join))))
 
 
 (deftest
  regex-value
  (is
   (=
+   "〠3;38;5;166;48;5;231〠〠0〠〠38;5;64〠〠〠#〠0〠〠〠\"〠0〠〠〠^〠0〠〠48;5;255〠(〠0〠〠48;5;255〠?〠0〠〠48;5;255〠:〠0〠〠48;5;255〠a〠0〠〠48;5;255〠b〠0〠〠48;5;255〠c〠0〠〠38;5;249;48;5;255〠\\〠0〠〠48;5;255〠\\〠0〠〠38;5;249;48;5;255〠\\〠0〠〠48;5;255〠(〠0〠〠48;5;255〠〠0〠〠38;5;249;48;5;255〠\\〠0〠〠48;5;255〠[〠0〠〠48;5;255〠〠0〠〠48;5;255〠\\d〠0〠〠48;5;255〠)〠0〠〠〠+〠0〠〠48;5;255〠[〠0〠〠48;5;255〠^〠0〠〠48;5;255〠a〠0〠〠48;5;255〠-〠0〠〠48;5;255〠z〠0〠〠48;5;255〠0〠0〠〠48;5;255〠-〠0〠〠48;5;255〠9〠0〠〠48;5;255〠\\w〠0〠〠48;5;255〠]〠0〠〠〠*〠0〠〠〠$〠0〠〠〠|〠0〠〠〠^〠0〠〠〠f〠0〠〠〠o〠0〠〠〠o〠0〠〠〠b〠0〠〠〠a〠0〠〠〠r〠0〠〠〠{〠0〠〠〠1〠0〠〠〠}〠0〠〠〠s〠0〠〠〠?〠0〠〠〠$〠0〠〠〠\"〠0〠〠0〠"
    (->
     (?
      :data
@@ -2414,13 +2319,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2430,21 +2336,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 100,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2454,14 +2362,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠〠0〠〠38;2;140;189;122〠〠〠#〠0〠〠〠\"〠0〠〠〠^〠0〠〠38;2;177;177;177;48;2;57;57;57〠(〠0〠〠38;2;177;177;177;48;2;57;57;57〠?〠0〠〠38;2;177;177;177;48;2;57;57;57〠:〠0〠〠38;2;177;177;177;48;2;57;57;57〠a〠0〠〠38;2;177;177;177;48;2;57;57;57〠b〠0〠〠38;2;177;177;177;48;2;57;57;57〠c〠0〠〠38;2;128;128;128;48;2;57;57;57〠\\〠0〠〠38;2;177;177;177;48;2;57;57;57〠\\〠0〠〠38;2;128;128;128;48;2;57;57;57〠\\〠0〠〠38;2;177;177;177;48;2;57;57;57〠(〠0〠〠38;2;177;177;177;48;2;57;57;57〠〠0〠〠38;2;128;128;128;48;2;57;57;57〠\\〠0〠〠38;2;177;177;177;48;2;57;57;57〠[〠0〠〠38;2;177;177;177;48;2;57;57;57〠〠0〠〠38;2;177;177;177;48;2;57;57;57〠\\d〠0〠〠38;2;177;177;177;48;2;57;57;57〠)〠0〠〠〠+〠0〠〠38;2;177;177;177;48;2;57;57;57〠[〠0〠〠38;2;177;177;177;48;2;57;57;57〠^〠0〠〠38;2;177;177;177;48;2;57;57;57〠a〠0〠〠38;2;177;177;177;48;2;57;57;57〠-〠0〠〠38;2;177;177;177;48;2;57;57;57〠z〠0〠〠38;2;177;177;177;48;2;57;57;57〠0〠0〠〠38;2;177;177;177;48;2;57;57;57〠-〠0〠〠38;2;177;177;177;48;2;57;57;57〠9〠0〠〠38;2;177;177;177;48;2;57;57;57〠\\w〠0〠〠38;2;177;177;177;48;2;57;57;57〠]〠0〠〠〠*〠0〠〠〠$〠0〠〠〠|〠0〠〠〠^〠0〠〠〠f〠0〠〠〠o〠0〠〠〠o〠0〠〠〠b〠0〠〠〠a〠0〠〠〠r〠0〠〠〠{〠0〠〠〠1〠0〠〠〠}〠0〠〠〠s〠0〠〠〠?〠0〠〠〠$〠0〠〠〠\"〠0〠〠0〠")))
+    string/join))))
 
 
 (deftest
  uuid-value
  (is
   (=
+   "〠3;38;5;166;48;5;231〠#uuid 〠0〠〠38;5;64〠\"4fe5d828-6444-11e8-8222-720007e40350\"〠0〠"
    (->
     (?
      :data
@@ -2469,13 +2377,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2485,21 +2394,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 100,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2509,14 +2420,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠#uuid 〠0〠〠38;2;140;189;122〠\"4fe5d828-6444-11e8-8222-720007e40350\"〠0〠")))
+    string/join))))
 
 
 (deftest
  symbol-value
  (is
   (=
+   "〠38;5;61〠mysym〠0〠"
    (->
     (?
      :data
@@ -2524,13 +2435,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2540,21 +2452,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2564,14 +2478,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠mysym〠0〠")))
+    string/join))))
 
 
 (deftest
  symbol+meta-value
  (is
   (=
+   "〠38;5;61〠mysym〠0〠 〠38;5;133;48;5;231〠    〠0〠〠38;5;133;48;5;231〠^{〠0〠〠38;5;133;48;5;231〠:foo〠0〠〠38;5;133;48;5;231〠 〠0〠〠38;5;133;48;5;231〠\"〠0〠〠38;5;133;48;5;231〠bar〠0〠〠38;5;133;48;5;231〠\"〠0〠〠38;5;133;48;5;231〠}〠0〠"
    (->
     (?
      :data
@@ -2579,13 +2493,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2595,21 +2510,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? true,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2619,14 +2536,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠mysym〠0〠 〠38;2;174;132;155;48;2;47;20;35〠    〠0〠〠38;2;174;132;155;48;2;47;20;35〠^{〠0〠〠38;2;174;132;155;48;2;47;20;35〠:foo〠0〠〠38;2;174;132;155;48;2;47;20;35〠 〠0〠〠38;2;174;132;155;48;2;47;20;35〠\"〠0〠〠38;2;174;132;155;48;2;47;20;35〠bar〠0〠〠38;2;174;132;155;48;2;47;20;35〠\"〠0〠〠38;2;174;132;155;48;2;47;20;35〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  boolean-value
  (is
   (=
+   "〠38;5;97〠true〠0〠"
    (->
     (?
      :data
@@ -2634,13 +2551,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2650,21 +2568,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2674,14 +2594,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;182;150;181〠true〠0〠")))
+    string/join))))
 
 
 (deftest
  keyword-value
  (is
   (=
+   "〠38;5;97〠:keyword〠0〠"
    (->
     (?
      :data
@@ -2689,13 +2609,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2705,21 +2626,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2729,14 +2652,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;182;150;181〠:keyword〠0〠")))
+    string/join))))
 
 
 (deftest
  nil-value
  (is
   (=
+   "〠38;5;97〠nil〠0〠"
    (->
     (?
      :data
@@ -2744,13 +2667,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2760,21 +2684,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2784,14 +2710,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;182;150;181〠nil〠0〠")))
+    string/join))))
 
 
 (deftest
  Nan-value
  (is
   (=
+   "〠38;5;97〠NaN〠0〠"
    (->
     (?
      :data
@@ -2799,13 +2725,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2815,21 +2742,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2839,14 +2768,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠NaN〠0〠")))
+    string/join))))
 
 
 (deftest
  Inf-value
  (is
   (=
+   "〠38;5;97〠Infinity〠0〠"
    (->
     (?
      :data
@@ -2854,13 +2783,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2870,21 +2800,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2894,14 +2826,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠Infinity〠0〠")))
+    string/join))))
 
 
 (deftest
  -Inf-value
  (is
   (=
+   "〠38;5;97〠-Infinity〠0〠"
    (->
     (?
      :data
@@ -2909,13 +2841,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2925,21 +2858,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -2949,14 +2884,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠-Infinity〠0〠")))
+    string/join))))
 
 
 (deftest
  int-value
  (is
   (=
+   "〠38;5;97〠1234〠0〠"
    (->
     (?
      :data
@@ -2964,13 +2899,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -2980,21 +2916,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3004,14 +2942,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠1234〠0〠")))
+    string/join))))
 
 
 (deftest
  float-value
  (is
   (=
+   "〠38;5;97〠〠38;5;97〠3.〠0〠〠38;5;97〠33〠0〠〠0〠"
    (->
     (?
      :data
@@ -3019,13 +2957,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3035,21 +2974,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3059,69 +3000,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠〠38;2;110;171;237〠3.〠0〠〠38;2;110;171;237〠33〠0〠〠0〠")))
-
-
-(deftest
- lambda
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :scalar-depth-1-max-length 69,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 20,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     (fn []))
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠λ〠0〠〠38;2;110;171;237〠〠0〠")))
+    string/join))))
 
 
 (deftest
  core-fn
  (is
   (=
+   "〠38;5;61〠clojure.core/juxt〠0〠"
    (->
     (?
      :data
@@ -3129,13 +3015,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3145,21 +3032,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3169,69 +3058,74 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠clojure.core/juxt〠0〠")))
+    string/join))))
 
 
-(deftest
- date-fn
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :scalar-depth-1-max-length 69,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 20,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     java.util.Date)
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠java.util.Date〠0〠")))
-
+#?(:bb nil
+   :clj
+   (deftest
+    date-fn
+    (is
+     (=
+      "〠38;5;61〠java.util.Date〠0〠"
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level 2,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 69,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        java.util.Date)
+       :formatted
+       :string
+       escape-sgr
+       string/join)))))
 
 (deftest
  map-value
  (is
   (=
+   "〠38;5;102〠{〠0〠〠38;5;97〠:a〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠:b〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠:c〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠three〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3239,13 +3133,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3255,21 +3150,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3279,14 +3176,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠{〠0〠〠38;2;182;150;181〠:a〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;182;150;181〠:b〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;182;150;181〠:c〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠three〠0〠〠38;2;210;140;109〠\"〠0〠〠38;5;250〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  multiline-map
  (is
   (=
+   "〠38;5;102〠{〠0〠〠38;5;97〠:a〠0〠〠〠    〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠abcdefghijklmnopqrstuv〠0〠〠38;5;64〠\"〠0〠〠〠\n 〠0〠〠38;5;97〠:ab〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠abcdefghijklmnopqrstuv12345〠0〠〠38;5;64〠\"〠0〠〠〠\n 〠0〠〠38;5;97〠:abcde〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠xyz〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3294,13 +3191,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3310,21 +3208,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3336,14 +3236,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠{〠0〠〠38;2;182;150;181〠:a〠0〠〠〠    〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠abcdefghijklmnopqrstuv〠0〠〠38;2;210;140;109〠\"〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:ab〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠abcdefghijklmnopqrstuv12345〠0〠〠38;2;210;140;109〠\"〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:abcde〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠xyz〠0〠〠38;2;210;140;109〠\"〠0〠〠38;5;250〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  rainbow-brackets
  (is
   (=
+   "〠38;5;102〠[〠0〠〠38;5;32〠[〠0〠〠38;5;172〠[〠0〠〠38;5;71〠[〠0〠〠38;5;170〠[〠0〠〠38;5;170〠]〠0〠〠38;5;71〠]〠0〠〠38;5;172〠]〠0〠〠38;5;32〠]〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -3351,13 +3251,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3367,21 +3268,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3391,14 +3294,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠[〠0〠〠38;5;38〠[〠0〠〠38;5;142〠[〠0〠〠38;5;77〠[〠0〠〠38;5;170〠[〠0〠〠38;5;170〠]〠0〠〠38;5;77〠]〠0〠〠38;5;142〠]〠0〠〠38;5;38〠]〠0〠〠38;5;250〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  vector-value
  (is
   (=
+   "〠38;5;102〠[〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -3406,13 +3309,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3422,21 +3326,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3446,14 +3352,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠[〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠38;5;250〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  vector+meta-value
  (is
   (=
+   "〠38;5;102〠[〠0〠 〠38;5;133;48;5;231〠    〠0〠〠38;5;133;48;5;231〠^{〠0〠〠38;5;133;48;5;231〠:meta-on-coll〠0〠〠38;5;133;48;5;231〠 〠0〠〠38;5;133;48;5;231〠1〠0〠〠38;5;133;48;5;231〠}〠0〠〠〠\n 〠0〠〠38;5;97〠:foo〠0〠〠〠\n 〠0〠〠38;5;97〠:baz〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -3461,13 +3367,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3477,21 +3384,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? true,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3501,14 +3410,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250;48;2;47;20;35〠[〠0〠 〠38;2;174;132;155;48;2;47;20;35〠    〠0〠〠38;2;174;132;155;48;2;47;20;35〠^{〠0〠〠38;2;174;132;155;48;2;47;20;35〠:meta-on-coll〠0〠〠38;2;174;132;155;48;2;47;20;35〠 〠0〠〠38;2;174;132;155;48;2;47;20;35〠1〠0〠〠38;2;174;132;155;48;2;47;20;35〠}〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:foo〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:baz〠0〠〠38;5;250;48;2;47;20;35〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  set-value
  (is
   (=
+   "〠38;5;102〠#{〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠three〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠:2〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3516,13 +3425,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3532,21 +3442,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3556,14 +3468,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠#{〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠three〠0〠〠38;2;210;140;109〠\"〠0〠〠〠 〠0〠〠38;2;182;150;181〠:2〠0〠〠38;5;250〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  list-value
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -3571,13 +3483,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3587,21 +3500,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3611,14 +3526,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠(〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠38;5;250〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  lazy-seq-value
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;97〠0〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -3626,13 +3541,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3642,21 +3558,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3666,14 +3584,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠(〠0〠〠38;2;110;171;237〠0〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠〠 〠0〠〠38;2;110;171;237〠4〠0〠〠〠 〠0〠〠38;2;110;171;237〠5〠0〠〠〠 〠0〠〠38;2;110;171;237〠6〠0〠〠〠 〠0〠〠38;2;110;171;237〠7〠0〠〠〠 〠0〠〠38;2;110;171;237〠8〠0〠〠〠 〠0〠〠38;2;110;171;237〠9〠0〠〠38;5;250〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  atom-value
  (is
   (=
+   "〠3;38;5;166;48;5;231〠Atom〠0〠\n〠38;5;102〠{〠0〠〠38;5;97〠:status〠0〠〠〠 〠0〠〠38;5;97〠:ready〠0〠〠〠\n 〠0〠〠38;5;97〠:val〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;5;97〠:orange〠0〠〠〠 〠0〠〠〠 〠0〠〠38;5;97〠172〠0〠〠〠\n          〠0〠〠38;5;97〠:gray〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;97〠247〠0〠〠〠\n          〠0〠〠38;5;97〠:white〠0〠〠〠  〠0〠〠〠 〠0〠〠38;5;97〠231〠0〠〠〠\n          〠0〠〠38;5;97〠:yellow〠0〠〠〠 〠0〠〠〠 〠0〠〠38;5;97〠178〠0〠〠〠\n          〠0〠〠38;5;97〠:green〠0〠〠〠  〠0〠〠〠 〠0〠〠38;5;97〠76〠0〠〠〠\n          〠0〠〠38;5;97〠:red〠0〠〠〠    〠0〠〠〠 〠0〠〠38;5;97〠196〠0〠〠〠\n          〠0〠〠38;5;97〠:blue〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;97〠75〠0〠〠〠\n          〠0〠〠38;5;97〠:magenta〠0〠〠〠 〠0〠〠38;5;97〠171〠0〠〠〠\n          〠0〠〠38;5;97〠:purple〠0〠〠〠 〠0〠〠〠 〠0〠〠38;5;97〠141〠0〠〠〠\n          〠0〠〠38;5;97〠:olive〠0〠〠〠  〠0〠〠〠 〠0〠〠38;5;97〠106〠0〠〠〠\n          〠0〠〠38;5;97〠:black〠0〠〠〠  〠0〠〠〠 〠0〠〠38;5;97〠16〠0〠〠38;5;32〠}〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3681,13 +3599,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3697,21 +3616,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3732,14 +3653,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠Atom〠0〠\n〠38;5;250;48;2;43;22;97〠{〠0〠〠38;2;182;150;181〠:status〠0〠〠〠 〠0〠〠38;2;182;150;181〠:ready〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:val〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;38〠{〠0〠〠38;2;182;150;181〠:black〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;110;171;237〠16〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:blue〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;110;171;237〠75〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:gray〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;110;171;237〠247〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:green〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;110;171;237〠76〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:magenta〠0〠〠〠 〠0〠〠38;2;110;171;237〠171〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:olive〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;110;171;237〠106〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:orange〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;110;171;237〠172〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:purple〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;110;171;237〠141〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:red〠0〠〠〠    〠0〠〠〠 〠0〠〠38;2;110;171;237〠196〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:white〠0〠〠〠  〠0〠〠〠 〠0〠〠38;2;110;171;237〠231〠0〠〠〠\n          〠0〠〠38;2;182;150;181〠:yellow〠0〠〠〠 〠0〠〠〠 〠0〠〠38;2;110;171;237〠178〠0〠〠38;5;38〠}〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  volatile!-value
  (is
   (=
+   "〠3;38;5;166;48;5;231〠Volatile〠0〠\n〠38;5;102〠{〠0〠〠38;5;97〠:status〠0〠〠〠 〠0〠〠38;5;97〠:ready〠0〠〠〠 〠0〠〠38;5;97〠:val〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3747,13 +3668,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3763,21 +3685,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3787,14 +3711,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠Volatile〠0〠\n〠38;5;250;48;2;43;22;97〠{〠0〠〠38;2;182;150;181〠:status〠0〠〠〠 〠0〠〠38;2;182;150;181〠:ready〠0〠〠〠 〠0〠〠38;2;182;150;181〠:val〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  volatile
  (is
   (=
+   "〠3;38;5;166;48;5;231〠Volatile〠0〠\n〠38;5;102〠{〠0〠〠38;5;97〠:status〠0〠〠〠 〠0〠〠38;5;97〠:ready〠0〠〠〠 〠0〠〠38;5;97〠:val〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3802,13 +3726,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3818,21 +3743,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3842,14 +3769,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠Volatile〠0〠\n〠38;5;250;48;2;43;22;97〠{〠0〠〠38;2;182;150;181〠:status〠0〠〠〠 〠0〠〠38;2;182;150;181〠:ready〠0〠〠〠 〠0〠〠38;2;182;150;181〠:val〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  transient-vector2
  (is
   (=
+   "〠3;38;5;166;48;5;231〠TransientVector〠0〠\n〠38;5;102〠{〠0〠〠3;38;5;245〠〠〠...+4〠0〠〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3857,13 +3784,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3873,21 +3801,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3897,14 +3827,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠TransientVector〠0〠\n〠38;5;250;48;2;43;22;97〠[〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠〠 〠0〠〠38;2;110;171;237〠4〠0〠〠38;5;250;48;2;43;22;97〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  transient-set2
  (is
   (=
+   "〠3;38;5;166;48;5;231〠TransientHashSet〠0〠〠〠#{}〠0〠"
    (->
     (?
      :data
@@ -3912,13 +3842,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3928,21 +3859,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -3952,14 +3885,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠TransientHashSet〠0〠\n〠38;5;250;48;2;43;22;97〠#{〠0〠〠38;2;210;140;109〠〠〠...+2〠0〠〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  transient-map2
  (is
   (=
+   "〠3;38;5;166;48;5;231〠TransientArrayMap〠0〠\n〠38;5;102〠{〠0〠〠3;38;5;245〠 〠〠...+2〠0〠〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -3967,13 +3900,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -3983,21 +3917,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4007,14 +3943,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠TransientArrayMap〠0〠\n〠38;5;250;48;2;43;22;97〠{〠0〠〠38;2;210;140;109〠 〠〠...+2〠0〠〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  single-line-coll-print-length-50-19
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;97〠0〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠〠 〠0〠〠38;5;97〠10〠0〠〠〠 〠0〠〠38;5;97〠11〠0〠〠〠 〠0〠〠38;5;97〠12〠0〠〠〠 〠0〠〠38;5;97〠13〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -4022,13 +3958,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4038,21 +3975,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4062,14 +4001,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠(〠0〠〠38;2;110;171;237〠0〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠〠 〠0〠〠38;2;110;171;237〠4〠0〠〠〠 〠0〠〠38;2;110;171;237〠5〠0〠〠〠 〠0〠〠38;2;110;171;237〠6〠0〠〠〠 〠0〠〠38;2;110;171;237〠7〠0〠〠〠 〠0〠〠38;2;110;171;237〠8〠0〠〠〠 〠0〠〠38;2;110;171;237〠9〠0〠〠〠 〠0〠〠38;2;110;171;237〠10〠0〠〠〠 〠0〠〠38;2;110;171;237〠11〠0〠〠〠 〠0〠〠38;2;110;171;237〠12〠0〠〠〠 〠0〠〠38;2;110;171;237〠13〠0〠〠38;5;250〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  single-line-coll-print-length-50-20
  (is
   (=
+   "〠38;5;102〠(〠0〠〠38;5;97〠0〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠〠 〠0〠〠38;5;97〠10〠0〠〠〠 〠0〠〠38;5;97〠11〠0〠〠〠 〠0〠〠38;5;97〠12〠0〠〠〠 〠0〠〠38;5;97〠13〠0〠〠〠 〠0〠〠38;5;97〠14〠0〠〠38;5;102〠)〠0〠"
    (->
     (?
      :data
@@ -4077,13 +4016,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4093,21 +4033,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4117,14 +4059,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠(〠0〠〠38;2;110;171;237〠0〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠〠 〠0〠〠38;2;110;171;237〠4〠0〠〠〠 〠0〠〠38;2;110;171;237〠5〠0〠〠〠 〠0〠〠38;2;110;171;237〠6〠0〠〠〠 〠0〠〠38;2;110;171;237〠7〠0〠〠〠 〠0〠〠38;2;110;171;237〠8〠0〠〠〠 〠0〠〠38;2;110;171;237〠9〠0〠〠〠 〠0〠〠38;2;110;171;237〠10〠0〠〠〠 〠0〠〠38;2;110;171;237〠11〠0〠〠〠 〠0〠〠38;2;110;171;237〠12〠0〠〠〠 〠0〠〠38;2;110;171;237〠13〠0〠〠〠 〠0〠〠38;2;110;171;237〠14〠0〠〠38;5;250〠)〠0〠")))
+    string/join))))
 
 
 (deftest
  array-map-order
  (is
   (=
+   "〠38;5;102〠{〠0〠〠38;5;97〠:a〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠\n 〠0〠〠38;5;97〠:b〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠\n 〠0〠〠38;5;97〠:c〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠\n 〠0〠〠38;5;97〠:d〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠\n 〠0〠〠38;5;97〠:e〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠\n 〠0〠〠38;5;97〠:f〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠\n 〠0〠〠38;5;97〠:g〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠\n 〠0〠〠38;5;97〠:h〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠\n 〠0〠〠38;5;97〠:i〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠〠\n 〠0〠〠38;5;97〠:j〠0〠〠〠 〠0〠〠38;5;97〠10〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -4132,13 +4074,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4148,21 +4091,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4172,14 +4117,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠{〠0〠〠38;2;182;150;181〠:a〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:b〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:c〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:d〠0〠〠〠 〠0〠〠38;2;110;171;237〠4〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:e〠0〠〠〠 〠0〠〠38;2;110;171;237〠5〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:f〠0〠〠〠 〠0〠〠38;2;110;171;237〠6〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:g〠0〠〠〠 〠0〠〠38;2;110;171;237〠7〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:h〠0〠〠〠 〠0〠〠38;2;110;171;237〠8〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:i〠0〠〠〠 〠0〠〠38;2;110;171;237〠9〠0〠〠〠\n 〠0〠〠38;2;182;150;181〠:j〠0〠〠〠 〠0〠〠38;2;110;171;237〠10〠0〠〠38;5;250〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  symbol-with-meta
  (is
   (=
+   "〠38;5;61〠mysym〠0〠"
    (->
     (?
      :data
@@ -4187,13 +4132,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4203,21 +4149,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4227,14 +4175,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;2;110;171;237〠mysym〠0〠")))
+    string/join))))
 
 
 (deftest
  rainbow-brackets
  (is
   (=
+   "〠38;5;102〠[〠0〠〠38;5;32〠[〠0〠〠38;5;172〠[〠0〠〠38;5;71〠[〠0〠〠38;5;170〠[〠0〠〠38;5;170〠]〠0〠〠38;5;71〠]〠0〠〠38;5;172〠]〠0〠〠38;5;32〠]〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -4242,13 +4190,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4258,21 +4207,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4282,14 +4233,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠[〠0〠〠38;5;38〠[〠0〠〠38;5;142〠[〠0〠〠38;5;77〠[〠0〠〠38;5;170〠[〠0〠〠38;5;170〠]〠0〠〠38;5;77〠]〠0〠〠38;5;142〠]〠0〠〠38;5;38〠]〠0〠〠38;5;250〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  rainbow-brackets-low-contrast
  (is
   (=
+   "〠38;5;245〠[〠0〠〠38;5;74〠[〠0〠〠38;5;179〠[〠0〠〠38;5;106〠[〠0〠〠38;5;177〠[〠0〠〠38;5;177〠]〠0〠〠38;5;106〠]〠0〠〠38;5;179〠]〠0〠〠38;5;74〠]〠0〠〠38;5;245〠]〠0〠"
    (->
     (?
      :data
@@ -4297,13 +4248,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4313,21 +4265,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4337,234 +4291,254 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;245〠[〠0〠〠38;5;67〠[〠0〠〠38;5;137〠[〠0〠〠38;5;64〠[〠0〠〠38;5;134〠[〠0〠〠38;5;134〠]〠0〠〠38;5;64〠]〠0〠〠38;5;137〠]〠0〠〠38;5;67〠]〠0〠〠38;5;245〠]〠0〠")))
+    string/join))))
 
 
-(deftest
- with-scalar-level-1-depth-print-length
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :scalar-depth-1-max-length 60,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 20,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠38;5;250〠[〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44〠0〠〠38;2;210;140;109〠...〠0〠〠38;2;210;140;109〠\"〠0〠〠38;5;250〠]〠0〠")))
+#?(:bb nil
+   :clj
+   (deftest
+    with-scalar-level-1-depth-print-length
+    (is
+     (=
+      "〠38;5;102〠[〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44〠0〠〠3;38;5;245〠...〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠]〠0〠"
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level 2,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 60,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        ["asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas"])
+       :formatted
+       :string
+       escape-sgr
+       string/join)))))
 
+#?(:bb nil
+   :clj
+   (deftest
+    scalar-result-max-length
+    (is
+     (=
+      "〠38;5;64〠\"〠0〠〠38;5;64〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfa〠0〠...〠38;5;64〠\"〠0〠"
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level 2,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 69,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 44,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
+       :formatted
+       :string
+       escape-sgr
+       string/join)))))
 
-(deftest
- scalar-result-max-length
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :scalar-depth-1-max-length 69,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 44,
-      :theme "Alabaster Dark",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 20,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     "asdfffaaaaasdfasdfasdfasdfasdfasdfasdfaaaafasdfasdfff44asdffffffas")
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠asdfffaaaaasdfasdfasdfasdfasdfasdfasdfa〠0〠...〠38;2;210;140;109〠\"〠0〠")))
+#?(:bb nil
+   :clj
+   (deftest
+    datatype-value
+    (is
+     (=
+      "〠3;38;5;166;48;5;231〠fireworks.sample.MyType〠0〠\n〠38;5;102〠{〠0〠〠38;5;61〠a〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠\n 〠0〠〠38;5;61〠b〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠\n 〠0〠〠38;5;61〠c〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠\n 〠0〠〠38;5;61〠d〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠\n 〠0〠〠38;5;61〠e〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠〠\n 〠0〠〠38;5;61〠f〠0〠〠〠 〠0〠〠38;5;97〠6〠0〠〠〠\n 〠0〠〠38;5;61〠g〠0〠〠〠 〠0〠〠38;5;97〠7〠0〠〠〠\n 〠0〠〠38;5;61〠h〠0〠〠〠 〠0〠〠38;5;97〠8〠0〠〠〠\n 〠0〠〠38;5;61〠i〠0〠〠〠 〠0〠〠38;5;97〠9〠0〠〠〠\n 〠0〠〠38;5;61〠j〠0〠〠〠 〠0〠〠38;5;97〠10〠0〠〠〠\n 〠0〠〠38;5;61〠k〠0〠〠〠 〠0〠〠38;5;97〠11〠0〠〠38;5;102〠}〠0〠"
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level 2,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 69,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        fireworks.sample/my-data-type)
+       :formatted
+       :string
+       escape-sgr
+       string/join)))))
 
-
-(deftest
- datatype-value
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :scalar-depth-1-max-length 69,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 20,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     fireworks.sample/my-data-type)
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠fireworks.sample.MyType〠0〠\n〠38;5;250;48;2;43;22;97〠{〠0〠〠38;2;110;171;237〠 ...〠0〠〠〠 〠0〠〠38;2;110;171;237〠〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠")))
-
-
-(deftest
- record-value
- (is
-  (=
-   (->
-    (?
-     :data
-     {:regex-theme :neutral,
-      :line-height 1.45,
-      :find nil,
-      :single-column-maps? false,
-      :supports-color-level nil,
-      :enable-terminal-italics? true,
-      :print-with nil,
-      :display-namespaces? true,
-      :enable-rainbow-brackets? true,
-      :select-metadata-keys nil,
-      :enable-terminal-truecolor? true,
-      :scalar-depth-1-max-length 69,
-      :margin-left 0,
-      :bold? false,
-      :margin-top 0,
-      :print-level 7,
-      :single-line-coll-max-length 33,
-      :format-label-as-code? false,
-      :single-column-map-threshold 44,
-      :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
-      :metadata-print-level 4,
-      :scalar-max-length 33,
-      :label-color nil,
-      :scalar-mapkey-max-length 20,
-      :print-length 33,
-      :multi-line-metadata? true,
-      :truncate? true,
-      :enable-terminal-font-weights? true,
-      :dissoc-metadata-keys nil,
-      :legacy-terminal? false,
-      :quote-symbols? false,
-      :colorize? true,
-      :label-max-length 44,
-      :margin-inline-start 0,
-      :display-metadata? false,
-      :margin-bottom 1,
-      :metadata-position "inline",
-      :print-detected-color-level? false,
-      :bracket-contrast "high"}
-     fireworks.sample/my-record-type)
-    :formatted
-    :string
-    escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠fireworks.sample.MyRecordType〠0〠\n〠38;5;250;48;2;43;22;97〠{〠0〠〠38;2;182;150;181〠:a〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠a〠0〠〠38;2;210;140;109〠\"〠0〠〠〠 〠0〠〠38;2;182;150;181〠:b〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠bbbbbbbbbbbbbb〠0〠〠38;2;210;140;109〠\"〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠")))
-
+#?(:bb nil
+   :clj
+   (deftest
+    record-value
+    (is
+     (=
+      "〠3;38;5;166;48;5;231〠fireworks.sample.MyRecordType〠0〠\n〠38;5;102〠{〠0〠〠38;5;97〠:a〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠:b〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠bbbbbbbbbbbbbb〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠}〠0〠"
+      (->
+       (?
+        :data
+        {:regex-theme :neutral,
+         :line-height 1.45,
+         :find nil,
+         :single-column-maps? false,
+         :supports-color-level 2,
+         :enable-terminal-italics? true,
+         :print-with nil,
+         :display-namespaces? true,
+         :enable-rainbow-brackets? true,
+         :select-metadata-keys nil,
+         :enable-terminal-truecolor? true,
+         :quote-lists? false,
+         :scalar-depth-1-max-length 69,
+         :margin-left 0,
+         :bold? false,
+         :margin-top 0,
+         :print-level 7,
+         :single-line-coll-max-length 33,
+         :format-label-as-code? false,
+         :single-column-map-threshold 44,
+         :scalar-result-max-length 444,
+         :theme "Alabaster Light",
+         :metadata-print-level 4,
+         :scalar-max-length 33,
+         :label-color nil,
+         :scalar-mapkey-max-length 33,
+         :print-length 33,
+         :multi-line-metadata? true,
+         :truncate? true,
+         :enable-terminal-font-weights? true,
+         :dissoc-metadata-keys nil,
+         :print-level-inline-results 3,
+         :legacy-terminal? false,
+         :quote-symbols? false,
+         :colorize? true,
+         :label-max-length 44,
+         :margin-inline-start 0,
+         :print-length-inline-results 8,
+         :display-metadata? false,
+         :margin-bottom 1,
+         :elide-branches #{:bb},
+         :metadata-position "inline",
+         :print-detected-color-level? false,
+         :bracket-contrast "high"}
+        fireworks.sample/my-record-type)
+       :formatted
+       :string
+       escape-sgr
+       string/join)))))
 
 (deftest
  java-interop-types
  (is
   (=
+   "〠38;5;102〠{〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠Java collection types〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;5;61〠java.util.ArrayList〠0〠〠〠 〠0〠〠3;38;5;166;48;5;231〠java.util.ArrayList〠0〠\n                                              〠38;5;172〠[〠0〠〠38;5;97〠0〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠38;5;172〠]〠0〠〠〠\n                          〠0〠〠38;5;61〠java.util.HashMap〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;5;166;48;5;231〠java.util.HashMap〠0〠\n                                              〠38;5;172〠{〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠b〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠38;5;172〠}〠0〠〠〠\n                          〠0〠〠38;5;61〠java.util.HashSet〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;5;166;48;5;231〠java.util.HashSet〠0〠\n                                              〠38;5;172〠#{〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠b〠0〠〠38;5;64〠\"〠0〠〠38;5;172〠}〠0〠〠〠\n                          〠0〠〠38;5;61〠java.lang.String〠0〠〠〠   〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠welcome〠0〠〠38;5;64〠\"〠0〠〠〠\n                          〠0〠〠38;5;61〠array〠0〠〠〠              〠0〠〠〠 〠0〠〠3;38;5;166;48;5;231〠Ljava.lang.Object〠0〠\n                                              〠38;5;172〠[〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠 〠0〠〠38;5;97〠4〠0〠〠〠 〠0〠〠38;5;97〠5〠0〠〠38;5;172〠]〠0〠〠38;5;32〠}〠0〠〠〠\n 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠Java numbers〠0〠〠38;5;64〠\"〠0〠〠〠         〠0〠〠〠 〠0〠〠38;5;32〠{〠0〠〠38;5;97〠:ratio〠0〠〠〠               〠0〠〠〠 〠0〠〠38;5;97〠1/3〠0〠〠〠\n                          〠0〠〠38;5;97〠:byte〠0〠〠〠                〠0〠〠〠 〠0〠〠38;5;97〠0〠0〠〠〠\n                          〠0〠〠38;5;97〠:short〠0〠〠〠               〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠〠\n                          〠0〠〠38;5;97〠:double〠0〠〠〠              〠0〠〠〠 〠0〠〠38;5;97〠〠38;5;97〠23.〠0〠〠38;5;97〠44〠0〠〠0〠〠〠\n                          〠0〠〠38;5;97〠:decimal〠0〠〠〠             〠0〠〠〠 〠0〠〠38;5;97〠1M〠0〠〠〠\n                          〠0〠〠38;5;97〠:int〠0〠〠〠                 〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠\n                          〠0〠〠38;5;97〠:float〠0〠〠〠               〠0〠〠〠 〠0〠〠38;5;97〠〠38;5;97〠1.〠0〠〠38;5;97〠5〠0〠〠0〠〠〠\n                          〠0〠〠38;5;97〠:char〠0〠〠〠                〠0〠〠〠 〠0〠〠〠a〠0〠〠〠\n                          〠0〠〠38;5;97〠:java.math.BigInteger〠0〠〠〠 〠0〠〠38;5;97〠171〠0〠〠38;5;32〠}〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -4572,13 +4546,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4588,21 +4563,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 100,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4612,14 +4589,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠38;5;250〠{〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠Java collection〠0〠〠38;2;210;140;109〠...〠0〠〠38;2;210;140;109〠\"〠0〠〠〠 〠0〠〠38;5;38〠{〠0〠〠38;2;110;171;237〠java.util.ArrayList〠0〠〠〠 〠0〠〠3;38;2;167;148;206;48;2;43;22;97〠java.util.ArrayList〠0〠\n                                           〠38;5;142;48;2;43;22;97〠[〠0〠〠38;2;110;171;237〠0〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠〠 〠0〠〠38;2;110;171;237〠4〠0〠〠〠 〠0〠〠38;2;110;171;237〠5〠0〠〠38;5;142;48;2;43;22;97〠]〠0〠〠〠\n                       〠0〠〠38;2;110;171;237〠java.util.HashMap〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;2;167;148;206;48;2;43;22;97〠java.util.HashMap〠0〠\n                                           〠38;5;142;48;2;43;22;97〠{〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠a〠0〠〠38;2;210;140;109〠\"〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠b〠0〠〠38;2;210;140;109〠\"〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠38;5;142;48;2;43;22;97〠}〠0〠〠〠\n                       〠0〠〠38;2;110;171;237〠java.util.HashSet〠0〠〠〠  〠0〠〠〠 〠0〠〠3;38;2;167;148;206;48;2;43;22;97〠java.util.HashSet〠0〠\n                                           〠38;5;142;48;2;43;22;97〠#{〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠a〠0〠〠38;2;210;140;109〠\"〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠b〠0〠〠38;2;210;140;109〠\"〠0〠〠38;5;142;48;2;43;22;97〠}〠0〠〠〠\n                       〠0〠〠38;2;110;171;237〠java.lang.String〠0〠〠〠   〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠welcome〠0〠〠38;2;210;140;109〠\"〠0〠〠〠\n                       〠0〠〠38;2;110;171;237〠array〠0〠〠〠              〠0〠〠〠 〠0〠〠3;38;2;167;148;206;48;2;43;22;97〠Ljava.lang.Object〠0〠\n                                           〠38;5;142;48;2;43;22;97〠[〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠〠 〠0〠〠38;2;110;171;237〠4〠0〠〠〠 〠0〠〠38;2;110;171;237〠5〠0〠〠38;5;142;48;2;43;22;97〠]〠0〠〠38;5;38〠}〠0〠〠〠\n 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠Java numbers〠0〠〠38;2;210;140;109〠\"〠0〠〠〠      〠0〠〠〠 〠0〠〠38;5;38〠{〠0〠〠38;2;182;150;181〠:ratio〠0〠〠〠              〠0〠〠〠 〠0〠〠38;2;110;171;237〠1/3〠0〠〠〠\n                       〠0〠〠38;2;182;150;181〠:byte〠0〠〠〠               〠0〠〠〠 〠0〠〠38;2;110;171;237〠0〠0〠〠〠\n                       〠0〠〠38;2;182;150;181〠:short〠0〠〠〠              〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠〠\n                       〠0〠〠38;2;182;150;181〠:double〠0〠〠〠             〠0〠〠〠 〠0〠〠38;2;110;171;237〠〠38;2;110;171;237〠23.〠0〠〠38;2;110;171;237〠44〠0〠〠0〠〠〠\n                       〠0〠〠38;2;182;150;181〠:decimal〠0〠〠〠            〠0〠〠〠 〠0〠〠38;2;110;171;237〠1M〠0〠〠〠\n                       〠0〠〠38;2;182;150;181〠:int〠0〠〠〠                〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠〠\n                       〠0〠〠38;2;182;150;181〠:float〠0〠〠〠              〠0〠〠〠 〠0〠〠38;2;110;171;237〠〠38;2;110;171;237〠1.〠0〠〠38;2;110;171;237〠5〠0〠〠0〠〠〠\n                       〠0〠〠38;2;182;150;181〠:char〠0〠〠〠               〠0〠〠〠 〠0〠〠〠a〠0〠〠〠\n                       〠0〠〠38;2;182;150;181〠:java.math.BigInt〠0〠〠38;2;210;140;109〠...〠0〠〠〠 〠0〠〠38;2;110;171;237〠171〠0〠〠38;5;38〠}〠0〠〠38;5;250〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  java-util-hashmap
  (is
   (=
+   "〠3;38;5;166;48;5;231〠java.util.HashMap〠0〠\n〠38;5;102〠{〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠b〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -4627,13 +4604,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4643,21 +4621,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4667,14 +4647,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠java.util.HashMap〠0〠\n〠38;5;250;48;2;43;22;97〠{〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠a〠0〠〠38;2;210;140;109〠\"〠0〠〠〠 〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠b〠0〠〠38;2;210;140;109〠\"〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠")))
+    string/join))))
 
 
 (deftest
  java-util-arraylist
  (is
   (=
+   "〠3;38;5;166;48;5;231〠java.util.ArrayList〠0〠\n〠38;5;102〠[〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;97〠3〠0〠〠38;5;102〠]〠0〠"
    (->
     (?
      :data
@@ -4682,13 +4662,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4698,21 +4679,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4722,14 +4705,14 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠java.util.ArrayList〠0〠\n〠38;5;250;48;2;43;22;97〠[〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;110;171;237〠3〠0〠〠38;5;250;48;2;43;22;97〠]〠0〠")))
+    string/join))))
 
 
 (deftest
  java-util-hashset
  (is
   (=
+   "〠3;38;5;166;48;5;231〠java.util.HashSet〠0〠\n〠38;5;102〠#{〠0〠〠38;5;97〠1〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠a〠0〠〠38;5;64〠\"〠0〠〠〠 〠0〠〠38;5;97〠2〠0〠〠〠 〠0〠〠38;5;64〠\"〠0〠〠38;5;64〠b〠0〠〠38;5;64〠\"〠0〠〠38;5;102〠}〠0〠"
    (->
     (?
      :data
@@ -4737,13 +4720,14 @@
       :line-height 1.45,
       :find nil,
       :single-column-maps? false,
-      :supports-color-level nil,
+      :supports-color-level 2,
       :enable-terminal-italics? true,
       :print-with nil,
       :display-namespaces? true,
       :enable-rainbow-brackets? true,
       :select-metadata-keys nil,
       :enable-terminal-truecolor? true,
+      :quote-lists? false,
       :scalar-depth-1-max-length 69,
       :margin-left 0,
       :bold? false,
@@ -4753,21 +4737,23 @@
       :format-label-as-code? false,
       :single-column-map-threshold 44,
       :scalar-result-max-length 444,
-      :theme "Alabaster Dark",
+      :theme "Alabaster Light",
       :metadata-print-level 4,
       :scalar-max-length 33,
       :label-color nil,
-      :scalar-mapkey-max-length 20,
+      :scalar-mapkey-max-length 33,
       :print-length 33,
       :multi-line-metadata? true,
       :truncate? true,
       :enable-terminal-font-weights? true,
       :dissoc-metadata-keys nil,
+      :print-level-inline-results 3,
       :legacy-terminal? false,
       :quote-symbols? false,
       :colorize? true,
       :label-max-length 44,
       :margin-inline-start 0,
+      :print-length-inline-results 8,
       :display-metadata? false,
       :margin-bottom 1,
       :metadata-position "inline",
@@ -4777,5 +4763,4 @@
     :formatted
     :string
     escape-sgr
-    string/join)
-   "〠3;38;2;167;148;206;48;2;43;22;97〠java.util.HashSet〠0〠\n〠38;5;250;48;2;43;22;97〠#{〠0〠〠38;2;110;171;237〠1〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠a〠0〠〠38;2;210;140;109〠\"〠0〠〠〠 〠0〠〠38;2;110;171;237〠2〠0〠〠〠 〠0〠〠38;2;210;140;109〠\"〠0〠〠38;2;140;189;122〠b〠0〠〠38;2;210;140;109〠\"〠0〠〠38;5;250;48;2;43;22;97〠}〠0〠")))
+    string/join))))

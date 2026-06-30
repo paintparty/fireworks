@@ -3,7 +3,7 @@
    [clojure.string :as string]
    [fireworks.core :refer [?]]
    [fireworks.config]
-   [fireworks.pp :as pp :refer [?pp !?pp pprint]]
+   [fireworks.pp :as pp :refer [!?pp pprint]]
    [fireworks.demo]
    [fireworks.sample :as sample] 
    [fireworks.smoke-test] 

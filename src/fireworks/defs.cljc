@@ -195,7 +195,8 @@
           :record                                       :definition
           :multimethod                                  :definition
           :uuid                                         :string
-          :inst                                         :string
+          :inst                                         :string ;<- deprecate?
+          :datetime                                     :string
           :js-object-key                                :foreground
           :nan                                          :constant
           :infinity                                     :constant
@@ -492,25 +493,24 @@
 
 
 #?(:cljs
-   (do (def html-collection-types-primary
-         #{"NodeList"
-           "DOMTokenList"
-           "HTMLCollection"
-           "CSSStyleDeclaration"
-           "StyleSheetList"
-           "CSSRuleList"
-           "DOMStringList"})
-       (def html-collection-types-secondary
-         #{"RadioNodeList"
-           "NamedNodeMap"
-           "HTMLOptionsCollection"
-           "HTMLFormControlsCollection"
-           "HTMLAllCollection"
-           "MediaList"
-           "DOMRectList"
-           "FileList"
-           "TouchList"
-           "DataTransferItemList"})))
+   (def html-collection-types
+     #{"NodeList"
+       "DOMTokenList"
+       "HTMLCollection"
+       "CSSStyleDeclaration"
+       "StyleSheetList"
+       "CSSRuleList"
+       "DOMStringList"
+       "RadioNodeList"
+       "NamedNodeMap"
+       "HTMLOptionsCollection"
+       "HTMLFormControlsCollection"
+       "HTMLAllCollection"
+       "MediaList"
+       "DOMRectList"
+       "FileList"
+       "TouchList"
+       "DataTransferItemList"}))
 
 (def highlight-dark
   {:color            "#ffffff"

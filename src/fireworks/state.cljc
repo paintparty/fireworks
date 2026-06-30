@@ -10,7 +10,6 @@
             [fireworks.config :as config]
             [fireworks.defs :as defs]
             [fireworks.messaging :as messaging]
-            ;; [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
             [fireworks.pp :refer [pprint]]
             [fireworks.specs.config :as config.specs]
             [fireworks.specs.theme :as theme]
@@ -24,7 +23,7 @@
 ;; -----------------------------------------------------------------------------
 #?(:cljs
    ;; In cljs, detect if env is node/deno vs browser
-   (do (defonce node?
+   (do (def node?
          (boolean 
           (some->> 
            (or (when (and (exists? js/window)
@@ -86,6 +85,8 @@
 
 ;; For :find highlighting
 (def highlight (atom nil))
+
+(def highlight-target-path (atom nil))
 
 ;; When formatting form-to-be-evaled, this should be set to `true`
 (def formatting-form-to-be-evaled? (atom false))
@@ -150,8 +151,8 @@
         valid?     (when-not undefined? (if spec (s/valid? spec v) v))
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
-      #_(do (println :invalid "::" 'validate-option-from-user-config-edn "\n")
-          (?pp [k #_v]))
+      ;; (do (println :invalid "::" 'validate-option-from-user-config-edn "\n")
+      ;;     (? [k #_v]))
       (messaging/bad-option-value-warning
        (assoc (keyed [k v default spec])
               :header (str (some-> user-config-edn*
@@ -170,7 +171,7 @@
         invalid?   (and (not undefined?) (not valid?))]
     (if invalid?
       #_(do (println :invalid "::" 'validate-option-from-user-config-edn-dynamic "\n")
-          ;; (?pp [k v])
+          ;; (? [k v])
           (println "The spec")
           (pprint spec)
           (println "\n\n")
@@ -234,7 +235,7 @@
     (catch #?(:cljs js/Object
               :clj Throwable)
            e
-      (messaging/caught-exception e {})
+      (messaging/caught-exception e {:regex  #"^fireworks\.|^lasertag\."})
       (swap! messaging/warnings-and-errors
              conj
              [:messaging/print-error e])
@@ -444,7 +445,6 @@
     font-style  :font-style
     font-weight :font-weight
     :as         m}]
-  #_(?pp m)
   (let [debug? false #_(contains? #{:highlight-underlined :highlight :highlight-info :string} (:k m))
         fgc    (x->sgr fgc* :fg)
         bgc    (x->sgr bgc* :bg)
@@ -657,11 +657,11 @@
         printer (hydrated* base theme classes :printer)
         merged  (add-metadata-key-entries (merge classes syntax printer))
         merged2 (serialize-style-maps merged)]
-    ;; (?pp 'base (-> base :classes :label))
-    ;; (?pp 'theme (-> theme))
-    ;; (?pp classes)
-    ;; (?pp (select-keys classes [:highlight :highlight-underlined]))
-    ;; (?pp (select-keys merged [:highlight :highlight-underlined]))
+    ;; (? 'base (-> base :classes :label))
+    ;; (? 'theme (-> theme))
+    ;; (? classes)
+    ;; (? (select-keys classes [:highlight :highlight-underlined]))
+    ;; (? (select-keys merged [:highlight :highlight-underlined]))
     {:with-style-maps            merged
      :with-serialized-style-maps (assoc
                                   merged2
@@ -794,7 +794,7 @@
                 "theme mood"            mood
                 ;; "rainbow-brackets"      rainbow-brackets
                 }))
-     #_(?pp (keyed [theme* fallback-theme user-theme theme theme-suffix mood]))
+    ;;  (? (keyed [theme* fallback-theme user-theme theme theme-suffix mood]))
      ret)))
 
 
@@ -825,7 +825,8 @@
         :form   err-x
         :line   line
         :column column
-        :file   (or file ns-str)}))
+        :file   (or file ns-str)
+        :regex  #"^fireworks\.|^lasertag\."}))
     (do (def merged-theme 
           (atom with-serialized-style-maps))
         (def merged-theme-with-unserialized-style-maps
@@ -896,9 +897,9 @@
 
 (defn highlight-style*
   [{:keys [style pred path class] :as m}]
-  ;; (?pp m)
-  ;; (?pp (keys @merged-theme))
-  ;; (?pp (:highlight-underlined @merged-theme))
+  ;; (? m)
+  ;; (? (keys @merged-theme))
+  ;; (? (:highlight-underlined @merged-theme))
   ;; TODO - check is css-str always gonna be css?
   (let [style
         (with-bling-colors->sgr m)

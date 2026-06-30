@@ -1,7 +1,8 @@
 (ns fireworks.sample
   (:require
    #?(:cljs [cljs.js]) ;; [lambdaisland.ansi :as ansi]
-   #?(:cljs [lasertag.cljs-interop])
+   #?(:cljs [lasertag.jsi.native-plus])
+   #?(:cljs [lasertag.jsi.native])
    [clojure.pprint]
    [fireworks.core :refer [!? ?]]
    [fireworks.util :as util]
@@ -11,6 +12,7 @@
   #?(:cljs
      (:require-macros [fireworks.sample :refer [qc]])
      ))
+
 
 ;; Definitions to use in samples -----------------------------------------------
 
@@ -42,8 +44,8 @@
 
      #_(? :pp vector-with-custom-datatypes)
      #_(? :pp
-        {:label "my-label"} 
-        custom-vector-datatype)
+          {:label "my-label"} 
+          custom-vector-datatype)
 
      ))
 
@@ -67,9 +69,9 @@
 
 (def my-date (new #?(:cljs js/Date :clj java.util.Date)))
 
-(deftype MyType [a b])
+(deftype MyType [a b c d e f g h i j k])
 
-(def my-data-type (->MyType 2 3))
+(def my-data-type (->MyType 1 2 3 4 5 6 7 8 9 10 11))
 
 (defrecord MyRecordType [a b])
 
@@ -146,7 +148,7 @@
 
 #?(:cljs
     (defn cljs-interop-classes []
-       (let [ks (keys lasertag.cljs-interop/js-built-ins-by-category)]
+       (let [ks (keys lasertag.jsi.native/js-built-ins-by-category)]
          (reduce
           (fn [acc [k v]]
             (assoc acc
@@ -176,10 +178,10 @@
                                   []
                                   v))))
           {}
-          lasertag.cljs-interop/js-built-ins-by-category
+          lasertag.jsi.native/js-built-ins-by-category
           #_(do 
             (select-keys
-               lasertag.cljs-interop/js-built-ins-by-category
+               lasertag.jsi.native/js-built-ins-by-category
                [
                 ;; "Fundamental"
                 ;; "objects"
@@ -196,26 +198,24 @@
                 ;; "Managing memory"
                 ;; "Reflection"
                 ]))))
-
-       #_(doseq [[k v] lasertag.cljs-interop/js-built-in-objects-by-object-map]
-           (? :result k)
-           (? :result v)
-           ))
+       )
     :clj
     ())
 
 (def interop-types
-#?(:cljs ;; we get these from lasertag.cljs-interop
+#?(:cljs ;; we get these from lasertag.jsi.native
    (cljs-interop-classes)
    :clj ;; TODO - maybe move these into a new cljc lasertag.interop ns
    (array-map 
 
     "Java collection types"
-    {'java.util.ArrayList (java.util.ArrayList. (range 6))
+    {
+     'java.util.ArrayList (java.util.ArrayList. (range 6))
      'java.util.HashMap (java.util.HashMap. {"a" 1 "b" 2})
      'java.util.HashSet (java.util.HashSet. #{"a" 1 "b" 2})
      'java.lang.String (java.lang.String. "welcome")
-     'array (to-array '(1 2 3 4 5))}
+     'array (to-array '(1 2 3 4 5))
+     }
 
     "Java numbers"
     (array-map
@@ -249,29 +249,29 @@
    :keyword
    :nil
    nil
-   :##Nan
-   ##NaN
-   :##Inf
-   ##Inf
-   :##-Inf
-   ##-Inf
-   :map
-   {:a 1
-    :b 2
-    :c "three"}
-   :vector
-   [1 2 3]
-   :vector+meta
-   ^{:meta-on-coll 1}
-   ['foo
-    (with-meta 'bar {:meta-on-sym 2})
-    'baz]
-   :list
-   '(1 2 3)
-   :lazy-seq
-   (range 10)
-   :rainbow
-   [[[[[[]]]]]]
+  ;;  :##Nan
+  ;;  ##NaN
+  ;;  :##Inf
+  ;;  ##Inf
+  ;;  :##-Inf
+  ;;  ##-Inf
+  ;;  :map
+  ;;  {:a 1
+  ;;   :b 2
+  ;;   :c "three"}
+  ;;  :vector
+  ;;  [1 2 3]
+  ;;  :vector+meta
+  ;;  ^{:meta-on-coll 1}
+  ;;  ['foo
+  ;;   (with-meta 'bar {:meta-on-sym 2})
+  ;;   'baz]
+  ;;  :list
+  ;;  '(1 2 3)
+  ;;  :lazy-seq
+  ;;  (range 10)
+  ;;  :rainbow
+  ;;  [[[[[[]]]]]]
    :set
    #{1 :2 "three"}))
 
@@ -659,7 +659,4 @@
                ]]
 
     (println "\nSample output, in Universal Neutral, with various :path based :find highlighting\n")
-    (? {
-        :theme "Alabaster Light"
-        :find  finds}
-       (assoc-in array-map-of-everything-cljc [:map :b] "asdfgasdfasdfasdfasdfadsfasfasfas"))))
+    (assoc-in array-map-of-everything-cljc [:map :b] "asdfgasdfasdfasdfasdfadsfasfasfas")))

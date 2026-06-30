@@ -1,0 +1,22 @@
+# Source and build inputs — the esbuild bundle (out/extension.js) is self-contained.
+src/**
+cljs/**
+lib/**
+.vscode/**
+.shadow-cljs/**
+.cpcache/**
+.claude/**
+node_modules/**
+
+# Test build output (only out/extension.js ships)
+out/cljs-tests.js
+
+# Configs, types, maps, edn, docs, vsix
+**/*.ts
+**/*.map
+**/*.edn
+**/*.vsix
+tsconfig.json
+esbuild.mjs
+.gitignore
+*.md

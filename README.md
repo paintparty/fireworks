@@ -98,7 +98,7 @@ Add as a dependency to your project:
 
 
 ```clojure
-[io.github.paintparty/fireworks "0.20.0"]
+[io.github.paintparty/fireworks "0.21.0"]
 ```
 
 <br>
@@ -260,7 +260,7 @@ You can also add relevant entries from the sample `project.clj` to your `~/.lein
                 :debug             true
 
                 ;; With a hot-reload workflow, it is nice to use a simple custom banner.
-                :banner            "🔥🔥🔥🔥🔥🔥🔥🔥🔥"
+                :banner            "🔥"
 
                 ;; With a hot-reload workflow, it is nice to clear the terminal on refresh. 
                 :clear             true}
@@ -270,17 +270,37 @@ You can also add relevant entries from the sample `project.clj` to your `~/.lein
 
 ## Editor Integrations
 
-These integrations allow you to quickly wrap and unwrap forms with a shortcut,
+
+### VSCode
+Get the official VSCode Fireworks extension here.
+
+This the best way do live coding with Fireworks.
+
+It provides commands to control all the form manipulation, as well as a Live Code framework that drives inline results as you type.
+
+[View the Fireworks VSCode Extension Docs](integrations/vscode/extension/README.md) 
+
+![Fireworks VSCode Extenstion: Toggle ?](integrations/vscode/extension/resources/gifs/toggle.gif)
+
+
+
+<br>
+
+There is also an example of [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md) integration. This was created as a proof-of-concept prototype, ahead of the actual VSCode extension.
+
+<br>
+
+### IntelliJ
+
+This IntelliJ integration allows you to quickly wrap and unwrap forms with a shortcut,
 as well as toggle the silencing of wrapped forms.
-
 #### [IntelliJ IDEA + Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md)
-#### [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md)
 
 
 <br>
 <br>
 
-## Usage
+## Basic Usage
 This section outlines the four public macros that fireworks offers:<br>
 **`?`**, **`!?`**, **`?>`**, and **`!?>`**.
 
@@ -308,7 +328,8 @@ First let's define an example value. This is a map that describes a real-world p
 <p align="center"><img src="resources/features/fireworks-core-par.png" width="600px" /></p>
 
 
-Calling **`fireworks.core/?`** with a leading string argument will print a label (instead of the form), the namespace info, and the result:
+You can call **`fireworks.core/?`** with any number of leading "flags".
+A string argument will print a label (instead of the form), the namespace info, and the result:
 
 ```Clojure
 (? "My label" x)
@@ -317,7 +338,8 @@ Calling **`fireworks.core/?`** with a leading string argument will print a label
 
 <br>
 
-Calling **`fireworks.core/?`** with a leading keyword flag will activate a specific mode of functionality (See the table in the following section for more details). The example below just prints the result, no label or file info:
+Leading keyword flags will activate a specific mode of functionality (See the table in the following section for more details). They can be composed in any order.
+The example below just prints the result, no label or file info:
 
 ```Clojure
 (? :- x)
@@ -328,26 +350,19 @@ Calling **`fireworks.core/?`** with a leading keyword flag will activate a speci
 
 <br>
 
-The leading argument can also be a map, which supplies various [config options](#options):
+The second-to last argument can be a map, which supplies various [config options](#options):
 
 ```Clojure
-(? {:label      "My label"
+(? :trace
+   {:label      "My label"
     :theme      "Monokai Light"
     :print-length 10}
-   x)
+   (->> (range 20)
+        (mapv inc)))
 ```
 
 <br>
 
-If you want to use a specific mode and also supply override config options, you can call  **`fireworks.core/?`** with 3 arguments:
-
-```Clojure
-;; Prints just the result, and truncates colls to 10
-(? :result {:print-length 10} x)
-
-```
-
-<br>
 
 **`fireworks.core/!?`** is a no-op macro that just returns the value. It is intended for situations where you want to temporarily "silence" the printing, because you will likely turn it back on again in the near future.
 
@@ -372,11 +387,11 @@ Because Fireworks is designed to provide quick, rapid feedback to the terminal o
 
 The `?` macro also provides a bevy of functionality that can be controlled an optional leading keyword flag and/or a map of options. For example, when it is necessary to view a data structure in its entirety, or without any truncation of values, you can pass specific options at the call site, or simply just include `:+`, or `:pp`, or `:js` as the leading argument to **`fireworks.core/?`**.
 
-All the available alternate printing modes for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing an optional leading keyword flag. Unless noted otherwise, **`fireworks.core/?`** will always return the value passed to it.
+All the available alternate printing modes for **`fireworks.core/?`** and their behaviors are outlined in the table below. These modes are activated by passing one or more optional leading keyword flags. They are fully composable. Unless noted otherwise, **`fireworks.core/?`** will always return the value passed to it.
 
 <br>
 
-| Mode        | Prints with       | Prints label? | Prints file info? | Returns | Notes |
+| Flag        | Prints with       | Prints label? | Prints file info? | Returns | Notes |
 | :---        | :---              | :---          | :---              | :--     | :--   |
 |  none       | Fireworks         | ✓             | ✓                 | value   |       |
 | `:-`        | Fireworks         | ×             | ×                 | value   |       |
@@ -384,11 +399,11 @@ All the available alternate printing modes for **`fireworks.core/?`** and their 
 | `:no-label` | Fireworks         | ×             | ✓                 | value   |       |
 | `:no-file`  | Fireworks         | ✓             | ×                 | value   |       |
 | `:js`       | `js/console.log`* | ✓             | ✓                 | value   |       |
-| `:js-`      | `js/console.log`* | ×             | ×                 | value   |       |
 | `:pp`       | `pp/pprint`       | ✓             | ✓                 | value   |       |
-| `:pp-`      | `pp/pprint`       | ×             | ×                 | value   |       |
+| `:trace`    | N/A               | ×             | ×                 | value   | Traces forms      |
+| `:perf`     | Fireworks         | ✓             | ✓                 | value   | Adds a rough perf estimate |
 | `:data`     | N/A               | ×             | ×                 | map     |       |
-| `:comment`  | N/A               | ✓             | ✓                 | nil     |       |
+<!-- | `:comment`  | N/A               | ✓             | ✓                 | nil     |       | -->
 
 
 <!--TODO put this back in once problems fixed>
@@ -408,6 +423,9 @@ Some annotated examples using modes outlined in the above table:
 
 ;; Prints the label, file info, and the result. Uses pprint instead of fireworks. 
 (? :pp (+ 1 1))
+
+;; Prints the file info and the result. Uses pprint instead of fireworks. 
+(? :no-label :pp (+ 1 1))
 
 ;; Prints a custom label, file info, and the result. Uses pprint instead of fireworks. 
 (? :pp "My label" (+ 1 1))
@@ -527,6 +545,8 @@ The actual `config.edn` file should be a map with a bunch of options like this:
  :scalar-print-length 50
  :print-level         3}
 ```
+
+You can use this (comprehensive starter template)[], with all the options + descriptions.
 
 <br>
 <br>
@@ -1031,6 +1051,10 @@ Babashka tests:
 ```Clojure
 bb test:bb
 ```
+
+ClojureScript tests:
+Coming soon.
+
 
 ### Dev / Testing
 

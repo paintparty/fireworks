@@ -1,16 +1,18 @@
 (ns ^:dev/always fireworks.truncate
   (:require
+  ;;  #?(:cljs [fireworks.debug :refer-macros [?]])
+  ;;  #?(:clj [fireworks.debug :refer [?]])
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [clojure.string :as string]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.order :refer [seq->sorted-map]]
-   [fireworks.pp :refer [?pp]]
    [fireworks.profile :as profile]
    [fireworks.specs.config :as specs.config]
    [fireworks.state :as state]
    [fireworks.util :as util :refer [maybe->]]
-   [lasertag.core]))
+   [lasertag.core]
+   [lasertag.cached]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
 ;; This only applies when the js object is nested within a cljs data structure.
@@ -140,11 +142,11 @@
            too-deep?
            coll-size
            depth
-           path]
+           path
+           t]
     :as m}
    x]
-  (let [
-        ;; First we need to check if collection is both not map-like and 
+  (let [;; First we need to check if collection is both not map-like and 
         ;; comprised only of map entries. If this is the case it is most likely
         ;; the result of something like `(vec {:a "a" :b "b"})`, and we need
         ;; to treat all elements in the coll as 2-el vectors (not map-entries),
@@ -155,16 +157,24 @@
              (some->> x
                       seq
                       (take (min 50 print-length))
-                      (every? #(-> % map-entry?))))     
+                      (every? #(-> % map-entry?))))
 
         ret
-        (let [taken (->> x (take print-length) vec)
+        (let [x (if (and (= t :datatype) map-like?)
+                  x
+                  #_(do
+                    ;; (println "og-x" (:og-x m))
+                    ;; (println "type x" (type x))
+                    ;; (println x)
+                    (truncate-datatype-to-map x 10))
+                  x)
+              taken (->> x (take print-length) vec)
               x-is-set? (set? x)]
           (mapv (fn [i]
                   (let [nth-taken (nth taken i nil)]
                     (truncate {:depth                 (inc depth)
                                :path                  (if (not map-like?)
-                                                        (conj path (if x-is-set? 
+                                                        (conj path (if x-is-set?
                                                                      nth-taken
                                                                      i))
                                                         path)
@@ -177,7 +187,7 @@
               transient?)  ; treat transient maps as empty map
         ret
         ;; If map is too-deep?, return empty map
-        (if too-deep? 
+        (if too-deep?
           {}
           (seq->sorted-map ret array-map?)))
       ret)))
@@ -309,6 +319,7 @@
           (nth x n))))
     x))
 
+
 (defn- container-for-unknown-coll-size
   [{:keys [all-tags] :as tag-map}]
   (when (= (:coll-size tag-map)
@@ -395,7 +406,7 @@
                                  val-is-future?
                                  val-is-promise?
                                  val-is-delay?)
-        val-is-throwable?    (lasertag.core/throwable? x)
+        val-is-throwable?    (lasertag.cached/throwable? x)
         og-info              (when (or val-is-derefable? val-is-throwable?)
                                (lasertag.core/tag-map x))
         og-t                 (:tag og-info)
@@ -420,11 +431,18 @@
         kv?                  (boolean (when-not map-entry-in-non-map?
                                         (map-entry? x)))
         tag-map              (when-not kv? (util/tag-map* x))
-        x                    (or (container-for-unknown-coll-size tag-map)
+        x                    (or (when (:object-like-datatype? tag-map)
+                                   (if (record? x)
+                                     (into {} x)
+                                     (util/datatype->map
+                                      x
+                                      {:skip-object-has-fields-check? true})))
+                                 (container-for-unknown-coll-size tag-map)
                                  (reify-if-transient x tag-map))
         too-deep?            (> depth (:print-level @state/config))
         sev?                 (boolean (when-not kv?
-                                        (not (:coll-type? tag-map))))
+                                        (and (not (:coll-type? tag-map))
+                                             (not (-> tag-map :t (= :datatype))))))
         user-meta            (value-meta x)
         theme-token-override (:bling.theme/token user-meta)
         user-meta            (some-> user-meta (dissoc :bling.theme/token))
@@ -457,6 +475,19 @@
             :array-map?     (contains? (:all-tags tag-map) :array-map)
             :top-level-sev? (and sev? (zero? depth))}))) 
 
+#_(defn truncate-type-to-map [obj max-fields]
+  #?(:cljs
+     ()
+     :clj
+     (->> (util/object-fields obj)
+          (take max-fields)
+          (reduce (fn [m field]
+                    (.setAccessible field true) ; <- Overrides private visibility
+                    (assoc m
+                           (keyword (.getName field)) 
+                           (.get field obj)))
+                  {}))))
+
 
 (defn- truncated-x*
   [{:keys [coll-type? kv? depth carries-meta? classname path og-x all-tags t]
@@ -476,16 +507,15 @@
                               :map-value? true
                               :path       (conj path k)} v)])
 
-                
                 ;; TODO - try to get this working
-                ;; (?pp (and (contains? all-tags :js-object)
+                ;; (? (and (contains? all-tags :js-object)
                 ;;         (contains? all-tags :built-in)))
                 ;; ;; #?(:cljs
                 ;; ;;    (contains? #{js/Math js/Atomics js/JSON js/Intl} og-x)
                 ;; ;;    :clj
                 ;; ;;    nil)
                 ;; #?(:cljs
-                ;;    (?pp (cond (= og-x js/Math) "js/Math"
+                ;;    (? (cond (= og-x js/Math) "js/Math"
                 ;;               (= og-x js/Atomics) "js/Atomics"
                 ;;               (= og-x js/JSON) "js/JSON" 
                 ;;               (= og-x js/Intl) "js/Intl"))
@@ -493,7 +523,10 @@
                 ;;    (symbol "wtf?"))
                 
                 coll-type?
-                (truncated-coll m x)
+                (if (empty? x) x (truncated-coll m x))
+
+                (= t :datatype)
+                (util/datatype->map x)
 
                 (= classname "java.math.BigDecimal")
                 (symbol (str x "M"))
@@ -562,7 +595,7 @@
                     :too-deep?           false,
                     :coll-size           8,
                     :all-tags            #{:coll :seq},
-                    :print-length          5,
+                    :print-length        5,
                     :coll-size-adjust    8,
                     :sev?                false,
                     :num-dropped         3,
@@ -607,7 +640,7 @@
         ;; TODO - Use this instead of what is happening in fireworks.profile
         ;; mm*
         ;; (with-badge-and-ellipsized x kv? mm*)
-
+        
         meta-to-attach
         (merge {:fw/truncated mm*
                 :fw/user-meta #?(:cljs user-meta
@@ -617,5 +650,3 @@
                         :user-meta? 
                         (hash-map :fw/user-meta-map?)))]
     (with-meta truncated-x meta-to-attach)))
-
-

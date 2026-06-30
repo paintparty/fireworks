@@ -2,7 +2,6 @@
   (:require
    [clojure.walk :as walk]
    [fireworks.profile :as profile]
-   [fireworks.pp :refer [?pp pprint] :rename {?pp ?}]
    [fireworks.truncate :as truncate]
    [fireworks.brackets
     :as brackets
@@ -12,11 +11,10 @@
    [clojure.string :as string]
    [fireworks.defs :as defs]
    [fireworks.tag :as tag :refer [sgr-tag reset-tag sgr-reset-tag tagged]]
-   [fireworks.util :refer [spaces badge-type]]
+   [fireworks.util :as util :refer [spaces badge-type]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [fireworks.state :as state :refer [meta-level-inc! meta-level-dec!]]
-   [fireworks.util :as util]
    [fireworks.ansi :as ansi]))
 
 (declare tagged-val)
@@ -42,7 +40,7 @@
              k))
 
 
-(defn truncation-annotation 
+(defn- truncation-annotation 
   [{:keys [num-chars-dropped t truncate-fn-name? top-level-sev? highlighting]
     :as m}]
   (when (or truncate-fn-name?
@@ -67,7 +65,7 @@
         (str (sgr-tag theme-tag highlighting) s sgr-reset-tag)))))
 
 
-(defn sev-user-meta-position-match? [user-meta position]
+(defn- sev-user-meta-position-match? [user-meta position]
   (and (:display-metadata? @state/config)
        (seq user-meta)
        (contains? (if (= position :block)
@@ -76,8 +74,31 @@
                   (:metadata-position @state/config))))
 
 
-(defn sev
+;; SEV                                                                    
+;;                                                                     
+;;    SSSSSSSSSSSSSSS EEEEEEEEEEEEEEEEEEEEEEVVVVVVVV           VVVVVVVV
+;;  SS:::::::::::::::SE::::::::::::::::::::EV::::::V           V::::::V
+;; S:::::SSSSSS::::::SE::::::::::::::::::::EV::::::V           V::::::V
+;; S:::::S     SSSSSSSEE::::::EEEEEEEEE::::EV::::::V           V::::::V
+;; S:::::S              E:::::E       EEEEEE V:::::V           V:::::V 
+;; S:::::S              E:::::E               V:::::V         V:::::V  
+;;  S::::SSSS           E::::::EEEEEEEEEE      V:::::V       V:::::V   
+;;   SS::::::SSSSS      E:::::::::::::::E       V:::::V     V:::::V    
+;;     SSS::::::::SS    E:::::::::::::::E        V:::::V   V:::::V     
+;;        SSSSSS::::S   E::::::EEEEEEEEEE         V:::::V V:::::V      
+;;             S:::::S  E:::::E                    V:::::V:::::V       
+;;             S:::::S  E:::::E       EEEEEE        V:::::::::V        
+;; SSSSSSS     S:::::SEE::::::EEEEEEEE:::::E         V:::::::V         
+;; S::::::SSSSSS:::::SE::::::::::::::::::::E          V:::::V          
+;; S:::::::::::::::SS E::::::::::::::::::::E           V:::V           
+;;  SSSSSSSSSSSSSSS   EEEEEEEEEEEEEEEEEEEEEE            VVV            
+;;                                                                     
+;;                                                                     
+;;                                                                     
+
+(defn- sev
   "Creates a string with ansi-sgr formatting tags."
+  ;; "The main entity that gets tagged is either `s` or `fn-display-name`"
   [{:keys [x
            s
            t
@@ -99,30 +120,17 @@
            theme-token-override
            ellipsized-char-count]
     :as m}]
-  (let [encapsulated?
-        (or (= t :uuid) (contains? all-tags :inst))
 
-        ;; mutable-tagging-opts                                                    ;; TODO - Rename to not use mutable
-        ;; (when (or val-is-atom? 
-        ;;           val-is-volatile?
-        ;;           val-is-ref?
-        ;;           val-is-agent?
-        ;;           )
-        ;;   {
-        ;;   ;;  :theme-token  (if val-is-atom? :atom-wrapper :volatile-wrapper)
-        ;;    :display?     true
-        ;;    :highlighting highlighting})
-        
-        ;; The next set of bindings:                                            ;; break these into helper fns?
-        
-        ;; user-metadata-map-block (displays user-meta above value), optional
-        ;; annotation (badge), optional
-        ;; value tag
-        ;; num-chars-dropped-syntax
-        ;; value tag-reset 
-        ;; user-metadata-map-block (displays user-meta inline, after value), optional
-        
-        user-metadata-map-block-tagged                                          
+  ;; break these into helper fns?
+  ;; "The intial set of bindings:                                            
+  ;;     -  user-metadata-map-block (displays user-meta above value), optional
+  ;;     -  annotation (badge), optional
+  ;;     -  ansi sgr tag
+  ;;     -  num-chars-dropped-syntax
+  ;;     -  ansi sgr tag-reset 
+  ;;     -  user-metadata-map-inline (displays user-meta inline, after value), optional"
+  
+  (let [user-metadata-map-block-tagged                                          
         (when (sev-user-meta-position-match? user-meta :block)
           
           (meta-level-inc!)
@@ -139,13 +147,6 @@
                                (+ defs/kv-gap)
                                spaces))))
 
-        ;; atom-tagged
-        ;; (some->> mutable-tagging-opts
-        ;;          (tagged (str (if val-is-volatile? 
-        ;;                         defs/volatile-label 
-        ;;                         defs/atom-label)
-        ;;                       #_defs/encapsulation-opening-bracket)))
-        
         badge-tagged
         (tagged badge
                 {:theme-token (cond
@@ -161,8 +162,6 @@
               :number
               js-map-like-key?
               :js-object-key
-              encapsulated?
-              :string
               :else
               t)
 
@@ -237,6 +236,10 @@
          ;; positioned inline, to left of value 
          badge-tagged
 
+         ;; If datatype which shows a memory address, we do badge above
+         (when (= t :datatype)
+           "\n")
+
 
          ;; The self-evaluating value
          (when (= t :string)
@@ -246,35 +249,34 @@
 
          main-entity-tag
          ;; (some-> num-chars-dropped pos?)
-         (do
-           (or (when s
-                 (cond (= t :string)
-                       (string/replace (subs s 1 (-> s count dec))
-                                       #"\""
-                                       ;; Maybe we should add this at an earlier stage
-                                       (str (sgr-tag :escape-char)
-                                            "\\\\"
-                                            main-entity-tag-reset
-                                            (sgr-tag :escaped-double-quote-char)
-                                            "\""
-                                            main-entity-tag-reset
-                                            main-entity-tag))
+         (or (when s
+               (cond (= t :string)
+                     (string/replace (subs s 1 (-> s count dec))
+                                     #"\""
+                                     ;; Maybe we should add this at an earlier stage
+                                     (str (sgr-tag :escape-char)
+                                          "\\\\"
+                                          main-entity-tag-reset
+                                          (sgr-tag :escaped-double-quote-char)
+                                          "\""
+                                          main-entity-tag-reset
+                                          main-entity-tag))
 
-                       (= t :regex)
-                       (tag/colorized-regex s)
+                     (= t :regex)
+                     (tag/colorized-regex s)
 
-                       (and (= t :number) (re-find #"^[0-9]+\.[0-9]+" s))
-                       (let [[integral-part decimal-part] (string/split s #"\.")]
-                         (str (sgr-tag :number highlighting)
-                              integral-part "."
-                              main-entity-tag-reset
-                              (sgr-tag :decimal highlighting)
-                              decimal-part
-                              main-entity-tag-reset))
+                     (and (= t :number) (re-find #"^[0-9]+\.[0-9]+" s))
+                     (let [[integral-part decimal-part] (string/split s #"\.")]
+                       (str (sgr-tag :number highlighting)
+                            integral-part "."
+                            main-entity-tag-reset
+                            (sgr-tag :decimal highlighting)
+                            decimal-part
+                            main-entity-tag-reset))
 
-                       :else
-                       s))
-               fn-display-name))
+                     :else
+                     s))
+             fn-display-name)
          main-entity-tag-reset
          chars-dropped-syntax
 
@@ -301,7 +303,7 @@
                 s
                 t])]
 
-    #_(?pp 'locals
+    #_(? 'locals
            (merge ret
                   (keyed [main-entity-tag
                           chars-dropped-syntax
@@ -309,31 +311,28 @@
     ret))
 
 
-;;                               ooo OOO OOO ooo
-;;                           oOO                 OOo
-;;                       oOO                         OOo
-;;                    oOO                               OOo
-;;                  oOO                                   OOo
-;;                oOO                                       OOo
-;;               oOO                                         OOo
-;;              oOO                                           OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;             oOO                                             OOo
-;;              oOO                                           OOo
-;;               oOO                                         OOo
-;;                oOO                                       OOo
-;;                  oOO                                   OOo
-;;                    oO                                OOo
-;;                       oOO                         OOo
-;;                           oOO                 OOo
-;;                               ooo OOO OOO ooo
 
 
-;;;; For dealing with collections
-
+;;                                                                               
+;;                                                                               
+;; DDDDDDDDDDDDD      RRRRRRRRRRRRRRRRR        OOOOOOOOO     PPPPPPPPPPPPPPPPP   
+;; D::::::::::::DDD   R::::::::::::::::R     OO:::::::::OO   P::::::::::::::::P  
+;; D:::::::::::::::DD R::::::RRRRRR:::::R  OO:::::::::::::OO P::::::PPPPPP:::::P 
+;; DDD:::::DDDDD:::::DRR:::::R     R:::::RO:::::::OOO:::::::OPP:::::P     P:::::P
+;;   D:::::D    D:::::D R::::R     R:::::RO::::::O   O::::::O  P::::P     P:::::P
+;;   D:::::D     D:::::DR::::R     R:::::RO:::::O     O:::::O  P::::P     P:::::P
+;;   D:::::D     D:::::DR::::RRRRRR:::::R O:::::O     O:::::O  P::::PPPPPP:::::P 
+;;   D:::::D     D:::::DR:::::::::::::RR  O:::::O     O:::::O  P:::::::::::::PP  
+;;   D:::::D     D:::::DR::::RRRRRR:::::R O:::::O     O:::::O  P::::PPPPPPPPP    
+;;   D:::::D     D:::::DR::::R     R:::::RO:::::O     O:::::O  P::::P            
+;;   D:::::D     D:::::DR::::R     R:::::RO:::::O     O:::::O  P::::P            
+;;   D:::::D    D:::::D R::::R     R:::::RO::::::O   O::::::O  P::::P            
+;; DDD:::::DDDDD:::::DRR:::::R     R:::::RO:::::::OOO:::::::OPP::::::PP          
+;; D:::::::::::::::DD R::::::R     R:::::R OO:::::::::::::OO P::::::::P          
+;; D::::::::::::DDD   R::::::R     R:::::R   OO:::::::::OO   P::::::::P          
+;; DDDDDDDDDDDDD      RRRRRRRR     RRRRRRR     OOOOOOOOO     PPPPPPPPPP          
+;;                                                                               
+;;                                                                               
 
 ;;;; Num-dropped-syntax start --------------------------------------------------
 
@@ -406,6 +405,27 @@
 
 ;;;; Num-dropped-syntax end ----------------------------------------------------
 
+;;                                                                                         
+;;                                                                                         
+;;         CCCCCCCCCCCCC     OOOOOOOOO     LLLLLLLLLLL             LLLLLLLLLLL             
+;;      CCC::::::::::::C   OO:::::::::OO   L:::::::::L             L:::::::::L             
+;;    CC:::::::::::::::C OO:::::::::::::OO L:::::::::L             L:::::::::L             
+;;   C:::::CCCCCCCC::::CO:::::::OOO:::::::OLL:::::::LL             LL:::::::LL             
+;;  C:::::C       CCCCCCO::::::O   O::::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;; C:::::C              O:::::O     O:::::O  L:::::L                 L:::::L               
+;;  C:::::C       CCCCCCO::::::O   O::::::O  L:::::L         LLLLLL  L:::::L         LLLLLL
+;;   C:::::CCCCCCCC::::CO:::::::OOO:::::::OLL:::::::LLLLLLLLL:::::LLL:::::::LLLLLLLLL:::::L
+;;    CC:::::::::::::::C OO:::::::::::::OO L::::::::::::::::::::::LL::::::::::::::::::::::L
+;;      CCC::::::::::::C   OO:::::::::OO   L::::::::::::::::::::::LL::::::::::::::::::::::L
+;;         CCCCCCCCCCCCC     OOOOOOOOO     LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
+;;                                                                                         
+;                                                                                         
+
 
 (defn- stringified-bracketed-coll-with-num-dropped-syntax! 
   "This is where the stringified coll (with formatting and escaped style tags)
@@ -438,6 +458,10 @@
        seq
        boolean))
 
+(defn- double-truncated-map? [coll t]
+  (and (= t :map)
+       (< 1 (count coll))
+       (= (first coll) ['... (symbol " ")])))
 
 (defn- reduce-coll-profile
   [coll indent*]
@@ -491,10 +515,10 @@
         user-meta-above?
         (boolean (and user-meta (contains? #{:block "block"} metadata-position)))
         
-        ;; _ (?pp meta-map)
+        ;; _ (? meta-map)
         
         ;; This is where multi-line for collections is determined
-        ;; _ (?pp (select-keys meta-map [:str-len-with-badge-ellipsized
+        ;; _ (? (select-keys meta-map [:str-len-with-badge-ellipsized
         ;;                               :str-len-val-ellipsized
         ;;                               :str-len-with-badge
         ;;                               :val-str-len
@@ -523,14 +547,21 @@
                        (or strlen-greater-than-limit?
                            (when display-metadata?
                              (some #(when (meta %) %)
-                                   (tree-seq coll? seq (:og-x meta-map)))))))))))
+                                   (tree-seq coll? seq (:og-x meta-map)))))))))
+              (double-truncated-map? coll t)))
 
 
-        ;; _ (when-not multi-line? (?pp meta-map))
+        ;; _ (when-not multi-line? (? meta-map))
         
         ;; This is where indenting for multi-line collections is determined
         num-indent-spaces-for-t
-        (if (or set-like? user-meta-map? (= t :js/Set)) 2 1)
+        ;; TODO - shouldn't need to check js/Set here, set-like? should cover it
+        (if (or set-like?
+                user-meta-map? 
+                (= t :js/Set) 
+                (and (:quote-lists? @state/config)
+                     (-> coll meta :root-list?)))
+          2 1)
 
         indent       
         (+ (or indent* 0) num-indent-spaces-for-t)
@@ -652,11 +683,11 @@
     (let [offset        defs/metadata-position-inline-offset
           inline-offset (tagged (spaces (dec offset))
                                 {:theme-token (state/metadata-token)})
-          ob            (str (some-> coll
-                                     meta
-                                     brackets-by-type
-                                     first))
-          
+          ob            (some-> coll
+                                meta
+                                brackets-by-type
+                                first)
+          ob            (brackets/maybe-quoted-opening-paren coll ob)
           indent+ob     (+ (or (count ob) 0)
                            indent*)
           ret           (formatted-user-meta user-meta (+ indent+ob offset))]
@@ -780,11 +811,64 @@
            (coll-sep-tagged m idx)))))
 
 
+(defn tag-nested-lists
+  "Based on nesting, recursively augments metadata of vectors that represent
+   list values with a `:root-list?` entry, and potentially a `:nested-list?`
+   entry.
+   
+   This is only called when the `:quote-lists` option is true.
+   
+   This allows for lists to use the quoted syntax, without adding syntax quoting
+   to nested lists.
+
+   Example:
+   ```clojure
+   (? {:quote-lists? true} '(foo bar '(bang)))
+   ;; prints
+   '(foo bar (bang))
+   ```
+
+   One use case for the `:quote-lists` feature is printing generated code that
+   is to be copied and pasted source code."
+  ([coll]
+   (tag-nested-lists coll false))
+  ([coll inside-list?]
+   (if (vector? coll)
+     (let [m                 (meta coll)
+           og-list?          (= (:t m) :list)
+           
+           ;; Resolve new metadata
+           new-meta          (cond
+                               (not og-list?) m
+                               inside-list?   (assoc m :nested-list? true)
+                               :else          (assoc m :root-list? true))
+           
+           ;; If already inside a list, or this vector is a list,
+           ;; all nested children are considered "inside-list".
+           next-inside-list? (or inside-list? og-list?)]
+       
+       ;; Reconstruct the vec by recursively mapping over els, and applying the
+       ;; new metadata.
+       (with-meta (mapv #(tag-nested-lists % next-inside-list?) coll)
+         new-meta))
+     
+     ;; Return non-vectors
+     coll)))
+
+
 ;; Should we use a StringBuilder construct here in jvm?
 ;; What about cljs - just push to an array?
 (defn- reduce-coll
   [coll indent*]
-  (let [{:keys [single-column-map-layout?]
+  (let [coll
+        ;; Could keep a current-value-has-lists? in state for perf
+        ;; It would turned on during tagging in truncate
+        (if (and (:quote-lists? @state/config)
+                 (not (-> coll meta :nested-list?)))
+          (tag-nested-lists coll)
+          coll)
+        
+        {:keys [single-column-map-layout?]
          :as   coll-meta}
         (meta coll) 
 
@@ -815,6 +899,28 @@
                        (keyword (str (name k) "?"))
                        true)))
     (tagged s (keyed [highlighting]))))
+
+
+;;                                                                                     
+;;                                                                                     
+;; MMMMMMMM               MMMMMMMM               AAA               PPPPPPPPPPPPPPPPP   
+;; M:::::::M             M:::::::M              A:::A              P::::::::::::::::P  
+;; M::::::::M           M::::::::M             A:::::A             P::::::PPPPPP:::::P 
+;; M:::::::::M         M:::::::::M            A:::::::A            PP:::::P     P:::::P
+;; M::::::::::M       M::::::::::M           A:::::::::A             P::::P     P:::::P
+;; M:::::::::::M     M:::::::::::M          A:::::A:::::A            P::::P     P:::::P
+;; M:::::::M::::M   M::::M:::::::M         A:::::A A:::::A           P::::PPPPPP:::::P 
+;; M::::::M M::::M M::::M M::::::M        A:::::A   A:::::A          P:::::::::::::PP  
+;; M::::::M  M::::M::::M  M::::::M       A:::::A     A:::::A         P::::PPPPPPPPP    
+;; M::::::M   M:::::::M   M::::::M      A:::::AAAAAAAAA:::::A        P::::P            
+;; M::::::M    M:::::M    M::::::M     A:::::::::::::::::::::A       P::::P            
+;; M::::::M     MMMMM     M::::::M    A:::::AAAAAAAAAAAAA:::::A      P::::P            
+;; M::::::M               M::::::M   A:::::A             A:::::A   PP::::::PP          
+;; M::::::M               M::::::M  A:::::A               A:::::A  P::::::::P          
+;; M::::::M               M::::::M A:::::A                 A:::::A P::::::::P          
+;; MMMMMMMM               MMMMMMMMAAAAAAA                   AAAAAAAPPPPPPPPPP          
+;;                                                                                     
+;;                                                                                     
 
 (defn- reduce-map*
   [{:keys [indent
@@ -847,7 +953,14 @@
                                  max-keylen]))]
             {:escaped               tk
              :ellipsized-char-count (ansi/adjusted-char-count tk)})
-          (sev (merge key-props {:indent indent})))
+
+          ;; assoc :indent to key-props, and conditionally assoc :highlighting
+          ;; from parent map, but only if key does not have its own entry for
+          ;; :highlighting.
+          (sev (cond-> (assoc key-props :indent indent)
+                 (and (nil? (:highlighting key-props))
+                      highlighting)
+                 (assoc :highlighting highlighting))))
 
         theme-token-map
         {:theme-token (state/metadata-token)}
@@ -858,19 +971,28 @@
         gap-spaces-opts
         (keyed [formatting-meta? theme-token-map highlighting])
 
+        leading-or-trailing-truncation-kv?
+        (and (or (= k (symbol "... "))
+                 (= k (symbol "...")))
+             (= v (symbol "")))
+
         spaces-after-key
-        (let [num-extra (if multi-line?
-                          (- (or max-keylen 0)
-                             (or key-char-count 0))
-                          0)
-              s         (when (some-> num-extra pos?) (spaces num-extra))
-              k         :spaces-after-key]
-          (gap-spaces (assoc gap-spaces-opts :s s :k k)))
+        (if leading-or-trailing-truncation-kv? 
+          ""
+          (let [num-extra (if multi-line?
+                            (- (or max-keylen 0)
+                               (or key-char-count 0))
+                            0)
+                s         (when (some-> num-extra pos?) (spaces num-extra))
+                k         :spaces-after-key]
+            (gap-spaces (assoc gap-spaces-opts :s s :k k))))
 
         kv-gap-spaces
-        (let [s (spaces defs/kv-gap)
-              k :kv-gap-spaces]
-          (gap-spaces (assoc gap-spaces-opts :s s :k k)))
+        (if leading-or-trailing-truncation-kv?
+          ""
+          (let [s (spaces defs/kv-gap)
+                k :kv-gap-spaces]
+            (gap-spaces (assoc gap-spaces-opts :s s :k k))))
 
         tagged-val          
         (tagged-val (keyed [v
@@ -935,14 +1057,43 @@
                         max-keylen])))]
      ret))
 
+
+
+;;                                                                
+;;                                                                
+;; KKKKKKKKK    KKKKKKKEEEEEEEEEEEEEEEEEEEEEEYYYYYYY       YYYYYYY
+;; K:::::::K    K:::::KE::::::::::::::::::::EY:::::Y       Y:::::Y
+;; K:::::::K    K:::::KE::::::::::::::::::::EY:::::Y       Y:::::Y
+;; K:::::::K   K::::::KEE::::::EEEEEEEEE::::EY::::::Y     Y::::::Y
+;; KK::::::K  K:::::KKK  E:::::E       EEEEEEYYY:::::Y   Y:::::YYY
+;;   K:::::K K:::::K     E:::::E                Y:::::Y Y:::::Y   
+;;   K::::::K:::::K      E::::::EEEEEEEEEE       Y:::::Y:::::Y    
+;;   K:::::::::::K       E:::::::::::::::E        Y:::::::::Y     
+;;   K:::::::::::K       E:::::::::::::::E         Y:::::::Y      
+;;   K::::::K:::::K      E::::::EEEEEEEEEE          Y:::::Y       
+;;   K:::::K K:::::K     E:::::E                    Y:::::Y       
+;; KK::::::K  K:::::KKK  E:::::E       EEEEEE       Y:::::Y       
+;; K:::::::K   K::::::KEE::::::EEEEEEEE:::::E       Y:::::Y       
+;; K:::::::K    K:::::KE::::::::::::::::::::E    YYYY:::::YYYY    
+;; K:::::::K    K:::::KE::::::::::::::::::::E    Y:::::::::::Y    
+;; KKKKKKKKK    KKKKKKKEEEEEEEEEEEEEEEEEEEEEE    YYYYYYYYYYYYY    
+;;                                                                
+;;                                                                
+;;                                                                
+;;                                                                
+;;                                                                
+;;                                                                
+;;                                                                
+
 ;; maybe a short coll as key
 (defn- tagged-key
-  [{:keys [key-props
-           t
+  [{:keys [t
            indent
-           multi-line?
+           key-props
            separator
-           max-keylen]
+           max-keylen
+           multi-line?
+           highlighting]
     coll-as-key :k
     :as m}]
   (let [t                          
@@ -970,10 +1121,37 @@
       :else
       (:escaped (sev (merge key-props
                             (keyed [indent
-                                    multi-line?
                                     separator
-                                    max-keylen])))))))
+                                    max-keylen
+                                    multi-line?
+                                    highlighting])))))))
 
+
+;;                                                                         
+;;                                                                         
+;; VVVVVVVV           VVVVVVVV   AAA               LLLLLLLLLLL             
+;; V::::::V           V::::::V  A:::A              L:::::::::L             
+;; V::::::V           V::::::V A:::::A             L:::::::::L             
+;; V::::::V           V::::::VA:::::::A            LL:::::::LL             
+;;  V:::::V           V:::::VA:::::::::A             L:::::L               
+;;   V:::::V         V:::::VA:::::A:::::A            L:::::L               
+;;    V:::::V       V:::::VA:::::A A:::::A           L:::::L               
+;;     V:::::V     V:::::VA:::::A   A:::::A          L:::::L               
+;;      V:::::V   V:::::VA:::::A     A:::::A         L:::::L               
+;;       V:::::V V:::::VA:::::AAAAAAAAA:::::A        L:::::L               
+;;        V:::::V:::::VA:::::::::::::::::::::A       L:::::L               
+;;         V:::::::::VA:::::AAAAAAAAAAAAA:::::A      L:::::L         LLLLLL
+;;          V:::::::VA:::::A             A:::::A   LL:::::::LLLLLLLLL:::::L
+;;           V:::::VA:::::A               A:::::A  L::::::::::::::::::::::L
+;;            V:::VA:::::A                 A:::::A L::::::::::::::::::::::L
+;;             VVVAAAAAAA                   AAAAAAALLLLLLLLLLLLLLLLLLLLLLLL
+;;                                                                         
+;;                                                                         
+;;                                                                         
+;;                                                                         
+;;                                                                         
+;;                                                                         
+;;                                                                         
 
 (defn- tagged-val
   [{:keys [v
@@ -983,7 +1161,7 @@
            multi-line?
            separator
            max-keylen]
-    :as m}]
+    :as   m}]
   (let [t                          
         (or t (:t val-props))
 
@@ -1014,8 +1192,12 @@
                                     max-keylen])))))))
 
 
+
+
+
 (defn serialized
   [v indent]
+
   (str (when-not (pos? (state/formatting-meta-level))
          (some-> indent util/spaces))
        (tagged-val {:v         v
@@ -1045,7 +1227,7 @@
          (reduce-kv (fn [m k v]
                       (let [
                             ;; k (-> k meta :fw/truncated :og-x)
-                            ;; _ (?pp (-> k meta :fw/truncated :og-x))
+                            ;; _ (? (-> k meta :fw/truncated :og-x))
                             ;; k (-> k meta :fw/truncated :og-x)
                             ]
                        (assoc m
@@ -1075,6 +1257,8 @@
                  (into (empty form) mapped))) )
        :else
        (with-meta+ form )))))
+
+
 
 (defn formatted*
   ([source]
@@ -1117,21 +1301,21 @@
 
 
      ;; for debugging path info
-     #_(walk/postwalk (fn [x]
-                        (println)
-                        (pprint (-> x meta :fw/truncated (select-keys [:og-x :path]))) x)
-                      truncated)
+    ;;  (walk/postwalk (fn [x]
+    ;;                     (println)
+    ;;                     (pprint (-> x meta :fw/truncated (select-keys [:og-x :path]))) x)
+    ;;                   truncated)
 
      ;; Just for debugging
      ;;  (when (:coll-type? (meta profiled))
-     ;;      (?pp (meta profiled)))
+     ;;      (? (meta profiled)))
      ;;  (? (:s (meta profiled)))
-     ;;  (?pp (map 
+     ;;  (? (map 
      ;;        (fn [a b]
      ;;          [a b])
      ;;        (rest (string/split serialized "%c"))
      ;;        @state/styles))
-     ;;  (?pp :serialized serialized)
-     ;;  (?pp @state/styles)
+     ;;  (? :serialized serialized)
+     ;;  (? @state/styles)
      
      serialized)))

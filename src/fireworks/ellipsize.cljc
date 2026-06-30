@@ -1,14 +1,12 @@
 (ns ^:dev/always fireworks.ellipsize
 (:require
- [clojure.string :as string]
+ [clojure.string :as str]
  [fireworks.defs :as defs]
- [fireworks.pp :refer [?pp] :rename {?pp ?}]
  [fireworks.state :as state]
  [fireworks.specs.config :as specs.config]
  #?(:cljs [fireworks.macros :refer-macros [keyed]])
  #?(:clj [fireworks.macros :refer [keyed]])
-  ;;  #?(:clj [clojure.math])
- ))
+ [fireworks.debug :refer [?]]))
 
 (defn- len
   [x]
@@ -27,10 +25,10 @@
 
 (defn- pre-truncate-function-name
   "Potentially shortens, or drops, one or more of the following parts of
-   a function's (or function-like object's) display value:
-   - The args vec
+   the display value of a function (or function-like object such as a java
+   class, JS class, or defmulti):
    - The fully-qualified namespace
-   - The function nam "
+   - The function name"
   [limit
    {:keys [fn-ns
            fn-name
@@ -38,11 +36,19 @@
            js-built-in-method-of
            java-lang-class?
            badge
-           lambda?]
+           lambda?
+           classname]
     :as   m}]
-  (let [;; Create `budge-diff` partial, which will be used to calculate
+  (let [result-map      (fn [nm ecc trunc?]
+                          {:fn-display-name       nm
+                           :drop-ns?              false ;; <- krft?
+                           :fn-args               nil   ;; <- krft? 
+                           :ellipsized-char-count ecc
+                           :truncate-fn-name?     trunc?} )
+
+        ;; Create `budge-diff` partial, which will be used to calculate
         ;; the difference between the length of the fn name (at a given
-        ;; stage of shortening) and the (:scalar-max-length @state/config).
+        ;; stage of shortening) and the current limit.
         
         budge-diff      (partial budge-diff limit)
         
@@ -60,22 +66,15 @@
                                  (some-> fn-ns
                                          (str (if java-lang-class? "." "/"))))
                                fn-name))
-        diff            (budge-diff nm)
-
-
-        ;; If still over budget, drop the namespace and check again to
-        ;; see if still over budget.
-        drop-ns?        (pos? diff)
-        nm              (if drop-ns? 
-                          (symbol
-                           (str interop-prefix
-                                (when (some->
-                                       js-built-in-method-of
-                                       str
-                                       count 
-                                       (< defs/js-built-in-method-nm-limit))
-                                  (str js-built-in-method-of "."))
-                                fn-name))
+        nm              (if lambda?
+                          (str nm 
+                               (if (= classname "Function")
+                                 defs/lambda-badge
+                                 (or (some-> classname
+                                             (str/split #"\$fn__")
+                                             last
+                                             (->> (str "fn__")))
+                                     badge)))
                           nm)
         diff            (budge-diff nm)
 
@@ -86,29 +85,22 @@
                           (->> nm
                                str
                                (drop-last (+ diff defs/ellipsis-count)) 
-                               string/join 
+                               str/join 
                                symbol)
                           nm)
-        fn-display-name (if lambda?
-                          nil #_defs/lambda-badge
-                          (when-not (string/blank? (str fn-display-name))
-                            fn-display-name))
+        ;; _               (when lambda? (? m))
+        fn-display-name (when-not (str/blank? (str fn-display-name))
+                          fn-display-name)
 
 
         ;; Finally, calculate the final ellipsized-char-count. This count
         ;; should never exceed the :scalar-max-length, or the
         ;; :map-key-print-length, from @state/config.
-        
-        
         ecc             (ellipsized-char-count badge
                                                (str fn-display-name)
                                                trunc-name?)]
 
-
-    (merge (keyed [fn-display-name drop-ns?])
-           {:fn-args               nil
-            :ellipsized-char-count ecc
-            :truncate-fn-name?     trunc-name?})))
+    (result-map fn-display-name ecc trunc-name?)))
 
 
 (defn- inst-str
@@ -128,7 +120,7 @@
                str
                (subs 1)
                drop-last
-               string/join)
+               str/join)
      :clj (str x)))
 
 
@@ -178,7 +170,7 @@
             spliced)
           )]
     #_(when key? 
-      (?pp (keyed [num-to-remove
+        (? (keyed [num-to-remove
                    value-is-wrapped-in-some-kind-of-quotes?
                    ret])))
     ret))
@@ -201,9 +193,9 @@
            badge
            map-value?
            inline-badge?
-           top-level-sev?]
+           top-level-sev?
+           multi-line-string-line?]
     :as   m}]
-
   (let [{:keys [scalar-depth-1-max-length
                 scalar-result-max-length
                 scalar-mapkey-max-length
@@ -236,18 +228,20 @@
 
 
         limit
-        (if-let [level-k (and (not (or key? map-value?))
-                              (cond top-level-sev?
-                                    :level-0-sev
-                                    (and sev? (< depth 2))
-                                    :level-1-sev))]
-          (case level-k
-            :level-0-sev scalar-result-max-length
-            :level-1-sev scalar-depth-1-max-length)
-          (max (if key?
-                 scalar-mapkey-max-length
-                 scalar-max-length)
-               (or limit 0)))]
+        (if multi-line-string-line?
+         scalar-result-max-length
+         (if-let [level-k (and (not (or key? map-value?))
+                               (cond top-level-sev?
+                                     :level-0-sev
+                                     (and sev? (< depth 2))
+                                     :level-1-sev))]
+           (case level-k
+             :level-0-sev scalar-result-max-length
+             :level-1-sev scalar-depth-1-max-length)
+           (max (if key?
+                  scalar-mapkey-max-length
+                  scalar-max-length)
+                (or limit 0))))]
     
     (if (:ellipsized-char-count m)
       x
@@ -301,8 +295,8 @@
 
 
           ;;  (when key?
-          ;;    (?pp stringified)
-          ;;    (?pp (keyed [#_m
+          ;;    (? stringified)
+          ;;    (? (keyed [#_m
           ;;                 t
           ;;                 stringified
           ;;                 stringified-len

@@ -1,6 +1,7 @@
 .DS_Store
 /target
 examples/test-refresh/lein-project/target
+integrations/vscode/extension/.md
 /classes
 /checkouts
 profiles.clj
@@ -30,3 +31,7 @@ visual_test/public/js
 visual_test/.clj-kondo/.cache
 .cpcache
 pom.properties
+
+# Fireworks inline-result cache (only the results, not config.edn / bb/watch.clj)
+.fireworks/results/
+workspaces/kushi.css.code-workspace
