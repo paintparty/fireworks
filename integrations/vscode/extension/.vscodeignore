@@ -22,8 +22,9 @@ untitled folder/**
 examples/**
 **/.DS_Store
 
-# README gifs are fetched from GitHub via --baseImagesUrl, not shipped (icon stays)
-resources/gifs/**
+# README gifs are fetched from GitHub via --baseImagesUrl, not shipped — only the icon ships
+resources/**
+!resources/icon.png
 
 # Configs, types, maps, edn, docs, vsix
 **/*.ts

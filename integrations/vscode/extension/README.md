@@ -1,4 +1,4 @@
-[![Version](https://img.shields.io/visual-studio-marketplace/v/paintparty.fireworks)](https://marketplace.visualstudio.com/items?itemName=paintparty.fireworks)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/jcoyle.fireworks)](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks)
 
 
 # Fireworks VSCode Extension
@@ -19,7 +19,7 @@ This extension provides a suite of commands which fall into 2 main categories:
 ## Install
 
 - In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**. Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
-- Or install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=paintparty.fireworks).
+- Or install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks).
 - Or from a `.vsix`: **Extensions: Install from VSIX**.
 
 

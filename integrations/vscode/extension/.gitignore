@@ -39,7 +39,8 @@ pom.properties
 # clojure cli dep cache
 /.cpcache/
 
-# packaged extension
+# packaged extension (vsce --out dist/)
+/dist/
 *.vsix
 
 *.md

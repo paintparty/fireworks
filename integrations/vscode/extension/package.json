@@ -3,7 +3,7 @@
   "displayName": "Fireworks",
   "description": "Live Coding for Clojure",
   "version": "0.1.0",
-  "publisher": "paintparty",
+  "publisher": "jcoyle",
   "license": "EPL-2.0",
   "icon": "resources/icon.png",
   "repository": { "type": "git", "url": "https://github.com/paintparty/fireworks.git" },
@@ -180,7 +180,7 @@
     "compile": "npm run compile-cljs && npm run compile-ts",
     "bundle": "node esbuild.mjs",
     "vscode:prepublish": "npm run release-cljs && npm run bundle",
-    "package": "vsce package"
+    "package": "vsce package --out dist/"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
