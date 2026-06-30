@@ -1,4 +1,10 @@
+[![Version](https://img.shields.io/visual-studio-marketplace/v/paintparty.fireworks)](https://marketplace.visualstudio.com/items?itemName=paintparty.fireworks)
+
+
 # Fireworks VSCode Extension
+
+
+![VSCode Inline Results](resources/gifs/vs-code-inline-results.gif)
 
 VS Code extension for [Fireworks](https://github.com/paintparty/fireworks), the live coding library for Clojure, ClojureScript, and Babashka.
 

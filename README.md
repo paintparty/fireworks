@@ -272,7 +272,12 @@ You can also add relevant entries from the sample `project.clj` to your `~/.lein
 
 
 ### VSCode
-Get the official VSCode Fireworks extension here.
+
+![VSCode Inline Results](resources/gifs/vs-code-inline-results.gif)
+
+In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**.
+
+Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
 
 This the best way do live coding with Fireworks.
 
