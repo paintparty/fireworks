@@ -9,7 +9,7 @@
                  ]
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [expound "0.9.0"]
-                 [io.github.paintparty/lasertag "0.13.0-SNAPSHOT"]]
+                 [io.github.paintparty/lasertag "0.13.0"]]
   :repl-options {:init-ns fireworks.core}
 
   ;; rewrite-clj is dev/test-only: it backs the experimental golden-snapshotter
