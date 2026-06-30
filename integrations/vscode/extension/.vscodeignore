@@ -6,10 +6,24 @@ lib/**
 .shadow-cljs/**
 .cpcache/**
 .claude/**
+.clj-kondo/**
+.lsp/**
 node_modules/**
 
 # Test build output (only out/extension.js ships)
 out/cljs-tests.js
+
+# Dev cruft / editor state — must not leak into the package
+.nrepl-port
+dev/**
+.calva/**
+.tmp_claude/**
+untitled folder/**
+examples/**
+**/.DS_Store
+
+# README gifs are fetched from GitHub via --baseImagesUrl, not shipped (icon stays)
+resources/gifs/**
 
 # Configs, types, maps, edn, docs, vsix
 **/*.ts
@@ -20,3 +34,6 @@ tsconfig.json
 esbuild.mjs
 .gitignore
 *.md
+# …but keep the marketplace README + changelog
+!README.md
+!CHANGELOG.md
