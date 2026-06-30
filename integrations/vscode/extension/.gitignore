@@ -43,3 +43,5 @@ pom.properties
 *.vsix
 
 *.md
+!README.md
+!CHANGELOG.md
