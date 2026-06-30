@@ -55,7 +55,8 @@
       { "command": "fireworks.rainbowTracerVertical", "title": "Rainbow Tracer (top-to-bottom)", "category": "Fireworks" },
       { "command": "fireworks.rainbowTracerHorizontal", "title": "Rainbow Tracer (left-to-right)", "category": "Fireworks" },
       { "command": "fireworks.rainbowTracerCross", "title": "Rainbow Tracer (cross)", "category": "Fireworks" },
-      { "command": "fireworks.setTerminalLocation", "title": "Set Terminal Location", "category": "Fireworks" }
+      { "command": "fireworks.setTerminalLocation", "title": "Set Terminal Location", "category": "Fireworks" },
+      { "command": "fireworks.createPrintingConfig", "title": "Create a printing options config.edn", "category": "Fireworks" }
     ],
     "keybindings": [
       {
@@ -190,9 +191,10 @@
     "test-cljs": "shadow-cljs compile :test",
     "compile-ts": "tsc -p ./",
     "watch-ts": "tsc -watch -p ./",
-    "compile": "npm run compile-cljs && npm run compile-ts",
+    "copy-assets": "node scripts/copy-assets.mjs",
+    "compile": "npm run copy-assets && npm run compile-cljs && npm run compile-ts",
     "bundle": "node esbuild.mjs",
-    "vscode:prepublish": "npm run release-cljs && npm run bundle",
+    "vscode:prepublish": "npm run copy-assets && npm run release-cljs && npm run bundle",
     "package": "vsce package --out dist/"
   },
   "devDependencies": {

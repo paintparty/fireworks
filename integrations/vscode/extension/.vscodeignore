@@ -38,3 +38,6 @@ esbuild.mjs
 # …but keep the marketplace README + changelog
 !README.md
 !CHANGELOG.md
+# …and the example printing config bundled for "Create a printing options config.edn"
+# (negation must follow the **/*.edn rule above to win)
+!resources/example-config.edn

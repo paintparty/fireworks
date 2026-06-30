@@ -80,6 +80,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
     vscode.commands.registerCommand('fireworks.rainbowTracerCross', () => rainbowTracerCross()),
     vscode.commands.registerCommand('fireworks.setTerminalLocation', () => setTerminalLocation()),
+    vscode.commands.registerCommand('fireworks.createPrintingConfig', () => createPrintingConfig()),
     vscode.window.onDidCloseTerminal((t) => {
       for (const [root, s] of liveSessions) {
         if (s.terminal === t) {
@@ -2705,6 +2706,36 @@ async function setTerminalLocation(): Promise<void> {
   }
   await cfg().update('terminalLocation', pick.label, vscode.ConfigurationTarget.Global);
   flash(`Fireworks: terminal location set to “${pick.label}”.`);
+}
+
+// Write a fresh printing-options config.edn seeded from the bundled example (the canonical
+// docs/example-bling-config/config.edn, copied into resources/ at build time). This is a global
+// config — Fireworks/Bling auto-discover it at ~/.config/{fireworks,bling}/config.edn — so we let
+// the user choose the destination, defaulting the Save dialog to ~/.config/fireworks/config.edn.
+async function createPrintingConfig(): Promise<void> {
+  const assetUri = vscode.Uri.joinPath(extContext.extensionUri, 'resources', 'example-config.edn');
+  let contents: Uint8Array;
+  try {
+    contents = await vscode.workspace.fs.readFile(assetUri);
+  } catch {
+    flash('Fireworks: could not read the bundled example config.');
+    return;
+  }
+  const defaultUri = vscode.Uri.file(path.join(os.homedir(), '.config', 'fireworks', 'config.edn'));
+  const dest = await vscode.window.showSaveDialog({
+    defaultUri,
+    filters: { EDN: ['edn'] },
+    saveLabel: 'Create config.edn',
+    title: 'Create a printing options config.edn',
+  });
+  if (!dest) {
+    return;
+  }
+  // workspace.fs.writeFile creates any missing parent directories (e.g. ~/.config/fireworks).
+  await vscode.workspace.fs.writeFile(dest, contents);
+  const doc = await vscode.workspace.openTextDocument(dest);
+  await vscode.window.showTextDocument(doc);
+  flash(`Fireworks: created ${tildify(dest.fsPath)}.`);
 }
 
 interface PreviewItem extends vscode.QuickPickItem {
