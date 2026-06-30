@@ -56,7 +56,7 @@
       { "command": "fireworks.rainbowTracerHorizontal", "title": "Rainbow Tracer (left-to-right)", "category": "Fireworks" },
       { "command": "fireworks.rainbowTracerCross", "title": "Rainbow Tracer (cross)", "category": "Fireworks" },
       { "command": "fireworks.setTerminalLocation", "title": "Set Terminal Location", "category": "Fireworks" },
-      { "command": "fireworks.createPrintingConfig", "title": "Create a printing options config.edn", "category": "Fireworks" }
+      { "command": "fireworks.createPrintingConfig", "title": "Edit or create a printing options config.edn", "category": "Fireworks" }
     ],
     "keybindings": [
       {

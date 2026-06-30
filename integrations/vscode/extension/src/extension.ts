@@ -2708,11 +2708,27 @@ async function setTerminalLocation(): Promise<void> {
   flash(`Fireworks: terminal location set to “${pick.label}”.`);
 }
 
-// Write a fresh printing-options config.edn seeded from the bundled example (the canonical
-// docs/example-bling-config/config.edn, copied into resources/ at build time). This is a global
-// config — Fireworks/Bling auto-discover it at ~/.config/{fireworks,bling}/config.edn — so we let
-// the user choose the destination, defaulting the Save dialog to ~/.config/fireworks/config.edn.
+// The global locations Fireworks/Bling auto-discover a printing config, in precedence order.
+function printingConfigPaths(): string[] {
+  const home = os.homedir();
+  return [
+    path.join(home, '.config', 'fireworks', 'config.edn'),
+    path.join(home, '.config', 'bling', 'config.edn'),
+  ];
+}
+
+// Edit the user's existing global printing config if one is already present at either discovery
+// path; otherwise seed a fresh one from the bundled example (the canonical
+// docs/example-bling-config/config.edn, copied into resources/ at build time). The config is global
+// — Fireworks/Bling auto-discover it at ~/.config/{fireworks,bling}/config.edn — so for the create
+// path we let the user choose the destination, defaulting the Save dialog to the fireworks path.
 async function createPrintingConfig(): Promise<void> {
+  const existing = printingConfigPaths().find((p) => fs.existsSync(p));
+  if (existing) {
+    const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(existing));
+    await vscode.window.showTextDocument(doc);
+    return;
+  }
   const assetUri = vscode.Uri.joinPath(extContext.extensionUri, 'resources', 'example-config.edn');
   let contents: Uint8Array;
   try {
@@ -2721,7 +2737,7 @@ async function createPrintingConfig(): Promise<void> {
     flash('Fireworks: could not read the bundled example config.');
     return;
   }
-  const defaultUri = vscode.Uri.file(path.join(os.homedir(), '.config', 'fireworks', 'config.edn'));
+  const defaultUri = vscode.Uri.file(printingConfigPaths()[0]);
   const dest = await vscode.window.showSaveDialog({
     defaultUri,
     filters: { EDN: ['edn'] },
