@@ -1,5 +1,16 @@
- {
+;; This config controls the formatting and syntax coloring engine used in:
+;;     Fireworks - https://github.com/paintparty/fireworks
+;;     Bling - bling.hifi/hifi - https://github.com/paintparty/bling
 
+;; This should be saved locally in one of these 2 places:
+;;     `~/.config/bling/config.edn` 
+;;     `~/.config/fireworks/config.edn`
+
+;; These defaults can also be passed at the callsite:
+;;     `(fireworks.core/? {:theme "Solarized Dark" :print-length 66} (range 99))`
+;;     `(bling.hifi/hifi {:theme "Solarized Dark" :print-length 66} (range 99))`
+
+ {
   ;; ---------------------------------------------------------------------------
   ;;  Themes 
   ;; ---------------------------------------------------------------------------
@@ -285,6 +296,12 @@
 
   ;; :when                          nil ; defaults to nil
 
+  
+
+  ;; Rough quick-bench mean result is included below the file-info line and the
+  ;; form/label. Also prepends the result e.g. \"(69ns)\" to the inline result.
+
+  ;; :perf                          false ; defaults to false
 
   
 

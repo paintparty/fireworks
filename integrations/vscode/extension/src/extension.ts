@@ -1048,6 +1048,8 @@ function guidanceDoc(
           'Inline results still appear in your editor while the watcher runs (when',
           '`Fireworks: Toggle Inline Results` is on).',
           '',
+          'Once your project is running, feel free to close this tab!',
+          '',
         ].join('\n'),
       };
     }
