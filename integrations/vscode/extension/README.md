@@ -12,8 +12,10 @@ This extension provides a suite of commands which fall into 2 main categories:
 
 ## Install
 
-- TODO: marketplace link
-- Or: `Extensions: Install from VSIX`
+- In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**. Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
+- Or install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=paintparty.fireworks).
+- Or from a `.vsix`: **Extensions: Install from VSIX**.
+
 
 <br>
 
