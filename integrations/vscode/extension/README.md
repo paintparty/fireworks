@@ -3,16 +3,19 @@
 
 # Fireworks VSCode Extension
 
+**VS Code extension for [Fireworks](https://github.com/paintparty/fireworks), the live coding library for Clojure, ClojureScript, and Babashka.**
+
 
 ![VSCode Inline Results](resources/gifs/vs-code-inline-results.gif)
 
-VS Code extension for [Fireworks](https://github.com/paintparty/fireworks), the live coding library for Clojure, ClojureScript, and Babashka.
+
+<br>
 
 This extension provides a suite of commands which fall into 2 main categories:
 
 1) A cohesive set of commands to toggle the different Fireworks macros on forms in your editor. You can operate on one form at a time or several nested forms at a time.
 
-2) Live Code mode activates real-time, inline results of wrapped forms.
+2) Live Code mode activates real-time, inline results of wrapped forms. These results are also printed in hi-fidelity color, with annotated file info, in the terminal your project is running in.
 
 <br>
 
@@ -23,18 +26,13 @@ This extension provides a suite of commands which fall into 2 main categories:
 - Or from a `.vsix`: **Extensions: Install from VSIX**.
 
 
-<br>
-
 ## Requirements
 
 - Calva (hard dep).
 - Java + Node 22+ (for Live Code).
 
-<br>
 
 ## Commands
-
-<br>
 
 ### Toggle `?`
 
@@ -107,19 +105,32 @@ Pick the background tint strength for dark themes. Live preview. (Light theme ha
 
 ## Live Coding
 
-### Overview
-Fire `Fireworks: Live Code`. 
+### Usage Overview
+Run the command `Fireworks: Live Code`. 
 
-Extension will analyze project roots in workspace and present you with a list of projects eligible projects. Pick one.
+The extension will analyze project roots in workspace and present you with a list of projects eligible projects. Pick one.
 
-Extension will analyze the project's build file, and present you with a list of eligible profiles to choose from.
+Then, the extension analyzes the project's build file, and present you with a list of eligible profiles to choose from.
+
+You then choose between starting the process in an integrated terminal, or in your preferred external terminal. (You can set a default for this going forward with `Fireworks: Set Terminal Location`).
 
 A build process and file watcher starts running in terminal.
 
-User saves a file, all the `?` forms will re-run and fresh results paint inline.
+On each file save (in an active editor), all the `?` forms will re-run and fresh results paint inline.
 
 `Fireworks: Live Code (Stop/Restart)` will reuse same project pick.
 
+For more info on how this works, and using with/without a REPL connection, see [this section](#how-it-works)
+
+#### Pro Tips:
+
+ - Use `File: Toggle Auto Save`. This command is built into VSCode. Depending on what you are working on, `Auto Save` may or may not be appropriate. If it suites your project, this is highly recommended as it takes the Live Code experience to a whole other level. You can easily tweak the `Auto Save Delay` with `Fireworks: Set Auto-Save Delay`.
+
+ - Customize the color of the inline results with `Fireworks: Set Inline Results Color`. 
+
+ - Customize the opacity of the background and foreground, as well as the offset gap, of the inline results with corresponding commands. 
+
+ - Set the theme of the Fireworks terminal output with `Fireworks: Edit or Create a Printing Options config.edn`
 <br>
 
 ### Clojure Projects
@@ -177,11 +188,19 @@ The watcher self-loads the `fswatcher` pod, so no `:pods` entry is needed in you
 Save file → watcher reloads the file → all forms wrapped with `?` re-run → inline results re-paint.
 
 
-<br>
+## How it works
+
+### No REPL necessary
+You do not need to have a REPL connected to your editor for Live Code to work, as it uses `test-refresh` in `:debug` mode under the hood to reload namespaces based one what changed (no tests are run). If you want to also run tests will debugging, you can set `:debug` to false in your projects `.test-refresh.edn`. 
+
+### REPL Friendly
+Conversely, the fireworks macros will produce inline results in the scenario where you are ***not*** running the `test-refresh` based Live Code flow, but you ***do*** have a REPL connected and are evaling the file or forms with `?` in them. In order for this scenario to work, you must have a `.fireworks` dir setup at the root of your project, and a valid profile with the deps that Live Code needs. You can set this up by running `Fireworks: Live Code (Preflight)`. This will add the missing pieces to your project (gated on your confirmation). And then when you do `Calva: Load/Evaluate Current File and its Requirements`, all the inline results for wrapped `?` forms should be refreshed.
+
+<!-- <br>
 
 ## Settings
 
-- TODO: inline result appearance, Live Code options.
+- TODO: inline result appearance, Live Code options. -->
 
 
 <br>
