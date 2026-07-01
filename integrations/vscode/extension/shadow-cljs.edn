@@ -17,7 +17,7 @@
                :depsAliases          fireworks-vscode.bridge/deps-aliases
                :depsAliasStatus      fireworks-vscode.bridge/deps-alias-status
                :depsAddLiveCodeAlias fireworks-vscode.bridge/deps-add-live-code-alias
-               :depsPatchAlias       fireworks-vscode.bridge/deps-patch-alias
+               :depsEnsureFireworks  fireworks-vscode.bridge/deps-ensure-fireworks
                :bbTasks              fireworks-vscode.bridge/bb-tasks
                :bbWatchTasks         fireworks-vscode.bridge/bb-watch-tasks
                :bbWatchTemplate      fireworks-vscode.bridge/bb-watch-template

@@ -98,63 +98,95 @@
 ;; --- additive editors -----------------------------------------------------
 
 (deftest add-live-code-alias-fresh
-  (testing "adds a :live-code alias carrying both deps + :main-opts; result re-parses correctly"
+  (testing "Fireworks appended to top-level :deps, test-refresh into a new :live-code alias"
     (let [{:keys [text alias changed]}
           (deps/add-live-code-alias "{:paths [\"src\"] :deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}}")]
       (is (= "live-code" alias))
       (is (true? changed))
+      ;; Fireworks lives in the project :deps, not the alias :extra-deps
+      (is (str/includes? text "io.github.paintparty/fireworks"))
       ;; the written alias must itself pass the readiness checks
       (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
              (deps/alias-deps-status text "live-code"))))))
 
-(deftest add-live-code-alias-name-collision
-  (testing ":live-code taken -> :fireworks-live-code, original alias untouched"
-    (let [{:keys [text alias]}
-          (deps/add-live-code-alias "{:aliases {:live-code {:main-opts [\"-m\" \"whatever\"]}}}")]
-      (is (= "fireworks-live-code" alias))
-      (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
-             (deps/alias-deps-status text "fireworks-live-code"))))))
+(deftest add-live-code-alias-formatted
+  (testing "the appended alias is cljfmt'd multi-line, not a single flat line, and comments survive"
+    (let [{:keys [text]}
+          (deps/add-live-code-alias
+           "{:paths [\"src\"]\n\n ;; keep this comment\n :deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}\n\n :aliases\n {:release {:jvm-opts [\"-Dfireworks.elide=true\"]}}}")]
+      ;; each alias-body entry on its own line (newline + indent before the keys)
+      (is (re-find #"\n\s+:extra-deps" text))
+      (is (re-find #"\n\s+:main-opts" text))
+      ;; the user's comment and existing alias are preserved
+      (is (str/includes? text ";; keep this comment"))
+      (is (str/includes? text ":release {:jvm-opts [\"-Dfireworks.elide=true\"]}")))))
 
-(deftest patch-alias-adds-missing-deps
-  (testing "the reported bug case: :main-opts runs test-refresh but the deps aren't there"
-    (let [{:keys [text changed added]}
-          (deps/patch-alias
-           "{:paths [\"src\"]
-             :deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}
-             :aliases {:live-code {:extra-paths [\"test\"]
-                                   :main-opts [\"-m\" \"com.jakemccrary.test-refresh\"]}}}"
-           "live-code")]
-      (is (true? changed))
-      (is (some #{"com.jakemccrary/test-refresh"} added))
-      (is (some #{"io.github.paintparty/fireworks"} added))
-      ;; :main-opts + :extra-paths already present -> not re-added
-      (is (not (some #{":main-opts"} added)))
-      (is (not (some #{":extra-paths"} added)))
+(deftest add-live-code-alias-no-deps-map
+  (testing "no :deps map at all -> one is created carrying Fireworks"
+    (let [{:keys [text]} (deps/add-live-code-alias "{:paths [\"src\"]}")]
+      (is (str/includes? text "io.github.paintparty/fireworks"))
       (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
              (deps/alias-deps-status text "live-code"))))))
 
-(deftest patch-alias-only-fireworks-missing
-  (testing "test-refresh already present (different version) -> only Fireworks added, version kept"
-    (let [{:keys [text added]}
-          (deps/patch-alias
-           "{:aliases {:live-code {:extra-deps {com.jakemccrary/test-refresh {:mvn/version \"0.25.0\"}}
-                                   :main-opts [\"-m\" \"com.jakemccrary.test-refresh\"]}}}"
-           "live-code")]
-      (is (= ["io.github.paintparty/fireworks"] (filterv #(re-find #"fireworks|test-refresh" %) added)))
-      (is (str/includes? text "0.25.0")) ; the user's pinned test-refresh version is untouched
+(deftest add-live-code-alias-fireworks-already-top-level
+  (testing "Fireworks already a top-level dep -> not duplicated, alias still added"
+    (let [in   "{:deps {io.github.paintparty/fireworks {:mvn/version \"0.21.0\"}}}"
+          {:keys [text]} (deps/add-live-code-alias in)]
+      ;; only one Fireworks coordinate in the result
+      (is (= 1 (count (re-seq #"io\.github\.paintparty/fireworks" text))))
+      (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
+             (deps/alias-deps-status text "live-code"))))))
+
+(deftest add-live-code-alias-name-collision
+  (testing ":live-code taken -> :fireworks-live-code, original alias untouched, block parameterized"
+    (let [{:keys [text alias]}
+          (deps/add-live-code-alias "{:aliases {:live-code {:main-opts [\"-m\" \"whatever\"]}}}")]
+      (is (= "fireworks-live-code" alias))
+      ;; the user's :live-code alias is left exactly as it was
+      (is (str/includes? text ":live-code {:main-opts [\"-m\" \"whatever\"]}"))
+      ;; the comment block names the actual alias
+      (is (str/includes? text ";; Example :fireworks-live-code alias"))
+      (is (str/includes? text "`clojure -M:fireworks-live-code`"))
+      (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
+             (deps/alias-deps-status text "fireworks-live-code"))))))
+
+(deftest add-live-code-alias-comment-block
+  (testing "the alias comment block sits between :aliases and its map; :deps gets no elide comment"
+    (let [{:keys [text]}
+          (deps/add-live-code-alias "{:paths [\"src\"] :deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}}")
+          lines (vec (str/split-lines text))
+          al-i  (first (keep-indexed (fn [i l] (when (re-find #":aliases\s*$" l) i)) lines))
+          fw-i  (first (keep-indexed (fn [i l] (when (str/includes? l "io.github.paintparty/fireworks") i)) lines))]
+      ;; the block, with its own elide guidance, is present
+      (is (str/includes? text ";; Example :live-code alias, which is added by the Fireworks VSCode extension."))
+      (is (str/includes? text ";; Elide Fireworks for non-dev builds -> {:jvm-opts [\"-Dfireworks.elide=true\"]}"))
+      ;; block comes right after the :aliases line (between :aliases and its {)
+      (is (str/includes? (nth lines (inc al-i)) ";; Example :live-code alias"))
+      ;; the :deps coordinate is plain — no elide comment on the line above it
+      (is (not (str/includes? (nth lines (dec fw-i)) ";; Elide")))
+      (is (not (str/includes? text ";; Elide Fireworks for non-dev builds with"))))))
+
+;; --- ensure-fireworks (standalone deps patch, no alias) -------------------
+
+(deftest ensure-fireworks-patches-when-missing
+  (testing "adds Fireworks (plain, no comment) to top-level :deps; existing aliases untouched"
+    (let [in "{:paths [\"src\"]\n :deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}\n :aliases\n {:live-code {:extra-deps {com.jakemccrary/test-refresh {:mvn/version \"0.26.0\"}}\n              :main-opts [\"-m\" \"com.jakemccrary.test-refresh\"]}}}"
+          {:keys [text changed]} (deps/ensure-fireworks in)]
+      (is (true? changed))
+      (is (str/includes? text "io.github.paintparty/fireworks"))
+      ;; no comment is inserted into the :deps map on this path
+      (is (not (str/includes? text ";; Elide")))
+      ;; the alias is left alone, and Fireworks is now on its classpath
+      (is (str/includes? text ":main-opts [\"-m\" \"com.jakemccrary.test-refresh\"]"))
       (is (:has-fireworks (deps/alias-deps-status text "live-code"))))))
 
-(deftest patch-alias-adds-main-opts-when-absent
-  (testing "deps present but no :main-opts -> :main-opts (and :extra-paths) added"
-    (let [{:keys [text added]}
-          (deps/patch-alias
-           "{:deps {io.github.paintparty/fireworks {:mvn/version \"0.21.0\"}}
-             :aliases {:dev {:extra-deps {com.jakemccrary/test-refresh {:mvn/version \"0.26.0\"}}}}}"
-           "dev")]
-      (is (some #{":main-opts"} added))
-      (is (some #{":extra-paths"} added))
-      (is (= "test-refresh" (:main-opts (deps/alias-deps-status text "dev")))))))
+(deftest ensure-fireworks-noop-when-present
+  (testing "Fireworks already a top-level dep -> unchanged"
+    (let [in "{:deps {io.github.paintparty/fireworks {:mvn/version \"0.21.0\"}}}"
+          {:keys [text changed]} (deps/ensure-fireworks in)]
+      (is (false? changed))
+      (is (= in text)))))
 
-(deftest patch-alias-unknown-alias
-  (testing "alias not found -> error"
-    (is (= {:error :unparseable} (deps/patch-alias "{:aliases {:dev {}}}" "nope")))))
+(deftest ensure-fireworks-unparseable
+  (testing "broken EDN -> error"
+    (is (= {:error :unparseable} (deps/ensure-fireworks "{:deps {")))))

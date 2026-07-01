@@ -1,15 +1,28 @@
 {:paths ["src"]
 
- ;; Fireworks is a real dependency because this project's code calls `?`.
  :deps {org.clojure/clojure            {:mvn/version "1.12.0"}
         io.github.paintparty/fireworks {:mvn/version "0.21.0"}}
 
  :aliases
- ;; Live Code runs `clojure -M:test-refresh`. test-refresh watches src/ +
- ;; test/, reloads on save (re-running top-level `?` forms) and runs tests.
- ;; Scoped to this alias so the dev tool stays out of the project's normal
- ;; dependency set.
+  ;; Example :live-code alias, which is added by the Fireworks VSCode extension.
+  
+  ;; The extension command `Fireworks: Live Code`, with `Integrated Terminal`
+  ;; selected will run: `clojure -M:live-code`.
+  
+  ;; Or, in your preferred external terminal: `clojure -M:live-code`
+  
+  ;; The `test-refresh` lib watches `src/` + `test/`, reloads on save,
+  ;; re-runs top-level `fireworks.core/?` forms) and (optionally) runs tests.
+  
+  ;; Scoped to this alias so the dev tool stays out of the project's normal
+  ;; dependency set.
+
+  ;; Elide Fireworks for non-dev builds -> {:jvm-opts ["-Dfireworks.elide=true"]}
+  ;; Separate AOT/uberjar build should also elide it this way. 
  {:live-code
-  {:extra-paths ["test"]
-   :extra-deps  {com.jakemccrary/test-refresh {:mvn/version "0.26.0"}}
-   :main-opts   ["-m" "com.jakemccrary.test-refresh"]}}}
+  {:extra-paths   ["test"]
+   :extra-deps    {com.jakemccrary/test-refresh {:mvn/version "0.26.0"}}
+   :override-deps {io.github.paintparty/fireworks {:local/root "../../../../../../fireworks"}}
+   :main-opts     ["-m" "com.jakemccrary.test-refresh"]
+   :jvm-opts      ["-Dfireworks.elide=true"]}}}
+

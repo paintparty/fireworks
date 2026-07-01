@@ -2085,9 +2085,9 @@ async function resolveWatcherCommand(root: string): Promise<WatcherPlan | undefi
 // The alias must put BOTH test-refresh and Fireworks on the `-M` classpath AND run test-refresh via
 // :main-opts, or the launch fails (no test-refresh → can't locate the main ns; no Fireworks → any ns
 // that requires fireworks.core or uses `?` fails to reload). When the chosen alias falls short, the
-// extension offers — behind a confirm modal, additively — to patch it, or (when it has a conflicting
-// :main-opts, or there are no aliases at all) to add a fresh :live-code alias. Mirrors the Leiningen
-// project.clj flow: the user still owns deps.edn; we only ever add what's missing, on confirmation.
+// extension offers — behind a confirm modal, additively — to add a fresh :live-code alias (Fireworks
+// into the top-level :deps, test-refresh into the alias). We never rewrite the user's own alias.
+// Mirrors the Leiningen project.clj flow: the user still owns deps.edn; we only ever add, on confirm.
 async function resolveDepsCommand(root: string): Promise<WatcherPlan | undefined> {
   if (!preflightClojure()) {
     return undefined;
@@ -2107,56 +2107,64 @@ async function resolveDepsCommand(root: string): Promise<WatcherPlan | undefined
   }
   diagFact('Aliases in deps.edn', ednKeywords(aliases));
 
-  // No aliases at all → offer to create a :live-code alias from scratch.
-  if (aliases.length === 0) {
-    diagStep('No :aliases in deps.edn → offer to create a :live-code alias.');
-    const created = await offerCreateLiveCodeAlias(depsPath, text, 'deps.edn has no aliases');
-    return created ? finishDepsPlan(root, created) : undefined;
-  }
+  // An alias is eligible for live coding when it runs test-refresh via :main-opts with test-refresh
+  // on its `-M` classpath. Fireworks is NOT required here: it's a project dep, so a missing Fireworks
+  // is patched into the top-level :deps on launch (below), not a reason to hide the alias. We still
+  // never rewrite the user's alias itself. Carry hasFireworks so we know whether to patch on pick.
+  type AliasItem = vscode.QuickPickItem & { alias?: string; hasFireworks?: boolean; add?: boolean };
+  const eligible: AliasItem[] = aliases.flatMap((a) => {
+    const s = cljsLib.depsAliasStatus(text, a);
+    if (s.error || !s.hasTestRefresh || s.mainOpts !== 'test-refresh') return [];
+    return [{ label: `:${a}`, alias: a, hasFireworks: !!s.hasFireworks }];
+  });
+  diagFact('Live-coding-eligible aliases', eligible.length ? ednKeywords(eligible.map((i) => i.alias!)) : 'none');
 
-  const pick = await vscode.window.showQuickPick(
-    aliases.map((a) => ({ label: `:${a}`, alias: a })),
-    { placeHolder: 'Select the deps.edn alias to run (must include test-refresh + Fireworks)' },
-  );
+  // When none qualify, the picker shows a single "add an alias" choice instead of eligible aliases.
+  const ADD_LABEL = 'Add a :live-code alias to :aliases';
+  const items: AliasItem[] = eligible.length ? eligible : [{ label: ADD_LABEL, add: true }];
+  const pick = await vscode.window.showQuickPick(items, {
+    placeHolder: eligible.length
+      ? 'Select the deps.edn alias to run'
+      : 'No alias is wired for live coding',
+  });
   if (!pick) {
     diagFact('Chosen alias', null);
-    diagStep(`Alias pick dismissed (${aliases.length} offered).`);
+    diagStep('Alias pick dismissed.');
     return undefined;
   }
-  const alias = pick.alias;
-  diagFact('Chosen alias', `:${alias}`);
 
-  const status = cljsLib.depsAliasStatus(text, alias);
-  if (status.error) {
-    diagFact('alias dep check', `skipped (${status.error})`);
-    diagStep('Could not analyze the alias deps → proceed without the check.');
-    return finishDepsPlan(root, alias);
-  }
-  const hasTR = !!status.hasTestRefresh;
-  const hasFW = !!status.hasFireworks;
-  const mainOpts = status.mainOpts ?? 'none';
-  diagFact('alias pulls in test-refresh?', hasTR);
-  diagFact('alias pulls in Fireworks?', hasFW);
-  diagFact('alias :main-opts', mainOpts);
-  if (hasTR && hasFW && mainOpts === 'test-refresh') {
-    diagStep(`Alias :${alias} already runs test-refresh with both deps → use as-is.`);
-    return finishDepsPlan(root, alias);
-  }
-  // A different :main-opts (a real -m to some other ns) means patching would hijack the user's
-  // alias — offer a fresh :live-code alias instead of rewriting theirs.
-  if (mainOpts === 'other') {
-    diagStep(`Alias :${alias} has a non-test-refresh :main-opts → offer a fresh :live-code alias.`);
-    const created = await offerCreateLiveCodeAlias(
-      depsPath,
-      text,
-      `the :${alias} alias already runs a different :main-opts`,
-    );
+  // The "add an alias" choice → additively add a fresh :live-code alias (+ top-level Fireworks).
+  if (pick.add) {
+    diagStep('User chose to add a :live-code alias → write the deps.edn edit.');
+    const created = createLiveCodeAlias(depsPath, text);
     return created ? finishDepsPlan(root, created) : undefined;
   }
-  // Otherwise the alias just needs the missing deps / :main-opts / :extra-paths → offer to patch.
-  diagStep(`Alias :${alias} is missing test-refresh/Fireworks wiring → offer to patch it.`);
-  const patched = await offerPatchAlias(depsPath, text, alias);
-  return patched ? finishDepsPlan(root, alias) : undefined;
+
+  // An eligible alias is ready to run — but if Fireworks isn't on its classpath, patch it into the
+  // top-level :deps first (no modal: the user picked this alias from the list).
+  const alias = pick.alias as string;
+  diagFact('Chosen alias', `:${alias}`);
+  if (!pick.hasFireworks && !ensureFireworksDep(depsPath, text)) {
+    return undefined;
+  }
+  diagStep(`Alias :${alias} runs test-refresh → use as-is.`);
+  return finishDepsPlan(root, alias);
+}
+
+// Patch the Fireworks coordinate into the top-level :deps (with the elide comment) when an otherwise
+// eligible alias's classpath lacks it. No modal — the user already chose this alias. Returns true to
+// proceed (patched, or nothing to do), false on an edit/write failure.
+function ensureFireworksDep(depsPath: string, text: string): boolean {
+  const r = cljsLib.depsEnsureFireworks(text);
+  if (r.error || r.text === undefined) {
+    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(depsPath)}.`);
+    return false;
+  }
+  if (!r.changed) return true;
+  if (!writeDepsEdn(depsPath, r.text)) return false;
+  diagFact('deps.edn edit', 'added Fireworks to top-level :deps');
+  diagStep('Patched deps.edn: added Fireworks to the top-level :deps.');
+  return true;
 }
 
 // Common tail once an alias is settled (chosen-and-ready, patched, or freshly created): ensure a
@@ -2167,24 +2175,13 @@ function finishDepsPlan(root: string, alias: string): WatcherPlan {
   return { command: aliasCommand(alias), testRefresh };
 }
 
-// Offer to add a self-contained :live-code alias to deps.edn (confirm modal, additive). Returns the
-// alias name to run on success, undefined if declined (guidance shown) or the edit failed.
-async function offerCreateLiveCodeAlias(
-  depsPath: string,
-  text: string,
-  reason: string,
-): Promise<string | undefined> {
+// Add a self-contained :live-code alias to deps.edn (+ top-level Fireworks with the elide comment).
+// No modal — the user chose "Add a :live-code alias" from the picker. Returns the alias name to run
+// on success, undefined on an edit/write failure.
+function createLiveCodeAlias(depsPath: string, text: string): string | undefined {
   const r = cljsLib.depsAddLiveCodeAlias(text);
   if (r.error || r.text === undefined || !r.alias) {
     vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(depsPath)}.`);
-    return undefined;
-  }
-  const ok = await confirmDepsEdnWrite(
-    `Fireworks will add a :${r.alias} alias (test-refresh + Fireworks) to deps.edn — ${reason}.`,
-  );
-  if (!ok) {
-    diagStep('User declined the deps.edn write → guidance, abort.');
-    await showGuidance('deps-alias-deps', { alias: r.alias, missing: 'test-refresh and Fireworks' });
     return undefined;
   }
   if (!writeDepsEdn(depsPath, r.text)) {
@@ -2193,45 +2190,6 @@ async function offerCreateLiveCodeAlias(
   diagFact('deps.edn edit', `added :${r.alias} alias`);
   diagStep(`Wrote a :${r.alias} alias to deps.edn.`);
   return r.alias;
-}
-
-// Offer to additively patch an existing alias's :extra-deps / :main-opts / :extra-paths (confirm
-// modal). Returns true to proceed with the launch, false if declined (guidance shown) or failed.
-async function offerPatchAlias(depsPath: string, text: string, alias: string): Promise<boolean> {
-  const r = cljsLib.depsPatchAlias(text, alias);
-  if (r.error || r.text === undefined) {
-    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(depsPath)}.`);
-    return false;
-  }
-  if (!r.changed) {
-    return true; // nothing to add (defensive; shouldn't happen on the not-ready path)
-  }
-  const added = (r.added ?? []).join(', ');
-  const ok = await confirmDepsEdnWrite(
-    `Fireworks will add ${added} to the :${alias} alias in deps.edn.`,
-  );
-  if (!ok) {
-    diagStep('User declined the deps.edn patch → guidance, abort.');
-    await showGuidance('deps-alias-deps', { alias, missing: added });
-    return false;
-  }
-  if (!writeDepsEdn(depsPath, r.text)) {
-    return false;
-  }
-  diagFact('deps.edn edit', `patched :${alias} (${added})`);
-  diagStep(`Patched :${alias} in deps.edn: added ${added}.`);
-  return true;
-}
-
-// Confirm a deps.edn edit. Modal so it can't be missed; mirrors confirmProjectCljWrite.
-async function confirmDepsEdnWrite(detail: string): Promise<boolean> {
-  const confirm = 'Edit deps.edn';
-  const pick = await vscode.window.showInformationMessage(
-    'Fireworks: Live Code wants to edit deps.edn',
-    { modal: true, detail },
-    confirm,
-  );
-  return pick === confirm;
 }
 
 function writeDepsEdn(depsPath: string, text: string): boolean {

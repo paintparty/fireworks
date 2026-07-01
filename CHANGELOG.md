@@ -4,6 +4,13 @@
 For a list of breaking changes, check [here](#breaking-changes)
 
 <br>
+
+## 0.21.1
+2026-7-01
+
+#### Added
+- Add elision (for release builds) to `?` and `?flop` based on `System/getProperty` and `System/getenv`.
+
 <br>
 
 ## 0.21.0
@@ -16,6 +23,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Make leading option flags composable [#133](https://github.com/paintparty/fireworks/issues/133)
 - Print anonymous functions with provided gensym-based name [#131](https://github.com/paintparty/fireworks/issues/131)
 - Use quoted syntax for colls [#129](https://github.com/paintparty/fireworks/issues/129)
+
 
 
 ## 0.20.0

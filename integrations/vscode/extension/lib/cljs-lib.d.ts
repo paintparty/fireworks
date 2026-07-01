@@ -143,21 +143,22 @@ export interface AddAliasResult {
   error?: string; // "unparseable"
 }
 
-// Add a self-contained live-coding alias (test-refresh + Fireworks in :extra-deps, plus :main-opts
-// and :extra-paths) to deps.edn text. Creates the :aliases map if absent. Additive; prompt-then-write.
+// Add a fresh live-coding alias: Fireworks into the top-level :deps (appended, or a :deps map
+// created if absent — skipped when already present), test-refresh + :main-opts + :extra-paths into a
+// new :aliases entry. Creates the :aliases map if absent; existing aliases are never touched. Names
+// it :live-code, or :fireworks-live-code if taken. Additive; prompt-then-write.
 export function depsAddLiveCodeAlias(text: string): AddAliasResult;
 
-export interface PatchAliasResult {
-  text?: string; // new deps.edn text on success
-  changed?: boolean; // false when nothing needed adding
-  added?: string[]; // what was added (coordinates, ":main-opts", ":extra-paths") — for the modal
-  error?: string; // "unparseable" (also when the alias isn't found)
+export interface EnsureFireworksResult {
+  text?: string; // deps.edn text with Fireworks in the top-level :deps (unchanged if already present)
+  changed?: boolean; // false when Fireworks was already a top-level dep
+  error?: string; // "unparseable"
 }
 
-// Additively fix an existing alias so `-M:<alias>` runs test-refresh + Fireworks: add whichever dep
-// is missing to its :extra-deps, add :main-opts / :extra-paths if absent. Never touches an existing
-// value (a pinned version, the user's :main-opts). Additive; prompt-then-write.
-export function depsPatchAlias(text: string, alias: string): PatchAliasResult;
+// Ensure the top-level :deps carries the Fireworks coordinate (with the elide comment above it) —
+// used to patch an eligible alias's project deps before launch. Additive; the file is written
+// without a modal (the user picked the alias from the list).
+export function depsEnsureFireworks(text: string): EnsureFireworksResult;
 
 export interface TasksResult {
   tasks?: string[]; // task names (symbol keys under :tasks), in bb.edn order; [] if none

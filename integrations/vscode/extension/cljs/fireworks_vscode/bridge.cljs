@@ -103,21 +103,23 @@
            :hasFireworks   (:has-fireworks r)
            :mainOpts       (:main-opts r)})))
 
-;; Add a self-contained :live-code alias (test-refresh + Fireworks + :main-opts) to deps.edn `text`.
-;; #js {:text ... :alias name :changed bool} on success; #js {:error "unparseable"} on a parse error.
+;; Add a fresh :live-code alias to deps.edn `text`: Fireworks into the top-level :deps, test-refresh
+;; + :main-opts into the alias. #js {:text ... :alias name :changed bool} on success;
+;; #js {:error "unparseable"} on a parse error.
 (defn deps-add-live-code-alias [text]
   (let [r (deps/add-live-code-alias text)]
     (if (:error r)
       #js {:error "unparseable"}
       #js {:text (:text r) :alias (:alias r) :changed (:changed r)})))
 
-;; Additively patch an existing alias's :extra-deps / :main-opts / :extra-paths with what's missing.
-;; #js {:text ... :changed bool :added [...]} on success; #js {:error "unparseable"} on a parse error.
-(defn deps-patch-alias [text alias]
-  (let [r (deps/patch-alias text alias)]
+;; Ensure the top-level :deps carries the Fireworks coordinate (with the elide comment above it),
+;; used to patch an eligible alias's project deps before launch. #js {:text ... :changed bool} on
+;; success (:changed false when already present); #js {:error "unparseable"} on a parse error.
+(defn deps-ensure-fireworks [text]
+  (let [r (deps/ensure-fireworks text)]
     (if (:error r)
       #js {:error "unparseable"}
-      #js {:text (:text r) :changed (:changed r) :added (clj->js (:added r))})))
+      #js {:text (:text r) :changed (:changed r)})))
 
 ;; The task names defined under :tasks in a bb.edn string, for the Live Code picker
 ;; (Babashka projects). #js {:tasks [...]} on success (possibly empty);
