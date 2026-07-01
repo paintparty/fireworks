@@ -1393,263 +1393,277 @@
     :no-label
     :perf})
 
+#?(:clj
+   (defn- elide?
+     []
+     (or (= "true" (System/getProperty "fireworks.elide"))
+         (= "true" (System/getenv "FIREWORKS_ELIDE")))))
+
 (defmacro ?
   [& args]
-  (cond
-    (= 0 (count args))
-    nil
+  (if (elide?)
+    (last args)
+    (cond
+      (= 0 (count args))
+      nil
 
-    (= 1 (count args))
-    (let [[x]
-          args
+      (= 1 (count args))
+      (let [[x]
+            args
 
-          {:keys [cfg-opts defd]}
-          (helper2 {:x         x
-                    :template  [:form-or-label :file-info :result]
-                    :&form     &form
-                    :form-meta (meta &form)})]
-      `(do
-         (when ~defd ~x)
-         (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                            (if ~defd (cast-var ~defd ~cfg-opts) ~x))))
+            {:keys [cfg-opts defd]}
+            (helper2 {:x         x
+                      :template  [:form-or-label :file-info :result]
+                      :&form     &form
+                      :form-meta (meta &form)})]
+        `(do
+           (when ~defd ~x)
+           (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                              (if ~defd (cast-var ~defd ~cfg-opts) ~x))))
 
-    :else
-    (let [args                   (into [] args)
-          x                      (peek args)
-          ;;  debug?                 (= x :foo)
-          mods                   (pop args)
-          single-mod?            (= 1 (count mods))
-          last-mod               (peek mods)
-          supplied-user-opts     (when (map? last-mod) last-mod)
-          mods                   (if supplied-user-opts
-                                   (pop mods)
-                                   mods)
-          flags                  (into #{} (filter keyword? mods))
-          label                  (when (seq mods)
-                                   (or
-                                    ;; The first mod that is not a keyword 
-                                    (first (filter #(not (keyword? %)) mods))
-                                    ;; Only one mod and it is not a known flag
-                                    ;; e.g. (? :wtf (+ 1 1))
-                                    (when (= 1 (count mods))
-                                      (let [label (nth mods 0)]
-                                        (when-not (contains? all-flags label)
-                                          label)))
-                                    ;; explicit :label option 
-                                    ;; e.g. (? {:label "hi"} (+ 1 1))
-                                    (some-> supplied-user-opts :label)))
+      :else
+      (let [args                   (into [] args)
+            x                      (peek args)
+            ;;  debug?                 (= x :foo)
+            mods                   (pop args)
+            single-mod?            (= 1 (count mods))
+            last-mod               (peek mods)
+            supplied-user-opts     (when (map? last-mod) last-mod)
+            mods                   (if supplied-user-opts
+                                     (pop mods)
+                                     mods)
+            flags                  (into #{} (filter keyword? mods))
+            label                  (when (seq mods)
+                                     (or
+                                      ;; The first mod that is not a keyword 
+                                      (first (filter #(not (keyword? %)) mods))
+                                      ;; Only one mod and it is not a known flag
+                                      ;; e.g. (? :wtf (+ 1 1))
+                                      (when (= 1 (count mods))
+                                        (let [label (nth mods 0)]
+                                          (when-not (contains? all-flags label)
+                                            label)))
+                                      ;; explicit :label option 
+                                      ;; e.g. (? {:label "hi"} (+ 1 1))
+                                      (some-> supplied-user-opts :label)))
 
-          ;; Sanity check
-          ;; _ (when (= x :fooo) 
-          ;;     (?pp supplied-user-opts)
-          ;;     (?pp mods)
-          ;;     (?pp label))
+            ;; Sanity check
+            ;; _ (when (= x :fooo) 
+            ;;     (?pp supplied-user-opts)
+            ;;     (?pp mods)
+            ;;     (?pp label))
+            
+            just-results-flag?     (contains? flags :-)
+            resolve-option         (fn resolve-option [flag-kw opts-kw pred]
+                                     (or (contains? flags flag-kw)
+                                         (some-> supplied-user-opts
+                                                 opts-kw
+                                                 pred)))
+            display-file-info?     (if (or just-results-flag?
+                                           (resolve-option :no-file
+                                                           :display-file-info?
+                                                           false?))
+                                     false
+                                     (get @state/config :display-file-info?))
+            display-label-or-form? (if (or just-results-flag?
+                                           (resolve-option :no-label
+                                                           :display-label-or-form?
+                                                           false?))
+                                     false
+                                     (get @state/config :display-label-or-form?))
+            just-results?          (or just-results-flag?
+                                       (and (false? display-label-or-form?)
+                                            (false? display-file-info?)))
 
-          just-results-flag?     (contains? flags :-)
-          resolve-option         (fn resolve-option [flag-kw opts-kw pred]
-                                   (or (contains? flags flag-kw)
-                                       (some-> supplied-user-opts
-                                               opts-kw
-                                               pred)))
-          display-file-info?     (if (or just-results-flag?
-                                         (resolve-option :no-file
-                                                         :display-file-info?
-                                                         false?))
-                                   false
-                                   (get @state/config :display-file-info?))
-          display-label-or-form? (if (or just-results-flag?
-                                         (resolve-option :no-label
-                                                         :display-label-or-form?
-                                                         false?))
-                                   false
-                                   (get @state/config :display-label-or-form?))
-          just-results?          (or just-results-flag?
-                                     (and (false? display-label-or-form?)
-                                          (false? display-file-info?)))
+            truncate?              (if (resolve-option :+ :truncate? false?)
+                                     false
+                                     (get @state/config :truncate?))
+            print-with             (cond
+                                     (contains? flags :pp)
+                                     pprint
+                                     (contains? flags :println)
+                                     println
+                                     (contains? flags :print)
+                                     print
+                                     (contains? flags :prn)
+                                     prn
+                                     :else
+                                     (let [f (:print-with supplied-user-opts)]
+                                       (when (fn? f) f)))
+            log?                   (if (or (resolve-option :log :log? true?)
+                                           (and just-results? print-with))
+                                     true
+                                     false)
+            trace?                 (if (resolve-option :trace :trace? true?)
+                                     true
+                                     false)
+            perf?                  (if (resolve-option :perf :perf? true?)
+                                     true
+                                     false)
+            data?                  (if (resolve-option :data :data? true?)
+                                     true
+                                     false)
+            template               (:template supplied-user-opts)
 
-          truncate?              (if (resolve-option :+ :truncate? false?)
-                                   false
-                                   (get @state/config :truncate?))
-          print-with             (cond
-                                   (contains? flags :pp)
-                                   pprint
-                                   (contains? flags :println)
-                                   println
-                                   (contains? flags :print)
-                                   print
-                                   (contains? flags :prn)
-                                   prn
-                                   :else
-                                   (let [f (:print-with supplied-user-opts)]
-                                     (when (fn? f) f)))
-          log?                   (if (or (resolve-option :log :log? true?)
-                                         (and just-results? print-with))
-                                   true
-                                   false)
-          trace?                 (if (resolve-option :trace :trace? true?)
-                                   true
-                                   false)
-          perf?                  (if (resolve-option :perf :perf? true?)
-                                   true
-                                   false)
-          data?                  (if (resolve-option :data :data? true?)
-                                   true
-                                   false)
-          template               (:template supplied-user-opts)
+            supplied-user-opts-with-flag-overrides
+            (assoc supplied-user-opts
+                   :display-file-info? display-file-info?
+                   :display-label-or-form? display-label-or-form?
+                   :truncate? truncate?)
 
-          supplied-user-opts-with-flag-overrides
-          (assoc supplied-user-opts
-                 :display-file-info? display-file-info?
-                 :display-label-or-form? display-label-or-form?
-                 :truncate? truncate?)
+            template
+            (or (when (some->> template
+                               (contains? #{[:file-info :form-or-label :result]
+                                            [:file-info :result]
+                                            [:result]}))
+                  template)
+                (cond
+                  just-results?
+                  [:result]
+                  (false? display-label-or-form?)
+                  [:file-info :result]
+                  (false? display-file-info?)
+                  [:form-or-label :result]
+                  :else
+                  [:file-info :form-or-label :result]))
 
-          template
-          (or (when (some->> template
-                             (contains? #{[:file-info :form-or-label :result]
-                                          [:file-info :result]
-                                          [:result]}))
-                template)
-              (cond
-                just-results?
-                [:result]
-                (false? display-label-or-form?)
-                [:file-info :result]
-                (false? display-file-info?)
-                [:form-or-label :result]
-                :else
-                [:file-info :form-or-label :result]))
+            tracing-form
+            (when trace?
+              (or (first (filter threading-form? &form))
+                  (first (filter let-form? &form))))
 
-          tracing-form
-          (when trace?
-            (or (first (filter threading-form? &form))
-                (first (filter let-form? &form))))
+            [sym]
+            tracing-form
 
-          [sym]
-          tracing-form
+            [thread-sym & rest-of-threading-form]
+            (when-not (= sym 'let) tracing-form)
 
-          [thread-sym & rest-of-threading-form]
-          (when-not (= sym 'let) tracing-form)
+            [_ let-bindings]
+            (when (= sym 'let) tracing-form)
 
-          [_ let-bindings]
-          (when (= sym 'let) tracing-form)
+            let-bindings
+            (some-> let-bindings cc-destructure)
 
-          let-bindings
-          (some-> let-bindings cc-destructure)
+            trace+valid-trace-form?
+            (when trace?
+              (when (some->> sym (contains? #{'-> '->> 'some-> 'some->> 'let}))
+                true))]
 
+        (cond
+          ;; Special handling for tracing a threading form
           trace+valid-trace-form?
-          (when trace?
-            (when (some->> sym (contains? #{'-> '->> 'some-> 'some->> 'let}))
-              true))]
+          (let [form-meta (meta &form)
+                ns-str    (some-> *ns* ns-name str)
+                bindings? (boolean let-bindings)
+                as-let    (if bindings?
+                            (prep-bindings let-bindings supplied-user-opts)
+                            (as-let* &env
+                                     thread-sym
+                                     rest-of-threading-form
+                                     supplied-user-opts))]
 
-      (cond
-         ;; Special handling for tracing a threading form
-        trace+valid-trace-form?
-        (let [form-meta (meta &form)
-              ns-str    (some-> *ns* ns-name str)
-              bindings? (boolean let-bindings)
-              as-let    (if bindings?
-                          (prep-bindings let-bindings supplied-user-opts)
-                          (as-let* &env
-                                   thread-sym
-                                   rest-of-threading-form
-                                   supplied-user-opts))]
+            `(do
+               (fireworks.core/_p2
+                {:form-meta ~form-meta
+                 :ns-str    ~ns-str
+                 :qf        (quote ~tracing-form)
+                 :template  [:file-info :form-or-label :result]}
+                (symbol (str "\n  "
+                             (if ~bindings?
+                               "let bindings"
+                               (str "tracing "
+                                    (quote ~thread-sym))))))
+               ~as-let
+               (println)
+               (fireworks.core/_p2 {:template  [:result]
+                                    :user-opts {:margin-bottom 1}}
+                                   ~x)
+               ~x))
 
-          `(do
-             (fireworks.core/_p2
-              {:form-meta ~form-meta
-               :ns-str    ~ns-str
-               :qf        (quote ~tracing-form)
-               :template  [:file-info :form-or-label :result]}
-              (symbol (str "\n  "
-                           (if ~bindings?
-                             "let bindings"
-                             (str "tracing "
-                                  (quote ~thread-sym))))))
-             ~as-let
-             (println)
-             (fireworks.core/_p2 {:template  [:result]
-                                  :user-opts {:margin-bottom 1}}
-                                 ~x)
-             ~x))
+          ;; No file-info or label annotation and user wants default printing fn 
+          log?
+          `(do #?(:cljs (if node?
+                          (fireworks.core/pprint ~x)
+                          (js/console.log ~x))
+                  :clj (fireworks.core/pprint ~x))
+               ~x)
 
-         ;; No file-info or label annotation and user wants default printing fn 
-        log?
-        `(do #?(:cljs (if node?
-                        (fireworks.core/pprint ~x)
-                        (js/console.log ~x))
-                :clj (fireworks.core/pprint ~x))
-             ~x)
+          ;; No file-info or label annotation and user has supplied printing fn
+          (and just-results? print-with)
+          `(do (print-with ~x) ~x)
 
-         ;; No file-info or label annotation and user has supplied printing fn
-        (and just-results? print-with)
-        `(do (print-with ~x) ~x)
+          :else
+          (let [{:keys [log?* defd qf-nil? cfg-opts]}
+                (let [defd           (defd x)
+                      log?*          (or log? (contains? #{pprint} print-with))
+                      quoted-fw-form (if just-results?
+                                       (list 'quote nil)
+                                       (list 'quote &form))
+                      ;; what this for?
+                      fw-fnsym       (when-not just-results?
+                                       "fireworks.core/?")
+                      ;; maybe always include?
+                      form-meta      (when-not just-results? (meta &form))
+                      qf-nil?        (false? display-label-or-form?)
+                      user-opts      (merge @state/config-overrides
+                                            supplied-user-opts-with-flag-overrides)
+                      cfg-opts       (cond->
+                                      {:label          label
+                                       :template       template
+                                       :ns-str         (some-> *ns* ns-name str)
+                                       :user-opts      user-opts
+                                       :quoted-fw-form quoted-fw-form
+                                       :fw-fnsym       fw-fnsym}
 
-        :else
-        (let [{:keys [log?* defd qf-nil? cfg-opts]}
-              (let [defd           (defd x)
-                    log?*          (or log? (contains? #{pprint} print-with))
-                    quoted-fw-form (if just-results?
-                                     (list 'quote nil)
-                                     (list 'quote &form))
-                     ;; what this for?
-                    fw-fnsym       (when-not just-results?
-                                     "fireworks.core/?")
-                     ;; maybe always include?
-                    form-meta      (when-not just-results? (meta &form))
-                    qf-nil?        (false? display-label-or-form?)
-                    user-opts      (merge @state/config-overrides
-                                          supplied-user-opts-with-flag-overrides)
-                    cfg-opts       (cond->
-                                    {:label          label
-                                     :template       template
-                                     :ns-str         (some-> *ns* ns-name str)
-                                     :user-opts      user-opts
-                                     :quoted-fw-form quoted-fw-form
-                                     :fw-fnsym       fw-fnsym}
+                                       (false? truncate?)
+                                       (assoc :truncate? false)
 
-                                     (false? truncate?)
-                                     (assoc :truncate? false)
+                                       form-meta
+                                       (assoc :form-meta form-meta)
 
-                                     form-meta
-                                     (assoc :form-meta form-meta)
+                                       log?*
+                                       (assoc :log? log?* :fw/log? log?*)
 
-                                     log?*
-                                     (assoc :log? log?* :fw/log? log?*)
+                                       data?
+                                       (assoc :p-data? true))]
 
-                                     data?
-                                     (assoc :p-data? true))]
+                  (keyed [defd x qf-nil? cfg-opts log?*]))]
 
-                (keyed [defd x qf-nil? cfg-opts log?*]))]
-
-           ;;  #_(ff "?, 2-arity, cfg-opts" cfg-opts)
-          `(let [perf#     (when ~perf?
-                             (fireworks.core/perf-label (fn [] ~x)))
-                 cfg-opts# (assoc ~cfg-opts
-                                  :qf
-                                  (if ~qf-nil? nil (quote ~x))
-                                  :perf
-                                  perf#)
-                 ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)]
-             (when ~defd ~x)
-             (if ~log?*
-               (do
-                 (fireworks.core/_p2 cfg-opts# ret#)
-                 ((if ~log?
-                    fireworks.core/_log
-                    fireworks.core/_pp)
-                  ~cfg-opts
-                  (if ~defd (cast-var ~defd ~cfg-opts) ~x)))
-               (fireworks.core/_p2 cfg-opts# ret#))))))))
+            ;;  #_(ff "?, 2-arity, cfg-opts" cfg-opts)
+            `(let [perf#     (when ~perf?
+                               (fireworks.core/perf-label (fn [] ~x)))
+                   cfg-opts# (assoc ~cfg-opts
+                                    :qf
+                                    (if ~qf-nil? nil (quote ~x))
+                                    :perf
+                                    perf#)
+                   ret#      (if ~defd (cast-var ~defd ~cfg-opts) ~x)]
+               (when ~defd ~x)
+               (if ~log?*
+                 (do
+                   (fireworks.core/_p2 cfg-opts# ret#)
+                   ((if ~log?
+                      fireworks.core/_log
+                      fireworks.core/_pp)
+                    ~cfg-opts
+                    (if ~defd (cast-var ~defd ~cfg-opts) ~x)))
+                 (fireworks.core/_p2 cfg-opts# ret#)))))))))
 
 
 ;; TODO - Add to docs/readme
 (defmacro ^{:public true} ?flop
   "Prints the form (or user-supplied label), the namespace info,
    and then the value. Same as fireworks.core/?, but order of arguments
-   is reversed in the case of 2 arities. Inteded for use both 
-   internal to fireworks (tracing macros), and also for users wanting
+   is reversed in the case of a call that is exactly 2 args. Intended for use
+   both internal to fireworks (tracing macros), and also for users wanting
    to drop a `?` call into a thread-first form and also pass an options
-   map.
+   map, or a label:
+   ```clojure
+   (-> \"foo\nbar\"
+       str/split-lines
+       (?flop \"split on nl\")
+       count)
+   ```
    
    The form (or optional label) is formatted with pprint.
    The value is formatted with fireworks.core/_p.
@@ -1663,28 +1677,32 @@
   ([])
 
   ([x]
-   (let [{:keys [cfg-opts defd]}
-         (helper2 {:x         x
-                   :template  [:form-or-label :file-info :result]
-                   :&form     &form
-                   :form-meta (meta &form)})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
-                           (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))
+   (if (elide?)
+     x
+     (let [{:keys [cfg-opts defd]}
+           (helper2 {:x         x
+                     :template  [:form-or-label :file-info :result]
+                     :&form     &form
+                     :form-meta (meta &form)})]
+       `(do 
+          (when ~defd ~x)
+          (fireworks.core/_p (assoc ~cfg-opts :qf (quote ~x))
+                             (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
 
   ([x a]
-   (let [{:keys [cfg-opts defd]}   
-         (helper2 {:a         a
-                   :template  [:form-or-label :file-info :result]
-                   :x         x
-                   :&form     &form
-                   :form-meta (meta &form)})]
-     `(do 
-        (when ~defd ~x)
-        (fireworks.core/_p ~a
-                           (assoc ~cfg-opts :qf (quote ~x))
-                           (if ~defd (cast-var ~defd ~cfg-opts) ~x))))))
+   (if (elide?) 
+     x
+     (let [{:keys [cfg-opts defd]}   
+           (helper2 {:a         a
+                     :template  [:form-or-label :file-info :result]
+                     :x         x
+                     :&form     &form
+                     :form-meta (meta &form)})]
+       `(do 
+          (when ~defd ~x)
+          (fireworks.core/_p ~a
+                             (assoc ~cfg-opts :qf (quote ~x))
+                             (if ~defd (cast-var ~defd ~cfg-opts) ~x)))))))
 
 
 
@@ -1694,15 +1712,13 @@
   `~x)
 
 (defmacro !?
-  ([])
-  ([x] `~x)
-  ([_ x] `~x)
-  ([_ _ x] `~x))
+  ([& args]
+   (last args)))
 
 (defmacro !?flop
   ([])
-  ([x] `~x)
-  ([x _] `~x))
+  ([x] x)
+  ([x _] x))
 
                                                                                                                      
 ;; PPPPPPPPPPPPPPPPP   PPPPPPPPPPPPPPPPP   
