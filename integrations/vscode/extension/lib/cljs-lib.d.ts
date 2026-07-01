@@ -124,6 +124,41 @@ export interface AliasesResult {
 // pulls in test-refresh + Fireworks, and the watcher runs `clojure -M:<alias>`.
 export function depsAliases(text: string): AliasesResult;
 
+export interface AliasDepsStatus {
+  hasTestRefresh?: boolean; // the -M classpath (project :deps + alias deps) carries test-refresh
+  hasFireworks?: boolean; // …and Fireworks
+  mainOpts?: 'none' | 'test-refresh' | 'other'; // what the alias's :main-opts do
+  error?: string; // "unparseable" when the deps.edn text won't parse
+}
+
+// Whether the chosen alias will put test-refresh + Fireworks on the `clojure -M:<alias>` classpath
+// (project :deps merged with the alias's :extra-deps/:replace-deps/:override-deps/:deps), and what
+// its :main-opts do. Matched by artifact name, so version and mvn/git/local form don't matter.
+export function depsAliasStatus(text: string, alias: string): AliasDepsStatus;
+
+export interface AddAliasResult {
+  text?: string; // new deps.edn text on success
+  alias?: string; // the alias name added ("live-code", or "fireworks-live-code" if taken)
+  changed?: boolean;
+  error?: string; // "unparseable"
+}
+
+// Add a self-contained live-coding alias (test-refresh + Fireworks in :extra-deps, plus :main-opts
+// and :extra-paths) to deps.edn text. Creates the :aliases map if absent. Additive; prompt-then-write.
+export function depsAddLiveCodeAlias(text: string): AddAliasResult;
+
+export interface PatchAliasResult {
+  text?: string; // new deps.edn text on success
+  changed?: boolean; // false when nothing needed adding
+  added?: string[]; // what was added (coordinates, ":main-opts", ":extra-paths") — for the modal
+  error?: string; // "unparseable" (also when the alias isn't found)
+}
+
+// Additively fix an existing alias so `-M:<alias>` runs test-refresh + Fireworks: add whichever dep
+// is missing to its :extra-deps, add :main-opts / :extra-paths if absent. Never touches an existing
+// value (a pinned version, the user's :main-opts). Additive; prompt-then-write.
+export function depsPatchAlias(text: string, alias: string): PatchAliasResult;
+
 export interface TasksResult {
   tasks?: string[]; // task names (symbol keys under :tasks), in bb.edn order; [] if none
   error?: string; // "unparseable" when the bb.edn text won't parse
@@ -206,6 +241,15 @@ export interface LeinProfilesResult {
 // Read the profile names from a project.clj string, splitting eligible (carries the
 // coordinate) from all. {all:[], eligible:[]} when there is no :profiles entry.
 export function leinProfiles(text: string): LeinProfilesResult;
+
+export interface LeinFireworksStatus {
+  hasFireworks?: boolean; // a Fireworks dep in the top-level or any profile :dependencies
+  error?: string; // "unparseable"
+}
+
+// Whether project.clj carries a Fireworks dependency (top-level :dependencies or any profile's),
+// matched by artifact name. Live Code needs it so namespaces that call `?` can reload.
+export function leinFireworksStatus(text: string): LeinFireworksStatus;
 
 export interface ChangedTextResult {
   text?: string; // new project.clj text on success

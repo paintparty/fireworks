@@ -92,6 +92,33 @@
   (let [r (deps/alias-names text)]
     (if (nil? r) #js {:error "unparseable"} #js {:aliases (clj->js r)})))
 
+;; Whether a chosen deps.edn alias will put test-refresh + Fireworks on the `-M` classpath, plus
+;; what its :main-opts do. #js {:hasTestRefresh bool :hasFireworks bool :mainOpts "none|test-refresh
+;; |other"} on success; #js {:error "unparseable"} when the deps.edn won't parse.
+(defn deps-alias-status [text alias]
+  (let [r (deps/alias-deps-status text alias)]
+    (if (nil? r)
+      #js {:error "unparseable"}
+      #js {:hasTestRefresh (:has-test-refresh r)
+           :hasFireworks   (:has-fireworks r)
+           :mainOpts       (:main-opts r)})))
+
+;; Add a self-contained :live-code alias (test-refresh + Fireworks + :main-opts) to deps.edn `text`.
+;; #js {:text ... :alias name :changed bool} on success; #js {:error "unparseable"} on a parse error.
+(defn deps-add-live-code-alias [text]
+  (let [r (deps/add-live-code-alias text)]
+    (if (:error r)
+      #js {:error "unparseable"}
+      #js {:text (:text r) :alias (:alias r) :changed (:changed r)})))
+
+;; Additively patch an existing alias's :extra-deps / :main-opts / :extra-paths with what's missing.
+;; #js {:text ... :changed bool :added [...]} on success; #js {:error "unparseable"} on a parse error.
+(defn deps-patch-alias [text alias]
+  (let [r (deps/patch-alias text alias)]
+    (if (:error r)
+      #js {:error "unparseable"}
+      #js {:text (:text r) :changed (:changed r) :added (clj->js (:added r))})))
+
 ;; The task names defined under :tasks in a bb.edn string, for the Live Code picker
 ;; (Babashka projects). #js {:tasks [...]} on success (possibly empty);
 ;; #js {:error "unparseable"} when the bb.edn won't parse.
@@ -150,6 +177,12 @@
     (if (error? r)
       (err->js r)
       #js {:all (clj->js (:all r)) :eligible (clj->js (:eligible r))})))
+
+;; Whether project.clj `text` carries a Fireworks dependency (top-level or any profile
+;; :dependencies). #js {:hasFireworks bool} on success; #js {:error "unparseable"} on a parse error.
+(defn lein-fireworks-status [text]
+  (let [r (lein/fireworks-dep-status text)]
+    (if (error? r) (err->js r) #js {:hasFireworks (:has-fireworks r)})))
 
 ;; Ensure the exact coordinate in `profile`'s :plugins vector in project.clj `text`.
 ;; #js {:text ... :changed bool} on success; #js {:error "unparseable"} when it won't parse.

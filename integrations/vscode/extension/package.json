@@ -41,6 +41,7 @@
       { "command": "fireworks.toggleInlineResults", "title": "Toggle Inline Results", "category": "Fireworks" },
       { "command": "fireworks.clearInlineResults", "title": "Clear Inline Results", "category": "Fireworks" },
       { "command": "fireworks.startLiveCoding", "title": "Live Code (Start)", "category": "Fireworks" },
+      { "command": "fireworks.preflightLiveCoding", "title": "Live Code (Preflight)", "category": "Fireworks" },
       { "command": "fireworks.stopLiveCoding", "title": "Live Code (Stop)", "category": "Fireworks" },
       { "command": "fireworks.restartLiveCoding", "title": "Live Code (Restart)", "category": "Fireworks" },
       { "command": "fireworks.toggleDebugTestMode", "title": "Toggle Debug / Test Mode", "category": "Fireworks" },
@@ -56,7 +57,7 @@
       { "command": "fireworks.rainbowTracerHorizontal", "title": "Rainbow Tracer (left-to-right)", "category": "Fireworks" },
       { "command": "fireworks.rainbowTracerCross", "title": "Rainbow Tracer (cross)", "category": "Fireworks" },
       { "command": "fireworks.setTerminalLocation", "title": "Set Terminal Location", "category": "Fireworks" },
-      { "command": "fireworks.createPrintingConfig", "title": "Edit or create a printing options config.edn", "category": "Fireworks" }
+      { "command": "fireworks.createPrintingConfig", "title": "Edit or Create a Printing Options config.edn", "category": "Fireworks" }
     ],
     "keybindings": [
       {

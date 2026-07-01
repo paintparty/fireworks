@@ -15,6 +15,9 @@
                :addFireworksRequire  fireworks-vscode.bridge/add-fireworks-require
                :analyzeInlineResults fireworks-vscode.bridge/analyze-inline-results
                :depsAliases          fireworks-vscode.bridge/deps-aliases
+               :depsAliasStatus      fireworks-vscode.bridge/deps-alias-status
+               :depsAddLiveCodeAlias fireworks-vscode.bridge/deps-add-live-code-alias
+               :depsPatchAlias       fireworks-vscode.bridge/deps-patch-alias
                :bbTasks              fireworks-vscode.bridge/bb-tasks
                :bbWatchTasks         fireworks-vscode.bridge/bb-watch-tasks
                :bbWatchTemplate      fireworks-vscode.bridge/bb-watch-template
@@ -24,6 +27,7 @@
                :setMode              fireworks-vscode.bridge/set-mode
                :toggleMode           fireworks-vscode.bridge/toggle-mode
                :leinProfiles         fireworks-vscode.bridge/lein-profiles
+               :leinFireworksStatus  fireworks-vscode.bridge/lein-fireworks-status
                :leinAddPlugin        fireworks-vscode.bridge/lein-add-plugin
                :leinEnsureTestRefresh fireworks-vscode.bridge/lein-ensure-test-refresh
                :leinUserProfileStatus fireworks-vscode.bridge/lein-user-profile-status

@@ -147,6 +147,40 @@
   (testing "broken text -> error"
     (is (= {:error :unparseable} (lein/user-profile-status "{:user ")))))
 
+;; --- Fireworks dependency -------------------------------------------------
+
+(deftest fireworks-dep-top-level
+  (testing "Fireworks in the top-level :dependencies is detected (canonical placement)"
+    (let [text (str "(defproject my-app \"0.1.0\"\n"
+                    "  :dependencies [[org.clojure/clojure \"1.12.0\"]\n"
+                    "                 [io.github.paintparty/fireworks \"0.21.0\"]]\n"
+                    "  :profiles {:live-code {:plugins [" eligible-coord "]}})")]
+      (is (= {:has-fireworks true} (lein/fireworks-dep-status text))))))
+
+(deftest fireworks-dep-missing
+  (testing "no Fireworks coordinate anywhere -> false"
+    (let [text (str "(defproject my-app \"0.1.0\"\n"
+                    "  :dependencies [[org.clojure/clojure \"1.12.0\"]]\n"
+                    "  :profiles {:live-code {:plugins [" eligible-coord "]}})")]
+      (is (= {:has-fireworks false} (lein/fireworks-dep-status text))))))
+
+(deftest fireworks-dep-in-profile
+  (testing "Fireworks in a profile's :dependencies also counts (merges onto the classpath)"
+    (let [text (str "(defproject my-app \"0.1.0\"\n"
+                    "  :dependencies [[org.clojure/clojure \"1.12.0\"]]\n"
+                    "  :profiles {:live-code {:dependencies [[io.github.paintparty/fireworks \"0.21.0\"]]\n"
+                    "                         :plugins [" eligible-coord "]}})")]
+      (is (= {:has-fireworks true} (lein/fireworks-dep-status text))))))
+
+(deftest fireworks-dep-artifact-name-match
+  (testing "matched by artifact name: any group/version counts"
+    (let [text "(defproject my-app \"0.1.0\" :dependencies [[org.clojars.someone/fireworks \"9.9.9\"]])"]
+      (is (= {:has-fireworks true} (lein/fireworks-dep-status text))))))
+
+(deftest fireworks-dep-unparseable
+  (testing "broken text -> error"
+    (is (= {:error :unparseable} (lein/fireworks-dep-status "(defproject my-app ")))))
+
 ;; --- snippet --------------------------------------------------------------
 
 (deftest snippet-renders-baseline

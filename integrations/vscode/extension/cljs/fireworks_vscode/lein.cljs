@@ -115,6 +115,36 @@
                           (mapv (comp profile-key->str key)))})))
     (catch :default _ {:error :unparseable})))
 
+;; --- Fireworks dependency detection ---------------------------------------
+;; The artifact name Live Code needs on the classpath so namespaces that call `?` reload.
+;; Matched by name, so group / version / mvn|git form all count (io.github.paintparty/fireworks).
+(def ^:private fireworks-artifact "fireworks")
+
+(defn- deps-vec-has-fireworks?
+  "True when a Leiningen :dependencies vector carries a coordinate whose artifact name is
+   \"fireworks\" (e.g. [io.github.paintparty/fireworks \"0.21.0\"])."
+  [deps]
+  (boolean (and (sequential? deps)
+                (some (fn [d]
+                        (and (vector? d)
+                             (symbol? (first d))
+                             (= (name (first d)) fireworks-artifact)))
+                      deps))))
+
+(defn fireworks-dep-status
+  "Whether project.clj `text` carries a Fireworks dependency — in the top-level :dependencies or
+   any profile's :dependencies (either merges onto the `lein … test-refresh` classpath). Returns
+   {:has-fireworks bool}, or {:error :unparseable} when the text won't parse."
+  [text]
+  (try
+    (let [start     (body-kv-start (z/of-string text))
+          top       (some-> (find-key start :dependencies) z/sexpr)
+          profs     (some-> (find-key start :profiles) z/sexpr)
+          prof-deps (when (map? profs) (keep #(when (map? %) (:dependencies %)) (vals profs)))]
+      {:has-fireworks (boolean (or (deps-vec-has-fireworks? top)
+                                   (some deps-vec-has-fireworks? prof-deps)))})
+    (catch :default _ {:error :unparseable})))
+
 (defn add-plugin-to-profile
   "Ensure the exact coordinate in profile `profile-name`'s :plugins vector in project.clj
    `text`: create the :plugins vector if absent, replace a wrong-version entry, or append.

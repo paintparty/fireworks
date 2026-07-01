@@ -51,6 +51,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.toggleInlineResults', () => toggleInlineResults()),
     vscode.commands.registerCommand('fireworks.clearInlineResults', () => clearInlineResults()),
     vscode.commands.registerCommand('fireworks.startLiveCoding', () => startLiveCoding()),
+    vscode.commands.registerCommand('fireworks.preflightLiveCoding', () => preflightLiveCoding()),
     vscode.commands.registerCommand('fireworks.stopLiveCoding', () => stopLiveCoding()),
     vscode.commands.registerCommand('fireworks.restartLiveCoding', () => restartLiveCoding()),
     vscode.commands.registerCommand('fireworks.toggleDebugTestMode', () => toggleDebugTestMode()),
@@ -129,6 +130,140 @@ function log(msg: string): void {
   if (debugEnabled()) {
     output.appendLine(msg);
   }
+}
+
+// ============================================================================
+// Live Code diagnostics
+// ----------------------------------------------------------------------------
+// A structured, human-readable trace of the connect sequence (start / stop /
+// restart), emitted to the "Fireworks" output channel whether the command
+// succeeds or bails. Each run prints two things: an EDN-style map of the facts
+// gathered at every branch, and a numbered decision-tree of the path taken.
+//
+// A module-level "current run" lets the deep helpers (projectKind, pickAlias,
+// resolveLein…) record into the active run without threading a param through
+// every signature. When no run is active (e.g. preflight, or a helper called
+// outside a diagnosed command) diagFact/diagStep are no-ops. The commands wrap
+// their body in try/finally so diagEnd always flushes, error or not. Unlike
+// log(), this is emitted unconditionally (these are explicit, low-frequency
+// user commands) — open the Fireworks output channel to read it.
+// ============================================================================
+
+// A value already formatted as EDN (a keyword vector, a nested map): rendered verbatim,
+// not re-quoted like a string. Continuation lines are re-indented to the value column.
+class RawEdn {
+  constructor(public readonly edn: string) {}
+}
+
+type DiagValue = string | number | boolean | null | string[] | RawEdn;
+
+interface DiagRun {
+  facts: [string, DiagValue][]; // ordered key/value pairs -> the EDN map
+  steps: string[]; // decision-tree lines, in the order branches were taken
+  start: number;
+}
+
+let diagRun: DiagRun | undefined;
+
+function diagBegin(command: string): void {
+  diagRun = { facts: [['Command', command]], steps: [], start: Date.now() };
+}
+
+// Record a fact (a key/value row in the EDN map). Later keys append in call order.
+function diagFact(key: string, value: DiagValue): void {
+  if (diagRun) {
+    diagRun.facts.push([key, value]);
+  }
+}
+
+// Record a decision-tree step (a branch taken, with the reason).
+function diagStep(line: string): void {
+  if (diagRun) {
+    diagRun.steps.push(line);
+  }
+}
+
+function diagEnd(outcome: string): void {
+  if (!diagRun) {
+    return;
+  }
+  diagFact('Outcome', outcome);
+  output.appendLine(renderDiag(diagRun));
+  diagRun = undefined;
+}
+
+function ednStr(s: string): string {
+  return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+}
+
+// A `[:a :b]` keyword vector (deps aliases / lein profile names), or `[]`.
+function ednKeywords(names: string[]): RawEdn {
+  return new RawEdn(names.length === 0 ? '[]' : '[' + names.map((n) => ':' + n).join(' ') + ']');
+}
+
+// Render one value, indenting any continuation lines to `col` (the column the value starts at).
+function renderDiagValue(v: DiagValue, col: number): string {
+  if (v === null) {
+    return 'nil';
+  }
+  if (typeof v === 'boolean' || typeof v === 'number') {
+    return String(v);
+  }
+  if (typeof v === 'string') {
+    return ednStr(v);
+  }
+  if (v instanceof RawEdn) {
+    return v.edn
+      .split('\n')
+      .map((ln, i) => (i === 0 ? ln : ' '.repeat(col) + ln))
+      .join('\n');
+  }
+  if (v.length === 0) {
+    return '[]';
+  }
+  const pad = ' '.repeat(col + 1); // align entries under the char after '['
+  return '[' + v.map(ednStr).map((s, i) => (i === 0 ? s : pad + s)).join('\n') + ']';
+}
+
+// The full diagnostics block: a key-aligned EDN map, then the numbered decision tree.
+function renderDiag(run: DiagRun): string {
+  const keyStrs = run.facts.map(([k]) => ednStr(k));
+  const keyW = Math.max(...keyStrs.map((k) => k.length));
+  const rule = '─'.repeat(60);
+  const lines: string[] = ['', `;; ┌─ Fireworks Live Code diagnostics ${'─'.repeat(24)}`];
+  run.facts.forEach(([, v], i) => {
+    const prefix = (i === 0 ? '{' : ' ') + keyStrs[i].padEnd(keyW) + ' ';
+    lines.push(prefix + renderDiagValue(v, prefix.length));
+  });
+  lines[lines.length - 1] += '}';
+  lines.push('', ';; Decision tree');
+  run.steps.forEach((s, i) => lines.push(`;;   ${i + 1}. ${s}`));
+  lines.push(`;; └─ done in ${Date.now() - run.start} ms ${rule}`, '');
+  return lines.join('\n');
+}
+
+// The build files present in a root, in resolution order — the "why eligible" for a target.
+function buildFilesOf(root: string): string[] {
+  return ['deps.edn', 'bb.edn', 'project.clj'].filter((f) => fs.existsSync(path.join(root, f)));
+}
+
+// The "Eligible" fact: a vector of {:name :path :configs} maps, one per eligible root, pretty-printed
+// with aligned inner keys. Each line carries its indentation relative to the opening `[`; the
+// diagnostics renderer then shifts the whole block right to the value column.
+function ednEligible(roots: string[]): RawEdn {
+  if (roots.length === 0) {
+    return new RawEdn('[]');
+  }
+  const pad = (k: string) => k.padEnd(':configs'.length); // widest inner key -> aligned value column
+  const lines: string[] = [];
+  roots.forEach((root) => {
+    lines.push(` {${pad(':name')} ${ednStr(path.basename(root))}`);
+    lines.push(`  ${pad(':path')} ${ednStr(tildify(root))}`);
+    lines.push(`  ${pad(':configs')} ${ednKeywords(buildFilesOf(root)).edn}}`);
+  });
+  lines[0] = '[' + lines[0].slice(1); // first map's `{` sits right after `[`
+  lines[lines.length - 1] += ']';
+  return new RawEdn(lines.join('\n'));
 }
 
 // A transient bottom-right notification that auto-dismisses after `ms` (default 5s). VS
@@ -932,7 +1067,9 @@ function ensureGitignored(root: string): void {
 type GuidanceTopic =
   | 'lein-missing-plugin'
   | 'lein-user-test-refresh'
+  | 'lein-missing-fireworks'
   | 'bb-watch-task'
+  | 'deps-alias-deps'
   | 'external-terminal';
 
 const GUIDANCE_SCHEME = 'fireworks-guide';
@@ -1008,6 +1145,29 @@ function guidanceDoc(
           '',
         ].join('\n'),
       };
+    case 'lein-missing-fireworks':
+      return {
+        title: 'Fireworks project.clj dependency',
+        markdown: [
+          '### ⚠️ Fireworks: Live Code',
+          '# project.clj is missing the Fireworks dependency',
+          '',
+          'Live Code reloads namespaces that call `?`, so Fireworks must be on the classpath.',
+          'Your `project.clj` has the `lein-test-refresh` plugin but no Fireworks dependency.',
+          '',
+          'Add it to your top-level `:dependencies`:',
+          '',
+          '```clj',
+          ':dependencies [[org.clojure/clojure "1.12.0"]',
+          '               [io.github.paintparty/fireworks "0.21.0"]]',
+          '```',
+          '',
+          'Coordinate: `io.github.paintparty/fireworks`',
+          '',
+          'Then run `Live Code` again.',
+          '',
+        ].join('\n'),
+      };
     case 'bb-watch-task':
       return {
         title: 'Fireworks Babashka watch task',
@@ -1030,6 +1190,49 @@ function guidanceDoc(
           '',
         ].join('\n'),
       };
+    case 'deps-alias-deps': {
+      const alias = params?.get('alias') ?? 'live-code';
+      const missing = params?.get('missing') ?? 'test-refresh and Fireworks';
+      return {
+        title: 'Fireworks deps.edn alias dependencies',
+        markdown: [
+          '### ⚠️ Fireworks: Live Code',
+          '# Alias is missing a dependency',
+          '',
+          `The \`:${alias}\` alias runs \`clojure -M:${alias}\`, but its classpath does not include **${missing}**.`,
+          '',
+          'Without **test-refresh**, the watcher can’t start (`clojure -M` fails to locate',
+          '`com.jakemccrary.test-refresh`). Without **Fireworks**, every namespace that requires',
+          '`fireworks.core` (or uses `?`) fails to reload.',
+          '',
+          'Run `Live Code` again and **confirm the prompt** to let Fireworks add this to your',
+          '`deps.edn` for you (additive — it only adds what’s missing, and never edits global config).',
+          'Or add it by hand. A working setup:',
+          '',
+          '```clj',
+          '{:paths ["src"]',
+          '',
+          ' ;; Fireworks is a real dependency because this project’s code calls `?`.',
+          ' :deps {org.clojure/clojure            {:mvn/version "1.12.0"}',
+          '        io.github.paintparty/fireworks {:mvn/version "0.21.0"}}',
+          '',
+          ' :aliases',
+          ` {:${alias}`,
+          '  {:extra-paths ["test"]',
+          '   :extra-deps  {com.jakemccrary/test-refresh {:mvn/version "0.26.0"}}',
+          '   :main-opts   ["-m" "com.jakemccrary.test-refresh"]}}}',
+          '```',
+          '',
+          'Coordinates:',
+          '',
+          '- test-refresh: `com.jakemccrary/test-refresh`',
+          '- Fireworks: `io.github.paintparty/fireworks`',
+          '',
+          'Then run `Live Code` again.',
+          '',
+        ].join('\n'),
+      };
+    }
     case 'external-terminal': {
       const cmd = params?.get('cmd') ?? '';
       const dir = params?.get('dir') ?? '';
@@ -1563,13 +1766,18 @@ type RootPickItem = vscode.QuickPickItem & { root: string };
 // projects floated under a "Recent" header. undefined if none, or the pick was dismissed.
 async function pickProjectRoot(): Promise<string | undefined> {
   const roots = await findProjectRoots();
+  // Report every eligible root: its name, path, and the build file(s) that made it a target.
+  diagFact('Eligible', ednEligible(roots));
   if (roots.length === 0) {
+    diagStep('No deps.edn / bb.edn / project.clj in the workspace → abort.');
     vscode.window.showErrorMessage(
       'Fireworks: no deps.edn, bb.edn, or project.clj found in this workspace.',
     );
     return undefined;
   }
   if (roots.length === 1) {
+    diagFact('Chosen project', tildify(roots[0]));
+    diagStep(`Only one eligible project → auto-selected ${tildify(roots[0])}.`);
     return roots[0];
   }
   const items = withRecentSection<RootPickItem>(
@@ -1582,7 +1790,14 @@ async function pickProjectRoot(): Promise<string | undefined> {
     placeHolder: 'Select the project for Fireworks live coding',
     matchOnDescription: true, // typing filters on the path too, like the native picker
   });
-  return (pick as RootPickItem | undefined)?.root;
+  const chosen = (pick as RootPickItem | undefined)?.root;
+  diagFact('Chosen project', chosen ? tildify(chosen) : null);
+  diagStep(
+    chosen
+      ? `Picked ${tildify(chosen)} from ${roots.length} eligible projects.`
+      : `Project pick dismissed (${roots.length} were offered).`,
+  );
+  return chosen;
 }
 
 function preflightClojure(): boolean {
@@ -1644,60 +1859,49 @@ type Runtime = 'deps' | 'bb' | 'lein';
 // ask. undefined if none exists (shouldn't happen via pickProjectRoot) or the disambiguation
 // pick was dismissed.
 async function projectKind(root: string): Promise<Runtime | undefined> {
+  diagFact('.fireworks dir exists?', hasFireworksDir(root));
   const kinds: { label: string; runtime: Runtime }[] = [];
   if (fs.existsSync(path.join(root, 'deps.edn'))) {
     kinds.push({ label: 'Clojure (deps.edn alias)', runtime: 'deps' });
   }
   // bb is offered only when wired for it (a task load-files .fireworks/bb/watch.clj), so a
   // bb.edn kept for build scripts alongside a deps.edn / project.clj isn't mistaken for a watcher.
-  if (fs.existsSync(path.join(root, 'bb.edn')) && bbHasWatchTask(root)) {
+  const bbPresent = fs.existsSync(path.join(root, 'bb.edn'));
+  const bbWired = bbPresent && bbHasWatchTask(root);
+  if (bbWired) {
     kinds.push({ label: 'Babashka (.fireworks/bb/watch.clj)', runtime: 'bb' });
+  }
+  if (bbPresent) {
+    diagFact('bb.edn wired as a watcher?', bbWired);
   }
   if (fs.existsSync(path.join(root, 'project.clj'))) {
     kinds.push({ label: 'Leiningen (project.clj profile)', runtime: 'lein' });
   }
+  diagFact('Candidate runtimes', ednKeywords(kinds.map((k) => k.runtime)));
   if (kinds.length === 0) {
     // Reached only when the sole build file is an unwired bb.edn (deps/lein always qualify).
-    if (fs.existsSync(path.join(root, 'bb.edn'))) {
+    if (bbPresent) {
+      diagStep('bb.edn present but no task load-files .fireworks/bb/watch.clj → bb setup guide.');
       await showGuidance('bb-watch-task');
     }
+    diagFact('Runtime', null);
     return undefined;
   }
   if (kinds.length === 1) {
+    diagFact('Runtime', kinds[0].runtime);
+    diagStep(`Single candidate runtime → ${kinds[0].runtime}.`);
     return kinds[0].runtime;
   }
   const pick = await vscode.window.showQuickPick(kinds, {
     placeHolder: 'This project has multiple build files — which runtime?',
   });
-  return pick?.runtime;
-}
-
-// Pick an alias defined in `root`'s deps.edn. Reads the file, asks the cljs side for the
-// alias names, and shows a quick pick. undefined when the file is missing/unparseable,
-// defines no aliases, or the pick was dismissed (each surfaces its own message).
-async function pickAlias(root: string): Promise<string | undefined> {
-  const text = readFileOrNull(path.join(root, 'deps.edn'));
-  if (text === null) {
-    vscode.window.showErrorMessage(`Fireworks: could not read deps.edn in ${tildify(root)}.`);
-    return undefined;
-  }
-  const { aliases, error } = cljsLib.depsAliases(text);
-  if (error || !aliases) {
-    vscode.window.showErrorMessage(`Fireworks: could not parse deps.edn in ${tildify(root)}.`);
-    return undefined;
-  }
-  if (aliases.length === 0) {
-    vscode.window.showErrorMessage(
-      `Fireworks: no aliases defined in ${tildify(root)}/deps.edn. Add an alias with test-refresh + Fireworks, then try again.`,
-    );
-    return undefined;
-  }
-  // Show each alias as a keyword (`:dev`) but keep the bare name for `clojure -M:<alias>`.
-  const pick = await vscode.window.showQuickPick(
-    aliases.map((alias) => ({ label: `:${alias}`, alias })),
-    { placeHolder: 'Select the deps.edn alias to run (must include test-refresh + Fireworks)' },
+  diagFact('Runtime', pick ? pick.runtime : null);
+  diagStep(
+    pick
+      ? `Multiple build files → user chose runtime ${pick.runtime}.`
+      : 'Multiple build files → runtime pick dismissed.',
   );
-  return pick?.alias;
+  return pick?.runtime;
 }
 
 // Whether `root`'s bb.edn is wired as a Fireworks watcher: a task whose body load-files
@@ -1747,11 +1951,14 @@ async function resolveBbCommand(root: string): Promise<WatcherPlan | undefined> 
   }
   const { tasks, error } = cljsLib.bbWatchTasks(text);
   if (error || !tasks) {
+    diagStep('bb.edn did not parse → abort.');
     vscode.window.showErrorMessage(`Fireworks: could not parse bb.edn in ${tildify(root)}.`);
     return undefined;
   }
+  diagFact('bb watch tasks', ednKeywords(tasks));
   if (tasks.length === 0) {
     // projectKind gates bb on this, so this is a safety net rather than the usual path.
+    diagStep('No wired bb watch task → bb setup guide.');
     await showGuidance('bb-watch-task');
     return undefined;
   }
@@ -1761,13 +1968,30 @@ async function resolveBbCommand(root: string): Promise<WatcherPlan | undefined> 
       : await vscode.window.showQuickPick(tasks, {
           placeHolder: 'Select the bb watch task to run',
         });
+  diagBbTask(task, tasks.length);
   if (!task) {
     return undefined;
   }
+  const watchExisted = fs.existsSync(path.join(root, '.fireworks', 'bb', 'watch.clj'));
+  diagFact('.fireworks/bb/watch.clj existed?', watchExisted);
   if (!ensureBbWatchFile(root)) {
+    diagStep('Could not seed .fireworks/bb/watch.clj → abort.');
     return undefined;
   }
+  if (!watchExisted) {
+    diagStep('Seeded .fireworks/bb/watch.clj from the template.');
+  }
   return { command: taskCommand(task) };
+}
+
+// Small helper so the bb-task fact/step reads cleanly at both call arities above.
+function diagBbTask(task: string | undefined, count: number): void {
+  diagFact('Chosen bb task', task ?? null);
+  diagStep(
+    task
+      ? `Chose bb task :${task}${count > 1 ? ` from ${count}` : ' (only one wired)'}.`
+      : `bb task pick dismissed (${count} offered).`,
+  );
 }
 
 // Pick a Leiningen profile from a given list (mirrors pickAlias). Auto-returns a single
@@ -1804,17 +2028,24 @@ interface TestRefreshInfo {
 // Returns which file governs the run and how it was resolved.
 function ensureTestRefreshConfig(root: string): TestRefreshInfo {
   const local = path.join(root, '.test-refresh.edn');
-  if (fs.existsSync(local)) {
+  const global = path.join(os.homedir(), '.test-refresh.edn');
+  const localExists = fs.existsSync(local);
+  const globalExists = fs.existsSync(global);
+  diagFact('local .test-refresh.edn exists?', localExists);
+  diagFact('global .test-refresh.edn exists?', globalExists);
+  if (localExists) {
+    diagStep('Using the project-local .test-refresh.edn (no seed written).');
     log(`.test-refresh.edn: using project-local ${tildify(local)}`);
     return { path: local, source: 'local' };
   }
-  const global = path.join(os.homedir(), '.test-refresh.edn');
-  if (fs.existsSync(global)) {
+  if (globalExists) {
+    diagStep('No local .test-refresh.edn, but ~/.test-refresh.edn exists → run off the global config.');
     log(`.test-refresh.edn: using global ${tildify(global)}`);
     return { path: global, source: 'global' };
   }
   try {
     fs.writeFileSync(local, cljsLib.testRefreshTemplate(), 'utf8');
+    diagStep('No local or global .test-refresh.edn → seeded a local one from the template.');
     log(`.test-refresh.edn: none found locally or globally — created ${tildify(local)}`);
     return { path: local, source: 'created' };
   } catch (e) {
@@ -1847,18 +2078,172 @@ async function resolveWatcherCommand(root: string): Promise<WatcherPlan | undefi
   if (kind === 'lein') {
     return resolveLeinCommand(root);
   }
+  return resolveDepsCommand(root);
+}
+
+// --- Clojure CLI (deps.edn) launch resolution -----------------------------
+// The alias must put BOTH test-refresh and Fireworks on the `-M` classpath AND run test-refresh via
+// :main-opts, or the launch fails (no test-refresh → can't locate the main ns; no Fireworks → any ns
+// that requires fireworks.core or uses `?` fails to reload). When the chosen alias falls short, the
+// extension offers — behind a confirm modal, additively — to patch it, or (when it has a conflicting
+// :main-opts, or there are no aliases at all) to add a fresh :live-code alias. Mirrors the Leiningen
+// project.clj flow: the user still owns deps.edn; we only ever add what's missing, on confirmation.
+async function resolveDepsCommand(root: string): Promise<WatcherPlan | undefined> {
   if (!preflightClojure()) {
     return undefined;
   }
-  const alias = await pickAlias(root);
-  if (!alias) {
+  const depsPath = path.join(root, 'deps.edn');
+  const text = readFileOrNull(depsPath);
+  if (text === null) {
+    diagStep('deps.edn could not be read → abort.');
+    vscode.window.showErrorMessage(`Fireworks: could not read deps.edn in ${tildify(root)}.`);
     return undefined;
   }
-  // Clojure runtime only: make sure a .test-refresh.edn governs the run (seed one from the
-  // template if the project has neither a local nor a global config). Done after the alias
-  // pick so a dismissed pick writes nothing.
+  const { aliases, error } = cljsLib.depsAliases(text);
+  if (error || !aliases) {
+    diagStep('deps.edn did not parse → abort.');
+    vscode.window.showErrorMessage(`Fireworks: could not parse deps.edn in ${tildify(root)}.`);
+    return undefined;
+  }
+  diagFact('Aliases in deps.edn', ednKeywords(aliases));
+
+  // No aliases at all → offer to create a :live-code alias from scratch.
+  if (aliases.length === 0) {
+    diagStep('No :aliases in deps.edn → offer to create a :live-code alias.');
+    const created = await offerCreateLiveCodeAlias(depsPath, text, 'deps.edn has no aliases');
+    return created ? finishDepsPlan(root, created) : undefined;
+  }
+
+  const pick = await vscode.window.showQuickPick(
+    aliases.map((a) => ({ label: `:${a}`, alias: a })),
+    { placeHolder: 'Select the deps.edn alias to run (must include test-refresh + Fireworks)' },
+  );
+  if (!pick) {
+    diagFact('Chosen alias', null);
+    diagStep(`Alias pick dismissed (${aliases.length} offered).`);
+    return undefined;
+  }
+  const alias = pick.alias;
+  diagFact('Chosen alias', `:${alias}`);
+
+  const status = cljsLib.depsAliasStatus(text, alias);
+  if (status.error) {
+    diagFact('alias dep check', `skipped (${status.error})`);
+    diagStep('Could not analyze the alias deps → proceed without the check.');
+    return finishDepsPlan(root, alias);
+  }
+  const hasTR = !!status.hasTestRefresh;
+  const hasFW = !!status.hasFireworks;
+  const mainOpts = status.mainOpts ?? 'none';
+  diagFact('alias pulls in test-refresh?', hasTR);
+  diagFact('alias pulls in Fireworks?', hasFW);
+  diagFact('alias :main-opts', mainOpts);
+  if (hasTR && hasFW && mainOpts === 'test-refresh') {
+    diagStep(`Alias :${alias} already runs test-refresh with both deps → use as-is.`);
+    return finishDepsPlan(root, alias);
+  }
+  // A different :main-opts (a real -m to some other ns) means patching would hijack the user's
+  // alias — offer a fresh :live-code alias instead of rewriting theirs.
+  if (mainOpts === 'other') {
+    diagStep(`Alias :${alias} has a non-test-refresh :main-opts → offer a fresh :live-code alias.`);
+    const created = await offerCreateLiveCodeAlias(
+      depsPath,
+      text,
+      `the :${alias} alias already runs a different :main-opts`,
+    );
+    return created ? finishDepsPlan(root, created) : undefined;
+  }
+  // Otherwise the alias just needs the missing deps / :main-opts / :extra-paths → offer to patch.
+  diagStep(`Alias :${alias} is missing test-refresh/Fireworks wiring → offer to patch it.`);
+  const patched = await offerPatchAlias(depsPath, text, alias);
+  return patched ? finishDepsPlan(root, alias) : undefined;
+}
+
+// Common tail once an alias is settled (chosen-and-ready, patched, or freshly created): ensure a
+// .test-refresh.edn governs the run, then build `clojure -M:<alias>`.
+function finishDepsPlan(root: string, alias: string): WatcherPlan {
   const testRefresh = ensureTestRefreshConfig(root);
+  diagFact('.test-refresh.edn source', testRefresh.source);
   return { command: aliasCommand(alias), testRefresh };
+}
+
+// Offer to add a self-contained :live-code alias to deps.edn (confirm modal, additive). Returns the
+// alias name to run on success, undefined if declined (guidance shown) or the edit failed.
+async function offerCreateLiveCodeAlias(
+  depsPath: string,
+  text: string,
+  reason: string,
+): Promise<string | undefined> {
+  const r = cljsLib.depsAddLiveCodeAlias(text);
+  if (r.error || r.text === undefined || !r.alias) {
+    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(depsPath)}.`);
+    return undefined;
+  }
+  const ok = await confirmDepsEdnWrite(
+    `Fireworks will add a :${r.alias} alias (test-refresh + Fireworks) to deps.edn — ${reason}.`,
+  );
+  if (!ok) {
+    diagStep('User declined the deps.edn write → guidance, abort.');
+    await showGuidance('deps-alias-deps', { alias: r.alias, missing: 'test-refresh and Fireworks' });
+    return undefined;
+  }
+  if (!writeDepsEdn(depsPath, r.text)) {
+    return undefined;
+  }
+  diagFact('deps.edn edit', `added :${r.alias} alias`);
+  diagStep(`Wrote a :${r.alias} alias to deps.edn.`);
+  return r.alias;
+}
+
+// Offer to additively patch an existing alias's :extra-deps / :main-opts / :extra-paths (confirm
+// modal). Returns true to proceed with the launch, false if declined (guidance shown) or failed.
+async function offerPatchAlias(depsPath: string, text: string, alias: string): Promise<boolean> {
+  const r = cljsLib.depsPatchAlias(text, alias);
+  if (r.error || r.text === undefined) {
+    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(depsPath)}.`);
+    return false;
+  }
+  if (!r.changed) {
+    return true; // nothing to add (defensive; shouldn't happen on the not-ready path)
+  }
+  const added = (r.added ?? []).join(', ');
+  const ok = await confirmDepsEdnWrite(
+    `Fireworks will add ${added} to the :${alias} alias in deps.edn.`,
+  );
+  if (!ok) {
+    diagStep('User declined the deps.edn patch → guidance, abort.');
+    await showGuidance('deps-alias-deps', { alias, missing: added });
+    return false;
+  }
+  if (!writeDepsEdn(depsPath, r.text)) {
+    return false;
+  }
+  diagFact('deps.edn edit', `patched :${alias} (${added})`);
+  diagStep(`Patched :${alias} in deps.edn: added ${added}.`);
+  return true;
+}
+
+// Confirm a deps.edn edit. Modal so it can't be missed; mirrors confirmProjectCljWrite.
+async function confirmDepsEdnWrite(detail: string): Promise<boolean> {
+  const confirm = 'Edit deps.edn';
+  const pick = await vscode.window.showInformationMessage(
+    'Fireworks: Live Code wants to edit deps.edn',
+    { modal: true, detail },
+    confirm,
+  );
+  return pick === confirm;
+}
+
+function writeDepsEdn(depsPath: string, text: string): boolean {
+  try {
+    fs.writeFileSync(depsPath, text, 'utf8');
+    log(`deps.edn: patched ${tildify(depsPath)}`);
+    return true;
+  } catch (e) {
+    log(`deps.edn: could not write ${tildify(depsPath)}: ${String(e)}`);
+    vscode.window.showErrorMessage(`Fireworks: could not write ${tildify(depsPath)}.`);
+    return false;
+  }
 }
 
 // --- Leiningen launch resolution ------------------------------------------
@@ -1948,20 +2333,43 @@ async function addPluginAndTestRefresh(
 async function resolveLeinUserProfile(): Promise<WatcherPlan | undefined> {
   const profilesPath = path.join(os.homedir(), '.lein', 'profiles.clj');
   const text = readFileOrNull(profilesPath);
+  diagFact('~/.lein/profiles.clj exists?', text !== null);
   const status = text === null ? undefined : cljsLib.leinUserProfileStatus(text);
   if (status && status.error) {
+    diagStep('~/.lein/profiles.clj did not parse → abort.');
     vscode.window.showErrorMessage(`Fireworks: could not parse ${tildify(profilesPath)}.`);
     return undefined;
   }
+  diagFact('global :user has lein-test-refresh?', status ? !!status.hasPlugin : false);
+  diagFact('global :user has :test-refresh?', status ? !!status.hasTestRefresh : false);
   if (!status || !status.hasPlugin) {
+    diagStep('Global :user profile lacks the plugin → missing-plugin setup guide.');
     await showGuidance('lein-missing-plugin');
     return undefined;
   }
   if (!status.hasTestRefresh) {
+    diagStep('Global :user has the plugin but no :test-refresh → test-refresh setup guide.');
     await showGuidance('lein-user-test-refresh');
     return undefined;
   }
+  diagStep('Global :user carries plugin + :test-refresh → run plain `lein test-refresh`.');
   return { command: leinCommand() };
+}
+
+// Whether project.clj carries a Fireworks dependency. Records the finding in the diagnostics.
+// On a parse failure (shouldn't happen — leinProfiles already parsed) it returns true so the
+// unrelated Fireworks check never blocks a launch; a real parse error is handled by the caller.
+function checkLeinFireworks(text: string): boolean {
+  const status = cljsLib.leinFireworksStatus(text);
+  const hasFW = !!status.hasFireworks;
+  diagFact('project.clj has Fireworks dep?', status.error ? 'unknown (parse error)' : hasFW);
+  if (status.error) {
+    return true;
+  }
+  if (!hasFW) {
+    diagStep('project.clj has no Fireworks dependency → guidance, abort (reload would fail).');
+  }
+  return hasFW;
 }
 
 // Resolve the Leiningen launch plan for `root`. Lein sessions carry no TestRefreshInfo (the
@@ -1978,7 +2386,17 @@ async function resolveLeinCommand(root: string): Promise<WatcherPlan | undefined
   }
   const { all, eligible, error } = cljsLib.leinProfiles(text);
   if (error || !all || !eligible) {
+    diagStep('project.clj did not parse → abort.');
     vscode.window.showErrorMessage(`Fireworks: could not parse project.clj in ${tildify(root)}.`);
+    return undefined;
+  }
+  diagFact('All profiles in project.clj', ednKeywords(all));
+  diagFact('Eligible profiles (carry lein-test-refresh)', ednKeywords(eligible));
+  // Fireworks must be a project dependency or the reload of any namespace calling `?` fails. Check
+  // up front (before any profile prompt/edit) so a missing dep aborts early with guidance. Reads
+  // the original text; the profile edits below never touch :dependencies.
+  if (!checkLeinFireworks(text)) {
+    await showGuidance('lein-missing-fireworks');
     return undefined;
   }
   // An eligible profile already carries the plugin → pick it, ensure :test-refresh, launch.
@@ -1987,26 +2405,35 @@ async function resolveLeinCommand(root: string): Promise<WatcherPlan | undefined
       eligible,
       'Select the profile to run (carries lein-test-refresh)',
     );
+    diagFact('Chosen profile', profile ? `:${profile}` : null);
     if (!profile) {
+      diagStep('Eligible profile pick dismissed → abort.');
       return undefined;
     }
+    diagStep(`Profile :${profile} already carries the plugin → ensure :test-refresh, then launch.`);
     if (!(await ensureTestRefreshLein(projectCljPath, text))) {
+      diagStep('project.clj :test-refresh edit declined or failed → abort.');
       return undefined;
     }
     return { command: leinCommand(profile) };
   }
   // No eligible profile, but profiles exist → offer to add the plugin to one.
   if (all.length > 0) {
+    diagStep('Profiles exist but none carry lein-test-refresh → offer to add the plugin.');
     const profile = await pickProfile(all, 'Add lein-test-refresh to which profile?');
+    diagFact('Chosen profile', profile ? `:${profile}` : null);
     if (!profile) {
+      diagStep('Add-plugin profile pick dismissed → abort.');
       return undefined;
     }
     if (!(await addPluginAndTestRefresh(projectCljPath, text, profile))) {
+      diagStep('project.clj plugin/:test-refresh edit declined or failed → abort.');
       return undefined;
     }
     return { command: leinCommand(profile) };
   }
   // No profiles at all → fall through to ~/.lein/profiles.clj.
+  diagStep('No :profiles in project.clj → fall back to ~/.lein/profiles.clj (:user, read-only).');
   return resolveLeinUserProfile();
 }
 
@@ -2054,37 +2481,102 @@ async function sendWatcherCommand(
 }
 
 async function startLiveCoding(): Promise<void> {
-  const location = await resolveTerminalLocation();
-  if (!location) {
-    return; // cancelled the terminal-location pick
+  diagBegin('Live Code (Start)');
+  try {
+    const location = await resolveTerminalLocation();
+    if (!location) {
+      diagStep('Terminal-location pick dismissed → abort.');
+      diagEnd('cancelled (no terminal location)');
+      return;
+    }
+    const root = await pickProjectRoot();
+    if (!root) {
+      diagEnd('cancelled (no project chosen)');
+      return;
+    }
+    // The integrated terminal owns the session lifecycle (reuse/stop/restart). External mode runs
+    // the watcher in the user's own terminal, so it creates no session and skips the reuse check.
+    if (location === 'integrated') {
+      const existing = liveSessions.get(root);
+      if (existing) {
+        diagStep(`A session is already running for ${tildify(root)} → reuse/notify, no relaunch.`);
+        diagEnd('already running');
+        await reuseOrNotify(existing);
+        return;
+      }
+    }
+    const plan = await resolveWatcherCommand(root);
+    if (!plan) {
+      diagStep('Command resolution returned nothing (aborted, or a setup guide was shown).');
+      diagEnd('aborted during resolution');
+      return;
+    }
+    diagFact('Watcher command', plan.command);
+    if (location === 'integrated') {
+      diagStep(`Launch in integrated terminal "${terminalName(root)}".`);
+      diagEnd('launched (integrated terminal)');
+      await launchWatcher(root, plan.command, plan.testRefresh);
+    } else {
+      // resolveWatcherCommand already seeded configs / patched the build file; we just hand the
+      // user the command instead of spawning a terminal. Keep .fireworks ready for the
+      // inline-results watcher and record the root, mirroring launchWatcher's bookkeeping.
+      prepareResultsDir(root);
+      clearResultsForRoot(root);
+      recordRecentRoot(root);
+      diagStep('Show the external-terminal guidance (no terminal spawned).');
+      diagEnd('launched (external terminal guidance)');
+      await showGuidance('external-terminal', { cmd: plan.command, dir: root });
+    }
+  } finally {
+    diagEnd('ended'); // no-op if a branch above already flushed; safety net on unexpected throw
   }
+}
+
+// A fingerprint of the on-disk artifacts the Live Code setup touches, used by preflight to tell
+// "already in place" from "just set up". Existence for dirs / seed-once files (.test-refresh.edn,
+// watch.clj are never edited, only created); full content for the files setup may edit in place
+// (.gitignore, project.clj). A stable string, so a before/after comparison detects any change.
+function setupFingerprint(root: string): string {
+  const parts: string[] = [];
+  const exists = (p: string) => parts.push(fs.existsSync(p) ? '1' : '0');
+  const content = (p: string) => parts.push(readFileOrNull(p) ?? '');
+  exists(path.join(root, '.fireworks'));
+  exists(path.join(root, '.fireworks', 'results'));
+  exists(path.join(root, '.fireworks', 'bb', 'watch.clj'));
+  exists(path.join(root, '.test-refresh.edn'));
+  content(path.join(root, '.gitignore'));
+  content(path.join(root, 'project.clj'));
+  return parts.join(' ');
+}
+
+// Live Code (Preflight): run the same setup the start sequence does — detect the runtime, seed the
+// config files and directories, patch the build file where applicable — but stop before choosing a
+// terminal or launching anything. If nothing needed creating, tell the user they're good to go.
+async function preflightLiveCoding(): Promise<void> {
   const root = await pickProjectRoot();
   if (!root) {
     return;
   }
-  // The integrated terminal owns the session lifecycle (reuse/stop/restart). External mode runs
-  // the watcher in the user's own terminal, so it creates no session and skips the reuse check.
-  if (location === 'integrated') {
-    const existing = liveSessions.get(root);
-    if (existing) {
-      await reuseOrNotify(existing);
-      return;
-    }
-  }
+  const before = setupFingerprint(root);
+  // resolveWatcherCommand seeds the runtime's config files as a side effect (.test-refresh.edn,
+  // .fireworks/bb/watch.clj, additive project.clj edits) while resolving the launch command; we
+  // ignore the command it returns. undefined = aborted or a setup guide was shown — nothing to add.
   const plan = await resolveWatcherCommand(root);
   if (!plan) {
     return;
   }
-  if (location === 'integrated') {
-    await launchWatcher(root, plan.command, plan.testRefresh);
+  // The .fireworks dir / results cache / .gitignore are prepared at launch, not by
+  // resolveWatcherCommand — do that here too, minus the result-cache wipe (a launch concern).
+  ensureFireworksDir(root);
+  ensureResultsDir(root);
+  ensureGitignored(root);
+  if (setupFingerprint(root) === before) {
+    await vscode.window.showInformationMessage(
+      'Fireworks: Live Code is already set up for this project — you’re good to go.',
+      { modal: true },
+    );
   } else {
-    // resolveWatcherCommand already seeded configs / patched the build file; we just hand the
-    // user the command instead of spawning a terminal. Keep .fireworks ready for the
-    // inline-results watcher and record the root, mirroring launchWatcher's bookkeeping.
-    prepareResultsDir(root);
-    clearResultsForRoot(root);
-    recordRecentRoot(root);
-    await showGuidance('external-terminal', { cmd: plan.command, dir: root });
+    flash(`Fireworks: Live Code is set up for ${path.basename(root)}. You’re good to go.`);
   }
 }
 
@@ -2093,10 +2585,15 @@ async function startLiveCoding(): Promise<void> {
 // undefined if the user dismisses the pick.
 async function resolveTerminalLocation(): Promise<'integrated' | 'external' | undefined> {
   const setting = cfg().get<string>('terminalLocation', 'Always ask');
+  diagFact('Terminal location setting', setting);
   if (setting === 'Run from integrated terminal') {
+    diagFact('Terminal location', 'Integrated terminal');
+    diagStep('Terminal location fixed by setting → integrated (no prompt).');
     return 'integrated';
   }
   if (setting === 'Run from external terminal') {
+    diagFact('Terminal location', 'External terminal');
+    diagStep('Terminal location fixed by setting → external (no prompt).');
     return 'external';
   }
   const pick = await vscode.window.showQuickPick(
@@ -2106,6 +2603,8 @@ async function resolveTerminalLocation(): Promise<'integrated' | 'external' | un
     ],
     { placeHolder: 'Run Fireworks Live Code from…' },
   );
+  diagFact('Terminal location', pick ? (pick.value === 'integrated' ? 'Integrated terminal' : 'External terminal') : null);
+  diagStep(`Setting is "Always ask" → prompted → ${pick ? pick.value : 'dismissed'}.`);
   return pick?.value;
 }
 
@@ -2538,29 +3037,69 @@ function stopSession(session: LiveSession): void {
   liveSessions.delete(session.root);
 }
 
+// Shown when a Live Code command needs a running (integrated-terminal) session but none is tracked.
+// The extension only tracks sessions it launched in an integrated terminal, so a watcher the user
+// started in their own external terminal is invisible here — hence the hint.
+const NO_SESSION_MSG =
+  'Fireworks: no running Live Code session detected. ' +
+  'Maybe you’re running the project from an external terminal?';
+
+// The tracked (integrated-terminal) sessions, as a fact + step, for stop/restart diagnostics.
+function diagSessions(): void {
+  const roots = [...liveSessions.keys()].map((r) => tildify(r));
+  diagFact('Tracked sessions (integrated)', roots);
+}
+
 async function stopLiveCoding(): Promise<void> {
-  if (liveSessions.size === 0) {
-    flash('Fireworks: no Live Code session is running.');
-    return;
-  }
-  const session = await chooseSession('stop');
-  if (session) {
-    stopSession(session);
+  diagBegin('Live Code (Stop)');
+  try {
+    diagSessions();
+    if (liveSessions.size === 0) {
+      diagStep('No tracked sessions → show the "maybe external terminal?" hint.');
+      diagEnd('no tracked session');
+      flash(NO_SESSION_MSG);
+      return;
+    }
+    const session = await chooseSession('stop');
+    if (session) {
+      stopSession(session);
+      diagStep(`Stopped ${tildify(session.root)} (Ctrl-C + disposed the terminal).`);
+      diagEnd('stopped');
+    } else {
+      diagStep('Session pick dismissed → nothing stopped.');
+      diagEnd('cancelled');
+    }
+  } finally {
+    diagEnd('ended');
   }
 }
 
 async function restartLiveCoding(): Promise<void> {
-  if (liveSessions.size === 0) {
-    await startLiveCoding(); // nothing to restart — start a fresh session
-    return;
+  diagBegin('Live Code (Restart)');
+  try {
+    diagSessions();
+    if (liveSessions.size === 0) {
+      diagStep('No tracked sessions → show the "maybe external terminal?" hint.');
+      diagEnd('no tracked session');
+      flash(NO_SESSION_MSG);
+      return;
+    }
+    const session = await chooseSession('restart');
+    if (!session) {
+      diagStep('Session pick dismissed → nothing restarted.');
+      diagEnd('cancelled');
+      return;
+    }
+    const { root, command, testRefresh } = session;
+    diagFact('Reused command', command);
+    diagFact('Reused .test-refresh source', testRefresh ? testRefresh.source : null);
+    diagStep(`Restart ${tildify(root)}: stop, then relaunch the same command (no re-prompt).`);
+    diagEnd('restarted');
+    stopSession(session);
+    await launchWatcher(root, command, testRefresh); // reuse root + command + config (no re-prompt)
+  } finally {
+    diagEnd('ended');
   }
-  const session = await chooseSession('restart');
-  if (!session) {
-    return;
-  }
-  const { root, command, testRefresh } = session;
-  stopSession(session);
-  await launchWatcher(root, command, testRefresh); // reuse root + command + config (no re-prompt)
 }
 
 // Toggle the picked Clojure session between debug (tap) and test mode by rewriting its
@@ -2626,6 +3165,8 @@ async function chooseSession(
 ): Promise<LiveSession | undefined> {
   const all = [...liveSessions.values()];
   if (all.length === 1) {
+    diagFact('Chosen session', tildify(all[0].root));
+    diagStep(`Only one tracked session → auto-selected ${tildify(all[0].root)}.`);
     return all[0];
   }
   const items = withRecentSection<SessionPickItem>(
@@ -2642,7 +3183,10 @@ async function chooseSession(
     placeHolder: `Select the Live Code session to ${verb}`,
     matchOnDescription: true,
   });
-  return (pick as SessionPickItem | undefined)?.session;
+  const chosen = (pick as SessionPickItem | undefined)?.session;
+  diagFact('Chosen session', chosen ? tildify(chosen.root) : null);
+  diagStep(chosen ? `Chose session ${tildify(chosen.root)} from ${all.length}.` : `Session pick dismissed (${all.length} running).`);
+  return chosen;
 }
 
 // Preset auto-save delays (seconds) offered by fireworks.setAutoSaveDelay. They tune how
