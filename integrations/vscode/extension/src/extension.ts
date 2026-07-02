@@ -158,6 +158,7 @@ class RawEdn {
 type DiagValue = string | number | boolean | null | string[] | RawEdn;
 
 interface DiagRun {
+  command: string; // the command name, shown in the header (not repeated in the facts map)
   facts: [string, DiagValue][]; // ordered key/value pairs -> the EDN map
   steps: string[]; // decision-tree lines, in the order branches were taken
   start: number;
@@ -166,7 +167,7 @@ interface DiagRun {
 let diagRun: DiagRun | undefined;
 
 function diagBegin(command: string): void {
-  diagRun = { facts: [['Command', command]], steps: [], start: Date.now() };
+  diagRun = { command, facts: [], steps: [], start: Date.now() };
 }
 
 // Record a fact (a key/value row in the EDN map). Later keys append in call order.
@@ -225,20 +226,39 @@ function renderDiagValue(v: DiagValue, col: number): string {
   return '[' + v.map(ednStr).map((s, i) => (i === 0 ? s : pad + s)).join('\n') + ']';
 }
 
-// The full diagnostics block: a key-aligned EDN map, then the numbered decision tree.
+// The run's start time as a friendly header stamp, e.g. "Wed, Jul 1, 5:12 PM".
+function diagTimestamp(ms: number): string {
+  return new Date(ms).toLocaleString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+// The full diagnostics block: a header (rule, command, timestamp), then a key-aligned EDN map,
+// then the numbered decision tree.
 function renderDiag(run: DiagRun): string {
   const keyStrs = run.facts.map(([k]) => ednStr(k));
-  const keyW = Math.max(...keyStrs.map((k) => k.length));
+  const keyW = keyStrs.length ? Math.max(...keyStrs.map((k) => k.length)) : 0;
   const rule = '─'.repeat(60);
-  const lines: string[] = ['', `;; ┌─ Fireworks Live Code diagnostics ${'─'.repeat(24)}`];
+  const boxRule = '─'.repeat(24);
+  const lines: string[] = [
+    '',
+    boxRule,
+    `Command: \`Fireworks: ${run.command}\``,
+    diagTimestamp(run.start),
+    `┌─ Fireworks Live Code diagnostics ${boxRule}`,
+  ];
   run.facts.forEach(([, v], i) => {
     const prefix = (i === 0 ? '{' : ' ') + keyStrs[i].padEnd(keyW) + ' ';
     lines.push(prefix + renderDiagValue(v, prefix.length));
   });
   lines[lines.length - 1] += '}';
-  lines.push('', ';; Decision tree');
-  run.steps.forEach((s, i) => lines.push(`;;   ${i + 1}. ${s}`));
-  lines.push(`;; └─ done in ${Date.now() - run.start} ms ${rule}`, '');
+  lines.push('', 'Decision tree');
+  run.steps.forEach((s, i) => lines.push(`   ${i + 1}. ${s}`));
+  lines.push(`└─ done in ${Date.now() - run.start} ms ${rule}`, '');
   return lines.join('\n');
 }
 
@@ -1067,7 +1087,6 @@ function ensureGitignored(root: string): void {
 type GuidanceTopic =
   | 'lein-missing-plugin'
   | 'lein-user-test-refresh'
-  | 'lein-missing-fireworks'
   | 'bb-watch-task'
   | 'deps-alias-deps'
   | 'external-terminal';
@@ -1142,29 +1161,6 @@ function guidanceDoc(
           '```',
           '',
           'See [lein-test-refresh configuration](https://github.com/jakemcc/lein-test-refresh#configuration).',
-          '',
-        ].join('\n'),
-      };
-    case 'lein-missing-fireworks':
-      return {
-        title: 'Fireworks project.clj dependency',
-        markdown: [
-          '### ⚠️ Fireworks: Live Code',
-          '# project.clj is missing the Fireworks dependency',
-          '',
-          'Live Code reloads namespaces that call `?`, so Fireworks must be on the classpath.',
-          'Your `project.clj` has the `lein-test-refresh` plugin but no Fireworks dependency.',
-          '',
-          'Add it to your top-level `:dependencies`:',
-          '',
-          '```clj',
-          ':dependencies [[org.clojure/clojure "1.12.0"]',
-          '               [io.github.paintparty/fireworks "0.21.0"]]',
-          '```',
-          '',
-          'Coordinate: `io.github.paintparty/fireworks`',
-          '',
-          'Then run `Live Code` again.',
           '',
         ].join('\n'),
       };
@@ -1633,9 +1629,9 @@ function allocateEven(lengths: number[], budget: number): number[] {
 // The flow is two picks and no magic: pick the project root, then pick what to run from
 // that project's own config: a deps.edn alias (`clojure -M:<alias>`), a bb.edn task
 // (`bb <task>`), or a Leiningen profile carrying lein-test-refresh
-// (`lein with-profile +<profile> test-refresh`). For deps/bb the user owns those files and
-// Fireworks writes nothing. Leiningen is the one exception: it may patch project.clj's
-// :test-refresh (and add the plugin to a profile), always prompt-then-patch, additive only.
+// (`lein with-profile +<profile> test-refresh`). deps and lein may additively edit their build
+// file (picker-driven, no modal — the pick is the consent): a fresh :live-code alias/profile and
+// the Fireworks dep, never rewriting the user's own alias/profile. bb writes only the watcher seed.
 // ============================================================================
 
 // The terminal name for a root's session, basename-tagged so concurrent sessions in
@@ -2084,10 +2080,10 @@ async function resolveWatcherCommand(root: string): Promise<WatcherPlan | undefi
 // --- Clojure CLI (deps.edn) launch resolution -----------------------------
 // The alias must put BOTH test-refresh and Fireworks on the `-M` classpath AND run test-refresh via
 // :main-opts, or the launch fails (no test-refresh → can't locate the main ns; no Fireworks → any ns
-// that requires fireworks.core or uses `?` fails to reload). When the chosen alias falls short, the
-// extension offers — behind a confirm modal, additively — to add a fresh :live-code alias (Fireworks
-// into the top-level :deps, test-refresh into the alias). We never rewrite the user's own alias.
-// Mirrors the Leiningen project.clj flow: the user still owns deps.edn; we only ever add, on confirm.
+// that requires fireworks.core or uses `?` fails to reload). When no alias qualifies, the picker
+// offers — additively, no modal (the pick is the consent) — to add a fresh :live-code alias
+// (Fireworks into the top-level :deps, test-refresh into the alias). We never rewrite the user's own
+// alias. Mirrors the Leiningen project.clj flow: the user still owns deps.edn; we only ever add.
 async function resolveDepsCommand(root: string): Promise<WatcherPlan | undefined> {
   if (!preflightClojure()) {
     return undefined;
@@ -2111,43 +2107,103 @@ async function resolveDepsCommand(root: string): Promise<WatcherPlan | undefined
   // on its `-M` classpath. Fireworks is NOT required here: it's a project dep, so a missing Fireworks
   // is patched into the top-level :deps on launch (below), not a reason to hide the alias. We still
   // never rewrite the user's alias itself. Carry hasFireworks so we know whether to patch on pick.
-  type AliasItem = vscode.QuickPickItem & { alias?: string; hasFireworks?: boolean; add?: boolean };
+  type AliasItem = vscode.QuickPickItem & { alias: string; hasFireworks: boolean };
   const eligible: AliasItem[] = aliases.flatMap((a) => {
     const s = cljsLib.depsAliasStatus(text, a);
     if (s.error || !s.hasTestRefresh || s.mainOpts !== 'test-refresh') return [];
     return [{ label: `:${a}`, alias: a, hasFireworks: !!s.hasFireworks }];
   });
-  diagFact('Live-coding-eligible aliases', eligible.length ? ednKeywords(eligible.map((i) => i.alias!)) : 'none');
+  diagFact('Live-coding-eligible aliases', eligible.length ? ednKeywords(eligible.map((i) => i.alias)) : 'none');
 
-  // When none qualify, the picker shows a single "add an alias" choice instead of eligible aliases.
-  const ADD_LABEL = 'Add a :live-code alias to :aliases';
-  const items: AliasItem[] = eligible.length ? eligible : [{ label: ADD_LABEL, add: true }];
+  // Some aliases qualify → pick one to run. (No global option here — the user is choosing a specific
+  // local alias.) If Fireworks isn't on the chosen alias's classpath, patch it into the top-level
+  // :deps first (no modal: the user picked this alias from the list).
+  if (eligible.length > 0) {
+    const pick = await vscode.window.showQuickPick(eligible, {
+      placeHolder: 'Select the deps.edn alias to run',
+    });
+    if (!pick) {
+      diagFact('Chosen alias', null);
+      diagStep('Alias pick dismissed.');
+      return undefined;
+    }
+    const alias = pick.alias;
+    diagFact('Chosen alias', `:${alias}`);
+    if (!pick.hasFireworks && !ensureFireworksDep(depsPath, text)) {
+      return undefined;
+    }
+    diagStep(`Alias :${alias} runs test-refresh → use as-is.`);
+    return finishDepsPlan(root, alias);
+  }
+
+  // No eligible alias → offer to add a fresh :live-code alias to the local deps.edn. When a valid
+  // global setup exists (an eligible alias in ~/.clojure/deps.edn AND a global ~/.test-refresh.edn),
+  // also offer to run straight from it — zero project edits. Selecting from the picker is the consent
+  // (no modal), mirroring the Leiningen project.clj flow.
+  const globalPlan = tryDepsGlobalPlan(root);
+  type AddItem = vscode.QuickPickItem & { global?: boolean };
+  const items: AddItem[] = [{ label: 'Setup a :live-code alias, in your local deps.edn' }];
+  if (globalPlan) {
+    items.push({ label: 'Run from your global ~/.clojure/deps.edn', global: true });
+  }
+  diagStep(
+    globalPlan
+      ? 'No eligible alias → offer a local :live-code alias or the valid global deps.edn alias.'
+      : 'No eligible alias → offer to add a :live-code alias.',
+  );
   const pick = await vscode.window.showQuickPick(items, {
-    placeHolder: eligible.length
-      ? 'Select the deps.edn alias to run'
-      : 'No alias is wired for live coding',
+    placeHolder: 'No eligible alias in deps.edn',
   });
   if (!pick) {
     diagFact('Chosen alias', null);
-    diagStep('Alias pick dismissed.');
+    diagStep('Deps launch pick dismissed → abort.');
     return undefined;
   }
-
-  // The "add an alias" choice → additively add a fresh :live-code alias (+ top-level Fireworks).
-  if (pick.add) {
-    diagStep('User chose to add a :live-code alias → write the deps.edn edit.');
-    const created = createLiveCodeAlias(depsPath, text);
-    return created ? finishDepsPlan(root, created) : undefined;
+  if (pick.global) {
+    diagStep('User chose to run from the global ~/.clojure/deps.edn alias.');
+    return globalPlan;
   }
+  diagStep('User chose to add a :live-code alias → write the deps.edn edit.');
+  const created = createLiveCodeAlias(depsPath, text);
+  return created ? finishDepsPlan(root, created) : undefined;
+}
 
-  // An eligible alias is ready to run — but if Fireworks isn't on its classpath, patch it into the
-  // top-level :deps first (no modal: the user picked this alias from the list).
-  const alias = pick.alias as string;
-  diagFact('Chosen alias', `:${alias}`);
-  if (!pick.hasFireworks && !ensureFireworksDep(depsPath, text)) {
+// Is there a valid, self-sufficient global deps.edn way to run (read-only — global config is never
+// written)? Returns a `clojure -M:<alias>` plan when ~/.clojure/deps.edn carries an alias with ALL of:
+// test-refresh AND Fireworks on its classpath AND :main-opts running test-refresh, AND a global
+// ~/.test-refresh.edn (the options) is in place — clojure auto-merges the user deps.edn, so no project
+// edit is needed. The caller then offers "Run from your global ~/.clojure/deps.edn" alongside the
+// add-an-alias choice. undefined when anything is missing / absent / unparseable (logged, no toast).
+// Mirrors tryLeinGlobalUserPlan on the Leiningen side.
+function tryDepsGlobalPlan(root: string): WatcherPlan | undefined {
+  const globalDepsPath = path.join(os.homedir(), '.clojure', 'deps.edn');
+  const text = readFileOrNull(globalDepsPath);
+  diagFact('~/.clojure/deps.edn exists?', text !== null);
+  if (text === null) {
     return undefined;
   }
-  diagStep(`Alias :${alias} runs test-refresh → use as-is.`);
+  const { aliases, error } = cljsLib.depsAliases(text);
+  if (error || !aliases) {
+    diagStep('~/.clojure/deps.edn did not parse → global option not offered.');
+    return undefined;
+  }
+  // The global alias must be fully self-sufficient: test-refresh + Fireworks on its classpath and
+  // :main-opts running test-refresh (unlike a project alias, a missing Fireworks isn't patched here —
+  // the whole point of the global option is zero project edits).
+  const alias = aliases.find((a) => {
+    const s = cljsLib.depsAliasStatus(text, a);
+    return !s.error && s.hasTestRefresh && s.hasFireworks && s.mainOpts === 'test-refresh';
+  });
+  diagFact('Fully-provisioned global alias', alias ? `:${alias}` : 'none');
+  if (!alias) {
+    return undefined;
+  }
+  const globalTestRefresh = fs.existsSync(path.join(os.homedir(), '.test-refresh.edn'));
+  diagFact('global ~/.test-refresh.edn exists?', globalTestRefresh);
+  if (!globalTestRefresh) {
+    return undefined;
+  }
+  diagStep(`Global :${alias} alias (test-refresh + Fireworks) + ~/.test-refresh.edn present → offer global run.`);
   return finishDepsPlan(root, alias);
 }
 
@@ -2205,21 +2261,12 @@ function writeDepsEdn(depsPath: string, text: string): boolean {
 }
 
 // --- Leiningen launch resolution ------------------------------------------
-// Unlike deps/bb, the Leiningen flow may edit the user's project.clj, but only after a
-// confirm modal, and only additively (rewrite-clj preserves formatting/comments). Eligibility:
-// a :profiles entry whose :plugins carries exactly [com.jakemccrary/lein-test-refresh "0.26.0"].
-
-// Confirm a project.clj edit. Modal so it can't be missed; returns true only on the explicit
-// confirm button (Escape/dismiss = false, launch aborts).
-async function confirmProjectCljWrite(detail: string): Promise<boolean> {
-  const confirm = 'Edit project.clj';
-  const pick = await vscode.window.showInformationMessage(
-    'Fireworks: Live Code wants to edit project.clj',
-    { modal: true, detail },
-    confirm,
-  );
-  return pick === confirm;
-}
+// Mirrors the deps.edn flow: picker-driven, no confirm modal — selecting a profile (or the
+// "add a :live-code profile" choice) is the consent. The Leiningen flow may additively edit the
+// user's project.clj (rewrite-clj preserves formatting/comments): add a fresh :live-code profile,
+// ensure the top-level :test-refresh map, and patch in the Fireworks dependency. It never rewrites
+// a profile the user already has. Eligibility: a :profiles entry whose :plugins carries exactly
+// [com.jakemccrary/lein-test-refresh "0.26.0"].
 
 function writeProjectClj(projectCljPath: string, text: string): boolean {
   try {
@@ -2233,101 +2280,77 @@ function writeProjectClj(projectCljPath: string, text: string): boolean {
   }
 }
 
-// Ensure project.clj's top-level :test-refresh map against the baseline (prompt-then-patch).
-// Returns true to proceed with the launch, false to abort (parse error, or the user declined).
-async function ensureTestRefreshLein(projectCljPath: string, text: string): Promise<boolean> {
-  const r = cljsLib.leinEnsureTestRefresh(text);
-  if (r.error || r.text === undefined) {
-    vscode.window.showErrorMessage(`Fireworks: could not parse ${tildify(projectCljPath)}.`);
-    return false;
+// Apply the additive launch edits to project.clj `text` in memory (no write): ensure the Fireworks
+// dependency is on the classpath, then ensure the top-level :test-refresh map against the baseline.
+// No modal — the profile pick already consented. Returns the patched text (equal to `text` when
+// nothing needed adding), or undefined on a parse/edit failure (an error toast is shown).
+function patchLeinProjectClj(projectCljPath: string, text: string): string | undefined {
+  const fw = cljsLib.leinEnsureFireworks(text);
+  if (fw.error || fw.text === undefined) {
+    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(projectCljPath)}.`);
+    return undefined;
   }
-  if (!r.changed) {
-    return true; // baseline already satisfied
+  if (fw.changed) {
+    diagStep('Patched project.clj: added Fireworks to the top-level :dependencies.');
   }
-  const keys = (r.addedKeys ?? []).join(', ');
-  if (!(await confirmProjectCljWrite(`Add a :test-refresh config (${keys}) to project.clj.`))) {
-    return false;
+  const tr = cljsLib.leinEnsureTestRefresh(fw.text);
+  if (tr.error || tr.text === undefined) {
+    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(projectCljPath)}.`);
+    return undefined;
   }
-  return writeProjectClj(projectCljPath, r.text);
+  if (tr.changed) {
+    diagStep(`Patched project.clj: added a :test-refresh config (${(tr.addedKeys ?? []).join(', ')}).`);
+  }
+  return tr.text;
 }
 
-// Add the plugin coordinate to the chosen profile AND ensure :test-refresh, in one combined
-// confirm + one write. Returns true to proceed, false to abort.
-async function addPluginAndTestRefresh(
-  projectCljPath: string,
-  text: string,
-  profile: string,
-): Promise<boolean> {
-  const added = cljsLib.leinAddPlugin(text, profile);
-  if (added.error || added.text === undefined) {
-    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(projectCljPath)}.`);
-    return false;
-  }
-  const ensured = cljsLib.leinEnsureTestRefresh(added.text);
-  if (ensured.error || ensured.text === undefined) {
-    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(projectCljPath)}.`);
-    return false;
-  }
-  if (!added.changed && !ensured.changed) {
-    return true; // nothing to do (shouldn't happen for an ineligible profile, but safe)
-  }
-  const parts: string[] = [];
-  if (added.changed) {
-    parts.push(`add [com.jakemccrary/lein-test-refresh "0.26.0"] to the :${profile} profile`);
-  }
-  if (ensured.changed) {
-    parts.push(`add a :test-refresh config (${(ensured.addedKeys ?? []).join(', ')})`);
-  }
-  if (!(await confirmProjectCljWrite(`Fireworks will ${parts.join(' and ')} in project.clj.`))) {
-    return false;
-  }
-  return writeProjectClj(projectCljPath, ensured.text);
-}
-
-// Fall back to ~/.lein/profiles.clj when project.clj defines no profiles. Read-only: the
-// extension never writes global config. Returns a plan (plain `lein test-refresh`, since the
-// :user profile auto-merges) only when :user carries the plugin AND a :test-refresh key;
-// otherwise opens the matching setup guide to the side.
-async function resolveLeinUserProfile(): Promise<WatcherPlan | undefined> {
+// Is the global ~/.lein/profiles.clj :user profile a valid, self-sufficient way to run (read-only —
+// global config is never written)? Returns a plain `lein test-refresh` plan only when :user carries
+// ALL of: the test-refresh plugin, a Fireworks dependency, and a :test-refresh options map (it
+// auto-merges into every task, so no project edit is needed). The caller then offers "Run from your
+// global ~/.lein/profiles.clj" alongside the add-a-profile choice. undefined when anything is missing
+// / the file is absent / unparseable (logged, no toast).
+function tryLeinGlobalUserPlan(): WatcherPlan | undefined {
   const profilesPath = path.join(os.homedir(), '.lein', 'profiles.clj');
   const text = readFileOrNull(profilesPath);
   diagFact('~/.lein/profiles.clj exists?', text !== null);
-  const status = text === null ? undefined : cljsLib.leinUserProfileStatus(text);
-  if (status && status.error) {
-    diagStep('~/.lein/profiles.clj did not parse → abort.');
-    vscode.window.showErrorMessage(`Fireworks: could not parse ${tildify(profilesPath)}.`);
+  if (text === null) {
     return undefined;
   }
-  diagFact('global :user has lein-test-refresh?', status ? !!status.hasPlugin : false);
-  diagFact('global :user has :test-refresh?', status ? !!status.hasTestRefresh : false);
-  if (!status || !status.hasPlugin) {
-    diagStep('Global :user profile lacks the plugin → missing-plugin setup guide.');
-    await showGuidance('lein-missing-plugin');
+  const status = cljsLib.leinUserProfileStatus(text);
+  if (status.error) {
+    diagStep('~/.lein/profiles.clj did not parse → global :user not offered.');
     return undefined;
   }
-  if (!status.hasTestRefresh) {
-    diagStep('Global :user has the plugin but no :test-refresh → test-refresh setup guide.');
-    await showGuidance('lein-user-test-refresh');
-    return undefined;
+  diagFact('global :user has lein-test-refresh?', !!status.hasPlugin);
+  diagFact('global :user has Fireworks?', !!status.hasFireworks);
+  diagFact('global :user has :test-refresh?', !!status.hasTestRefresh);
+  if (status.hasPlugin && status.hasFireworks && status.hasTestRefresh) {
+    diagStep('Global :user carries plugin + Fireworks + :test-refresh → offer plain `lein test-refresh`.');
+    return { command: leinCommand() };
   }
-  diagStep('Global :user carries plugin + :test-refresh → run plain `lein test-refresh`.');
-  return { command: leinCommand() };
+  return undefined;
 }
 
-// Whether project.clj carries a Fireworks dependency. Records the finding in the diagnostics.
-// On a parse failure (shouldn't happen — leinProfiles already parsed) it returns true so the
-// unrelated Fireworks check never blocks a launch; a real parse error is handled by the caller.
-function checkLeinFireworks(text: string): boolean {
-  const status = cljsLib.leinFireworksStatus(text);
-  const hasFW = !!status.hasFireworks;
-  diagFact('project.clj has Fireworks dep?', status.error ? 'unknown (parse error)' : hasFW);
-  if (status.error) {
-    return true;
+// Additively add a fresh :live-code profile (carrying lein-test-refresh), then patch in Fireworks +
+// :test-refresh, in one write. No modal — the picker choice was the consent, mirroring the deps.edn
+// "Add a :live-code alias" path. Returns the plan, or undefined on an edit/write failure.
+function addLeinLiveCodeProfile(projectCljPath: string, text: string): WatcherPlan | undefined {
+  const added = cljsLib.leinAddLiveCodeProfile(text);
+  if (added.error || added.text === undefined || !added.profile) {
+    vscode.window.showErrorMessage(`Fireworks: could not edit ${tildify(projectCljPath)}.`);
+    return undefined;
   }
-  if (!hasFW) {
-    diagStep('project.clj has no Fireworks dependency → guidance, abort (reload would fail).');
+  diagFact('project.clj edit', `added :${added.profile} profile`);
+  const patched = patchLeinProjectClj(projectCljPath, added.text);
+  if (patched === undefined) {
+    return undefined;
   }
-  return hasFW;
+  if (!writeProjectClj(projectCljPath, patched)) {
+    return undefined;
+  }
+  diagStep(`Wrote a :${added.profile} profile to project.clj.`);
+  return { command: leinCommand(added.profile) };
 }
 
 // Resolve the Leiningen launch plan for `root`. Lein sessions carry no TestRefreshInfo (the
@@ -2349,15 +2372,11 @@ async function resolveLeinCommand(root: string): Promise<WatcherPlan | undefined
     return undefined;
   }
   diagFact('All profiles in project.clj', ednKeywords(all));
-  diagFact('Eligible profiles (carry lein-test-refresh)', ednKeywords(eligible));
-  // Fireworks must be a project dependency or the reload of any namespace calling `?` fails. Check
-  // up front (before any profile prompt/edit) so a missing dep aborts early with guidance. Reads
-  // the original text; the profile edits below never touch :dependencies.
-  if (!checkLeinFireworks(text)) {
-    await showGuidance('lein-missing-fireworks');
-    return undefined;
-  }
-  // An eligible profile already carries the plugin → pick it, ensure :test-refresh, launch.
+  diagFact('Eligible profiles', ednKeywords(eligible));
+
+  // An eligible profile already carries the plugin → pick it, patch Fireworks + :test-refresh (no
+  // modal — the pick is the consent), launch. Fireworks isn't required for eligibility: it's a
+  // project dep, so a missing one is patched into :dependencies here rather than blocking the launch.
   if (eligible.length > 0) {
     const profile = await pickProfile(
       eligible,
@@ -2368,31 +2387,47 @@ async function resolveLeinCommand(root: string): Promise<WatcherPlan | undefined
       diagStep('Eligible profile pick dismissed → abort.');
       return undefined;
     }
-    diagStep(`Profile :${profile} already carries the plugin → ensure :test-refresh, then launch.`);
-    if (!(await ensureTestRefreshLein(projectCljPath, text))) {
-      diagStep('project.clj :test-refresh edit declined or failed → abort.');
+    diagStep(`Profile :${profile} carries the plugin → patch Fireworks/:test-refresh, then launch.`);
+    const patched = patchLeinProjectClj(projectCljPath, text);
+    if (patched === undefined) {
+      return undefined;
+    }
+    if (patched !== text && !writeProjectClj(projectCljPath, patched)) {
       return undefined;
     }
     return { command: leinCommand(profile) };
   }
-  // No eligible profile, but profiles exist → offer to add the plugin to one.
-  if (all.length > 0) {
-    diagStep('Profiles exist but none carry lein-test-refresh → offer to add the plugin.');
-    const profile = await pickProfile(all, 'Add lein-test-refresh to which profile?');
-    diagFact('Chosen profile', profile ? `:${profile}` : null);
-    if (!profile) {
-      diagStep('Add-plugin profile pick dismissed → abort.');
-      return undefined;
-    }
-    if (!(await addPluginAndTestRefresh(projectCljPath, text, profile))) {
-      diagStep('project.clj plugin/:test-refresh edit declined or failed → abort.');
-      return undefined;
-    }
-    return { command: leinCommand(profile) };
+
+  // No eligible profile → offer to add a fresh :live-code profile to the local project.clj. When a
+  // valid global ~/.lein/profiles.clj :user profile exists (plugin + :test-refresh, which auto-merges
+  // into every task), also offer to run straight from it — zero project edits. Selecting from the
+  // picker is the consent (no modal), mirroring the deps.edn "Add a :live-code alias" choice.
+  const globalPlan = tryLeinGlobalUserPlan();
+  type LeinChoice = vscode.QuickPickItem & { global?: boolean };
+  const items: LeinChoice[] = [
+    { label: 'Setup a :live-code profile, in your local project.clj' },
+  ];
+  if (globalPlan) {
+    items.push({ label: 'Run from your global ~/.lein/profiles.clj', global: true });
   }
-  // No profiles at all → fall through to ~/.lein/profiles.clj.
-  diagStep('No :profiles in project.clj → fall back to ~/.lein/profiles.clj (:user, read-only).');
-  return resolveLeinUserProfile();
+  diagStep(
+    globalPlan
+      ? 'No eligible profile → offer a local :live-code profile or the valid global :user profile.'
+      : 'No eligible profile → offer to add a :live-code profile.',
+  );
+  const pick = await vscode.window.showQuickPick(items, {
+    placeHolder: 'No eligible profile in project.clj',
+  });
+  if (!pick) {
+    diagStep('Lein launch pick dismissed → abort.');
+    return undefined;
+  }
+  if (pick.global) {
+    diagStep('User chose to run from the global ~/.lein/profiles.clj :user profile.');
+    return globalPlan;
+  }
+  diagStep('User chose to add a :live-code profile → write the project.clj edit.');
+  return addLeinLiveCodeProfile(projectCljPath, text);
 }
 
 function waitForShellIntegration(

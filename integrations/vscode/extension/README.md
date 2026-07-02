@@ -11,9 +11,9 @@
 
 <br>
 
-This extension provides a suite of commands which fall into 2 main categories:
+This extension provides a commands which fall into 2 main categories:
 
-1) A cohesive set of commands to toggle the different Fireworks macros on forms in your editor. You can operate on one form at a time or several nested forms at a time.
+1) A cohesive set of operations to toggle the different Fireworks macros on forms in your editor. You can operate on one form at a time or several nested forms at a time.
 
 2) Live Code mode activates real-time, inline results of wrapped forms. These results are also printed in hi-fidelity color, with annotated file info, in the terminal your project is running in.
 
@@ -21,9 +21,11 @@ This extension provides a suite of commands which fall into 2 main categories:
 
 ## Install
 
-- In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**. Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
-- Or install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks).
-- Or from a `.vsix`: **Extensions: Install from VSIX**.
+- In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**.<br>Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
+
+- Or, install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks).
+
+- Or, from a `.vsix`: **Extensions: Install from VSIX**.
 
 
 ## Requirements
@@ -33,6 +35,8 @@ This extension provides a suite of commands which fall into 2 main categories:
 
 
 ## Commands
+
+<p align="left"><sub><b>All screenshots below show Fireworks Live Code running with an integrated terminal (on right). Theme is Alabasjer Dark.</b></sub></p>
 
 ### Toggle `?`
 

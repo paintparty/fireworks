@@ -15,11 +15,19 @@
    Note: defproject is a flat kv LIST `(defproject name version :k v …)`, not a map — the
    body helpers walk/edit the pairs after name + version. On unparseable input every public
    fn returns {:error :unparseable} rather than throwing, so TS can abort cleanly."
-  (:require [clojure.string :as str]
+  (:require [cljfmt.core :as cljfmt]
+            [clojure.string :as str]
             [fireworks-vscode.config :as config]
             [rewrite-clj.node :as n]
             [rewrite-clj.parser :as p]
             [rewrite-clj.zip :as z]))
+
+(defn- reformat
+  "cljfmt the whole project.clj `text` to canonical indentation (comments + blank lines preserved,
+   and non-indenting spaces — e.g. the aligned :test-refresh values — left alone). Defensive: on any
+   cljfmt failure return the text unchanged so a launch is never blocked."
+  [text]
+  (try (cljfmt/reformat-string text) (catch :default _ text)))
 
 (def ^:private plugin-sym 'com.jakemccrary/lein-test-refresh)
 (def ^:private plugin-version "0.26.0")
@@ -60,42 +68,6 @@
         (z/right kz)
         (recur (some-> kz z/right z/right))))))
 
-;; --- :plugins vector editing ----------------------------------------------
-
-(defn- find-plugin-child
-  "The zloc of the lein-test-refresh coordinate (any version) within the :plugins vector
-   zloc `zvec`, or nil."
-  [zvec]
-  (loop [c (z/down zvec)]
-    (when c
-      (let [s (try (z/sexpr c) (catch :default _ nil))]
-        (if (and (vector? s) (= (first s) plugin-sym))
-          c
-          (recur (z/right c)))))))
-
-(defn- append-coord
-  "Append the exact coordinate to the :plugins vector zloc `zvec`. Returns a vector zloc."
-  [zvec]
-  (if-let [last-child (-> zvec z/down z/rightmost)]
-    (-> last-child
-        (z/insert-right* (n/coerce coordinate))
-        (z/insert-right* (n/spaces 1))
-        z/up)
-    (z/replace zvec (n/coerce [coordinate])))) ; empty []
-
-(defn- ensure-plugin-in-vector
-  "Ensure the exact coordinate is in the :plugins vector zloc. Replaces a wrong-version
-   lein-test-refresh entry rather than duplicating. Returns {:loc vector-zloc :changed bool}."
-  [zvec]
-  (let [existing (find-plugin-child zvec)]
-    (cond
-      (and existing (= (z/sexpr existing) coordinate))
-      {:loc zvec :changed false}
-      existing
-      {:loc (z/up (z/replace existing (n/coerce coordinate))) :changed true}
-      :else
-      {:loc (append-coord zvec) :changed true})))
-
 ;; --- public surface -------------------------------------------------------
 
 (defn profiles
@@ -119,6 +91,13 @@
 ;; The artifact name Live Code needs on the classpath so namespaces that call `?` reload.
 ;; Matched by name, so group / version / mvn|git form all count (io.github.paintparty/fireworks).
 (def ^:private fireworks-artifact "fireworks")
+
+;; The coordinate the extension appends to the top-level :dependencies when a project's classpath
+;; lacks Fireworks. Kept in step with examples/leiningen-project (a git-style coord, which lein
+;; supports); matched on launch by artifact name, so any group/version already present is left alone.
+(def ^:private fireworks-sym 'io.github.paintparty/fireworks)
+(def ^:private fireworks-version "0.21.0")
+(def ^:private fireworks-coordinate [fireworks-sym fireworks-version])
 
 (defn- deps-vec-has-fireworks?
   "True when a Leiningen :dependencies vector carries a coordinate whose artifact name is
@@ -145,25 +124,82 @@
                                    (some deps-vec-has-fireworks? prof-deps)))})
     (catch :default _ {:error :unparseable})))
 
-(defn add-plugin-to-profile
-  "Ensure the exact coordinate in profile `profile-name`'s :plugins vector in project.clj
-   `text`: create the :plugins vector if absent, replace a wrong-version entry, or append.
-   Returns {:text new-text :changed bool} or {:error :unparseable}."
-  [text profile-name]
+(defn- append-to-vector
+  "Append form `x` to the vector zloc `zvec`, on its own line aligned under the vector's existing
+   first child (or via z/append-child when the vector is empty). `zvec` must come from a
+   position-tracked zipper so the child column can be read. Returns the vector zloc."
+  [zvec x]
+  (if-let [first-child (z/down zvec)]
+    (let [col (second (z/position first-child))]
+      (-> zvec z/down z/rightmost
+          (z/insert-right* (n/coerce x))
+          (z/insert-right* (n/spaces (dec col)))
+          (z/insert-right* (n/newlines 1))
+          z/up))
+    (z/append-child zvec x)))
+
+(defn ensure-fireworks
+  "Ensure project.clj `text` carries a Fireworks dependency. When it's absent everywhere (the
+   top-level and every profile :dependencies), append the coordinate to the top-level :dependencies
+   vector — aligned under the existing entries — creating that vector when the project has none.
+   Matched by artifact name, so any group/version already present counts. Returns
+   {:text new-text :changed bool} — :changed false (text unchanged) when already present — or
+   {:error :unparseable}. Mirrors fireworks-vscode.deps/ensure-fireworks on the Clojure CLI side."
+  [text]
   (try
-    (let [pkey (keyword profile-name)
-          pz   (find-key (body-kv-start (z/of-string text)) :profiles)
-          prof (some-> pz (z/get pkey))]
-      (cond
-        (nil? prof)
-        {:error :unparseable}
+    (if (:has-fireworks (fireworks-dep-status text))
+      {:text text :changed false}
+      (let [depsz (find-key (body-kv-start (z/of-string text {:track-position? true})) :dependencies)]
+        {:text    (if depsz
+                    (z/root-string (append-to-vector depsz fireworks-coordinate))
+                    ;; No :dependencies at all — splice one at the end of the defproject body.
+                    (let [block    (str "\n  :dependencies [" (pr-str fireworks-coordinate) "]")
+                          children (n/children (p/parse-string-all block))
+                          end      (-> (z/of-string text) z/down z/rightmost)]
+                      (z/root-string (reduce z/insert-right* end (reverse children)))))
+         :changed true}))
+    (catch :default _ {:error :unparseable})))
 
-        (nil? (z/get prof :plugins))
-        {:text (-> prof (z/assoc :plugins [coordinate]) z/root-string) :changed true}
+;; --- :live-code profile (additive, picker-consented on the TS side) -------
 
-        :else
-        (let [{:keys [loc changed]} (ensure-plugin-in-vector (z/get prof :plugins))]
-          {:text (z/root-string loc) :changed changed})))
+(def ^:private live-code-profile-block
+  "The commented :profiles block add-live-code-profile splices when a project.clj has no :profiles.
+   Mirrors examples/leiningen-project: a dedicated :live-code profile carrying exactly the
+   lein-test-refresh plugin (kept out of the default build), documented by the comment header.
+   Parsed and inserted verbatim so the comments/alignment survive. The map value mirrors `coordinate`."
+  "
+  ;; The VSCode extension command `Fireworks: Live Code` runs:
+  ;; `lein with-profile +live-code test-refresh`.
+  ;; The plugin lives in a profile (not top-level :plugins) so the extension
+  ;; detects it as an eligible profile and it stays out of the default build.
+  :profiles {:live-code {:plugins [[com.jakemccrary/lein-test-refresh \"0.26.0\"]]}}")
+
+(defn add-live-code-profile
+  "Add a fresh live-coding profile to project.clj `text`, mirroring fireworks-vscode.deps/
+   add-live-code-alias on the Clojure CLI side: a :live-code profile whose :plugins carries exactly
+   the eligible coordinate — never rewriting a profile the user already has. When the project has no
+   :profiles, splice the commented block (always :live-code); when :profiles exists, assoc a fresh
+   profile (:live-code, or :fireworks-live-code when :live-code is taken). Returns
+   {:text new-text :profile name :changed true} or {:error :unparseable}."
+  [text]
+  (try
+    (let [pz (find-key (body-kv-start (z/of-string text)) :profiles)]
+      (if (nil? pz)
+        {:text    (let [children (n/children (p/parse-string-all live-code-profile-block))
+                        end      (-> (z/of-string text) z/down z/rightmost)]
+                    (z/root-string (reduce z/insert-right* end (reverse children))))
+         :profile "live-code"
+         :changed true}
+        (let [existing (set (map profile-key->str (keys (z/sexpr pz))))
+              name     (if (contains? existing "live-code") "fireworks-live-code" "live-code")
+              kw       (keyword name)
+              ;; assoc appends on the same line as the last profile — insert a newline before the new
+              ;; key so it lands on its own line, then let cljfmt fix the indentation (as deps does).
+              mz       (z/assoc pz kw {:plugins [coordinate]})
+              mz       (z/insert-newline-left (z/left (z/get mz kw)))]
+          {:text    (reformat (z/root-string mz))
+           :profile name
+           :changed true})))
     (catch :default _ {:error :unparseable})))
 
 (def ^:private test-refresh-block
@@ -221,14 +257,26 @@
     (coll? x)         (boolean (some deep-has-coordinate? x))
     :else             false))
 
+(defn- deep-has-fireworks?
+  "True when a Fireworks coordinate (a vector whose artifact name is \"fireworks\", e.g.
+   [io.github.paintparty/fireworks \"0.21.0\"]) appears anywhere nested inside x. Matched by name,
+   so any group/version counts."
+  [x]
+  (cond
+    (and (vector? x) (symbol? (first x)) (= (name (first x)) fireworks-artifact)) true
+    (coll? x)                                                                     (boolean (some deep-has-fireworks? x))
+    :else                                                                         false))
+
 (defn user-profile-status
-  "Read ~/.lein/profiles.clj `text` (a map). Deep-scan the :user entry for the exact
-   coordinate and check whether :user has a :test-refresh key. Returns
-   {:has-plugin bool :has-test-refresh bool} or {:error :unparseable}."
+  "Read ~/.lein/profiles.clj `text` (a map). Deep-scan the :user entry for the test-refresh plugin
+   coordinate and a Fireworks dependency, and check whether :user has a :test-refresh options key.
+   All three are required for Live Code to run off the global profile. Returns
+   {:has-plugin bool :has-fireworks bool :has-test-refresh bool} or {:error :unparseable}."
   [text]
   (try
     (let [user (get (z/sexpr (z/of-string text)) :user)]
       {:has-plugin       (deep-has-coordinate? user)
+       :has-fireworks    (deep-has-fireworks? user)
        :has-test-refresh (and (map? user) (contains? user :test-refresh))})
     (catch :default _ {:error :unparseable})))
 

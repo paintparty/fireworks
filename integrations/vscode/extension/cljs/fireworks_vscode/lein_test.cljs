@@ -41,47 +41,78 @@
   (testing "broken text -> error so TS can abort"
     (is (= {:error :unparseable} (lein/profiles "(defproject my-app")))))
 
-;; --- add-plugin-to-profile ------------------------------------------------
+;; --- add-live-code-profile ------------------------------------------------
 
-(deftest add-plugin-to-existing-plugins
-  (testing "appends the coordinate to an existing :plugins vector"
+(deftest add-live-code-profile-splices-when-no-profiles
+  (testing "no :profiles -> splices a commented :live-code profile carrying the plugin"
     (let [text (str "(defproject my-app \"0.1.0\"\n"
-                    "  :profiles {:dev {:plugins [[lein-ancient \"1.0.0\"]]}})")
-          {:keys [text changed]} (lein/add-plugin-to-profile text "dev")]
+                    "  :dependencies [[org.clojure/clojure \"1.12.0\"]])")
+          {:keys [text profile changed]} (lein/add-live-code-profile text)]
       (is changed)
-      (is (str/includes? text "lein-ancient"))
+      (is (= "live-code" profile))
       (is (str/includes? text eligible-coord))
-      ;; now eligible
-      (is (= ["dev"] (:eligible (lein/profiles text)))))))
+      ;; the commented header from examples/leiningen-project rides along verbatim
+      (is (str/includes? text ";; `lein with-profile +live-code test-refresh`."))
+      ;; the fresh profile is now eligible and named :live-code
+      (is (= ["live-code"] (:eligible (lein/profiles text)))))))
 
-(deftest add-plugin-creates-plugins
-  (testing "creates a :plugins vector when the profile lacks one"
+(deftest add-live-code-profile-assocs-into-existing
+  (testing "existing :profiles (none eligible) -> assoc a fresh :live-code, leaving others intact"
     (let [text (str "(defproject my-app \"0.1.0\"\n"
                     "  :profiles {:dev {:source-paths [\"dev\"]}})")
-          {:keys [text changed]} (lein/add-plugin-to-profile text "dev")]
+          {:keys [text profile changed]} (lein/add-live-code-profile text)]
       (is changed)
-      (is (= ["dev"] (:eligible (lein/profiles text)))))))
+      (is (= "live-code" profile))
+      (is (str/includes? text ":dev")) ; user's profile untouched
+      (is (= {:all ["dev" "live-code"] :eligible ["live-code"]} (lein/profiles text))))))
 
-(deftest add-plugin-already-present
-  (testing "no-op when the exact coordinate is already there"
+(deftest add-live-code-profile-avoids-name-collision
+  (testing "a taken :live-code (not eligible) -> the new profile is :fireworks-live-code"
     (let [text (str "(defproject my-app \"0.1.0\"\n"
-                    "  :profiles {:dev {:plugins [" eligible-coord "]}})")
-          {:keys [changed]} (lein/add-plugin-to-profile text "dev")]
+                    "  :profiles {:live-code {:source-paths [\"dev\"]}})")
+          {:keys [text profile changed]} (lein/add-live-code-profile text)]
+      (is changed)
+      (is (= "fireworks-live-code" profile))
+      (is (= ["fireworks-live-code"] (:eligible (lein/profiles text)))))))
+
+(deftest add-live-code-profile-unparseable
+  (testing "broken text -> error"
+    (is (= {:error :unparseable} (lein/add-live-code-profile "(defproject")))))
+
+;; --- ensure-fireworks -----------------------------------------------------
+
+(deftest ensure-fireworks-appends-when-absent
+  (testing "no Fireworks anywhere -> append the coordinate to the top-level :dependencies"
+    (let [text (str "(defproject my-app \"0.1.0\"\n"
+                    "  :dependencies [[org.clojure/clojure \"1.12.0\"]]\n"
+                    "  :profiles {:live-code {:plugins [" eligible-coord "]}})")
+          {:keys [text changed]} (lein/ensure-fireworks text)]
+      (is changed)
+      (is (str/includes? text "io.github.paintparty/fireworks"))
+      (is (:has-fireworks (lein/fireworks-dep-status text)))
+      ;; the existing dep is preserved and the vector still parses
+      (is (str/includes? text "org.clojure/clojure")))))
+
+(deftest ensure-fireworks-noop-top-level
+  (testing "already a top-level dep -> unchanged"
+    (let [text (str "(defproject my-app \"0.1.0\"\n"
+                    "  :dependencies [[org.clojure/clojure \"1.12.0\"]\n"
+                    "                 [io.github.paintparty/fireworks \"0.21.0\"]])")
+          {:keys [text changed]} (lein/ensure-fireworks text)]
+      (is (false? changed))
+      (is (= 1 (count (re-seq #"paintparty/fireworks" text)))))))
+
+(deftest ensure-fireworks-noop-in-profile
+  (testing "Fireworks already in a profile's :dependencies -> unchanged (it merges onto classpath)"
+    (let [text (str "(defproject my-app \"0.1.0\"\n"
+                    "  :dependencies [[org.clojure/clojure \"1.12.0\"]]\n"
+                    "  :profiles {:live-code {:dependencies [[io.github.paintparty/fireworks \"0.21.0\"]]}})")
+          {:keys [changed]} (lein/ensure-fireworks text)]
       (is (false? changed)))))
 
-(deftest add-plugin-replaces-wrong-version
-  (testing "replaces a wrong-version lein-test-refresh instead of duplicating"
-    (let [text (str "(defproject my-app \"0.1.0\"\n"
-                    "  :profiles {:dev {:plugins [[com.jakemccrary/lein-test-refresh \"0.27.0\"]]}})")
-          {:keys [text changed]} (lein/add-plugin-to-profile text "dev")]
-      (is changed)
-      (is (str/includes? text "\"0.26.0\""))
-      (is (not (str/includes? text "\"0.27.0\"")))
-      (is (= ["dev"] (:eligible (lein/profiles text)))))))
-
-(deftest add-plugin-unparseable
+(deftest ensure-fireworks-unparseable
   (testing "broken text -> error"
-    (is (= {:error :unparseable} (lein/add-plugin-to-profile "(defproject" "dev")))))
+    (is (= {:error :unparseable} (lein/ensure-fireworks "(defproject")))))
 
 ;; --- ensure-test-refresh --------------------------------------------------
 
@@ -127,21 +158,36 @@
 
 ;; --- user-profile-status (~/.lein/profiles.clj) ---------------------------
 
-(deftest user-profile-plugin-and-test-refresh
-  (testing "plugin nested in :user and a :test-refresh key both detected"
+(deftest user-profile-plugin-fireworks-and-test-refresh
+  (testing "plugin, Fireworks dep, and a :test-refresh key all detected (the full global setup)"
+    (let [text (str "{:user {:plugins [" eligible-coord "]\n"
+                    "        :dependencies [[io.github.paintparty/fireworks \"0.21.0\"]]\n"
+                    "        :test-refresh {:quiet true}}}")]
+      (is (= {:has-plugin true :has-fireworks true :has-test-refresh true}
+             (lein/user-profile-status text))))))
+
+(deftest user-profile-no-fireworks
+  (testing "plugin + :test-refresh present but no Fireworks dep -> has-fireworks false"
     (let [text (str "{:user {:plugins [" eligible-coord "]\n"
                     "        :test-refresh {:quiet true}}}")]
-      (is (= {:has-plugin true :has-test-refresh true} (lein/user-profile-status text))))))
+      (is (= {:has-plugin true :has-fireworks false :has-test-refresh true}
+             (lein/user-profile-status text))))))
 
 (deftest user-profile-plugin-no-test-refresh
   (testing "plugin present but no :test-refresh in :user"
     (let [text (str "{:user {:plugins [" eligible-coord "]}}")]
-      (is (= {:has-plugin true :has-test-refresh false} (lein/user-profile-status text))))))
+      (is (= {:has-plugin true :has-fireworks false :has-test-refresh false}
+             (lein/user-profile-status text))))))
 
 (deftest user-profile-no-plugin
   (testing "no coordinate anywhere in :user"
-    (is (= {:has-plugin false :has-test-refresh false}
+    (is (= {:has-plugin false :has-fireworks false :has-test-refresh false}
            (lein/user-profile-status "{:user {:plugins [[lein-ancient \"1.0.0\"]]}}")))))
+
+(deftest user-profile-fireworks-artifact-name-match
+  (testing "Fireworks matched by artifact name: any group/version counts"
+    (let [text "{:user {:dependencies [[org.clojars.someone/fireworks \"9.9.9\"]]}}"]
+      (is (true? (:has-fireworks (lein/user-profile-status text)))))))
 
 (deftest user-profile-unparseable
   (testing "broken text -> error"

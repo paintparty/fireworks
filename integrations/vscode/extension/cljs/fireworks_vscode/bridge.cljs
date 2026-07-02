@@ -186,11 +186,20 @@
   (let [r (lein/fireworks-dep-status text)]
     (if (error? r) (err->js r) #js {:hasFireworks (:has-fireworks r)})))
 
-;; Ensure the exact coordinate in `profile`'s :plugins vector in project.clj `text`.
-;; #js {:text ... :changed bool} on success; #js {:error "unparseable"} when it won't parse.
-(defn lein-add-plugin [text profile]
-  (let [r (lein/add-plugin-to-profile text profile)]
+;; Ensure project.clj `text` carries a Fireworks dependency, appended to the top-level
+;; :dependencies when absent everywhere. #js {:text ... :changed bool} on success (:changed false
+;; when already present); #js {:error "unparseable"} when it won't parse.
+(defn lein-ensure-fireworks [text]
+  (let [r (lein/ensure-fireworks text)]
     (if (error? r) (err->js r) #js {:text (:text r) :changed (:changed r)})))
+
+;; Add a fresh :live-code profile (carrying lein-test-refresh) to project.clj `text` — spliced with
+;; a comment header when the project has no :profiles, else assoc'd (:fireworks-live-code on a name
+;; collision), never rewriting an existing profile. #js {:text ... :profile name :changed bool} on
+;; success; #js {:error "unparseable"} on a parse error.
+(defn lein-add-live-code-profile [text]
+  (let [r (lein/add-live-code-profile text)]
+    (if (error? r) (err->js r) #js {:text (:text r) :profile (:profile r) :changed (:changed r)})))
 
 ;; Ensure the top-level :test-refresh map in project.clj `text` against the baseline.
 ;; #js {:text ... :changed bool :addedKeys [...]} on success; #js {:error "unparseable"}.
@@ -200,13 +209,14 @@
       (err->js r)
       #js {:text (:text r) :changed (:changed r) :addedKeys (clj->js (:added-keys r))})))
 
-;; Read ~/.lein/profiles.clj `text`: #js {:hasPlugin bool :hasTestRefresh bool} (the :user
-;; entry carries the coordinate / a :test-refresh key); #js {:error "unparseable"}.
+;; Read ~/.lein/profiles.clj `text`: #js {:hasPlugin bool :hasFireworks bool :hasTestRefresh bool}
+;; (the :user entry carries the test-refresh plugin / a Fireworks dep / a :test-refresh options key);
+;; #js {:error "unparseable"}.
 (defn lein-user-profile-status [text]
   (let [r (lein/user-profile-status text)]
     (if (error? r)
       (err->js r)
-      #js {:hasPlugin (:has-plugin r) :hasTestRefresh (:has-test-refresh r)})))
+      #js {:hasPlugin (:has-plugin r) :hasFireworks (:has-fireworks r) :hasTestRefresh (:has-test-refresh r)})))
 
 ;; A human-readable :test-refresh { … } snippet (from the baseline) for the modals.
 (defn lein-test-refresh-snippet []

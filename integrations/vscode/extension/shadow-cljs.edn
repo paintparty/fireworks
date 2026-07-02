@@ -28,7 +28,8 @@
                :toggleMode           fireworks-vscode.bridge/toggle-mode
                :leinProfiles         fireworks-vscode.bridge/lein-profiles
                :leinFireworksStatus  fireworks-vscode.bridge/lein-fireworks-status
-               :leinAddPlugin        fireworks-vscode.bridge/lein-add-plugin
+               :leinEnsureFireworks  fireworks-vscode.bridge/lein-ensure-fireworks
+               :leinAddLiveCodeProfile fireworks-vscode.bridge/lein-add-live-code-profile
                :leinEnsureTestRefresh fireworks-vscode.bridge/lein-ensure-test-refresh
                :leinUserProfileStatus fireworks-vscode.bridge/lein-user-profile-status
                :leinTestRefreshSnippet fireworks-vscode.bridge/lein-test-refresh-snippet}}

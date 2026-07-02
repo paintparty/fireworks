@@ -230,8 +230,9 @@ export function toggleMode(text: string): ToggleModeResult;
 //
 // A project.clj is Live-Code-eligible when its defproject :profiles has a profile (any
 // name) whose :plugins carries exactly [com.jakemccrary/lein-test-refresh "0.26.0"]; the
-// watcher then runs `lein with-profile +<profile> test-refresh`. Unlike deps/bb, the
-// extension may edit project.clj's :test-refresh (additive, prompt-then-patch).
+// watcher then runs `lein with-profile +<profile> test-refresh`. Mirroring the deps.edn flow,
+// the extension may additively edit project.clj (picker-consented, no modal): add a fresh
+// :live-code profile, ensure the top-level :test-refresh map, and patch in the Fireworks dep.
 
 export interface LeinProfilesResult {
   all?: string[]; // every profile name in :profiles order (colon dropped)
@@ -258,32 +259,47 @@ export interface ChangedTextResult {
   error?: string;
 }
 
-// Ensure the exact coordinate in `profile`'s :plugins vector: create the vector if absent,
-// replace a wrong-version lein-test-refresh entry, or append. Formatting preserved.
-export function leinAddPlugin(text: string, profile: string): ChangedTextResult;
+// Ensure project.clj carries a Fireworks dependency: append the coordinate to the top-level
+// :dependencies (aligned) when absent everywhere. Additive; matched by artifact name so any
+// group/version already present is left alone (changed=false). Mirrors depsEnsureFireworks.
+export function leinEnsureFireworks(text: string): ChangedTextResult;
+
+export interface AddProfileResult {
+  text?: string; // new project.clj text on success
+  profile?: string; // the profile added ("live-code", or "fireworks-live-code" on collision)
+  changed?: boolean; // always true on success
+  error?: string;
+}
+
+// Add a fresh :live-code profile carrying lein-test-refresh (the eligible-profile shape), never
+// rewriting a profile the user already has: spliced with a comment header when the project has no
+// :profiles, else assoc'd into the existing map. Mirrors depsAddLiveCodeAlias on the deps side.
+export function leinAddLiveCodeProfile(text: string): AddProfileResult;
 
 export interface EnsureTestRefreshResult {
   text?: string; // new project.clj text on success
   changed?: boolean; // false when every baseline key was already present
-  addedKeys?: string[]; // the baseline keys added/merged (for the confirm modal)
+  addedKeys?: string[]; // the baseline keys added/merged (for the diagnostics line)
   error?: string;
 }
 
 // Ensure the top-level defproject :test-refresh map against the baseline: add the full map
-// when absent, else merge only the missing keys (existing values untouched). Used by the
-// prompt-then-patch flow before project.clj is written.
+// when absent, else merge only the missing keys (existing values untouched). Applied (with the
+// Fireworks + profile edits) before project.clj is written, picker-consented — no modal.
 export function leinEnsureTestRefresh(text: string): EnsureTestRefreshResult;
 
 export interface UserProfileStatusResult {
-  hasPlugin?: boolean; // the coordinate appears nested anywhere in the :user entry
-  hasTestRefresh?: boolean; // the :user map has a :test-refresh key
+  hasPlugin?: boolean; // the test-refresh plugin coordinate appears nested anywhere in the :user entry
+  hasFireworks?: boolean; // a Fireworks dependency appears nested anywhere in the :user entry
+  hasTestRefresh?: boolean; // the :user map has a :test-refresh options key
   error?: string;
 }
 
-// Read ~/.lein/profiles.clj (the global fallback, read-only): does the :user entry carry
-// the coordinate, and does it have a :test-refresh key? The extension never writes global config.
+// Read ~/.lein/profiles.clj (the global :user check, read-only): does the :user entry carry the
+// test-refresh plugin, a Fireworks dependency, and a :test-refresh options key? All three are
+// required to run Live Code off the global profile. The extension never writes global config.
 export function leinUserProfileStatus(text: string): UserProfileStatusResult;
 
-// A human-readable `:test-refresh { … }` snippet (from the baseline) for the confirm /
-// global-fallback modals.
+// A human-readable `:test-refresh { … }` snippet (from the baseline) for the global :user
+// setup guidance.
 export function leinTestRefreshSnippet(): string;
