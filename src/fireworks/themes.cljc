@@ -772,24 +772,26 @@
                                 :atom-wrapper     :label}}})
 
 (def universal-neutral
-  {:name             "Universal Neutral"
-   :desc             (str "A neutral syntax theme for Clojure data that works on both light and dark backgrounds."
-                          "The eval label is printed in blue, metadata is printed in purple, and object labels are printed in green.")
-   :mood             "universal"
-   :tokens           {:syntax  (merge {:js-object-key {:color "#888888"}}
-                                      regex-syntax-neutral
-                                      #_(highlighted-regex-syntax regex-syntax-neutral))
-                      :printer {:file-info        {:font-style :italic }
-                                ;; TODO maybe these values should be :classes/eval-label
-                                :eval-label       :eval-label
-                                :eval-label-red   :eval-label-red
-                                :eval-label-green :eval-label-green
-                                :eval-label-blue  :eval-label-blue
-                                :eval-form        :eval-label
-                                :eval-form-red    :eval-label-red
-                                :eval-form-green  :eval-label-green
-                                :eval-form-blue   :eval-label-blue
-                                :comment          {:font-style :italic}}}})
+  {:name   "Universal Neutral"
+   :desc   (str "A neutral syntax theme for Clojure data that works on both light and dark backgrounds."
+                "The eval label is printed in blue, metadata is printed in purple, and object labels are printed in green.")
+   :mood   "universal"
+   :tokens {:classes {:annotation {:color "#a5a5a6"}}
+            :syntax  (merge {:js-object-key {:color "#888888"}}
+                            regex-syntax-neutral
+                            #_(highlighted-regex-syntax regex-syntax-neutral))
+            :printer {:file-info        {:color "#a5a5a5"
+                                         :font-style :italic}
+                      ;; TODO maybe these values should be :classes/eval-label
+                      :eval-label       :annotation
+                      :eval-label-red   :eval-label-red
+                      :eval-label-green :eval-label-green
+                      :eval-label-blue  :eval-label-blue
+                      :eval-form        :eval-label
+                      :eval-form-red    :eval-label-red
+                      :eval-form-green  :eval-label-green
+                      :eval-form-blue   :eval-label-blue
+                      :comment          {:font-style :italic}}}})
 
 (def universal
   {:name   "Universal"
