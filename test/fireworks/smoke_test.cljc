@@ -26,9 +26,11 @@
 #_(? :perf {:perfs? true} :fooo)
 
 
-(let [a "foo"
-      b "gooasdfasdfsafasd"
-      c (java.util.HashSet. #{"a" 1 "basdfasdfasdfa" 233})])
+#?(:clj
+   (let [a "foo"
+         b "gooasdfasdfsafasd"
+         c (java.util.HashSet. #{"a" 1 "basdfasdfasdfa" 233})]))
+
 
 ;; (def bar nil)
 ;; (? (tag-map #'bar))
