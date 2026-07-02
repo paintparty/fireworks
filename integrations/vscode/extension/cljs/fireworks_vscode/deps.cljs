@@ -47,7 +47,7 @@
 (def ^:private test-refresh-sym 'com.jakemccrary/test-refresh)
 (def ^:private test-refresh-version "0.26.0")
 (def ^:private fireworks-sym 'io.github.paintparty/fireworks)
-(def ^:private fireworks-version "0.21.1")
+(def ^:private fireworks-version "0.21.2")
 
 (defn- alias-classpath-deps
   "The dep maps that feed a `-M:<alias>` classpath, merged: project :deps + the alias's

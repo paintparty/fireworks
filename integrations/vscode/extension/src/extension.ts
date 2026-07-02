@@ -1218,7 +1218,7 @@ function guidanceDoc(
           '{:paths ["src"]',
           '',
           ' :deps {org.clojure/clojure            {:mvn/version "1.12.0"}',
-          '        io.github.paintparty/fireworks {:mvn/version "0.21.1"}}',
+          '        io.github.paintparty/fireworks {:mvn/version "0.21.2"}}',
           '',
           ' :aliases',
           ` {:${alias}`,

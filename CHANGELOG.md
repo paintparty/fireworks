@@ -5,6 +5,18 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 <br>
 
+## 0.21.2
+2026-7-02
+
+#### Added
+- Added guard to avoid caught exception if user-specified fireworks config edn does not exist on the file system.
+
+#### Changed
+- File info and label of printing with universal neutral theme is now a subdued neutral.
+
+<br>
+
+
 ## 0.21.1
 2026-7-01
 
