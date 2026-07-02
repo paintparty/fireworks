@@ -5,8 +5,7 @@
             [lasertag.fns :as fns]
             [lasertag.cached]
             [lasertag.core :as lasertag]
-            #?(:bb [clojure.reflect :as r])
-            [fireworks.debug :refer [?]]))
+            #?(:bb [clojure.reflect :as r])))
 
 (defn spaces [n] (string/join (repeat n " ")))
 

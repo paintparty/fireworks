@@ -1,7 +1,5 @@
 (ns ^:dev/always fireworks.truncate
   (:require
-  ;;  #?(:cljs [fireworks.debug :refer-macros [?]])
-  ;;  #?(:clj [fireworks.debug :refer [?]])
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
    [clojure.string :as string]
