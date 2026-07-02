@@ -2626,12 +2626,11 @@ async function createProject(): Promise<void> {
   try {
     const kindPick = await vscode.window.showQuickPick(
       [
-        { label: 'Deps', description: 'Clojure CLI (deps.edn)', runtime: 'deps' as Runtime },
-        { label: 'Babashka', description: 'bb.edn', runtime: 'bb' as Runtime },
-        { label: 'Leiningen', description: 'project.clj', runtime: 'lein' as Runtime },
-        { label: 'I don\'t know', description: 'Just pick one for me', runtime: 'deps' as Runtime },
+       { label: 'Deps', description: '(Official default)', runtime: 'deps' as Runtime },
+       { label: 'Babashka', description: '(Scripting runtime with instant startup)', runtime: 'bb' as Runtime },
+       { label: 'Leiningen', description: '(Legacy build tool)', runtime: 'lein' as Runtime }
       ],
-      { placeHolder: 'What kind of project do you want to create? If you don\'t know, choose Deps' },
+      { placeHolder: 'What kind of project do you want to create?' },
     );
     if (!kindPick) {
       diagEnd('cancelled (no kind)');
