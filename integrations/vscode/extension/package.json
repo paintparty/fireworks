@@ -2,7 +2,7 @@
   "name": "fireworks",
   "displayName": "Fireworks",
   "description": "Live Coding for Clojure",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "jcoyle",
   "license": "EPL-2.0",
   "icon": "resources/icon.png",
@@ -198,7 +198,7 @@
     "compile": "npm run copy-assets && npm run compile-cljs && npm run compile-ts",
     "bundle": "node esbuild.mjs",
     "vscode:prepublish": "npm run copy-assets && npm run release-cljs && npm run bundle",
-    "package": "vsce package --out dist/"
+    "package": "vsce package --out dist/ --baseImagesUrl https://raw.githubusercontent.com/paintparty/fireworks/main/integrations/vscode/extension"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
