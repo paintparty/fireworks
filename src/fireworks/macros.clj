@@ -6,6 +6,7 @@
   [fireworks.basethemes :as basethemes]
   [fireworks.defs :as defs]
   ;; [fireworks.debug :refer [?]]
+  [fireworks.fs]
   [clojure.pprint :refer [pprint]]
   [clojure.string :as str]
   [clojure.edn :as edn]
@@ -202,34 +203,38 @@
   "Load edn from an io/reader source (filename or io/resource)."
   [{:keys [key file source] :as opts}]
   (use 'clojure.java.io)
-  (try
-    (with-open [r (clojure.java.io/reader source)]
-      (edn/read (java.io.PushbackReader. r)))
-    (catch java.io.IOException err
-      (let [opts (merge 
-                  (load-edn-exception-opts opts)
-                  {:label  "java.io.IOException (CAUGHT)"
-                   :header (str "Caused by bad value in "
-                                defs/italic-tag-open file defs/sgr-tag-close
-                                "\n\nCould not open file:")
-                   :regex  #"^fireworks\.|^lasertag\."})]
-        (swap! messaging/warnings-and-errors
-               conj
-               [:messaging/read-file-warning opts])
-        (messaging/caught-exception err opts)))
+  (if-not (fireworks.fs/file-exists? source)
+    (println (str "[!WARNING][fireworks.macros/load-edn]\n"
+                  "User-specified config file not found:\n"
+                  "\"" source "\""))
+    (try
+      (with-open [r (clojure.java.io/reader source)]
+        (edn/read (java.io.PushbackReader. r)))
+      (catch java.io.IOException err
+        (let [opts (merge 
+                    (load-edn-exception-opts opts)
+                    {:label  "java.io.IOException (CAUGHT)"
+                     :header (str "Caused by bad value in "
+                                  defs/italic-tag-open file defs/sgr-tag-close
+                                  "\n\nCould not open file:")
+                     :regex  #"^fireworks\.|^lasertag\."})]
+          (swap! messaging/warnings-and-errors
+                 conj
+                 [:messaging/read-file-warning opts])
+          (messaging/caught-exception err opts)))
 
-    (catch RuntimeException err
-      (let [opts (merge 
-                  (load-edn-exception-opts opts)
-                  {:label  "RuntimeException (CAUGHT)"
-                   :header (str "Caused by bad value in "
-                                defs/italic-tag-open file defs/sgr-tag-close
-                                "\n\nCould not parse file:")
-                   :regex  #"^fireworks\.|^lasertag\."})]
-        (swap! messaging/warnings-and-errors
-               conj
-               [:messaging/read-file-warning opts])
-        (messaging/caught-exception err opts)))))
+      (catch RuntimeException err
+        (let [opts (merge 
+                    (load-edn-exception-opts opts)
+                    {:label  "RuntimeException (CAUGHT)"
+                     :header (str "Caused by bad value in "
+                                  defs/italic-tag-open file defs/sgr-tag-close
+                                  "\n\nCould not parse file:")
+                     :regex  #"^fireworks\.|^lasertag\."})]
+          (swap! messaging/warnings-and-errors
+                 conj
+                 [:messaging/read-file-warning opts])
+          (messaging/caught-exception err opts))))))
 
 
 (defmacro compile-time-warnings-and-errors []
@@ -285,8 +290,7 @@
   (use 'clojure.java.io)
   (reset! messaging/warnings-and-errors [])
 
-  (let [bling-mood       (or (System/getenv "BLING_MOOD")
-                             )
+  (let [bling-mood       (or (System/getenv "BLING_MOOD"))
         bling-config     (System/getenv "BLING_CONFIG")
         fireworks-config (System/getenv "FIREWORKS_CONFIG")]
     (if-let [path-to-user-config (or bling-config fireworks-config)]
