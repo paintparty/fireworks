@@ -1,4 +1,4 @@
-[![Version](https://img.shields.io/visual-studio-marketplace/v/jcoyle.fireworks)](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks)
+<!-- [![Version](https://img.shields.io/visual-studio-marketplace/v/jcoyle.fireworks)](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks) -->
 
 
 # Fireworks VSCode Extension
@@ -250,10 +250,11 @@ TODO: store these in JSON that both files can read from.
 
 ### Republishing the extension
 
-1. Bump `version` in `package.json`.
-2. Run `npm run compile` (full build: cljs + TS).
-3. Run `npm run package` to produce the `.vsix`.
-4. Go to the [Visual Studio Marketplace publisher page](https://marketplace.visualstudio.com/manage/publishers/jcoyle), find the Fireworks listing, and drag the `.vsix` onto it.
+2. Update Changelog
+2. Bump `version` in `package.json`.
+3. Run `npm run compile` (full build: cljs + TS).
+4. Run `npm run package` to produce the `.vsix`.
+5. Go to the [Visual Studio Marketplace publisher page](https://marketplace.visualstudio.com/manage/publishers/jcoyle), find the Fireworks listing, and drag the `.vsix` onto it.
 
 <br>
 

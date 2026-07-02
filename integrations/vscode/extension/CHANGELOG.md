@@ -1,6 +1,26 @@
 # Changelog
 
+
+## 0.2.1
+<sub>07-02-2026</sub>
+
+#### Fixed
+- Bumped fireworks dep to `0.22.2`
+
+<br>
+
+
+## 0.2.0 
+<sub>07-01-2026</sub>
+
+#### Added
+- Create New Project Command
+- More docs
+
+<br>
+
 ## 0.1.0
+<sub>07-01-2026</sub>
 
 First public release.
 

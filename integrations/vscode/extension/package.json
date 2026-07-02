@@ -2,7 +2,7 @@
   "name": "fireworks",
   "displayName": "Fireworks",
   "description": "Live Coding for Clojure",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "jcoyle",
   "license": "EPL-2.0",
   "icon": "resources/icon.png",
