@@ -134,7 +134,10 @@ For more info on how this works, and using with/without a REPL connection, see [
 
  - Customize the opacity of the background and foreground, as well as the offset gap, of the inline results with corresponding commands. 
 
- - Set the theme of the Fireworks terminal output with `Fireworks: Edit or Create a Printing Options config.edn`
+ - Set the theme of the Fireworks terminal output with `Fireworks: Edit or Create a Printing Options config.edn`.
+   If you don't already have one, you need to save the config.edn in `~/.config/fireworks/config.edn` or `~/.config/bling/config.edn`.
+   You'll also need to export an environment variable on your system for this theme to be active globally, more details on this [here](https://github.com/paintparty/fireworks/tree/main#system-wide-config).
+
 <br>
 
 ### Clojure Projects
@@ -237,6 +240,20 @@ npm run test-cljs
 
 Note: `test-cljs` does not rebuild the `:cljs-lib` output that the extension loads. Run `compile-cljs` (or keep `watch-cljs` running) when you need the extension itself updated, not just the tests green.
 
+### Updating the deps that extensions uses in templates
+
+To update the dependency coordinates that the extension uses to automatically add to project files, change them via:
+`fireworks.vscode.deps/test-refresh-version`
+`fireworks.vscode.deps/fireworks-version`
+They are also a few sprinkled in extension.ts, just search for `:mvn/version`
+TODO: store these in JSON that both files can read from.
+
+### Republishing the extension
+
+1. Bump `version` in `package.json`.
+2. Run `npm run compile` (full build: cljs + TS).
+3. Run `npm run package` to produce the `.vsix`.
+4. Go to the [Visual Studio Marketplace publisher page](https://marketplace.visualstudio.com/manage/publishers/jcoyle), find the Fireworks listing, and drag the `.vsix` onto it.
 
 <br>
 

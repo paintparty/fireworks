@@ -1,4 +1,4 @@
-<p align="center"><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this project!</sub></p>
+<p align="center"><sub>&nbsp;&nbsp;&nbsp;&nbsp;A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this project!</sub></p>
 
 <!-- <div align="center"><img src="./resources/color-printer-logo.png" width="400"></img></div>  -->
 <br>
@@ -485,8 +485,8 @@ If you just want the formatted string, and/or other data that **`fireworks.core/
 
 ## Options
 
-Check out [this file](https://github.com/paintparty/fireworks/blob/main/src/fireworks/config.cljc) for all the available options. 
-
+Check out [this file](https://github.com/paintparty/fireworks/blob/main/docs/example-bling-config/config.edn) for all the available options. 
+And you will probably want to set them globally, for your system, via a [system-wide config](#system-wide-config).
 
 <br>
 
@@ -532,7 +532,6 @@ effect.
 
 <br>
 
-And you will probably want to set them globally, for your system, via a [system-wide config](#system-wide-config).
 
 <br>
 
@@ -558,7 +557,7 @@ The actual `config.edn` file should be a map with a bunch of options like this:
  :print-level         3}
 ```
 
-You can use this (comprehensive starter template)[], with all the options + descriptions.
+You can use this [comprehensive starter template](https://github.com/paintparty/fireworks/blob/main/docs/example-bling-config/config.edn), with all the options + descriptions.
 
 <br>
 <br>
