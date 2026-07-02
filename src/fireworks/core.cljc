@@ -1709,11 +1709,11 @@
 ;; Silencers
 
 (defmacro !?> [x]
-  `~x)
+  x)
 
 (defmacro !?
-  ([& args]
-   (last args)))
+  [& args]
+  (last args))
 
 (defmacro !?flop
   ([])
