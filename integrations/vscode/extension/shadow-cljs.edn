@@ -32,7 +32,12 @@
                :leinAddLiveCodeProfile fireworks-vscode.bridge/lein-add-live-code-profile
                :leinEnsureTestRefresh fireworks-vscode.bridge/lein-ensure-test-refresh
                :leinUserProfileStatus fireworks-vscode.bridge/lein-user-profile-status
-               :leinTestRefreshSnippet fireworks-vscode.bridge/lein-test-refresh-snippet}}
+               :leinTestRefreshSnippet fireworks-vscode.bridge/lein-test-refresh-snippet
+               :scaffoldPath         fireworks-vscode.bridge/scaffold-path
+               :scaffoldContent      fireworks-vscode.bridge/scaffold-content
+               :scaffoldGitignore    fireworks-vscode.bridge/scaffold-gitignore
+               :scaffoldLaunch       fireworks-vscode.bridge/scaffold-launch
+               :scaffoldOpenFile     fireworks-vscode.bridge/scaffold-open-file}}
 
   :test
   {:target    :node-test

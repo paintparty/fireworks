@@ -82,10 +82,16 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.rainbowTracerCross', () => rainbowTracerCross()),
     vscode.commands.registerCommand('fireworks.setTerminalLocation', () => setTerminalLocation()),
     vscode.commands.registerCommand('fireworks.createPrintingConfig', () => createPrintingConfig()),
+    vscode.commands.registerCommand('fireworks.createProject', () => createProject()),
+    vscode.commands.registerCommand('fireworks.showOutputChannel', () => output.show()),
     vscode.window.onDidCloseTerminal((t) => {
+      // A session still in the map here means the user closed the terminal manually (the Stop/Restart
+      // path eager-deletes before dispose, so it won't match) — treat it like a stop: drop the session
+      // and clear that project's inline results.
       for (const [root, s] of liveSessions) {
         if (s.terminal === t) {
           liveSessions.delete(root);
+          clearResultsForRoot(root);
           break;
         }
       }
@@ -118,6 +124,9 @@ export function activate(context: vscode.ExtensionContext): void {
   if (inlineResultsEnabled()) {
     startInlineResults();
   }
+
+  // If this activation follows a "Create New Project" that opened this folder, auto-start Live Code.
+  void resumePendingProject();
 }
 
 export function deactivate(): void {}
@@ -721,7 +730,7 @@ const fireworksRoots = new Set<string>();
 // only the filesystem watcher writes it; a future WebSocket source builds the same
 // key from values parsed off the wire.
 function resultKey(root: string, ns: string, posKey: string): string {
-  return `${root} ${ns} ${posKey}`;
+  return `${root}\0${ns}\0${posKey}`;
 }
 
 // analyzeInlineResults parses the whole document with rewrite-clj, by far the heaviest
@@ -1645,6 +1654,12 @@ function terminalName(root: string): string {
 // sendWatcherCommand (and this const) to revert.
 const PROMPT_SETTLE_MS = 250;
 
+// Babashka only: ms to wait after launching the bb watcher before nudging the active file so its
+// inline results paint. The bb watcher only reacts to file saves (its fswatcher pod fires on write),
+// and nothing runs at startup, so without this nudge nothing appears until the user saves. deps/lein
+// run test-refresh on startup and paint on their own, so they don't need it. Set to 0 to disable.
+const BB_STARTUP_NUDGE_MS = 3000;
+
 // One live-coding session per project root. Several can run at once (different projects
 // in the same workspace); each owns its own integrated terminal.
 interface LiveSession {
@@ -1653,6 +1668,7 @@ interface LiveSession {
   terminal: vscode.Terminal;
   execution: vscode.TerminalShellExecution | undefined; // tracked when shell integration is available
   testRefresh?: TestRefreshInfo; // the .test-refresh.edn governing the run (Clojure/deps only)
+  runtime?: Runtime; // the resolved runtime (drives the bb startup nudge; reused on restart)
 }
 const liveSessions = new Map<string, LiveSession>(); // keyed by root
 
@@ -2058,23 +2074,24 @@ function ensureTestRefreshConfig(root: string): TestRefreshInfo {
 interface WatcherPlan {
   command: string;
   testRefresh?: TestRefreshInfo;
+  runtime?: Runtime; // set by resolveWatcherCommand; drives runtime-specific launch behavior (bb nudge)
 }
 
 // Resolve the launch plan for `root`: detect the runtime, run its PATH preflight, then pick
 // the alias (deps) or task (bb). undefined aborts the launch (a message was already shown,
-// or a pick/preflight failed).
+// or a pick/preflight failed). Tags the plan with the resolved runtime.
 async function resolveWatcherCommand(root: string): Promise<WatcherPlan | undefined> {
   const kind = await projectKind(root);
   if (!kind) {
     return undefined;
   }
-  if (kind === 'bb') {
-    return resolveBbCommand(root);
-  }
-  if (kind === 'lein') {
-    return resolveLeinCommand(root);
-  }
-  return resolveDepsCommand(root);
+  const plan =
+    kind === 'bb'
+      ? await resolveBbCommand(root)
+      : kind === 'lein'
+        ? await resolveLeinCommand(root)
+        : await resolveDepsCommand(root);
+  return plan ? { ...plan, runtime: kind } : undefined;
 }
 
 // --- Clojure CLI (deps.edn) launch resolution -----------------------------
@@ -2508,7 +2525,7 @@ async function startLiveCoding(): Promise<void> {
     if (location === 'integrated') {
       diagStep(`Launch in integrated terminal "${terminalName(root)}".`);
       diagEnd('launched (integrated terminal)');
-      await launchWatcher(root, plan.command, plan.testRefresh);
+      await launchWatcher(root, plan.command, plan.testRefresh, plan.runtime);
     } else {
       // resolveWatcherCommand already seeded configs / patched the build file; we just hand the
       // user the command instead of spawning a terminal. Keep .fireworks ready for the
@@ -2522,6 +2539,209 @@ async function startLiveCoding(): Promise<void> {
     }
   } finally {
     diagEnd('ended'); // no-op if a branch above already flushed; safety net on unexpected throw
+  }
+}
+
+// --- Create New Project ---------------------------------------------------
+//
+// Scaffold a fresh, correctly-wired project from the on-disk examples/<kind>-project/ tree, open
+// it, and auto-start Live Code so the user lands on core.clj ready to jam. The file bodies live in
+// examples/ (bundled in the .vsix); the pure name-substitution rules live in fireworks-vscode.scaffold
+// (cljsLib.scaffold*). Opening a folder restarts the extension host, so the launch is handed off via
+// globalState and resumed by resumePendingProject() on the next activation.
+
+const PENDING_PROJECT_KEY = 'fireworks.pendingProject';
+
+interface PendingProject {
+  root: string;
+  runtime: Runtime;
+  command: string;
+  openFile: string; // relative to root
+}
+
+// Map a project kind to its bundled example directory name.
+const EXAMPLE_DIR: Record<Runtime, string> = {
+  deps: 'deps-project',
+  lein: 'leiningen-project',
+  bb: 'babashka-project',
+};
+
+// Copy the bundled example tree into destRoot, letting the cljs rules rename each path (skipping
+// nulls) and substitute the project name into each file's contents.
+function scaffoldTree(srcDir: string, destRoot: string, kind: Runtime, name: string): void {
+  const walk = (dir: string): void => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(abs);
+        continue;
+      }
+      const rel = path.relative(srcDir, abs).split(path.sep).join('/');
+      const destRel = cljsLib.scaffoldPath(kind, name, rel);
+      if (destRel == null) {
+        continue; // skipped (regenerated .gitignore, result cache, build/cache dirs)
+      }
+      const out = cljsLib.scaffoldContent(kind, name, rel, fs.readFileSync(abs, 'utf8'));
+      const destAbs = path.join(destRoot, destRel.split('/').join(path.sep));
+      fs.mkdirSync(path.dirname(destAbs), { recursive: true });
+      fs.writeFileSync(destAbs, out, 'utf8');
+    }
+  };
+  walk(srcDir);
+}
+
+// Open a scaffolded project's entry file and launch its Live Code watcher. Shared by the direct
+// (add-to-workspace, no host restart) and resumed (after openFolder) paths.
+async function openAndLaunch(pending: PendingProject): Promise<void> {
+  try {
+    const fileUri = vscode.Uri.file(path.join(pending.root, pending.openFile));
+    await vscode.window.showTextDocument(fileUri, { preview: false });
+  } catch (e) {
+    log(`create-project: could not open ${pending.openFile}: ${String(e)}`);
+  }
+  await launchWatcher(pending.root, pending.command, undefined, pending.runtime);
+}
+
+// Called on activation: if a "Create New Project" handoff targets a folder open in this window,
+// clear it (once) and auto-start Live Code there.
+async function resumePendingProject(): Promise<void> {
+  const pending = extContext.globalState.get<PendingProject>(PENDING_PROJECT_KEY);
+  if (!pending) {
+    return;
+  }
+  const folders = vscode.workspace.workspaceFolders ?? [];
+  if (!folders.some((f) => f.uri.fsPath === pending.root)) {
+    return; // handoff is for a different window
+  }
+  await extContext.globalState.update(PENDING_PROJECT_KEY, undefined); // consume once
+  diagBegin('Create New Project (resume)');
+  diagFact('Project', tildify(pending.root));
+  diagFact('Watcher command', pending.command);
+  diagEnd('auto-launching Live Code');
+  await openAndLaunch(pending);
+}
+
+async function createProject(): Promise<void> {
+  diagBegin('Create New Project');
+  try {
+    const kindPick = await vscode.window.showQuickPick(
+      [
+        { label: 'Deps', description: 'Clojure CLI (deps.edn)', runtime: 'deps' as Runtime },
+        { label: 'Babashka', description: 'bb.edn', runtime: 'bb' as Runtime },
+        { label: 'Leiningen', description: 'project.clj', runtime: 'lein' as Runtime },
+        { label: 'I don\'t know', description: 'Just pick one for me', runtime: 'deps' as Runtime },
+      ],
+      { placeHolder: 'What kind of project do you want to create? If you don\'t know, choose Deps' },
+    );
+    if (!kindPick) {
+      diagEnd('cancelled (no kind)');
+      return;
+    }
+    const kind = kindPick.runtime;
+
+    const parentPick = await vscode.window.showOpenDialog({
+      canSelectFolders: true,
+      canSelectFiles: false,
+      canSelectMany: false,
+      openLabel: 'Select parent folder',
+      title: 'Select the parent folder for the new project',
+    });
+    if (!parentPick || parentPick.length === 0) {
+      diagEnd('cancelled (no parent folder)');
+      return;
+    }
+    const parent = parentPick[0].fsPath;
+
+    const name = await vscode.window.showInputBox({
+      prompt: 'Project name',
+      placeHolder: 'my-app',
+      validateInput: (v) => {
+        const t = (v ?? '').trim();
+        if (!t) {
+          return 'Enter a project name.';
+        }
+        if (!/^[a-zA-Z][a-zA-Z0-9-]*$/.test(t)) {
+          return 'Use letters, digits and hyphens; start with a letter.';
+        }
+        if (fs.existsSync(path.join(parent, t))) {
+          return `A folder named "${t}" already exists here.`;
+        }
+        return undefined;
+      },
+    });
+    if (!name) {
+      diagEnd('cancelled (no name)');
+      return;
+    }
+    const projectName = name.trim();
+    const root = path.join(parent, projectName);
+
+    const openPick = await vscode.window.showQuickPick(
+      [
+        { label: 'New window', value: 'new' as const },
+        { label: 'Same window', value: 'same' as const },
+        { label: 'Add to workspace', value: 'add' as const },
+      ],
+      { placeHolder: 'Open the new project in…' },
+    );
+    if (!openPick) {
+      diagEnd('cancelled (no open target)');
+      return;
+    }
+
+    if (fs.existsSync(root)) {
+      // Belt-and-suspenders with the input validation (a folder could appear in between).
+      await vscode.window.showErrorMessage(`Fireworks: "${root}" already exists — aborting.`);
+      diagEnd('aborted (target exists)');
+      return;
+    }
+
+    diagFact('Kind', kind);
+    diagFact('Root', tildify(root));
+    const srcDir = vscode.Uri.joinPath(extContext.extensionUri, 'examples', EXAMPLE_DIR[kind]).fsPath;
+    try {
+      scaffoldTree(srcDir, root, kind, projectName);
+      fs.writeFileSync(path.join(root, '.gitignore'), cljsLib.scaffoldGitignore(), 'utf8');
+      const resultsDir = path.join(root, '.fireworks', 'results');
+      fs.mkdirSync(resultsDir, { recursive: true });
+      fs.writeFileSync(path.join(resultsDir, '.gitkeep'), '', 'utf8');
+    } catch (e) {
+      await vscode.window.showErrorMessage(`Fireworks: could not create project — ${String(e)}`);
+      diagEnd(`failed (${String(e)})`);
+      return;
+    }
+
+    const command = cljsLib.scaffoldLaunch(kind);
+    const openFile = cljsLib.scaffoldOpenFile(kind, projectName);
+    const pending: PendingProject = { root, runtime: kind, command, openFile };
+    const uri = vscode.Uri.file(root);
+    const openFolders = vscode.workspace.workspaceFolders ?? [];
+
+    if (openPick.value === 'add' && openFolders.length > 0) {
+      // Adding a folder to a window that already has one does not restart the host — launch here.
+      vscode.workspace.updateWorkspaceFolders(openFolders.length, 0, { uri });
+      diagStep('Added to the current workspace (no host restart) → launching Live Code.');
+      diagEnd('scaffolded + launched');
+      await openAndLaunch(pending);
+      return;
+    }
+
+    // Every remaining path (new window, same window, or adding the first folder to an empty window)
+    // restarts the extension host. Hand the launch off through globalState; resumePendingProject
+    // picks it up when the extension reactivates in the opened folder.
+    await extContext.globalState.update(PENDING_PROJECT_KEY, pending);
+    if (openPick.value === 'add') {
+      diagStep('Added first folder to an empty window (host restarts) → handoff.');
+      diagEnd('scaffolded (handoff via updateWorkspaceFolders)');
+      vscode.workspace.updateWorkspaceFolders(0, 0, { uri });
+    } else {
+      const forceNewWindow = openPick.value === 'new';
+      diagStep(`Opening folder (${forceNewWindow ? 'new' : 'same'} window; host restarts) → handoff.`);
+      diagEnd('scaffolded (handoff via openFolder)');
+      await vscode.commands.executeCommand('vscode.openFolder', uri, { forceNewWindow });
+    }
+  } finally {
+    diagEnd('ended'); // no-op if a branch already flushed
   }
 }
 
@@ -2539,7 +2759,7 @@ function setupFingerprint(root: string): string {
   exists(path.join(root, '.test-refresh.edn'));
   content(path.join(root, '.gitignore'));
   content(path.join(root, 'project.clj'));
-  return parts.join(' ');
+  return parts.join('\0');
 }
 
 // Live Code (Preflight): run the same setup the start sequence does — detect the runtime, seed the
@@ -3001,6 +3221,7 @@ async function launchWatcher(
   root: string,
   command: string,
   testRefresh?: TestRefreshInfo,
+  runtime?: Runtime,
 ): Promise<void> {
   const animEditor = vscode.window.activeTextEditor; // capture before terminal.show() steals focus
   prepareResultsDir(root); // on-disk fresh slate for this root
@@ -3008,7 +3229,7 @@ async function launchWatcher(
   recordRecentRoot(root); // float this project in the pickers' "Recent" section
   log(`live coding -> ${command} (cwd ${root})`);
   const terminal = vscode.window.createTerminal({ name: terminalName(root), cwd: root });
-  const session: LiveSession = { root, command, terminal, execution: undefined, testRefresh };
+  const session: LiveSession = { root, command, terminal, execution: undefined, testRefresh, runtime };
   liveSessions.set(root, session);
   terminal.show();
   if (animEditor && startupAnimEnabled()) {
@@ -3020,14 +3241,59 @@ async function launchWatcher(
     return; // closed/replaced during wait
   }
   await sendWatcherCommand(session, si, command);
+  if (runtime === 'bb') {
+    scheduleBbStartupNudge(session, animEditor); // light up the active file's inline results
+  }
+}
+
+// The bb watcher only paints results in response to a file save (its fswatcher pod fires on a write);
+// nothing runs at startup. So a few seconds after launch, nudge the file the user was looking at so its
+// `?` results light up without the user having to save first. Best-effort and bb-only (deps/lein
+// test-refresh runs on startup). Skipped when the session was stopped/replaced during the wait, or the
+// nudge is disabled (BB_STARTUP_NUDGE_MS = 0).
+function scheduleBbStartupNudge(session: LiveSession, editor: vscode.TextEditor | undefined): void {
+  if (BB_STARTUP_NUDGE_MS <= 0) {
+    return;
+  }
+  const doc = editor?.document;
+  const file = doc?.uri.fsPath;
+  if (!doc || !file || !file.startsWith(session.root + path.sep) || !/\.(clj[cs]?|bb)$/.test(file)) {
+    return; // no active Clojure file in this project to nudge
+  }
+  setTimeout(() => {
+    if (liveSessions.get(session.root) !== session) {
+      return; // stopped/replaced during the wait
+    }
+    void nudgeBbFile(doc, file);
+  }, BB_STARTUP_NUDGE_MS);
+}
+
+// Trigger one bb watcher reload so the file's inline results paint. If the buffer has unsaved edits,
+// save it (writes the latest to disk → the watcher reloads it); otherwise touch the file on disk
+// (rewrite its own bytes), since a clean save is a no-op that wouldn't fire the watcher. Best-effort.
+async function nudgeBbFile(doc: vscode.TextDocument, file: string): Promise<void> {
+  try {
+    if (!doc.isClosed && doc.isDirty) {
+      await doc.save(); // real write of the user's edits → watcher reload
+      log(`bb startup nudge: saved ${tildify(file)} to light up inline results`);
+    } else {
+      fs.writeFileSync(file, fs.readFileSync(file)); // touch: identical bytes, but triggers the watcher
+      log(`bb startup nudge: touched ${tildify(file)} to light up inline results`);
+    }
+  } catch (e) {
+    log(`bb startup nudge failed for ${tildify(file)}: ${String(e)}`);
+  }
 }
 
 // Stop a session: Ctrl-C so test-refresh shuts down cleanly, then dispose the terminal
-// (onDidCloseTerminal removes it from the map; the eager delete covers the event lag).
+// (onDidCloseTerminal removes it from the map; the eager delete covers the event lag). Also clears
+// the stopped project's inline results (in-memory cache + decorations, per-root so other running
+// projects are untouched); a restart re-clears via launchWatcher, so the flow stays clean.
 function stopSession(session: LiveSession): void {
   session.terminal.sendText('\u0003'); // Ctrl-C: let test-refresh shut down cleanly
   session.terminal.dispose();
   liveSessions.delete(session.root);
+  clearResultsForRoot(session.root); // clear this project's inline results on stop
 }
 
 // Shown when a Live Code command needs a running (integrated-terminal) session but none is tracked.
@@ -3083,13 +3349,13 @@ async function restartLiveCoding(): Promise<void> {
       diagEnd('cancelled');
       return;
     }
-    const { root, command, testRefresh } = session;
+    const { root, command, testRefresh, runtime } = session;
     diagFact('Reused command', command);
     diagFact('Reused .test-refresh source', testRefresh ? testRefresh.source : null);
     diagStep(`Restart ${tildify(root)}: stop, then relaunch the same command (no re-prompt).`);
     diagEnd('restarted');
     stopSession(session);
-    await launchWatcher(root, command, testRefresh); // reuse root + command + config (no re-prompt)
+    await launchWatcher(root, command, testRefresh, runtime); // reuse root + command + config (no re-prompt)
   } finally {
     diagEnd('ended');
   }

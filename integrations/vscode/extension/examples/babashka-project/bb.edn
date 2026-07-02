@@ -1,12 +1,18 @@
 {:paths ["src" "test"]
 
- ;; Fireworks is a real dependency because this project's code calls `?`.
- :deps {io.github.paintparty/fireworks {:mvn/version "0.21.0"}}
+ :deps  {io.github.paintparty/fireworks {:mvn/version "0.21.0"}}
 
  :tasks
- ;; Live Code runs `bb dev`. The task calls `load-file` on the Fireworks
+ ;; Live Code runs `bb live-code`. The task calls `load-file` on the Fireworks
  ;; watcher, which the extension seeds into .fireworks/bb/watch.clj on first
  ;; launch (and never overwrites). That is the opt-in: bb is only offered when
  ;; a task loads this watcher.
- {dev {:doc  "Live Code watcher: reload on save, paint `?` results inline."
-       :task (load-file ".fireworks/bb/watch.clj")}}}
+ {live-code {:doc  "Live Code watcher: reload on save, paint `?` results inline."
+             :task (load-file ".fireworks/bb/watch.clj")}
+
+  ;; Example of how to elide calls to `fireworks.core/?`
+  ;; bb's VM is already up when a task runs, so a task can't set -D for itself.
+  ;; This spawns a fresh bb; FIREWORKS_ELIDE is read by fireworks' elide? gate.
+  release   {:doc  "Run with Fireworks taps elided."
+             :task (shell {:extra-env {"FIREWORKS_ELIDE" "true"}} "bb" "-m" "example.core")}}}
+

@@ -15,6 +15,7 @@
             [fireworks-vscode.inline-results :as inline-results]
             [fireworks-vscode.lein :as lein]
             [fireworks-vscode.ns-require :as ns-require]
+            [fireworks-vscode.scaffold :as scaffold]
             [fireworks-vscode.toggle :as toggle]))
 
 (defn- pos->js [{:keys [line col]}]
@@ -221,3 +222,23 @@
 ;; A human-readable :test-refresh { … } snippet (from the baseline) for the modals.
 (defn lein-test-refresh-snippet []
   (lein/test-refresh-snippet))
+
+;; --- Create New Project (scaffold from examples) --------------------------
+;; The example file BODIES live on disk (examples/<kind>-project/); these expose the pure
+;; name-substitution rules the TS walker applies per file. Plain strings in, plain strings out
+;; (scaffoldPath returns null to signal "skip this file").
+
+(defn scaffold-path [kind name rel-path]
+  (scaffold/scaffold-path kind name rel-path))
+
+(defn scaffold-content [kind name rel-path content]
+  (scaffold/scaffold-content kind name rel-path content))
+
+(defn scaffold-gitignore []
+  scaffold/gitignore)
+
+(defn scaffold-launch [kind]
+  (scaffold/launch-command kind))
+
+(defn scaffold-open-file [kind name]
+  (scaffold/open-file kind name))

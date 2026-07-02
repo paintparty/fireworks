@@ -41,3 +41,8 @@ esbuild.mjs
 # …and the example printing config bundled for "Create a printing options config.edn"
 # (negation must follow the **/*.edn rule above to win)
 !resources/example-config.edn
+
+# Bundle the example project trees — the "Create New Project" command scaffolds from them at
+# runtime (examples/<kind>-project/, resolved via extensionUri). Last so it wins over the earlier
+# examples/** exclusion and the **/*.edn / .gitignore / *.md rules for these files.
+!examples/**

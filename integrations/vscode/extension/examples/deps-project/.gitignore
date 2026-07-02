@@ -3,12 +3,3 @@
 # Fireworks writes inline results at runtime; track the dir, not the results.
 .fireworks/results/*
 !.fireworks/results/.gitkeep
-
-# Fireworks inline-result cache
-.fireworks/results/
-
-# Fireworks inline-result cache
-.fireworks/results/
-
-# Fireworks inline-result cache
-.fireworks/results/

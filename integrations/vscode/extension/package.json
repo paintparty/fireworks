@@ -57,7 +57,9 @@
       { "command": "fireworks.rainbowTracerHorizontal", "title": "Rainbow Tracer (left-to-right)", "category": "Fireworks" },
       { "command": "fireworks.rainbowTracerCross", "title": "Rainbow Tracer (cross)", "category": "Fireworks" },
       { "command": "fireworks.setTerminalLocation", "title": "Set Terminal Location", "category": "Fireworks" },
-      { "command": "fireworks.createPrintingConfig", "title": "Edit or Create a Printing Options config.edn", "category": "Fireworks" }
+      { "command": "fireworks.createPrintingConfig", "title": "Edit or Create a Printing Options config.edn", "category": "Fireworks" },
+      { "command": "fireworks.createProject", "title": "Create New Project", "category": "Fireworks" },
+      { "command": "fireworks.showOutputChannel", "title": "Show / Open the Fireworks Debug Output Channel", "category": "Fireworks" }
     ],
     "keybindings": [
       {

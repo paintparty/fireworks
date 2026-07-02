@@ -1,5 +1,5 @@
 (ns example.core
-  (:require [fireworks.core :refer [? !? ?> !?> ?flop]]))
+  (:require [fireworks.core :refer [? !? ?> !?> ?]]))
 
 
 (defn fizz-buzz [n]
@@ -23,7 +23,7 @@
 ;; If caret is on the  `?` form itself, the command toggles `?` ↔ `!?` (loud ↔ silent)
 ;; Change the default keybinding to suit your needs.
 
-(?flop (fizz-buzz 15) "guh")
+(? (fizz-buzz 15) "guh")
 
 ;; Change the arg in the above call to fizz-buzz from `7` to `15`,
 ;; the inline results up in fizz-buzz defn should change as well.

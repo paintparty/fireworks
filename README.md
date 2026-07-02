@@ -1,9 +1,14 @@
 <p align="center"><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for generously supporting this project!</sub></p>
 
-<div align="center"><img src="./resources/color-printer-logo.png" width="400"></img></div> 
+<!-- <div align="center"><img src="./resources/color-printer-logo.png" width="400"></img></div>  -->
+<br>
+<br>
+<div align="center"><img src="./resources/icon.png" width="108"></img></div> 
+<br>
+<br>
 <p align="center">
 <a href="https://clojars.org/io.github.paintparty/fireworks">
-<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?color=0969da&style=flat&cacheSeconds=3" alt="Fireworks on Clojars"></img>
+<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?labelColor=0969da&color=0969da&style=flat&cacheSeconds=3" alt="Fireworks on Clojars"></img>
 </a>
 </p>
 
@@ -273,25 +278,27 @@ You can also add relevant entries from the sample `project.clj` to your `~/.lein
 
 ### VSCode
 
-![VSCode Inline Results](resources/gifs/vs-code-inline-results.gif)
-
-In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**.
-
-Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
 
 This the best way do live coding with Fireworks.
 
 It provides commands to control all the form manipulation, as well as a Live Code framework that drives inline results as you type.
 
+Works with or without a REPL connection.
+
+![VSCode Inline Results](integrations/vscode/extension/resources/gifs/vs-code-inline-results.gif)
+
+#### Installing the VSCode Extension
+In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**.
+
+Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
+
 [View the Fireworks VSCode Extension Docs](integrations/vscode/extension/README.md) 
-
-![Fireworks VSCode Extenstion: Toggle ?](integrations/vscode/extension/resources/gifs/toggle.gif)
-
-
 
 <br>
 
-There is also an example of [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md) integration. This was created as a proof-of-concept prototype, ahead of the actual VSCode extension.
+#### Joyride
+
+There is also an example of [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md) integration. This was created as a proof-of-concept prototype, ahead of the actual VSCode extension. The VSCode extension supercedes this, but the code might be worth looking at if you are curious about setting up a joyride project.
 
 <br>
 
@@ -305,7 +312,7 @@ as well as toggle the silencing of wrapped forms.
 <br>
 <br>
 
-## Basic Usage
+## Using the `?` macros
 This section outlines the four public macros that fireworks offers:<br>
 **`?`**, **`!?`**, **`?>`**, and **`!?>`**.
 

@@ -2,8 +2,6 @@
   (:require [clojure.test :refer [deftest is]]
             [example.core :as core]))
 
-(deftest greet-test
-  (is (= "Hello, Fireworks!" (core/greet "Fireworks"))))
-
-(deftest fib-test
-  (is (= [0 1 1 2 3] (map core/fib (range 5)))))
+(deftest fizzbuzz-test
+  (is (= ["FizzBuzz" "Buzz" "Fizz" 7]
+         (map core/fizz-buzz [15 5 3 7]))))

@@ -303,3 +303,32 @@ export function leinUserProfileStatus(text: string): UserProfileStatusResult;
 // A human-readable `:test-refresh { … }` snippet (from the baseline) for the global :user
 // setup guidance.
 export function leinTestRefreshSnippet(): string;
+
+// --- Create New Project (scaffold from examples/) -------------------------
+//
+// The `Create New Project` command copies an on-disk example tree
+// (examples/<kind>-project/) into a new project, substituting the user's name. File BODIES live
+// in the examples; these are the pure rules the TS walker applies per file. `kind` is
+// "deps" | "lein" | "bb".
+
+// The destination relative path (forward-slash separated) for an example-tree file, renaming the
+// placeholder `example` dir segment to the munged project name (src/example/… → src/my_app/…), or
+// null to skip the file (the regenerated .gitignore, the result cache, build/cache dirs).
+export function scaffoldPath(kind: string, name: string, relPath: string): string | null;
+
+// The text to write for an example-tree file, with the project name substituted: example.core →
+// <ns>.core everywhere; the Leiningen artifact fireworks-lein-example → name in project.clj; and
+// the deps.edn :live-code alias stripped of :override-deps (repo-local :local/root) and :jvm-opts
+// (elide flag) so a user project runs against the published Fireworks and shows `?` output.
+export function scaffoldContent(kind: string, name: string, relPath: string, content: string): string;
+
+// The single canonical .gitignore written for every scaffolded project (the Clojure ignore list
+// plus one Fireworks inline-result idiom).
+export function scaffoldGitignore(): string;
+
+// The Live Code watcher command auto-run after scaffolding: "clojure -M:live-code" (deps),
+// "lein with-profile +live-code test-refresh" (lein), "bb live-code" (bb).
+export function scaffoldLaunch(kind: string): string;
+
+// The relative path of the source file to open after scaffolding (src/<munged>/core.clj).
+export function scaffoldOpenFile(kind: string, name: string): string;

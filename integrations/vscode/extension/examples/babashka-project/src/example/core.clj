@@ -1,7 +1,10 @@
 (ns example.core
   (:require [fireworks.core :refer [? !? ?> !?>]]))
 
-(defn fizz-buzz [n]
+
+;; This is a comment
+(defn fizz-buzz 
+  [n]
   (cond
     (? (zero? (mod n (* 5 3))))
     "FizzBuzz"
@@ -22,7 +25,7 @@
 ;; If caret is on the  `?` form itself, the command toggles `?` ↔ `!?` (loud ↔ silent)
 ;; Change the default keybinding to suit your needs.
 
-(? (fizz-buzz 15))
+(? (fizz-buzz 7))
 
 ;; Change the arg in the above call to fizz-buzz from `7` to `15`,
 ;; the inline results up in fizz-buzz defn should change as well.
