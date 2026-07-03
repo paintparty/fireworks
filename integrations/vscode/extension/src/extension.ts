@@ -2611,9 +2611,13 @@ async function startLiveCoding(): Promise<void> {
     }
     diagFact('Watcher command', plan.command);
     if (location === 'integrated') {
+      // Resolve + log the mood decision here, while the diag run is still open, so it appears in the
+      // decision tree (launchWatcher runs after diagEnd, where diagFact/diagStep would be no-ops).
+      const mood = resolveBlingMood();
+      logMoodDecision(mood);
       diagStep(`Launch in integrated terminal "${terminalName(root)}".`);
       diagEnd('launched (integrated terminal)');
-      await launchWatcher(root, plan.command, plan.testRefresh, plan.runtime);
+      await launchWatcher(root, plan.command, plan.testRefresh, plan.runtime, mood);
     } else {
       // resolveWatcherCommand already seeded configs / patched the build file; we just hand the
       // user the command instead of spawning a terminal. Keep .fireworks ready for the
@@ -2621,8 +2625,8 @@ async function startLiveCoding(): Promise<void> {
       prepareResultsDir(root);
       clearResultsForRoot(root);
       recordRecentRoot(root);
-      // The user runs this in their own shell, so prepend the shell-appropriate env prefix to the
-      // shown command (same decision + logging as an integrated launch).
+      // The user runs this in their own shell; prepend the shell-appropriate env prefix to the shown
+      // command (same decision + logging as an integrated launch).
       const mood = resolveBlingMood();
       logMoodDecision(mood);
       const cmd = envVarPrefix('BLING_MOOD', mood.value) + plan.command;
@@ -3314,6 +3318,8 @@ async function launchWatcher(
   command: string,
   testRefresh?: TestRefreshInfo,
   runtime?: Runtime,
+  mood?: MoodDecision, // pre-resolved + logged by the caller (so it lands in the diag tree, which
+  // the command flushes before calling here); resolved + logged here when omitted.
 ): Promise<void> {
   const animEditor = vscode.window.activeTextEditor; // capture before terminal.show() steals focus
   prepareResultsDir(root); // on-disk fresh slate for this root
@@ -3321,13 +3327,15 @@ async function launchWatcher(
   recordRecentRoot(root); // float this project in the pickers' "Recent" section
   log(`live coding -> ${command} (cwd ${root})`);
   // Force the watcher's Fireworks output mood to match the editor when the configured theme doesn't
-  // already agree — as a visible shell-appropriate env prefix on the command (recomputed per launch
-  // so a theme switch is picked up on restart). The decision is logged to the diagnostics tree.
-  const mood = resolveBlingMood();
-  logMoodDecision(mood);
+  // already agree, as a visible shell-appropriate env prefix on the command (recomputed per launch
+  // so a theme switch is picked up on restart).
+  if (!mood) {
+    mood = resolveBlingMood();
+    logMoodDecision(mood);
+  }
   const launchCommand = envVarPrefix('BLING_MOOD', mood.value) + command;
   const terminal = vscode.window.createTerminal({ name: terminalName(root), cwd: root });
-  // session.command stays the bare command (restart re-derives the prefix from the current mood).
+  // session.command stays the bare command (restart re-derives delivery from the current mood).
   const session: LiveSession = { root, command, terminal, execution: undefined, testRefresh, runtime };
   liveSessions.set(root, session);
   terminal.show();
@@ -3451,10 +3459,14 @@ async function restartLiveCoding(): Promise<void> {
     const { root, command, testRefresh, runtime } = session;
     diagFact('Reused command', command);
     diagFact('Reused .test-refresh source', testRefresh ? testRefresh.source : null);
+    // Re-resolve + log the mood here (editor theme may have changed since the original launch), while
+    // the diag run is still open, then hand it to launchWatcher.
+    const mood = resolveBlingMood();
+    logMoodDecision(mood);
     diagStep(`Restart ${tildify(root)}: stop, then relaunch the same command (no re-prompt).`);
     diagEnd('restarted');
     stopSession(session);
-    await launchWatcher(root, command, testRefresh, runtime); // reuse root + command + config (no re-prompt)
+    await launchWatcher(root, command, testRefresh, runtime, mood); // reuse root + command + config (no re-prompt)
   } finally {
     diagEnd('ended');
   }
