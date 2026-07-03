@@ -16,7 +16,8 @@
             [fireworks-vscode.lein :as lein]
             [fireworks-vscode.ns-require :as ns-require]
             [fireworks-vscode.scaffold :as scaffold]
-            [fireworks-vscode.toggle :as toggle]))
+            [fireworks-vscode.toggle :as toggle]
+            [fireworks-vscode.versions :as versions]))
 
 (defn- pos->js [{:keys [line col]}]
   #js {:line line :col col})
@@ -242,3 +243,14 @@
 
 (defn scaffold-open-file [kind name]
   (scaffold/open-file kind name))
+
+;; --- Version coordinates (single source of truth) -------------------------
+;; The dependency versions the extension injects/documents, exposed to TS so the guidance docs
+;; interpolate them instead of hardcoding. Data, not a function — read as cljsLib.versions.*.
+(def versions
+  #js {:fireworksSym         versions/fireworks-sym
+       :fireworksVersion     versions/fireworks-version
+       :testRefreshSym       versions/test-refresh-sym
+       :testRefreshVersion   versions/test-refresh-version
+       :leinTestRefreshSym   versions/lein-test-refresh-sym
+       :leinTestRefreshVersion versions/lein-test-refresh-version})

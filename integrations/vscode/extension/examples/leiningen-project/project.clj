@@ -2,7 +2,7 @@
   :description "Fireworks Live Coding example (Leiningen)."
 
   :dependencies [[org.clojure/clojure "1.12.0"]
-                 [io.github.paintparty/fireworks "0.21.0"]]
+                 [io.github.paintparty/fireworks "0.21.2"]]
 
 
   ;; The VSCode extension command `Fireworks: Live Code` runs:

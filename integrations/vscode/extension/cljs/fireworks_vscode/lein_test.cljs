@@ -4,9 +4,12 @@
   (:require [clojure.string :as str]
             [cljs.test :refer [deftest is testing]]
             [fireworks-vscode.config :as config]
-            [fireworks-vscode.lein :as lein]))
+            [fireworks-vscode.lein :as lein]
+            [fireworks-vscode.versions :as v]))
 
-(def ^:private eligible-coord "[com.jakemccrary/lein-test-refresh \"0.26.0\"]")
+;; Built from the single source of truth so it follows a plugin-version bump automatically.
+(def ^:private eligible-coord
+  (str "[" v/lein-test-refresh-sym " \"" v/lein-test-refresh-version "\"]"))
 
 ;; --- profiles -------------------------------------------------------------
 

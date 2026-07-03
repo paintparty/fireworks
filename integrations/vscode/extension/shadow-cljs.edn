@@ -37,7 +37,8 @@
                :scaffoldContent      fireworks-vscode.bridge/scaffold-content
                :scaffoldGitignore    fireworks-vscode.bridge/scaffold-gitignore
                :scaffoldLaunch       fireworks-vscode.bridge/scaffold-launch
-               :scaffoldOpenFile     fireworks-vscode.bridge/scaffold-open-file}}
+               :scaffoldOpenFile     fireworks-vscode.bridge/scaffold-open-file
+               :versions             fireworks-vscode.bridge/versions}}
 
   :test
   {:target    :node-test

@@ -332,3 +332,15 @@ export function scaffoldLaunch(kind: string): string;
 
 // The relative path of the source file to open after scaffolding (src/<munged>/core.clj).
 export function scaffoldOpenFile(kind: string, name: string): string;
+
+// Single source of truth for the dependency coordinates the extension injects/documents
+// (fireworks-vscode.versions). Data, not a function — interpolate into guidance strings so no
+// version is hardcoded on the TS side.
+export const versions: {
+  fireworksSym: string;
+  fireworksVersion: string;
+  testRefreshSym: string;
+  testRefreshVersion: string;
+  leinTestRefreshSym: string;
+  leinTestRefreshVersion: string;
+};

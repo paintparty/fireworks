@@ -10,7 +10,8 @@
    so TS can abort cleanly."
   (:require [rewrite-clj.zip :as z]
             [cljfmt.core :as cljfmt]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [fireworks-vscode.versions :as v]))
 
 (defn- alias->str
   "An alias key as it appears after the `-M:` (colon dropped, namespace kept):
@@ -44,10 +45,10 @@
 (def ^:private test-refresh-main "com.jakemccrary.test-refresh")
 
 ;; Defaults injected when the extension writes an alias. Kept in step with examples/deps-project.
-(def ^:private test-refresh-sym 'com.jakemccrary/test-refresh)
-(def ^:private test-refresh-version "0.26.0")
-(def ^:private fireworks-sym 'io.github.paintparty/fireworks)
-(def ^:private fireworks-version "0.21.2")
+(def ^:private test-refresh-sym (symbol v/test-refresh-sym))
+(def ^:private test-refresh-version v/test-refresh-version)
+(def ^:private fireworks-sym (symbol v/fireworks-sym))
+(def ^:private fireworks-version v/fireworks-version)
 
 (defn- alias-classpath-deps
   "The dep maps that feed a `-M:<alias>` classpath, merged: project :deps + the alias's

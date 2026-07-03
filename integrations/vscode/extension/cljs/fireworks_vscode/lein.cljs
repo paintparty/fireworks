@@ -18,6 +18,7 @@
   (:require [cljfmt.core :as cljfmt]
             [clojure.string :as str]
             [fireworks-vscode.config :as config]
+            [fireworks-vscode.versions :as v]
             [rewrite-clj.node :as n]
             [rewrite-clj.parser :as p]
             [rewrite-clj.zip :as z]))
@@ -29,8 +30,8 @@
   [text]
   (try (cljfmt/reformat-string text) (catch :default _ text)))
 
-(def ^:private plugin-sym 'com.jakemccrary/lein-test-refresh)
-(def ^:private plugin-version "0.26.0")
+(def ^:private plugin-sym (symbol v/lein-test-refresh-sym))
+(def ^:private plugin-version v/lein-test-refresh-version)
 ;; The exact plugin coordinate the project must carry to be eligible.
 (def ^:private coordinate [plugin-sym plugin-version])
 
@@ -95,8 +96,8 @@
 ;; The coordinate the extension appends to the top-level :dependencies when a project's classpath
 ;; lacks Fireworks. Kept in step with examples/leiningen-project (a git-style coord, which lein
 ;; supports); matched on launch by artifact name, so any group/version already present is left alone.
-(def ^:private fireworks-sym 'io.github.paintparty/fireworks)
-(def ^:private fireworks-version "0.21.0")
+(def ^:private fireworks-sym (symbol v/fireworks-sym))
+(def ^:private fireworks-version v/fireworks-version)
 (def ^:private fireworks-coordinate [fireworks-sym fireworks-version])
 
 (defn- deps-vec-has-fireworks?

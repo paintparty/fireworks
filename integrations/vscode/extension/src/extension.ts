@@ -1109,6 +1109,16 @@ function guidanceDoc(
   topic: GuidanceTopic,
   params?: URLSearchParams,
 ): { title: string; markdown: string } {
+  // Version coordinates from the cljs single source of truth (fireworks-vscode.versions) — never
+  // hardcode a version in the docs below.
+  const {
+    fireworksSym,
+    fireworksVersion,
+    testRefreshSym,
+    testRefreshVersion,
+    leinTestRefreshSym,
+    leinTestRefreshVersion,
+  } = cljsLib.versions;
   switch (topic) {
     case 'lein-missing-plugin':
       return {
@@ -1119,7 +1129,7 @@ function guidanceDoc(
           '',
           'For Leiningen projects, you need this plugin:',
           '',
-          '**`[com.jakemccrary/lein-test-refresh "0.26.0"]`**',
+          `**\`[${leinTestRefreshSym} "${leinTestRefreshVersion}"]\`**`,
           '',
           '<br>',
           '<br>',
@@ -1133,7 +1143,7 @@ function guidanceDoc(
           '  :profiles',
           '  {:my-profile',
           '   {:plugins',
-          '    [[com.jakemccrary/lein-test-refresh "0.26.0"]]}})',
+          `    [[${leinTestRefreshSym} "${leinTestRefreshVersion}"]]}})`,
           '```',
           '',
           '  ~ or ~',
@@ -1142,7 +1152,7 @@ function guidanceDoc(
           '```clj',
           '{:user',
           ' {:plugins',
-          '  [[com.jakemccrary/lein-test-refresh "0.26.0"]]}}',
+          `  [[${leinTestRefreshSym} "${leinTestRefreshVersion}"]]}}`,
           '```',
           '<br>',
           '<br>',
@@ -1218,12 +1228,12 @@ function guidanceDoc(
           '{:paths ["src"]',
           '',
           ' :deps {org.clojure/clojure            {:mvn/version "1.12.0"}',
-          '        io.github.paintparty/fireworks {:mvn/version "0.21.2"}}',
+          `        ${fireworksSym} {:mvn/version "${fireworksVersion}"}}`,
           '',
           ' :aliases',
           ` {:${alias}`,
           '  {:extra-paths ["test"]',
-          '   :extra-deps  {com.jakemccrary/test-refresh {:mvn/version "0.26.0"}}',
+          `   :extra-deps  {${testRefreshSym} {:mvn/version "${testRefreshVersion}"}}`,
           '   :main-opts   ["-m" "com.jakemccrary.test-refresh"]}}}',
           '```',
           '',

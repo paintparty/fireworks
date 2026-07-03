@@ -1,6 +1,6 @@
 {:paths ["src" "test"]
 
- :deps  {io.github.paintparty/fireworks {:mvn/version "0.21.0"}}
+ :deps  {io.github.paintparty/fireworks {:mvn/version "0.21.2"}}
 
  :tasks
  ;; Live Code runs `bb live-code`. The task calls `load-file` on the Fireworks
