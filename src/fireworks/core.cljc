@@ -917,6 +917,11 @@
                                      (safe-str* x))))))
 
 
+(defn- only-inline-results? [opts]
+  (or (-> opts :user-opts :only-inline-results?)
+      (-> @state/config :only-inline-results?)))
+
+
 ;; TODO - maybe we can remove this and just use _p2
 (defn ^{:public true :no-doc true}
   _p 
@@ -930,62 +935,68 @@
    (_p nil opts x))
 
   ([a opts x]
-   (write-to-store x (assoc (:form-meta opts) :ns-str (:ns-str opts)))
-   (let [opts (if (map? a)
-                (merge (dissoc opts x :label) a)
-                opts)
-         
-         debug-config?
-         (or state/debug-config?
-             (-> opts :user-opts :fw/debug-config? true?)) 
+   (let [return-result (when-not (= (:template opts)
+                                    [:form-or-label :file-info])
+                         x)]
+     (write-to-store x (assoc (:form-meta opts) :ns-str (:ns-str opts)))
+     (if (only-inline-results? opts)
+       return-result
+       (let [opts (if (map? a)
+                    (merge (dissoc opts x :label) a)
+                    opts)
+             
+             debug-config?
+             (or state/debug-config?
+                 (-> opts :user-opts :fw/debug-config? true?)) 
 
-         config-before
-         (when debug-config? @state/config)]
+             config-before
+             (when debug-config? @state/config)]
 
-     (reset-state! opts)
+         (reset-state! opts)
 
-     (let [
-           ;; In cljs, if val is data structure but not cljs data structure
-           ;; TODO - Mabye add tag-map to the opts to save a call in truncate
-           native-logging (native-logging* x opts)
-           opts           (merge opts native-logging)
-           printing-opts  (try (formatted x opts)
-                               (catch #?(:cljs js/Object :clj Exception)
-                                      e
-                                 (fw-throwable e x opts)))
-           return-result? (when-not (= (:template opts)
-                                       [:form-or-label :file-info])
-                            x)]
+         (let [
+               ;; In cljs, if val is data structure but not cljs data structure
+               ;; TODO - Mabye add tag-map to the opts to save a call in truncate
+               native-logging (native-logging* x opts)
+               opts           (merge opts native-logging)
+               printing-opts  (try (formatted x opts)
+                                   (catch #?(:cljs js/Object :clj Exception)
+                                          e
+                                     (fw-throwable e x opts)))
+               ;; TODO - when you not return result? and why is this not boolean
+               return-result? (when-not (= (:template opts)
+                                           [:form-or-label :file-info])
+                                x)]
 
-       (when debug-config?
-         (fw-debug-report config-before opts "fireworks.core/_p2")) 
+           (when debug-config?
+             (fw-debug-report config-before opts "fireworks.core/_p2")) 
 
-       (when (or state/print-config?
-                 (-> opts :user-opts :fw/print-config? true?))
-         (fw-config-report))
+           (when (or state/print-config?
+                     (-> opts :user-opts :fw/print-config? true?))
+             (fw-config-report))
 
 
-       ;; TODO Change this to (= (:mode opts) :data)
-       (if (:p-data? opts) 
-         (as-data printing-opts)
+           ;; TODO Change this to (= (:mode opts) :data)
+           (if (:p-data? opts) 
+             (as-data printing-opts)
 
-         (do 
-           (print-formatted printing-opts
-                            #?(:cljs (when-not node? js-print)))
+             (do 
+               (print-formatted printing-opts
+                                #?(:cljs (when-not node? js-print)))
 
-           ;; Fireworks formatting and printing of does not happen when:
-           ;; - Value being printed is non-cljs or non-clj data-structure
-           ;; - :log flag or :log? (deprecated)
-           ;; - :pp, :prn, :println, :print flags or :print-with is function
-           (when (and (not (:fw/log? opts))
-                      (:log? opts))        ; <- This is for something like (? #js[1 2 3])
-             #?(:cljs (if node?
-                        (fireworks.core/pprint x) ; <- In node, do you want pprint here, or just js/console.log ?
-                        (js/console.log x))
-                :clj (fireworks.core/pprint x)))
+               ;; Fireworks formatting and printing of does not happen when:
+               ;; - Value being printed is non-cljs or non-clj data-structure
+               ;; - :log flag or :log? (deprecated)
+               ;; - :pp, :prn, :println, :print flags or :print-with is function
+               (when (and (not (:fw/log? opts))
+                          (:log? opts))        ; <- This is for something like (? #js[1 2 3])
+                 #?(:cljs (if node?
+                            (fireworks.core/pprint x) ; <- In node, do you want pprint here, or just js/console.log ?
+                            (js/console.log x))
+                    :clj (fireworks.core/pprint x)))
 
-           (reset! state/formatting-form-to-be-evaled? false)
-           (when return-result? x) ))))))
+               (reset! state/formatting-form-to-be-evaled? false)
+               return-result ))))))))
 
 
 (defn ^{:public true 
@@ -1014,7 +1025,10 @@
   [opts x]
   (let [debug-config? (or state/debug-config?
                           (-> opts :user-opts :fw/debug-config? true?)) 
-        config-before (when debug-config? @state/config)]
+        config-before (when debug-config? @state/config)
+        return-result (when-not (= (:template opts)
+                                   [:form-or-label :file-info])
+                        x)]
     ;; Maybe write truncated string representation to .fireworks/results
     ;; This is opt-in by user, based on the existance of that path,
     ;; relative to the root of the project  
@@ -1024,66 +1038,63 @@
                            (:ns-str opts)
                            :perf
                            (:perf opts)))
-    
-    ;; Reset the state if user is passing options that override defaults
-    ;; in state.
-    (reset-state! opts)
 
-    (let [native-logging (try (native-logging* x opts)
-                              (catch #?(:cljs js/Object :clj Throwable)
-                                     e
-                                (fw-throwable e x opts)))
+    (if (only-inline-results? opts)
+      ;; Reset the state if user is passing options that override defaults
+      ;; in state (for printing).
+      return-result
+      (do (reset-state! opts)
+          (let [native-logging (try (native-logging* x opts)
+                                    (catch #?(:cljs js/Object :clj Throwable)
+                                           e
+                                      (fw-throwable e x opts)))
 
-          ;; TODO - Need a better way to do threading 
-          opts           (merge opts
-                                native-logging
-                                (when (some-> opts :label :threading?)
-                                  {:label (or (some-> opts :label :label)
-                                              "threading:")}))
+                ;; TODO - Need a better way to do threading 
+                opts           (merge opts
+                                      native-logging
+                                      (when (some-> opts :label :threading?)
+                                        {:label (or (some-> opts :label :label)
+                                                    "threading:")}))
 
-          printing-opts  (try (formatted x opts)
-                              (catch #?(:cljs js/Object :clj Throwable)
-                                     e
-                                (fw-throwable e x opts)))
+                printing-opts  (try (formatted x opts)
+                                    (catch #?(:cljs js/Object :clj Throwable)
+                                           e
+                                      (fw-throwable e x opts)))]
 
-          return-result? (when-not (= (:template opts)
-                                      [:form-or-label :file-info])
-                           x)]
+            (when debug-config? 
+              (fw-debug-report config-before opts "fireworks.core/_p2")) 
 
-      (when debug-config? 
-        (fw-debug-report config-before opts "fireworks.core/_p2")) 
+            (when (or state/print-config?
+                      (-> opts :user-opts :fw/print-config? true?))
+              (fw-config-report))
 
-      (when (or state/print-config?
-                (-> opts :user-opts :fw/print-config? true?))
-        (fw-config-report))
+            (if (:p-data? opts) 
+              ;; user asked for data, don't print
+              (as-data printing-opts)
+              
+              (let [print? (if (contains? opts :when) (:when opts) true)]
+                (when print?
+                  #_(println "_p2, normal printing brach")
+                  (print-formatted printing-opts 
+                                   #?(:cljs (when-not node? js-print))))
+                
+                ;; WHEN DOES THIS BRANCH GET CALLED? 
+                ;; TODO should we reverse the order here, and put in a cond
+                ;; Fireworks formatting and printing of does not happen when:
+                ;; - Value being printed is non-cljs or non-clj data-structure
+                ;; - :log :log- is used
+                ;; - :pp or :pp- is used
+                (when (and print?
+                           (not (:fw/log? opts))
+                           (:log? opts))
+                  #_(println "_p2, logging-branch")
+                  #?(:cljs (if node?
+                             (fireworks.core/pprint x)
+                             (js/console.log x))
+                     :clj (fireworks.core/pprint x)))
 
-      (if (:p-data? opts) 
-        ;; user asked for data, don't print
-        (as-data printing-opts)
-        
-        (let [print? (if (contains? opts :when) (:when opts) true)]
-          (when print?
-            #_(println "_p2, normal printing brach")
-            (print-formatted printing-opts 
-                             #?(:cljs (when-not node? js-print))))
-          
-          ;; WHEN DOES THIS BRANCH GET CALLED? 
-          ;; TODO should we reverse the order here, and put in a cond
-          ;; Fireworks formatting and printing of does not happen when:
-          ;; - Value being printed is non-cljs or non-clj data-structure
-          ;; - :log :log- is used
-          ;; - :pp or :pp- is used
-          (when (and print?
-                     (not (:fw/log? opts))
-                     (:log? opts))
-            #_(println "_p2, logging-branch")
-            #?(:cljs (if node?
-                       (fireworks.core/pprint x)
-                       (js/console.log x))
-               :clj (fireworks.core/pprint x)))
-
-          (reset! state/formatting-form-to-be-evaled? false)
-          (when return-result? x))))))
+                (reset! state/formatting-form-to-be-evaled? false)
+                return-result)))))))
 
 
 (defn- cfg-opts
