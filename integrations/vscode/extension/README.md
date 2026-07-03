@@ -239,10 +239,7 @@ Note: `test-cljs` does not rebuild the `:cljs-lib` output that the extension loa
 ### Updating the deps that extensions uses in templates
 
 To update the dependency coordinates that the extension uses to automatically add to project files, change them via:
-`fireworks.vscode.deps/test-refresh-version`
-`fireworks.vscode.deps/fireworks-version`
-They are also a few sprinkled in extension.ts, just search for `:mvn/version`
-TODO: store these in JSON that both files can read from.
+`fireworks.vs-code.versions`
 
 ### Republishing the extension
 
