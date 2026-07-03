@@ -10,9 +10,10 @@
   [clojure.pprint :refer [pprint]]
   [clojure.string :as str]
   [clojure.edn :as edn]
-  [clojure.spec.alpha :as s]))
+  [clojure.spec.alpha :as s]
+  [fireworks.debug :refer [?]]))
 
-(def debug-config? false #_true)
+(def debug-config? true)
 
 
 
@@ -260,6 +261,29 @@
    :env-var/debug-detect-color? (env-var-color-non-empty?
                                  "BLING_DEBUG_DETECT_COLOR")})
 
+(defn- set-default-theme [bling-mood]
+  (let [theme (case bling-mood
+                    "light"
+                    "Alabaster Light"
+                    "dark"
+                    "Alabaster Dark"
+                    "Universal Neutral")
+            config {:theme theme}]
+        (when debug-config?
+          (messaging/fw-debug-report-template
+           (str "Debugging config :: fireworks.macros/get-user-config"
+                "\n\n"
+                "BLING_CONFIG is not set."
+                "\n\n"
+                "BLING_MOOD env var is set to: " 
+                (or (when (contains? #{"light" "dark"} bling-mood)
+                      (str "\"" bling-mood "\""))
+                    (str "\"" bling-mood "\""))
+                "\n\n"
+                "Returning a config of:" )
+           config))
+        config))
+
 
 (defmacro get-user-configs
   "This gets the path to user config from sys env var, then returns a map of
@@ -317,7 +341,7 @@
                    conj
                    [:messaging/bad-option-value-warning opts]))
 
-          (when-let [config (load-edn {:source path-to-user-config})]
+          (if-let [config (load-edn {:source path-to-user-config})]
             (let [config (assoc config :path-to-user-config path-to-user-config)]
               (if-let [theme* (:theme config)]
                 (if-let [user-theme*
@@ -374,34 +398,15 @@
                     `~config))
 
                 ;; :theme entry is nil or not supplit, just return user config
-                `~config)))))
+                `~config))
+            (set-default-theme bling-mood))))
 
       ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, or
       ;; (System/getenv "BLING_CONFIG") resolves to nil, we set theme to
       ;; default \"Universal Neutral\"" stock theme,
-      ;; unless (System/getenv "BLING_CONFIG") is "light" or "dark", in which case
+      ;; unless (System/getenv "BLING_MOOD") is "light" or "dark", in which case
       ;; we assign "Alabaster Light" or "Alabaster Dark" to theme.
-      (let [theme (case bling-mood
-                    "light"
-                    "Alabaster Light"
-                    "dark"
-                    "Alabaster Dark"
-                    "Universal Neutral")
-            config {:theme theme}]
-        (when debug-config?
-          (messaging/fw-debug-report-template
-           (str "Debugging config :: fireworks.macros/get-user-config"
-                "\n\n"
-                "BLING_CONFIG is not set."
-                "\n\n"
-                "BLING_MOOD env var is set to: " 
-                (or (when (contains? #{"light" "dark"} bling-mood)
-                      (str "\"" bling-mood "\""))
-                    (str "\"" bling-mood "\""))
-                "\n\n"
-                "Returning a config of:" )
-           config))
-        config))))
+      (set-default-theme bling-mood))))
 
 
 (defn get-user-config-edn-dynamic
