@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.3
+<sub>07-02-2026</sub>
+
+#### Fixed
+- Outdated readme
+
+## 0.2.2
+<sub>07-02-2026</sub>
+
+#### Fixed
+- `--baseImgagesUrl` in build script missing
+
 
 ## 0.2.1
 <sub>07-02-2026</sub>

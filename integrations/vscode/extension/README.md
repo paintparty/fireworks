@@ -112,17 +112,18 @@ Pick the background tint strength for dark themes. Live preview. (Light theme ha
 ### Usage Overview
 Run the command `Fireworks: Live Code`. 
 
-The extension will analyze project roots in workspace and present you with a list of projects eligible projects. Pick one.
+The extension will analyze project roots in workspace and present you with a list of eligible projects.
 
 Then, the extension analyzes the project's build file, and present you with a list of eligible profiles to choose from.
 
 You then choose between starting the process in an integrated terminal, or in your preferred external terminal. (You can set a default for this going forward with `Fireworks: Set Terminal Location`).
 
-A build process and file watcher starts running in terminal.
+If you choose an integrated terminal, a build process and file watcher starts running in terminal.
+If you choose an external terminal, you will be shown a guidance tab.
 
 On each file save (in an active editor), all the `?` forms will re-run and fresh results paint inline.
 
-`Fireworks: Live Code (Stop/Restart)` will reuse same project pick.
+`Fireworks: Live Code (Stop/Restart)` will reuse the same project pick.
 
 For more info on how this works, and using with/without a REPL connection, see [this section](#how-it-works)
 
@@ -132,11 +133,10 @@ For more info on how this works, and using with/without a REPL connection, see [
 
  - Customize the color of the inline results with `Fireworks: Set Inline Results Color`. 
 
- - Customize the opacity of the background and foreground, as well as the offset gap, of the inline results with corresponding commands. 
+ - Customize the opacity of the background and foreground, as well as the offset gap, of the inline results with corresponding Fireworks commands. 
 
  - Set the theme of the Fireworks terminal output with `Fireworks: Edit or Create a Printing Options config.edn`.
-   If you don't already have one, you need to save the config.edn in `~/.config/fireworks/config.edn` or `~/.config/bling/config.edn`.
-   You'll also need to export an environment variable on your system for this theme to be active globally, more details on this [here](https://github.com/paintparty/fireworks/tree/main#system-wide-config).
+   If you don't already have one, you need to save the config.edn in `~/.config/fireworks/config.edn` or `~/.config/bling/config.edn`. You'll also need to export an environment variable on your system for this theme to be active globally, more details on this [here](https://github.com/paintparty/fireworks/tree/main#system-wide-config).
 
 <br>
 
@@ -157,8 +157,6 @@ The extension also looks for a `.test-refresh.edn` at your project root, then `~
 
 Save file → watcher re-runs all forms wrapped with`?` → results paint.
 
-
-
 #### Leiningen Projects
 
 1) Run command `Fireworks: Live Code (Start)`
@@ -174,8 +172,6 @@ This is the one runtime where the extension may touch your build file. Plugin mi
 No profiles at all? Extension takes a read-only look at `~/.lein/profiles.clj` `:user`. Plugin and `:test-refresh` both there? It runs plain `lein test-refresh`. Otherwise it opens a setup guide. Global config is never touched.
 
 Save file → watcher re-runs all forms wrapped with `?` → results paint.
-
-<br>
 
 ### Babashka Projects
 A Babashka project is a candidate for Live Coding if it contains a `bb.edn` with a task that loads the Fireworks watcher.
@@ -198,10 +194,10 @@ Save file → watcher reloads the file → all forms wrapped with `?` re-run →
 ## How it works
 
 ### No REPL necessary
-You do not need to have a REPL connected to your editor for Live Code to work, as it uses `test-refresh` in `:debug` mode under the hood to reload namespaces based one what changed (no tests are run). If you want to also run tests will debugging, you can set `:debug` to false in your projects `.test-refresh.edn`. 
+You do not need to have a REPL connected to your editor for Live Code to work, as it uses `test-refresh` in `:debug` mode under the hood to reload namespaces based one what changed (no tests are run). If you want to also run tests will debugging, you can set `:debug` to false in your project's `.test-refresh.edn`. 
 
 ### REPL Friendly
-Conversely, the fireworks macros will produce inline results in the scenario where you are ***not*** running the `test-refresh` based Live Code flow, but you ***do*** have a REPL connected and are evaling the file or forms with `?` in them. In order for this scenario to work, you must have a `.fireworks` dir setup at the root of your project, and a valid profile with the deps that Live Code needs. You can set this up by running `Fireworks: Live Code (Preflight)`. This will add the missing pieces to your project (gated on your confirmation). And then when you do `Calva: Load/Evaluate Current File and its Requirements`, all the inline results for wrapped `?` forms should be refreshed.
+Conversely, the fireworks macros will produce inline results in the scenario where you are ***not*** running the `test-refresh` based Live Code flow, but you ***do*** have a REPL connected and are evaling the file or forms with `?` in them. In order for this scenario to work, you must have a `.fireworks` dir setup at the root of your project, and a valid profile with the deps that Live Code needs. You can set this up by running `Fireworks: Live Code (Start)`. This will add the missing pieces to your project (gated on your confirmation). You can then kill the process that it starts in the terminal by running `Fireworks: Live Code (Stop)`. And then when you do `Calva: Load/Evaluate Current File and its Requirements`, all the inline results for wrapped `?` forms should be refreshed.
 
 <!-- <br>
 
@@ -255,6 +251,10 @@ TODO: store these in JSON that both files can read from.
 3. Run `npm run compile` (full build: cljs + TS).
 4. Run `npm run package` to produce the `.vsix`.
 5. Go to the [Visual Studio Marketplace publisher page](https://marketplace.visualstudio.com/manage/publishers/jcoyle), find the Fireworks listing, and drag the `.vsix` onto it.
+
+For just publishing minor patch:
+`vsce publish patch`
+This command will automatically update your package.json to the next patch version (e.g., from 1.0.4 to 1.0.5), create a Git version commit and tag (if you are in a Git repository), and publish the new version to the Marketplace. Your users will then receive the fix via standard automatic updates.
 
 <br>
 
