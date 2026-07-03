@@ -297,28 +297,6 @@
 (def stock-theme-names 
   (->> stock-themes keys (into #{})))
 
-;; For any of the Live Code start or restart sequences, I want the extension to potentially prepend an environmental var onto the cli command that starts the build:
 
-;; e.g. 
 
-;; Here's the logic:
 
-;; detect the mood of the user's vscode theme - light or dark
-
-;; detect the presence of a bling or a config file at either of the following locations:
-;; `~/.config/bling/config.edn`
-;; `~/.config/fireworks/config.edn`
-
-;; then read that edn and pull out the :theme entry
-
-;; then determine if e.g. (contains? fireworks.basethemes/stock-theme-names theme-name)
-
-;; if it is a stock theme and the variant (light or dark) matches the user's vscode theme, then use that
-
-;; if it is a stock theme and the variant (light or dark) does NOT match the user's vscode theme, then use go into a "force mood mode" 
-
-;; if the theme is "Universal" or "Universal Neutral" we won't be setting the BLING_MOOD env var 
-
-;; theme is valid. If it has a theme, but it does not match the detected background,
-;; then use the detected background variant of that theme. If no theme at all is detected, 
-;; use alabaster or light or dark, depending on which one matches the background.

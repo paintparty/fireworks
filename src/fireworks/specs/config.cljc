@@ -187,3 +187,5 @@
 (s/def ::colorize? boolean?)
 
 (s/def ::perf? boolean?)
+
+(s/def ::only-inline-results? boolean?)

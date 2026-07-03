@@ -14,6 +14,7 @@
             [fireworks-vscode.deps :as deps]
             [fireworks-vscode.inline-results :as inline-results]
             [fireworks-vscode.lein :as lein]
+            [fireworks-vscode.mood :as mood]
             [fireworks-vscode.ns-require :as ns-require]
             [fireworks-vscode.scaffold :as scaffold]
             [fireworks-vscode.toggle :as toggle]
@@ -254,3 +255,21 @@
        :testRefreshVersion   versions/test-refresh-version
        :leinTestRefreshSym   versions/lein-test-refresh-sym
        :leinTestRefreshVersion versions/lein-test-refresh-version})
+
+;; --- BLING_MOOD (Live Code launch env) ------------------------------------
+;; The full BLING_MOOD decision (value + the reasoning, for the output-channel diagnostics). `texts`
+;; is a JS array of config-file texts in priority order (nils for missing files); the first that
+;; carries a :theme wins. `vscode-mood` is "light"/"dark". `sourceIndex` is which config the :theme
+;; came from (-1 = none), so TS can name the file in the log.
+(defn bling-mood-decision [texts vscode-mood]
+  (let [texts* (array-seq texts)
+        idx    (->> texts* (map-indexed vector)
+                    (some (fn [[i t]] (when (mood/theme-name t) i))))
+        tn     (when idx (mood/theme-name (nth (vec texts*) idx)))
+        d      (mood/decision tn vscode-mood)]
+    #js {:value       (:value d)
+         :themeName   (:theme-name d)
+         :stock       (:stock? d)
+         :variant     (some-> (:variant d) name)
+         :reason      (:reason d)
+         :sourceIndex (if idx idx -1)}))

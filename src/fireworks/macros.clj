@@ -13,9 +13,7 @@
   [clojure.spec.alpha :as s]
   [fireworks.debug :refer [?]]))
 
-(def debug-config? true)
-
-
+(def debug-config? false)
 
 ;; START: For resolving theme from COLOR_THEME env var  ------------------------
 
@@ -205,9 +203,10 @@
   [{:keys [key file source] :as opts}]
   (use 'clojure.java.io)
   (if-not (fireworks.fs/file-exists? source)
-    (println (str "[!WARNING][fireworks.macros/load-edn]\n"
-                  "User-specified config file not found:\n"
-                  "\"" source "\""))
+    (when debug-config?
+      (println (str "[!WARNING][fireworks.macros/load-edn]\n"
+                    "User-specified config file not found:\n"
+                    "\"" source "\"")))
     (try
       (with-open [r (clojure.java.io/reader source)]
         (edn/read (java.io.PushbackReader. r)))

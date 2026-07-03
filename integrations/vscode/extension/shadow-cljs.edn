@@ -38,7 +38,8 @@
                :scaffoldGitignore    fireworks-vscode.bridge/scaffold-gitignore
                :scaffoldLaunch       fireworks-vscode.bridge/scaffold-launch
                :scaffoldOpenFile     fireworks-vscode.bridge/scaffold-open-file
-               :versions             fireworks-vscode.bridge/versions}}
+               :versions             fireworks-vscode.bridge/versions
+               :blingMoodDecision    fireworks-vscode.bridge/bling-mood-decision}}
 
   :test
   {:target    :node-test

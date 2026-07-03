@@ -804,6 +804,85 @@ function themeVariant(): 'light' | 'dark' {
     : 'dark';
 }
 
+// The Bling/Fireworks config files that may carry a :theme, in priority order (bling first).
+function blingConfigPaths(): string[] {
+  const home = os.homedir();
+  return [
+    path.join(home, '.config', 'bling', 'config.edn'),
+    path.join(home, '.config', 'fireworks', 'config.edn'),
+  ];
+}
+
+interface MoodDecision {
+  value: string | null; // the BLING_MOOD to force ("light"/"dark"), or null to leave unset
+  editorMood: 'light' | 'dark';
+  themeName: string | null;
+  reason: string;
+  configPaths: string[]; // config files that exist on disk (for the log)
+  sourcePath: string | null; // the config the :theme was read from, if any
+}
+
+// Resolve whether/what to force for BLING_MOOD, keeping the inputs so launchWatcher can log the
+// whole decision to the output channel. The branch logic (which themes already agree) lives in
+// fireworks-vscode.mood; here we read the config files and supply the editor mood.
+function resolveBlingMood(): MoodDecision {
+  const paths = blingConfigPaths();
+  const texts = paths.map(readFileOrNull);
+  const editorMood = themeVariant();
+  const d = cljsLib.blingMoodDecision(texts, editorMood);
+  return {
+    value: d.value,
+    editorMood,
+    themeName: d.themeName,
+    reason: d.reason,
+    configPaths: paths.filter((_, i) => texts[i] !== null),
+    sourcePath: d.sourceIndex >= 0 ? paths[d.sourceIndex] : null,
+  };
+}
+
+// Record the BLING_MOOD decision into the active diagnostics run (Fireworks output channel), and
+// echo a one-liner to the log for launches outside a diagnosed command (e.g. Create New Project).
+function logMoodDecision(d: MoodDecision): void {
+  diagFact('Editor mood', d.editorMood);
+  diagFact('Theme configs found', d.configPaths.length ? d.configPaths.map(tildify) : null);
+  diagFact('Config :theme', d.themeName);
+  diagFact('BLING_MOOD', d.value);
+  diagStep(`BLING_MOOD: ${d.reason}.`);
+  log(`BLING_MOOD decision: ${d.reason} (editor=${d.editorMood}, :theme=${d.themeName ?? 'none'})`);
+}
+
+type ShellKind = 'posix' | 'powershell' | 'cmd';
+
+// The integrated terminal's default shell family, so an env-var prefix uses the right syntax.
+// vscode.env.shell is the user's configured shell path.
+function shellKind(): ShellKind {
+  const s = (vscode.env.shell || '').toLowerCase();
+  if (s.includes('powershell') || s.includes('pwsh')) {
+    return 'powershell';
+  }
+  if (/(^|[\\/])cmd(\.exe)?$/.test(s)) {
+    return 'cmd';
+  }
+  return 'posix';
+}
+
+// A visible env-var prefix for the watcher command in the current shell: POSIX
+// `VAR="v" cmd`, PowerShell `$env:VAR="v"; cmd`, cmd.exe `set "VAR=v" && cmd`. Empty string when
+// there's nothing to set, so callers can prepend unconditionally.
+function envVarPrefix(name: string, value: string | null): string {
+  if (!value) {
+    return '';
+  }
+  switch (shellKind()) {
+    case 'powershell':
+      return `$env:${name}="${value}"; `;
+    case 'cmd':
+      return `set "${name}=${value}" && `;
+    default:
+      return `${name}="${value}" `;
+  }
+}
+
 // The decoration color: the chosen palette name resolved to its HSL for the active theme
 // (falls back to the default for an unknown/empty value).
 function inlineColor(): string {
@@ -2542,9 +2621,14 @@ async function startLiveCoding(): Promise<void> {
       prepareResultsDir(root);
       clearResultsForRoot(root);
       recordRecentRoot(root);
+      // The user runs this in their own shell, so prepend the shell-appropriate env prefix to the
+      // shown command (same decision + logging as an integrated launch).
+      const mood = resolveBlingMood();
+      logMoodDecision(mood);
+      const cmd = envVarPrefix('BLING_MOOD', mood.value) + plan.command;
       diagStep('Show the external-terminal guidance (no terminal spawned).');
       diagEnd('launched (external terminal guidance)');
-      await showGuidance('external-terminal', { cmd: plan.command, dir: root });
+      await showGuidance('external-terminal', { cmd, dir: root });
     }
   } finally {
     diagEnd('ended'); // no-op if a branch above already flushed; safety net on unexpected throw
@@ -3236,7 +3320,14 @@ async function launchWatcher(
   clearResultsForRoot(root); // in-memory fresh slate for this root only (not other projects')
   recordRecentRoot(root); // float this project in the pickers' "Recent" section
   log(`live coding -> ${command} (cwd ${root})`);
+  // Force the watcher's Fireworks output mood to match the editor when the configured theme doesn't
+  // already agree — as a visible shell-appropriate env prefix on the command (recomputed per launch
+  // so a theme switch is picked up on restart). The decision is logged to the diagnostics tree.
+  const mood = resolveBlingMood();
+  logMoodDecision(mood);
+  const launchCommand = envVarPrefix('BLING_MOOD', mood.value) + command;
   const terminal = vscode.window.createTerminal({ name: terminalName(root), cwd: root });
+  // session.command stays the bare command (restart re-derives the prefix from the current mood).
   const session: LiveSession = { root, command, terminal, execution: undefined, testRefresh, runtime };
   liveSessions.set(root, session);
   terminal.show();
@@ -3248,7 +3339,7 @@ async function launchWatcher(
   if (liveSessions.get(root) !== session) {
     return; // closed/replaced during wait
   }
-  await sendWatcherCommand(session, si, command);
+  await sendWatcherCommand(session, si, launchCommand);
   if (runtime === 'bb') {
     scheduleBbStartupNudge(session, animEditor); // light up the active file's inline results
   }

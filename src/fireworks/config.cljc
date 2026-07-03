@@ -199,12 +199,16 @@
                                    :desc     "Experimental colorization for :pp mode, which dispatches to pp/pprint"
                                    :category :decorations
                                    :tags     [:decorations]}
-
    :perf?                         {:spec     ::config/perf?
                                    :default  false
                                    :desc     "Rough quick-bench mean result is included below the file-info line and the form/label. Also prepends the result e.g. \"(69ns)\" to the inline result."
                                    :category :fireworks
                                    :tags     [:perf :fireworks]}
+   :only-inline-results?          {:spec     ::config/only-inline-results?
+                                   :default  false
+                                   :desc     "The `?` macro will short circuit after writing inline-result print representation. For silencing printing in console, if the user only wants inline results in editor."
+                                   :category :fireworks
+                                   :tags     [:inline-results :fireworks]}
 
 
    ;; Deprecated / Internal dev only
