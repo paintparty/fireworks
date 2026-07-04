@@ -1,0 +1,80 @@
+;; Maintenance tasks for the Fireworks VS Code extension (run from this directory).
+;;
+;;   bb update-fireworks-version 0.21.3
+;;   bb update-fireworks-version --force 0.21.4   ; skip the "does this version exist on Clojars?" check
+;;
+;; Bumps the Fireworks version in the single source of truth (cljs/fireworks_vscode/versions.cljs)
+;; AND the bundled example build files in one shot, so the two never drift. The extension already
+;; pins scaffolded projects to versions.cljs; this keeps the runnable examples (and the guard test
+;; in fireworks-vscode.versions-test) in step. After running, `npm run test-cljs` verifies it.
+{:tasks
+ {:init
+  (do
+    (require '[babashka.curl :as curl])
+    (def ^:private fw-group "io.github.paintparty")
+    (def ^:private fw-artifact "fireworks")
+    (def ^:private fw-sym (str fw-group "/" fw-artifact))
+    ;; True when the artifact POM exists on Clojars (a released version). HEAD, so nothing downloads.
+    (defn- version-exists? [group artifact version]
+      (let [group-path (clojure.string/replace group "." "/")
+            url (format "https://repo.clojars.org/%s/%s/%s/%s-%s.pom"
+                        group-path artifact version artifact version)]
+        (try
+          (= 200 (:status (curl/head url {:throw false})))
+          (catch Exception _ false))))
+    ;; Replace the version literal for `re` in `path` with `version`; report per-file. Returns true
+    ;; when the pattern MATCHED (found the coordinate/def), regardless of whether the value moved —
+    ;; a false return means the file layout drifted and the bump silently missed it. `re` must have
+    ;; two capture groups bracketing the old version text.
+    (defn- sub-in-file! [path re version]
+      (let [text     (slurp path)
+            matched? (some? (re-find re text))
+            out      (clojure.string/replace text re (str "$1" version "$2"))]
+        (cond
+          (not matched?) (binding [*out* *err*]
+                           (println "  NO MATCH  " path "— pattern not found, left untouched"))
+          (= text out)   (println (str "  ok         " path " (already " version ")"))
+          :else          (println "  updated   " path))
+        (spit path out)
+        matched?)))
+
+  update-fireworks-version
+  {:doc "Bump the Fireworks version in versions.cljs + examples/. Usage: bb update-fireworks-version [--force] 0.21.3"
+   :task
+   (let [args    *command-line-args*
+         force?  (boolean (some #{"--force" "-force"} args))
+         version (first (remove #{"--force" "-force"} args))]
+     (when-not (and version (re-matches (re-pattern "\\d+\\.\\d+\\.\\d+.*") version))
+       (binding [*out* *err*]
+         (println "Usage: bb update-fireworks-version [--force] <version>   e.g. 0.21.3"))
+       (System/exit 1))
+     (if force?
+       (println (str "Skipping Clojars existence check (--force) for " version "."))
+       (do
+         (print (str "Checking Clojars for " fw-sym " " version " ... "))
+         (flush)
+         (if (version-exists? fw-group fw-artifact version)
+           (println "found.")
+           (do
+             (println "not found.")
+             (binding [*out* *err*]
+               (println (str "FAILED: " fw-sym " " version " does not exist on Clojars. "
+                             "Check the version, or pass --force to bump anyway.")))
+             (System/exit 1)))))
+     (let [esc  (clojure.string/replace fw-sym "." "\\.")
+           ;; the deps/bb `sym {:mvn/version "…"}` form (won't touch the :local/root override)
+           mvn  (re-pattern (str "(" esc "\\s*\\{:mvn/version\\s*\")[^\"]*(\")"))
+           ;; the Leiningen `[sym "…"]` form
+           lein (re-pattern (str "(\\[" esc "\\s*\")[^\"]*(\")"))
+           ;; the source of truth: (def fireworks-version "…")
+           vers (re-pattern "(\\(def\\s+fireworks-version\\s+\")[^\"]*(\")")]
+       (println (str "Bumping Fireworks -> " version))
+       (let [matched [(sub-in-file! "cljs/fireworks_vscode/versions.cljs" vers version)
+                      (sub-in-file! "examples/babashka-project/bb.edn" mvn version)
+                      (sub-in-file! "examples/deps-project/deps.edn" mvn version)
+                      (sub-in-file! "examples/leiningen-project/project.clj" lein version)]]
+         (if (every? true? matched)
+           (println "Done. Run `npm run test-cljs` to verify, then `npm run package` to cut a VSIX.")
+           (binding [*out* *err*]
+             (println "WARNING: one or more files did not match — the version may be out of sync. Investigate the NO MATCH lines above.")
+             (System/exit 1))))))}}}
