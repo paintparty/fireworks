@@ -15,7 +15,7 @@
              :refer-macros
              [keyed
               compile-time-warnings-and-errors]])
-   #?(:clj [fireworks.macros :refer [keyed get-user-config-edn-dynamic]])
+   #?(:clj [fireworks.macros :refer [keyed]])
    #?(:clj [clojure.java.io :as io])
    [clojure.string :as string]
    [fireworks.config :as config]
@@ -1133,7 +1133,6 @@
 (defn- helper2
   "Extracts the :label entry when present fireworks config opts"
   [m]
-  ;;  (ff 'helper2 (get-user-config-edn-dynamic))
   (let [cfg-opts (cfg-opts m)
         defd     (defd (:x m))]
     (keyed [cfg-opts defd])))
