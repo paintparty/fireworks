@@ -11,7 +11,7 @@
   [clojure.string :as str]
   [clojure.edn :as edn]
   [clojure.spec.alpha :as s]
-  [fireworks.debug :refer [?]]))
+  ))
 
 (def debug-config? false)
 
@@ -38,8 +38,14 @@
   [set x]
   (when (contains? set x) x))
 
+(def valid-synced-theme-re
+  #"^(light|dark):\s*([^,]+?)\s*,\s*(light|dark):\s*([^,\s](?:[^,]*[^,\s])?)$")
+
+(defn valid-synced-theme [s]
+  (some->> s (when->> string?) (re-find valid-synced-theme-re)))
+
 (defn synced-themes [s]
-  (when-let [[_ k1 v1 k2 v2] (re-find #"^(light|dark):\s*([^,]+?)\s*,\s*(light|dark):\s*([^,\s](?:[^,]*[^,\s])?)$" s)]
+  (when-let [[_ k1 v1 k2 v2] (valid-synced-theme s)]
     ;; Check to make sure no duplicate keys (e.g., light: A, light: B)
     (when (not= k1 k2)
       {(keyword k1) v1, 
@@ -55,6 +61,8 @@
 (def valid-theme-re 
   #"^[a-zA-Z][^\n\t\r]* (?:light|Light|dark|Dark|neutral|Neutral)$")
 
+;; (def valid-theme-re2 #"^([a-z0-9]+(?:-[a-z0-9]+)*-)?(light|dark|neutral)$")
+
 (defn valid-theme
   "All valid:
    \"Zenburn Dark\", \"zenburn dark\"
@@ -68,11 +76,9 @@
    \"Zenburn Dark \"  ;<- trailing whitespace
    \" Zenburn Dark \" ;<- leading whitespace"
   [s]
-  (re-find valid-theme-re s))
-
-(defn resolve-os-appearance []
-  #_"light"
-  "dark")
+  (some->> s
+           (when->> string?)
+           (re-find valid-theme-re )))
 
 
 ;; TODO
@@ -102,10 +108,16 @@
    of `:theme` in the result is theme that the user preferrs with the detected
    os-mood.
 
-   If 
-
-   Returns a map:
+   (theme-profile \"light:Alabaster Light, dark: Alabaster Dark\" \"light\")
+   =>
    {:os-mood       \"light\"
+    :theme         \"Alabaster Light\"
+    :theme-mood    nil
+    :synced-themes {:light \"Alabaster Light\" :dark \"Alabaster Dark\"}}  
+
+   (theme-profile \"light\")
+   =>
+   {:os-mood       nil
     :theme         \"Alabaster Light\"
     :synced-themes {:light \"Alabaster Light\" :dark \"Alabaster Dark\"}}  
    "
@@ -114,34 +126,54 @@
   ([s os-mood]
    (theme-profile s os-mood nil))
   ([s os-mood report?]
-   (let [os-mood (contains?->> #{"light" "dark"} os-mood)
-         s       (when-> s string?)]
-     (cond 
-       (and (not s) os-mood)
-       {:mood          prefers 
-        :theme         nil 
-        :synced-themes nil}
+   (let [os-mood
+         (contains?->> #{"light" "dark"} os-mood)
 
-       (and s os-mood)
-       (let [{:keys [synced-theme-light synced-theme-dark] 
-              :as   synced-themes}
-             (some-> s
-                     (when-> #(str/index-of % ","))
-                     synced-themes
-                     (when-> valid-synced-themes?))
+         s       
+         (when-> s string?)
 
-             theme                 
-             (if (and synced-themes os-mood)
-               (if (= os-mood "light") synced-theme-light synced-theme-dark)
-               (valid-theme s))
-             ]
-         {:os-mood       os-mood 
-          :theme         theme 
-          :synced-themes synced-themes})
-       :else
-       {:os-mood       nil 
-        :theme         nil 
-        :synced-themes nil}))))
+         m       
+         (cond 
+           ;; Theme name provided is not a string, but os-mood detected 
+           (and (not s) os-mood)
+           {:os-mood       prefers 
+            :theme         nil 
+            :theme-mood    nil
+            :synced-themes nil}
+
+           ;; Theme name provided is a string, and os-mood detected 
+           (and s os-mood)
+           (let [{:keys [synced-theme-light synced-theme-dark] 
+                  :as   synced-themes}
+                 (some-> s
+                         (when-> #(str/index-of % ","))
+                         synced-themes
+                         (when-> valid-synced-themes?))
+
+                 theme                 
+                 (if (and synced-themes os-mood)
+                   (if (= os-mood "light") synced-theme-light synced-theme-dark)
+                   (valid-theme s))]
+             {:os-mood       os-mood 
+              :theme         theme 
+              :theme-mood    nil
+              :synced-themes synced-themes})
+
+           ;; Theme name is supplied, No os-mood.
+           ;; If theme name is valid, and not a synced them, use it.
+           :else
+           {:os-mood       nil 
+            :theme         (when-not (valid-synced-theme s)
+                            (valid-theme s)) 
+            :theme-mood    nil
+            :synced-themes nil})]
+     ;; If COLOR_THEME_ENV_VAR is set to "neutral" "light" "dark", :theme-mood
+     ;; gets set. 
+     ;; TODO - incorporate NO_COLOR + (FORCE_COLOR)
+     (cond-> m
+       (and (not (:theme m))
+            (contains? #{"neutral" "light" "dark"} s))
+       (assoc :theme-mood s)))))
 
 ;; END: For resolving theme profile from COLOR_THEME env var 
 ;; -----------------------------------------------------------------------------
@@ -249,16 +281,37 @@
 
 (def bling-mood-names-set #{"light" "dark" "medium"})
 
+(defn- bling-mood-from-env-var []
+  (or (System/getenv "BLING_MOOD")
+      (System/getProperty "bling.mood")))
+
+(defn- syntax-theme-from-env-var []
+  (or (System/getenv "FIREWORKS_THEME")
+      (System/getProperty "fireworks.theme")))
 
 (defmacro get-user-color-env-vars [] 
   {:env-var/no-color?    (env-var-color-non-empty? "NO_COLOR")
    :env-var/force-color? (env-var-color-non-empty? "FORCE_COLOR")
-   :env-var/bling-mood?  (let [s (System/getenv "BLING_MOOD")]
+   :env-var/bling-mood?  (let [s (bling-mood-from-env-var)]
                            (if (contains? bling-mood-names-set s)
                              s
                              "medium"))
    :env-var/debug-detect-color? (env-var-color-non-empty?
                                  "BLING_DEBUG_DETECT_COLOR")})
+
+(defn- config-with-default-theme [m]
+  (let [theme (or (:theme theme-profile)            ; <- COLOR_THEME is valid theme name
+                  (case (:theme-mood theme-profile) ; <- COLOR_THEME is "light" "dark" or "neutral"
+                    "light"
+                    "Alabaster Light"
+                    "dark"
+                    "Alabaster Dark"
+                    "neutral"
+                    "Universal Neutral"
+                    nil)
+                  "Universal Neutral"               ; <- Fallback 
+                  )]
+    {:theme theme}))
 
 (defn- set-default-theme [bling-mood]
   (let [theme (case bling-mood
@@ -291,15 +344,14 @@
    First, the path set by the user via \"FIREWORKS_CONFIG\" env var is
    validated. If it is a non-blank string that does not point to .edn file,
    issue a bad-option-value-warning. Also update messaging/warnings-and-errors
-   atom, which will surface the warning if the user is in cljs land, and maybe
-   not looking at the build process in their terminal.
+   atom, which will surface the warning if the user is in cljs land,
+   (issues warning in browser console).
 
    If the path set by the user via \"FIREWORKS_CONFIG\" env var points to a
    non-existant `.edn` file, or a file that is not parseable by
    `clojure.edn/read`, a warning is issued via fireworks.macros/load-edn.
    Also update the `messaging/warnings-and-errors` atom, which will surface the
-   warning if the user is in cljs land, and maybe not looking at the build
-   process in their terminal.
+   warning if the user is in cljs land, (issues warning in browser console).
    
    If the config map is successfully loaded from edn file, and the :theme entry
    is a valid `.edn` path, but this path points to a non-existant `.edn` file,
@@ -307,15 +359,20 @@
    via `fireworks.macros/load-edn`.
 
    If a valid `:theme` map is resolved, it will be assoc'd to the user's config
-   map, and returned. Otherwise, just the config map is returned. 
-   "
+   map, and returned. If a \"COLOR_THEME\" env var is set Otherwise, just the
+   config map is returned."
   []
   (use 'clojure.java.io)
   (reset! messaging/warnings-and-errors [])
 
-  (let [bling-mood       (or (System/getenv "BLING_MOOD"))
-        bling-config     (System/getenv "BLING_CONFIG")
-        fireworks-config (System/getenv "FIREWORKS_CONFIG")]
+  (let [bling-config     (System/getenv "BLING_CONFIG")
+        fireworks-config (System/getenv "FIREWORKS_CONFIG")
+        syntax-theme     (syntax-theme-from-env-var)
+        theme-profile    (some-> syntax-theme theme-profile)]
+
+    ;; (? 'FIREWORKS_THEME syntax-theme)
+    ;; (? theme-profile)
+    
     (if-let [path-to-user-config (or bling-config fireworks-config)]
       (let [form-meta   (meta &form)
             valid-path? (s/valid?
@@ -342,18 +399,32 @@
 
           (if-let [config (load-edn {:source path-to-user-config})]
             (let [config (assoc config :path-to-user-config path-to-user-config)]
-              (if-let [theme* (:theme config)]
+              (if-let [theme* (or (:theme theme-profile)            ; <- FIREWORKS_THEME is valid theme name
+                                  (case (:theme-mood theme-profile)  ; <- FIREWORKS_THEME is "light" "dark" or "neutral"
+                                    "light"
+                                    "Alabaster Light"
+                                    "dark"
+                                    "Alabaster Dark"
+                                    "neutral"
+                                    "Universal Neutral"
+                                    nil)
+                                  (:theme config)                  ; <- FIREWORKS_THEME User has set `:theme` in global config
+                                  )]
                 (if-let [user-theme*
                          (when-let [x 
                                     (cond
+                                      ;; Supplied theme is file path to a theme
                                       (s/valid? ::config/edn-file-path theme*)
                                       (load-edn {:source theme*
                                                  :file   path-to-user-config
                                                  :key    :theme})
 
+                                      ;; TODO - maybe eliminate this posibility ?
+                                      ;; theme is a map defined in user global config 
                                       (map? theme*)
                                       theme*
 
+                                      ;; Theme is a name, maps to a stock theme
                                       (string? theme*)
                                       (get basethemes/stock-themes theme* nil))]
 
@@ -365,11 +436,11 @@
                            (when (s/valid? ::theme/theme x)
                              x))]
 
-                  ;; :theme entry resolves to a map, so assoc it to user config
+                  ;; :theme entry resolves to a valid map, so assoc it to user config
                   (let [config (assoc config :theme user-theme*)]
                     `~config)
 
-                  ;; :theme entry exists, but doesn't resolve to a map
+                  ;; Else :theme entry exists, but doesn't resolve to a map
                   ;; dissoc :theme entry and issue warning for user
                   (let [config (assoc config 
                                       :theme
@@ -396,19 +467,23 @@
 
                     `~config))
 
-                ;; :theme entry is nil or not supplit, just return user config
+                ;; Else
+                ;; - COLOR_THEME is not valid theme or "theme-mood"
+                ;; - :theme entry is nil or not supplied,
+                ;; So just return user config
                 `~config))
-            (set-default-theme bling-mood))))
-
-      ;; If (System/getenv "FIREWORKS_CONFIG") resolves to nil, or
-      ;; (System/getenv "BLING_CONFIG") resolves to nil, we set theme to
-      ;; default \"Universal Neutral\"" stock theme,
-      ;; unless (System/getenv "BLING_MOOD") is "light" or "dark", in which case
-      ;; we assign "Alabaster Light" or "Alabaster Dark" to theme.
-      (set-default-theme bling-mood))))
+            ;; Else no valid user config.edn at path set in FIREWORKS_CONFIG or BLING_CONFIG,
+            ;; just return a config map with theme based on `COLOR_MOOD` env var, or fallback
+            (config-with-default-theme theme-profile))))
 
 
-(defn get-user-config-edn-dynamic
+      ;; Else no user config.edn path set at all in FIREWORKS_CONFIG or BLING_CONFIG.
+      ;; Just return a config map with theme based on `COLOR_MOOD` env var, or fallback
+      (config-with-default-theme theme-profile))))
+
+
+;; TODO remove
+#_(defn get-user-config-edn-dynamic
   "This gets the path to user config from sys env var, then returns a map of
    user config with resolved :theme entry.
    
