@@ -1,3 +1,6 @@
+> [!TIP]
+> Try the official [Fireworks VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026.
+
 <p align="center"><sub>&nbsp;&nbsp;&nbsp;&nbsp;A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this project!</sub></p>
 
 <!-- <div align="center"><img src="./resources/color-printer-logo.png" width="400"></img></div>  -->
@@ -290,9 +293,9 @@ You can also add relevant entries from the sample `project.clj` to your `~/.lein
 ### VSCode
 
 
-This the best way do live coding with Fireworks.
+This is currently the best way do live coding with Fireworks.
 
-It provides commands to control all the form manipulation, as well as a Live Code framework that drives inline results as you type.
+The official [Fireworks extension for VSCode](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks) provides commands to control all the form manipulation, as well as a Live Code framework that drives inline results as you type.
 
 Works with or without a REPL connection.
 
@@ -311,6 +314,8 @@ Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
 
 There is also an example of [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md) integration. This was created as a proof-of-concept prototype, ahead of the actual VSCode extension. The VSCode extension supercedes this, but the code might be worth looking at if you are curious about setting up a joyride project.
 
+A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this prototype during the [2025 Q3 funding cycle](https://www.clojuriststogether.org/news/q3-2025-funding-announcement/)</p>
+
 <br>
 
 ### IntelliJ
@@ -318,6 +323,8 @@ There is also an example of [VSCode + Joyride](https://github.com/paintparty/fir
 This IntelliJ integration allows you to quickly wrap and unwrap forms with a shortcut,
 as well as toggle the silencing of wrapped forms.
 #### [IntelliJ IDEA + Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md)
+
+A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this prototype during the [2025 Q3 funding cycle](https://www.clojuriststogether.org/news/q3-2025-funding-announcement/)</p>
 
 
 <br>
