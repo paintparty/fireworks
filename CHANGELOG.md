@@ -3,6 +3,15 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## 0.21.2
+2026-7-02
+
+#### Added
+- Improved mechanics for resolving user theme preferences via fireworks.macros/theme-profile now keys off a `FIREWORKS_THEME` env var, which can be "light", "dark", "neutral", or any one of the valid stock theme names in `fireworks.basethemes/stock-theme-names`. The former `BLING_MOOD` env var will be deprecated going forward. User's should set their preferred theme via the new `FIREWORKS_THEME` global config
+
+#### Changed
+- File info and label of printing with universal neutral theme is now a subdued neutral.
+
 <br>
 
 ## 0.21.2

@@ -13,7 +13,7 @@
 ;; Fireworks itself — a project dependency, injected into the top-level :deps / :dependencies
 ;; when a project's classpath lacks it.
 (def fireworks-sym "io.github.paintparty/fireworks")
-(def fireworks-version "0.21.2")
+(def fireworks-version "0.21.3")
 
 ;; test-refresh (the Clojure CLI / deps.edn artifact) — lives on the live-code alias classpath.
 (def test-refresh-sym "com.jakemccrary/test-refresh")
