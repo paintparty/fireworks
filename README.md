@@ -1,5 +1,3 @@
-> [!TIP]
-> Try the official [Fireworks VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026.
 
 <p align="center"><sub>&nbsp;&nbsp;&nbsp;&nbsp;A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this project!</sub></p>
 
@@ -35,6 +33,13 @@
 
 <br>
 <br>
+<br>
+<br>
+
+
+> [!TIP]
+> Try the official [Fireworks VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026. [Details](integrations/vscode/extension/README.md).
+
 <br>
 <br>
 
