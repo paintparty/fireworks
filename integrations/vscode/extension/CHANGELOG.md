@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.4
+<sub>07-04-2026</sub>
+
+#### Added
+- Adds a `Fireworks: Quick Start` Command for the frictionless creation of a scratch project on user's desktop.
+- Adds a `Quick Start Project Type` setting. Defaults to Babashka.
+
 ## 0.2.3
 <sub>07-04-2026</sub>
 
