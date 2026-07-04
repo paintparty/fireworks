@@ -1,6 +1,6 @@
 
 (ns fireworks-vscode.mood-test
-  "Spec for the BLING_MOOD decision, plus a drift guard that the mirrored stock-theme names stay in
+  "Spec for the FIREWORKS_THEME decision, plus a drift guard that the mirrored stock-theme names stay in
    step with fireworks.basethemes/stock-themes (parsed off disk; cwd is the extension dir under
    :node-test)."
   (:require [clojure.string :as str]
@@ -9,47 +9,46 @@
             [rewrite-clj.zip :as z]
             ["fs" :as fs]))
 
-(deftest theme-name-extraction
-  (testing "the :theme string is pulled from EDN text; junk / non-string / missing -> nil"
-    (is (= "Monokai Dark" (mood/theme-name "{:theme \"Monokai Dark\"}")))
-    (is (nil? (mood/theme-name nil)))                       ; no config file
-    (is (nil? (mood/theme-name "{:theme \"x\"")))           ; unparseable
-    (is (nil? (mood/theme-name "{:some-other-key 1}")))     ; no :theme
-    (is (nil? (mood/theme-name "{:theme :not-a-string}")))  ; inline/custom, not a name string
-    (is (nil? (mood/theme-name "{:theme {:custom :map}}")))))
-
-(deftest bling-mood-decision
-  (testing "no theme -> force the editor mood"
-    (is (= "dark" (mood/bling-mood nil "dark")))
-    (is (= "light" (mood/bling-mood nil "light"))))
-  (testing "Universal themes are mood-agnostic -> leave unset"
-    (is (nil? (mood/bling-mood "Universal" "dark")))
-    (is (nil? (mood/bling-mood "Universal Neutral" "light"))))
-  (testing "stock theme whose variant matches the editor -> leave unset"
-    (is (nil? (mood/bling-mood "Monokai Dark" "dark")))
-    (is (nil? (mood/bling-mood "Solarized Light" "light"))))
-  (testing "stock theme whose variant disagrees -> force the editor mood"
-    (is (= "light" (mood/bling-mood "Monokai Dark" "light")))
-    (is (= "dark" (mood/bling-mood "Solarized Light" "dark"))))
-  (testing "custom (non-stock) theme -> force the editor mood"
-    (is (= "dark" (mood/bling-mood "My Custom Theme" "dark")))
-    (is (= "light" (mood/bling-mood "My Custom Theme" "light")))))
+(deftest fireworks-theme-decision
+  (testing "unset -> force the editor mood"
+    (is (= "dark" (mood/fireworks-theme nil "dark")))
+    (is (= "light" (mood/fireworks-theme "" "light")))            ; blank counts as unset
+    (is (= "dark" (mood/fireworks-theme "  " "dark"))))           ; whitespace too
+  (testing "stock theme whose variant matches the editor -> leave as-is (nil)"
+    (is (nil? (mood/fireworks-theme "Monokai Dark" "dark")))
+    (is (nil? (mood/fireworks-theme "Solarized Light" "light"))))
+  (testing "stock theme whose variant disagrees -> force the SIBLING (same family, editor variant)"
+    (is (= "Monokai Light" (mood/fireworks-theme "Monokai Dark" "light")))
+    (is (= "Solarized Dark" (mood/fireworks-theme "Solarized Light" "dark")))
+    (is (= "Alabaster Light" (mood/fireworks-theme "Alabaster Dark" "light"))))
+  (testing "mood-agnostic Universal stock themes -> leave as-is (nil)"
+    (is (nil? (mood/fireworks-theme "Universal" "dark")))
+    (is (nil? (mood/fireworks-theme "Universal Neutral" "light"))))
+  (testing "bare mood word neutral -> force FIREWORKS_THEME=neutral"
+    (is (= "neutral" (mood/fireworks-theme "neutral" "dark")))
+    (is (= "neutral" (mood/fireworks-theme "neutral" "light"))))
+  (testing "bare mood word light/dark -> leave as-is when it agrees, force editor mood when not"
+    (is (nil? (mood/fireworks-theme "dark" "dark")))
+    (is (= "light" (mood/fireworks-theme "dark" "light")))
+    (is (= "dark" (mood/fireworks-theme "light" "dark"))))
+  (testing "custom / unrecognized value -> leave as-is (nil), don't clobber"
+    (is (nil? (mood/fireworks-theme "My Custom Theme" "dark")))
+    (is (nil? (mood/fireworks-theme "light:Alabaster Light, dark:Alabaster Dark" "dark")))))
 
 (deftest decision-shape
-  (testing "decision carries the value plus the fields the output-channel log renders"
+  (testing "decision carries the value + fields the output-channel log renders"
     (let [d (mood/decision "Monokai Dark" "light")]
-      (is (= "light" (:value d)))
-      (is (true? (:stock? d)))
-      (is (= :dark (:variant d)))
+      (is (= "Monokai Light" (:value d)))
+      (is (= "Monokai Dark" (:input d)))
       (is (string? (:reason d)))
       (is (str/includes? (:reason d) "disagrees")))
     (let [d (mood/decision nil "dark")]
       (is (= "dark" (:value d)))
-      (is (false? (:stock? d)))
-      (is (str/includes? (:reason d) "no :theme")))
-    (let [d (mood/decision "Universal" "dark")]
-      (is (nil? (:value d)))
-      (is (str/includes? (:reason d) "mood-agnostic")))))
+      (is (nil? (:input d)))
+      (is (str/includes? (:reason d) "unset")))
+    (let [d (mood/decision "neutral" "dark")]
+      (is (= "neutral" (:value d)))
+      (is (str/includes? (:reason d) "neutral")))))
 
 ;; --- drift guard against fireworks.basethemes/stock-themes ----------------
 

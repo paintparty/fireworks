@@ -83,6 +83,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('fireworks.setTerminalLocation', () => setTerminalLocation()),
     vscode.commands.registerCommand('fireworks.createPrintingConfig', () => createPrintingConfig()),
     vscode.commands.registerCommand('fireworks.createProject', () => createProject()),
+    vscode.commands.registerCommand('fireworks.quickStart', () => quickStart()),
     vscode.commands.registerCommand('fireworks.showOutputChannel', () => output.show()),
     vscode.window.onDidCloseTerminal((t) => {
       // A session still in the map here means the user closed the terminal manually (the Stop/Restart
@@ -804,51 +805,31 @@ function themeVariant(): 'light' | 'dark' {
     : 'dark';
 }
 
-// The Bling/Fireworks config files that may carry a :theme, in priority order (bling first).
-function blingConfigPaths(): string[] {
-  const home = os.homedir();
-  return [
-    path.join(home, '.config', 'bling', 'config.edn'),
-    path.join(home, '.config', 'fireworks', 'config.edn'),
-  ];
-}
-
-interface MoodDecision {
-  value: string | null; // the BLING_MOOD to force ("light"/"dark"), or null to leave unset
+interface FireworksThemeDecision {
+  value: string | null; // the FIREWORKS_THEME to force, or null to leave unset (no prefix)
   editorMood: 'light' | 'dark';
-  themeName: string | null;
+  input: string | null; // the current FIREWORKS_THEME env value seen (for the log)
   reason: string;
-  configPaths: string[]; // config files that exist on disk (for the log)
-  sourcePath: string | null; // the config the :theme was read from, if any
 }
 
-// Resolve whether/what to force for BLING_MOOD, keeping the inputs so launchWatcher can log the
-// whole decision to the output channel. The branch logic (which themes already agree) lives in
-// fireworks-vscode.mood; here we read the config files and supply the editor mood.
-function resolveBlingMood(): MoodDecision {
-  const paths = blingConfigPaths();
-  const texts = paths.map(readFileOrNull);
+// Resolve whether/what to force for FIREWORKS_THEME, keeping the inputs so launchWatcher can log the
+// whole decision to the output channel. The branch logic (stock-theme variants, mood words) lives
+// in fireworks-vscode.mood; here we read the current FIREWORKS_THEME env var and supply the editor mood.
+function resolveFireworksTheme(): FireworksThemeDecision {
+  const current = (process.env.FIREWORKS_THEME ?? '').trim() || null;
   const editorMood = themeVariant();
-  const d = cljsLib.blingMoodDecision(texts, editorMood);
-  return {
-    value: d.value,
-    editorMood,
-    themeName: d.themeName,
-    reason: d.reason,
-    configPaths: paths.filter((_, i) => texts[i] !== null),
-    sourcePath: d.sourceIndex >= 0 ? paths[d.sourceIndex] : null,
-  };
+  const d = cljsLib.fireworksThemeDecision(current, editorMood);
+  return { value: d.value, editorMood, input: d.input, reason: d.reason };
 }
 
-// Record the BLING_MOOD decision into the active diagnostics run (Fireworks output channel), and
+// Record the FIREWORKS_THEME decision into the active diagnostics run (Fireworks output channel), and
 // echo a one-liner to the log for launches outside a diagnosed command (e.g. Create New Project).
-function logMoodDecision(d: MoodDecision): void {
+function logFireworksThemeDecision(d: FireworksThemeDecision): void {
   diagFact('Editor mood', d.editorMood);
-  diagFact('Theme configs found', d.configPaths.length ? d.configPaths.map(tildify) : null);
-  diagFact('Config :theme', d.themeName);
-  diagFact('BLING_MOOD', d.value);
-  diagStep(`BLING_MOOD: ${d.reason}.`);
-  log(`BLING_MOOD decision: ${d.reason} (editor=${d.editorMood}, :theme=${d.themeName ?? 'none'})`);
+  diagFact('FIREWORKS_THEME (env)', d.input);
+  diagFact('FIREWORKS_THEME (forced)', d.value);
+  diagStep(`FIREWORKS_THEME: ${d.reason}.`);
+  log(`FIREWORKS_THEME decision: ${d.reason} (editor=${d.editorMood}, env=${d.input ?? 'unset'})`);
 }
 
 type ShellKind = 'posix' | 'powershell' | 'cmd';
@@ -2611,13 +2592,13 @@ async function startLiveCoding(): Promise<void> {
     }
     diagFact('Watcher command', plan.command);
     if (location === 'integrated') {
-      // Resolve + log the mood decision here, while the diag run is still open, so it appears in the
-      // decision tree (launchWatcher runs after diagEnd, where diagFact/diagStep would be no-ops).
-      const mood = resolveBlingMood();
-      logMoodDecision(mood);
+      // Resolve + log the FIREWORKS_THEME decision here, while the diag run is still open, so it appears
+      // in the decision tree (launchWatcher runs after diagEnd, where diagFact/diagStep are no-ops).
+      const fireworksTheme = resolveFireworksTheme();
+      logFireworksThemeDecision(fireworksTheme);
       diagStep(`Launch in integrated terminal "${terminalName(root)}".`);
       diagEnd('launched (integrated terminal)');
-      await launchWatcher(root, plan.command, plan.testRefresh, plan.runtime, mood);
+      await launchWatcher(root, plan.command, plan.testRefresh, plan.runtime, fireworksTheme);
     } else {
       // resolveWatcherCommand already seeded configs / patched the build file; we just hand the
       // user the command instead of spawning a terminal. Keep .fireworks ready for the
@@ -2627,9 +2608,9 @@ async function startLiveCoding(): Promise<void> {
       recordRecentRoot(root);
       // The user runs this in their own shell; prepend the shell-appropriate env prefix to the shown
       // command (same decision + logging as an integrated launch).
-      const mood = resolveBlingMood();
-      logMoodDecision(mood);
-      const cmd = envVarPrefix('BLING_MOOD', mood.value) + plan.command;
+      const fireworksTheme = resolveFireworksTheme();
+      logFireworksThemeDecision(fireworksTheme);
+      const cmd = envVarPrefix('FIREWORKS_THEME', fireworksTheme.value) + plan.command;
       diagStep('Show the external-terminal guidance (no terminal spawned).');
       diagEnd('launched (external terminal guidance)');
       await showGuidance('external-terminal', { cmd, dir: root });
@@ -2774,9 +2755,9 @@ async function createProject(): Promise<void> {
 
     const openPick = await vscode.window.showQuickPick(
       [
-        { label: 'New window', value: 'new' as const },
-        { label: 'Same window', value: 'same' as const },
-        { label: 'Add to workspace', value: 'add' as const },
+        { label: 'Add to workspace', desc: 'Adds folder to this workspace', value: 'add' as const },
+        { label: 'Same window', desc: 'Creates a new workspace in this window', value: 'same' as const },
+        { label: 'New window', desc: 'Creates a new workspace in a new window', value: 'new' as const },
       ],
       { placeHolder: 'Open the new project in…' },
     );
@@ -2785,57 +2766,129 @@ async function createProject(): Promise<void> {
       return;
     }
 
-    if (fs.existsSync(root)) {
-      // Belt-and-suspenders with the input validation (a folder could appear in between).
-      await vscode.window.showErrorMessage(`Fireworks: "${root}" already exists — aborting.`);
-      diagEnd('aborted (target exists)');
+    await scaffoldAndOpen(kind, root, projectName, openPick.value);
+  } finally {
+    diagEnd('ended'); // no-op if a branch already flushed
+  }
+}
+
+// Scaffold the project at `root` and open/launch it per the target. Shared by createProject (via
+// its pickers) and quickStart (with everything pre-computed). Assumes the caller has already opened
+// a diag run; flushes it with diagEnd in each branch.
+async function scaffoldAndOpen(
+  kind: Runtime,
+  root: string,
+  projectName: string,
+  openTarget: 'add' | 'same' | 'new',
+): Promise<void> {
+  if (fs.existsSync(root)) {
+    // Belt-and-suspenders with the input validation (a folder could appear in between).
+    await vscode.window.showErrorMessage(`Fireworks: "${root}" already exists — aborting.`);
+    diagEnd('aborted (target exists)');
+    return;
+  }
+
+  diagFact('Kind', kind);
+  diagFact('Root', tildify(root));
+  const srcDir = vscode.Uri.joinPath(extContext.extensionUri, 'examples', EXAMPLE_DIR[kind]).fsPath;
+  try {
+    scaffoldTree(srcDir, root, kind, projectName);
+    fs.writeFileSync(path.join(root, '.gitignore'), cljsLib.scaffoldGitignore(), 'utf8');
+    const resultsDir = path.join(root, '.fireworks', 'results');
+    fs.mkdirSync(resultsDir, { recursive: true });
+    fs.writeFileSync(path.join(resultsDir, '.gitkeep'), '', 'utf8');
+  } catch (e) {
+    await vscode.window.showErrorMessage(`Fireworks: could not create project — ${String(e)}`);
+    diagEnd(`failed (${String(e)})`);
+    return;
+  }
+
+  const command = cljsLib.scaffoldLaunch(kind);
+  const openFile = cljsLib.scaffoldOpenFile(kind, projectName);
+  const pending: PendingProject = { root, runtime: kind, command, openFile };
+  const uri = vscode.Uri.file(root);
+  const openFolders = vscode.workspace.workspaceFolders ?? [];
+
+  if (openTarget === 'add' && openFolders.length > 0) {
+    // Adding a folder to a window that already has one does not restart the host — launch here.
+    vscode.workspace.updateWorkspaceFolders(openFolders.length, 0, { uri });
+    diagStep('Added to the current workspace (no host restart) → launching Live Code.');
+    diagEnd('scaffolded + launched');
+    await openAndLaunch(pending);
+    return;
+  }
+
+  // Every remaining path (new window, same window, or adding the first folder to an empty window)
+  // restarts the extension host. Hand the launch off through globalState; resumePendingProject
+  // picks it up when the extension reactivates in the opened folder.
+  await extContext.globalState.update(PENDING_PROJECT_KEY, pending);
+  if (openTarget === 'add') {
+    diagStep('Added first folder to an empty window (host restarts) → handoff.');
+    diagEnd('scaffolded (handoff via updateWorkspaceFolders)');
+    vscode.workspace.updateWorkspaceFolders(0, 0, { uri });
+  } else {
+    const forceNewWindow = openTarget === 'new';
+    diagStep(`Opening folder (${forceNewWindow ? 'new' : 'same'} window; host restarts) → handoff.`);
+    diagEnd('scaffolded (handoff via openFolder)');
+    await vscode.commands.executeCommand('vscode.openFolder', uri, { forceNewWindow });
+  }
+}
+
+// Compute the next free ~/Desktop/scratch-<suffix> parent folder name: plain when none exist, else
+// the highest existing integer + 1 (an unsuffixed folder counts as 1). Used by quickStart.
+function nextScratchParent(desktop: string, kind: Runtime): string {
+  const suffix = KIND_SUFFIX[kind];
+  const base = `scratch-${suffix}`;
+  const re = new RegExp(`^scratch-${suffix}(?:-(\\d+))?$`);
+  let max = 0;
+  let found = false;
+  try {
+    for (const entry of fs.readdirSync(desktop, { withFileTypes: true })) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+      const m = re.exec(entry.name);
+      if (!m) {
+        continue;
+      }
+      found = true;
+      const n = m[1] ? parseInt(m[1], 10) : 1;
+      if (n > max) {
+        max = n;
+      }
+    }
+  } catch {
+    // Desktop missing/unreadable → treat as empty (fall through to the base name).
+  }
+  return found ? `${base}-${max + 1}` : base;
+}
+
+const QUICK_START_KINDS: Record<string, Runtime> = { Babashka: 'bb', Leiningen: 'lein', Deps: 'deps' };
+const KIND_SUFFIX: Record<Runtime, string> = { bb: 'bb', lein: 'lein', deps: 'deps' };
+
+// Fireworks: Quick Start — the one-Enter sandbox. Reads the configured project type, computes a
+// fresh ~/Desktop/scratch-<type> parent, confirms, then scaffolds a `scratch` project inside it and
+// adds it to the workspace. No runtime/parent/name prompts.
+async function quickStart(): Promise<void> {
+  diagBegin('Quick Start');
+  try {
+    const typeLabel = vscode.workspace
+      .getConfiguration('fireworks')
+      .get<string>('quickStart.projectType', 'Babashka');
+    const kind = QUICK_START_KINDS[typeLabel] ?? 'bb';
+    const desktop = path.join(os.homedir(), 'Desktop');
+    const parentName = nextScratchParent(desktop, kind);
+    const parentAbs = path.join(desktop, parentName);
+
+    const pick = await vscode.window.showQuickPick([{ label: `Create ${tildify(parentAbs)}?` }], {
+      placeHolder: 'Fireworks: Quick Start',
+    });
+    if (!pick) {
+      diagEnd('cancelled');
       return;
     }
 
-    diagFact('Kind', kind);
-    diagFact('Root', tildify(root));
-    const srcDir = vscode.Uri.joinPath(extContext.extensionUri, 'examples', EXAMPLE_DIR[kind]).fsPath;
-    try {
-      scaffoldTree(srcDir, root, kind, projectName);
-      fs.writeFileSync(path.join(root, '.gitignore'), cljsLib.scaffoldGitignore(), 'utf8');
-      const resultsDir = path.join(root, '.fireworks', 'results');
-      fs.mkdirSync(resultsDir, { recursive: true });
-      fs.writeFileSync(path.join(resultsDir, '.gitkeep'), '', 'utf8');
-    } catch (e) {
-      await vscode.window.showErrorMessage(`Fireworks: could not create project — ${String(e)}`);
-      diagEnd(`failed (${String(e)})`);
-      return;
-    }
-
-    const command = cljsLib.scaffoldLaunch(kind);
-    const openFile = cljsLib.scaffoldOpenFile(kind, projectName);
-    const pending: PendingProject = { root, runtime: kind, command, openFile };
-    const uri = vscode.Uri.file(root);
-    const openFolders = vscode.workspace.workspaceFolders ?? [];
-
-    if (openPick.value === 'add' && openFolders.length > 0) {
-      // Adding a folder to a window that already has one does not restart the host — launch here.
-      vscode.workspace.updateWorkspaceFolders(openFolders.length, 0, { uri });
-      diagStep('Added to the current workspace (no host restart) → launching Live Code.');
-      diagEnd('scaffolded + launched');
-      await openAndLaunch(pending);
-      return;
-    }
-
-    // Every remaining path (new window, same window, or adding the first folder to an empty window)
-    // restarts the extension host. Hand the launch off through globalState; resumePendingProject
-    // picks it up when the extension reactivates in the opened folder.
-    await extContext.globalState.update(PENDING_PROJECT_KEY, pending);
-    if (openPick.value === 'add') {
-      diagStep('Added first folder to an empty window (host restarts) → handoff.');
-      diagEnd('scaffolded (handoff via updateWorkspaceFolders)');
-      vscode.workspace.updateWorkspaceFolders(0, 0, { uri });
-    } else {
-      const forceNewWindow = openPick.value === 'new';
-      diagStep(`Opening folder (${forceNewWindow ? 'new' : 'same'} window; host restarts) → handoff.`);
-      diagEnd('scaffolded (handoff via openFolder)');
-      await vscode.commands.executeCommand('vscode.openFolder', uri, { forceNewWindow });
-    }
+    await scaffoldAndOpen(kind, path.join(parentAbs, 'scratch'), 'scratch', 'add');
   } finally {
     diagEnd('ended'); // no-op if a branch already flushed
   }
@@ -3318,24 +3371,24 @@ async function launchWatcher(
   command: string,
   testRefresh?: TestRefreshInfo,
   runtime?: Runtime,
-  mood?: MoodDecision, // pre-resolved + logged by the caller (so it lands in the diag tree, which
-  // the command flushes before calling here); resolved + logged here when omitted.
+  fireworksTheme?: FireworksThemeDecision, // pre-resolved + logged by the caller (so it lands in the diag
+  // tree, which the command flushes before calling here); resolved + logged here when omitted.
 ): Promise<void> {
   const animEditor = vscode.window.activeTextEditor; // capture before terminal.show() steals focus
   prepareResultsDir(root); // on-disk fresh slate for this root
   clearResultsForRoot(root); // in-memory fresh slate for this root only (not other projects')
   recordRecentRoot(root); // float this project in the pickers' "Recent" section
   log(`live coding -> ${command} (cwd ${root})`);
-  // Force the watcher's Fireworks output mood to match the editor when the configured theme doesn't
-  // already agree, as a visible shell-appropriate env prefix on the command (recomputed per launch
-  // so a theme switch is picked up on restart).
-  if (!mood) {
-    mood = resolveBlingMood();
-    logMoodDecision(mood);
+  // Force the watcher's Fireworks output mood to match the editor, as a visible shell-appropriate
+  // FIREWORKS_THEME prefix on the command (recomputed per launch so a theme switch is picked up on
+  // restart).
+  if (!fireworksTheme) {
+    fireworksTheme = resolveFireworksTheme();
+    logFireworksThemeDecision(fireworksTheme);
   }
-  const launchCommand = envVarPrefix('BLING_MOOD', mood.value) + command;
+  const launchCommand = envVarPrefix('FIREWORKS_THEME', fireworksTheme.value) + command;
   const terminal = vscode.window.createTerminal({ name: terminalName(root), cwd: root });
-  // session.command stays the bare command (restart re-derives delivery from the current mood).
+  // session.command stays the bare command (restart re-derives the prefix from the current mood).
   const session: LiveSession = { root, command, terminal, execution: undefined, testRefresh, runtime };
   liveSessions.set(root, session);
   terminal.show();
@@ -3459,14 +3512,14 @@ async function restartLiveCoding(): Promise<void> {
     const { root, command, testRefresh, runtime } = session;
     diagFact('Reused command', command);
     diagFact('Reused .test-refresh source', testRefresh ? testRefresh.source : null);
-    // Re-resolve + log the mood here (editor theme may have changed since the original launch), while
-    // the diag run is still open, then hand it to launchWatcher.
-    const mood = resolveBlingMood();
-    logMoodDecision(mood);
+    // Re-resolve + log FIREWORKS_THEME here (editor theme may have changed since the original launch),
+    // while the diag run is still open, then hand it to launchWatcher.
+    const fireworksTheme = resolveFireworksTheme();
+    logFireworksThemeDecision(fireworksTheme);
     diagStep(`Restart ${tildify(root)}: stop, then relaunch the same command (no re-prompt).`);
     diagEnd('restarted');
     stopSession(session);
-    await launchWatcher(root, command, testRefresh, runtime, mood); // reuse root + command + config (no re-prompt)
+    await launchWatcher(root, command, testRefresh, runtime, fireworksTheme); // reuse root + command + config
   } finally {
     diagEnd('ended');
   }

@@ -59,6 +59,7 @@
       { "command": "fireworks.setTerminalLocation", "title": "Set Terminal Location", "category": "Fireworks" },
       { "command": "fireworks.createPrintingConfig", "title": "Edit or Create a Printing Options config.edn", "category": "Fireworks" },
       { "command": "fireworks.createProject", "title": "Create New Project", "category": "Fireworks" },
+      { "command": "fireworks.quickStart", "title": "Quick Start", "category": "Fireworks" },
       { "command": "fireworks.showOutputChannel", "title": "Show / Open the Fireworks Debug Output Channel", "category": "Fireworks" }
     ],
     "keybindings": [
@@ -183,6 +184,18 @@
           ],
           "markdownDescription": "Where `Fireworks: Live Code` runs the test-refresh watcher. Set with the `Fireworks: Set Terminal Location` command.",
           "order": 10
+        },
+        "fireworks.quickStart.projectType": {
+          "type": "string",
+          "enum": ["Babashka", "Leiningen", "Deps"],
+          "default": "Babashka",
+          "enumDescriptions": [
+            "Babashka — scripting runtime with instant startup.",
+            "Leiningen — legacy build tool.",
+            "Deps — official default (deps.edn)."
+          ],
+          "markdownDescription": "Project type scaffolded by `Fireworks: Quick Start`.",
+          "order": 11
         }
       }
     }

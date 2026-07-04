@@ -1,7 +1,13 @@
 # Changelog
 
 ## 0.2.3
-<sub>07-02-2026</sub>
+<sub>07-04-2026</sub>
+
+#### Added
+- Adds logic to syncronize users vscode theme with the theme of the fireworks output that gets printed to terminal. If needed, a `FIREWORKS_THEME` prefix to cli command that launches process in itegrated terminal.
+
+#### Changed
+- Updated readme
 
 #### Fixed
 - Outdated readme

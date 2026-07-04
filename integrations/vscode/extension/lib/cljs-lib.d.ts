@@ -345,19 +345,15 @@ export const versions: {
   leinTestRefreshVersion: string;
 };
 
-// The full BLING_MOOD decision for a Live Code launch, with the reasoning for the output-channel
-// diagnostics. `value` is the mood to force ("light"/"dark"), or null to leave BLING_MOOD unset.
-// `configTexts` are the Bling/Fireworks config file texts in priority order (null for a missing
-// file); the first carrying a :theme decides, and `sourceIndex` reports which (-1 = none).
-// `vscodeMood` is the editor mood. See fireworks-vscode.mood.
-export function blingMoodDecision(
-  configTexts: (string | null)[],
+// The full FIREWORKS_THEME decision for a Live Code launch, with the reasoning for the output-channel
+// diagnostics. `value` is the FIREWORKS_THEME value to force, or null to leave it unset. `current` is
+// the current FIREWORKS_THEME env value (null when unset); `vscodeMood` is the editor mood. `input`
+// echoes the current value seen. See fireworks-vscode.mood.
+export function fireworksThemeDecision(
+  current: string | null,
   vscodeMood: string,
 ): {
   value: string | null;
-  themeName: string | null;
-  stock: boolean;
-  variant: string | null;
+  input: string | null;
   reason: string;
-  sourceIndex: number;
 };

@@ -256,20 +256,12 @@
        :leinTestRefreshSym   versions/lein-test-refresh-sym
        :leinTestRefreshVersion versions/lein-test-refresh-version})
 
-;; --- BLING_MOOD (Live Code launch env) ------------------------------------
-;; The full BLING_MOOD decision (value + the reasoning, for the output-channel diagnostics). `texts`
-;; is a JS array of config-file texts in priority order (nils for missing files); the first that
-;; carries a :theme wins. `vscode-mood` is "light"/"dark". `sourceIndex` is which config the :theme
-;; came from (-1 = none), so TS can name the file in the log.
-(defn bling-mood-decision [texts vscode-mood]
-  (let [texts* (array-seq texts)
-        idx    (->> texts* (map-indexed vector)
-                    (some (fn [[i t]] (when (mood/theme-name t) i))))
-        tn     (when idx (mood/theme-name (nth (vec texts*) idx)))
-        d      (mood/decision tn vscode-mood)]
-    #js {:value       (:value d)
-         :themeName   (:theme-name d)
-         :stock       (:stock? d)
-         :variant     (some-> (:variant d) name)
-         :reason      (:reason d)
-         :sourceIndex (if idx idx -1)}))
+;; --- FIREWORKS_THEME (Live Code launch env) -----------------------------------
+;; The full FIREWORKS_THEME decision (value + the reasoning, for the output-channel diagnostics).
+;; `current` is the current FIREWORKS_THEME env value (string, or nil when unset); `vscode-mood` is
+;; "light"/"dark". `value` is what to force (nil = leave unset).
+(defn fireworks-theme-decision [current vscode-mood]
+  (let [d (mood/decision current vscode-mood)]
+    #js {:value  (:value d)
+         :input  (:input d)
+         :reason (:reason d)}))

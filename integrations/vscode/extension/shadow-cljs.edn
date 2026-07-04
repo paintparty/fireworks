@@ -39,7 +39,7 @@
                :scaffoldLaunch       fireworks-vscode.bridge/scaffold-launch
                :scaffoldOpenFile     fireworks-vscode.bridge/scaffold-open-file
                :versions             fireworks-vscode.bridge/versions
-               :blingMoodDecision    fireworks-vscode.bridge/bling-mood-decision}}
+               :fireworksThemeDecision   fireworks-vscode.bridge/fireworks-theme-decision}}
 
   :test
   {:target    :node-test
