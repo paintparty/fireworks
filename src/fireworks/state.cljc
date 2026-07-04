@@ -114,23 +114,23 @@
 ;; -----------------------------------------------------------------------------
 
 (def user-config-edn* 
-  (do (when debug-config?
-        (messaging/fw-debug-report-template
-         "def fireworks.state/user-config-edn* (with :path-to-user-config)"
-         (get-user-configs)))
-      (when debug-theme?
-        (messaging/fw-debug-report-template
-         (str "debugging-theme :: deffing fireworks.state/user-config-edn* (with :path-to-user-config)"
-              "\n\n(str (some-> (get-user-configs) :theme :name)) =>")
-         (str (some-> (get-user-configs) :theme :name))))
-      (get-user-configs)))
+  (do #_(when debug-config?
+          (messaging/fw-debug-report-template
+           "def fireworks.state/user-config-edn* (with :path-to-user-config)"
+           (get-user-configs)))
+   #_(when debug-theme?
+       (messaging/fw-debug-report-template
+        (str "debugging-theme :: deffing fireworks.state/user-config-edn* (with :path-to-user-config)"
+             "\n\n(str (some-> (get-user-configs) :theme :name)) =>")
+        (str (some-> (get-user-configs) :theme :name))))
+   (get-user-configs)))
 
 (defn user-config-edn*-dynamic []
-  (do (when debug-config?
+  (do #_(when debug-config?
         (messaging/fw-debug-report-template
          "def fireworks.state/user-config-edn*-dynamic (with :path-to-user-config)"
          (get-user-configs)))
-      (when debug-theme?
+      #_(when debug-theme?
         (messaging/fw-debug-report-template
          (str "debugging-theme :: deffing fireworks.state/user-config-edn*-dynamic (with :path-to-user-config)"
               "\n\n(str (some-> (get-user-configs) :theme :name)) =>")
