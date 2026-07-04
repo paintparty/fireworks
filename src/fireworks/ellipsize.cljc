@@ -6,7 +6,6 @@
  [fireworks.specs.config :as specs.config]
  #?(:cljs [fireworks.macros :refer-macros [keyed]])
  #?(:clj [fireworks.macros :refer [keyed]])
-;;  [fireworks.debug :refer [?]]
  ))
 
 (defn- len
