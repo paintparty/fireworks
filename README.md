@@ -58,7 +58,7 @@
 
 - Prints values without altering the execution of your program.
 
-- Editor integrations for [Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md) & [VSCode](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md).
+- Editor integrations for [Cursive](https://github.com/paintparty/fireworks/blob/main/docs/editors/cursive/cursive.md) & [VSCode](#vscode).
 
 - Achieve thematic parity between editor, terminal emulator, and browser dev console.
 
@@ -161,6 +161,28 @@ Or import into your namespace, config, and start using:
 
 <br>
 
+## Setting up a system-wide theme
+`FIREWORKS_THEME="Alabaster Dark"`
+This can be anyone of the following:
+```clojure
+"Alabaster Dark"    
+"Neutral Light"     
+"Neutral Dark"      
+"Degas Light"       
+"Degas Dark"        
+"Zenburn Light"     
+"Zenburn Dark"      
+"Solarized Light"   
+"Solarized Dark"    
+"Monokai Light"     
+"Monokai Dark"
+"Universal Neutral" ; works with both light and dark bg
+```
+
+> [!NOTE]
+> `FIREWORKS_THEME` was introduced in `v0.21.3`, if you are using a previous version, you will need to set you theme globally in config file (described below).
+
+
 ## Setting up a system-wide config
 
 Optional, but highly recommended if you are going to be using Fireworks across
@@ -169,23 +191,12 @@ preferred theme (on your machine, for your eyes only) in one place.
 
 ### Step 1:
 
-Add a [system-wide config file](#system-wide-config) at `/Users/<your-home-folder>/.config/bling/config.edn` (suggested path). You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. There are a [bunch of options](#all-the-options), but at minimum you'll probably want to specify a light or dark stock theme:
+Add a [system-wide config file](#system-wide-config) at `/Users/<your-home-folder>/.config/bling/config.edn` (suggested path). You will need to substitute `<your-home-folder>` in the example above with the name of your user folder on your computer. There are a [bunch of options](#all-the-options).
+
+The most important thing to setup globally is your syntax theme. Versions `0.21.3` and later look at the `FIREWORKS_THEME` env var for this (described above). If, for some reason you are using a version earlier than `v0.21.3`, you'll probably want to specify a light or dark stock theme in your config file:
 
 ```Clojure
- {:theme "Alabaster Light"
-  ;; :theme "Alabaster Dark"    
-  ;; :theme "Neutral Light"     
-  ;; :theme "Neutral Dark"      
-  ;; :theme "Degas Light"       
-  ;; :theme "Degas Dark"        
-  ;; :theme "Zenburn Light"     
-  ;; :theme "Zenburn Dark"      
-  ;; :theme "Solarized Light"   
-  ;; :theme "Solarized Dark"    
-  ;; :theme "Monokai Light"     
-  ;; :theme "Monokai Dark"
-  ;; :theme "Universal Neutral" ; works with both light and dark bg
-  }
+ {:theme "Alabaster Light"}
 ```
 
 Fireworks automatically checks the color support level of the environment and

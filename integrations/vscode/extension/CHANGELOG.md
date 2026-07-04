@@ -4,8 +4,12 @@
 <sub>07-04-2026</sub>
 
 #### Added
-- Adds a `Fireworks: Quick Start` Command for the frictionless creation of a scratch project on user's desktop.
+- Adds a `Fireworks: Quick Start` command for the frictionless creation of a scratch project on the user's desktop.
 - Adds a `Quick Start Project Type` setting. Defaults to Babashka.
+
+#### Fixed
+- Scaffolded projects (`Create New Project` / `Quick Start`) now pin the Fireworks and test-refresh versions to the single source of truth in `fireworks-vscode.versions`, instead of copying whatever version the bundled example build files carried.
+- Live Code now reads `FIREWORKS_THEME` live from your login shell at launch, so a `.zshrc` (or equivalent) theme change made after VS Code started is picked up. Previously the extension used the environment snapshot frozen when VS Code launched, so shell edits were ignored until a full restart.
 
 ## 0.2.3
 <sub>07-04-2026</sub>
