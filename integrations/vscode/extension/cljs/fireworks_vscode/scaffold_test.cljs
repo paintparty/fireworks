@@ -4,6 +4,7 @@
   (:require [clojure.string :as str]
             [cljs.test :refer [deftest is testing]]
             [fireworks-vscode.scaffold :as sc]
+            [fireworks-vscode.versions :as v]
             [rewrite-clj.parser :as p]))
 
 (deftest name-helpers
@@ -72,6 +73,23 @@
       (is (str/includes? out "io.github.paintparty/fireworks"))
       ;; still valid EDN
       (is (some? (p/parse-string-all out))))))
+
+(deftest content-pins-canonical-versions
+  (testing "scaffolding rewrites Fireworks + test-refresh versions to fireworks-vscode.versions,
+            regardless of what the example body carries (deps-example pins fireworks 0.21.0)"
+    (let [deps (sc/scaffold-content "deps" "my-app" "deps.edn" deps-example)]
+      (is (str/includes? deps (str "io.github.paintparty/fireworks {:mvn/version \"" v/fireworks-version "\"}")))
+      (is (str/includes? deps (str "com.jakemccrary/test-refresh {:mvn/version \"" v/test-refresh-version "\"}")))
+      (is (not (str/includes? deps "0.21.0"))))
+    (let [bb (sc/scaffold-content "bb" "my-app" "bb.edn"
+                                  "{:deps {io.github.paintparty/fireworks {:mvn/version \"0.0.1\"}}}")]
+      (is (str/includes? bb (str "{:mvn/version \"" v/fireworks-version "\"}"))))
+    (let [lein (sc/scaffold-content "lein" "my-app" "project.clj"
+                                    "(defproject fireworks-lein-example \"0.1.0\"
+                                       :dependencies [[io.github.paintparty/fireworks \"0.0.1\"]]
+                                       :profiles {:live-code {:plugins [[com.jakemccrary/lein-test-refresh \"0.0.1\"]]}})")]
+      (is (str/includes? lein (str "[io.github.paintparty/fireworks \"" v/fireworks-version "\"]")))
+      (is (str/includes? lein (str "[com.jakemccrary/lein-test-refresh \"" v/lein-test-refresh-version "\"]"))))))
 
 (deftest gitignore-canonical
   (testing "one clean gitignore for all runtimes: the ignore list + a single Fireworks idiom"

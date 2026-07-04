@@ -812,11 +812,41 @@ interface FireworksThemeDecision {
   reason: string;
 }
 
+// Read an env var's CURRENT value from the user's login shell, so a `.zshrc` (etc.) edit made after
+// VS Code launched is picked up. The extension host's process.env is a snapshot frozen at launch and
+// cannot be refreshed from the OS — the only way to see the live value is to re-source the shell.
+// Spawns `<shell> -lic 'printf …'` (login + interactive, matching how the integrated terminal itself
+// sources rc files) and parses the value out of sentinels so stray prompt/MOTD output can't leak in.
+// Falls back to the frozen process.env on Windows or any failure (bad shell, timeout, exotic config).
+function liveShellEnvVar(name: string): string | null {
+  const frozen = (process.env[name] ?? '').trim() || null;
+  if (process.platform === 'win32') {
+    return frozen; // no rc-sourcing model to re-read
+  }
+  const shell = vscode.env.shell || process.env.SHELL || '/bin/zsh';
+  const marker = '__FW_ENV__';
+  try {
+    const out = cp.execFileSync(shell, ['-lic', `printf '${marker}%s${marker}' "$${name}"`], {
+      encoding: 'utf8',
+      timeout: 3000,
+      stdio: ['ignore', 'pipe', 'ignore'], // ignore stdin + stderr (prompts/MOTD go to stderr)
+    });
+    const m = out.match(new RegExp(`${marker}([\\s\\S]*?)${marker}`));
+    if (!m) {
+      return frozen; // shell produced no sentinel — treat as unknown, use the snapshot
+    }
+    return m[1].trim() || null;
+  } catch {
+    return frozen;
+  }
+}
+
 // Resolve whether/what to force for FIREWORKS_THEME, keeping the inputs so launchWatcher can log the
 // whole decision to the output channel. The branch logic (stock-theme variants, mood words) lives
-// in fireworks-vscode.mood; here we read the current FIREWORKS_THEME env var and supply the editor mood.
+// in fireworks-vscode.mood; here we read the CURRENT FIREWORKS_THEME (live from the login shell, so
+// a post-launch .zshrc edit counts) and supply the editor mood.
 function resolveFireworksTheme(): FireworksThemeDecision {
-  const current = (process.env.FIREWORKS_THEME ?? '').trim() || null;
+  const current = liveShellEnvVar('FIREWORKS_THEME');
   const editorMood = themeVariant();
   const d = cljsLib.fireworksThemeDecision(current, editorMood);
   return { value: d.value, editorMood, input: d.input, reason: d.reason };
@@ -826,7 +856,7 @@ function resolveFireworksTheme(): FireworksThemeDecision {
 // echo a one-liner to the log for launches outside a diagnosed command (e.g. Create New Project).
 function logFireworksThemeDecision(d: FireworksThemeDecision): void {
   diagFact('Editor mood', d.editorMood);
-  diagFact('FIREWORKS_THEME (env)', d.input);
+  diagFact('FIREWORKS_THEME (live shell)', d.input);
   diagFact('FIREWORKS_THEME (forced)', d.value);
   diagStep(`FIREWORKS_THEME: ${d.reason}.`);
   log(`FIREWORKS_THEME decision: ${d.reason} (editor=${d.editorMood}, env=${d.input ?? 'unset'})`);
@@ -2880,7 +2910,7 @@ async function quickStart(): Promise<void> {
     const parentName = nextScratchParent(desktop, kind);
     const parentAbs = path.join(desktop, parentName);
 
-    const pick = await vscode.window.showQuickPick([{ label: `Create ${tildify(parentAbs)}?` }], {
+    const pick = await vscode.window.showQuickPick([{ label: `Create ${tildify(parentAbs)}` }], {
       placeHolder: 'Fireworks: Quick Start',
     });
     if (!pick) {

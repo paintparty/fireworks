@@ -15,6 +15,7 @@
    The examples use the placeholder name `example` (namespace `example.core`, dirs `src/example/`,
    Leiningen artifact `fireworks-lein-example`). Scaffolding replaces those with the user's name."
   (:require [clojure.string :as str]
+            [fireworks-vscode.versions :as v]
             [rewrite-clj.zip :as z]))
 
 ;; --- Name helpers ---------------------------------------------------------
@@ -75,17 +76,38 @@
       (z/root-string (-> vz z/remove z/remove))
       text)))
 
+(defn- set-coord-version
+  "Rewrite the version literal of coordinate `sym` in `text` to `version`, covering both the
+   deps/bb `sym {:mvn/version \"…\"}` and the Leiningen `[sym \"…\"]` forms. No-op when absent. This
+   is what makes fireworks-vscode.versions the single source of truth for scaffolded projects too:
+   the example bodies can carry any version; scaffolding overwrites it with the canonical one."
+  [text sym version]
+  (let [q    (str/replace sym "." "\\.")
+        mvn  (re-pattern (str "(" q "\\s*\\{:mvn/version\\s*\")[^\"]*(\")"))
+        lein (re-pattern (str "(\\[" q "\\s*\")[^\"]*(\")"))
+        repl (str "$1" version "$2")]
+    (-> text
+        (str/replace mvn repl)
+        (str/replace lein repl))))
+
 (defn scaffold-content
-  "The text to write for the example-tree file at `rel-path`, with the project `name` substituted.
+  "The text to write for the example-tree file at `rel-path`, with the project `name` substituted
+   and the dependency versions pinned to fireworks-vscode.versions (the single source of truth).
 
    - Any `example.core` (namespace, :require, `example.core-test`, bb.edn `-m` target) -> `<ns>.core`.
+   - Fireworks / test-refresh / lein-test-refresh coordinate versions -> the canonical constants,
+     regardless of what the example body carries.
    - project.clj: the Leiningen artifact `fireworks-lein-example` -> `name`.
    - deps.edn: drop the `:override-deps` (in-repo Fireworks :local/root — must not leak to a user
      project; the published Fireworks is already in the top-level :deps) and `:jvm-opts` (elide flag
      — would hide `?` output during a live-coding session) keys from the :live-code alias."
   [_kind name rel-path content]
   (let [ns (project-ns name)
-        base (str/replace content "example.core" (str ns ".core"))]
+        base (-> content
+                 (str/replace "example.core" (str ns ".core"))
+                 (set-coord-version v/fireworks-sym v/fireworks-version)
+                 (set-coord-version v/test-refresh-sym v/test-refresh-version)
+                 (set-coord-version v/lein-test-refresh-sym v/lein-test-refresh-version))]
     (cond
       (str/ends-with? rel-path "project.clj")
       (str/replace base "fireworks-lein-example" name)
