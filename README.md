@@ -36,7 +36,7 @@
 
 
 > [!TIP]
-> **NEW!** Try the official [Fireworks VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026. [Learn more](integrations/vscode/extension/README.md).
+> **NEW!** Try the official **[Fireworks VSCode Extension]**(https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026. [Learn more](integrations/vscode/extension/README.md).
 
 <br>
 <br>
@@ -242,12 +242,12 @@ details.
 <br>
 
 ## Printing Elision / Production Stubs 
-Fireworks provides a compiler elision flag, and also separate production-stub artifacts. So don't have to worry about production code that contains tapping/debugging code that you forgot to remove. When elided, the macros don't print anything - they just expand to the original form itself.
+Fireworks provides a compiler elision flag, and also separate stub artifacts for production releases. So you don't have to worry about production code that contains tapping/debugging code that someone forgot to remove. When elided, the macros don't print anything - they just expand to the original form itself.
 
 Elide Fireworks printing for non-dev builds with `{:jvm-opts ["-Dfireworks.elide=true"]}`
 Separate AOT/uberjar build should also elide it this way. 
 
-#### ClojureScript
+#### Using `:ns-aliases` in ClojureScript projects with Shadow
 This is mostly relevant to projects built with shadow-cljs.
 
 In addition to the compiler-flag elison described above, for production builds using shadow-cljs you can use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. Just use whatever is the most recent version (it may be an earlier version number than the latest fireworks, but they are in fact in sync).
@@ -264,9 +264,14 @@ Just alias the following namespaces:
 <br>
 <br>
 
+## Using with a REPL workflow
+
+Fireworks is a nice addition to a conventional REPL-driven setup, as you can wrap several forms to be "observed", then see their updated values printed as you eval forms that call these, or just re-eval the file.
+
+
 ## Hot-reloaded workflow
 
-Fireworks is a great fit for a hot-reloaded, tap-driven workflow.
+Fireworks was originally designed and build to be a supreme fit for a hot-reloaded, tap-driven workflow.
 
 For many ClojureScript projects using something like `shadow-cljs`, this is the norm.
 
@@ -318,7 +323,8 @@ Works with or without a REPL connection.
 #### Installing the VSCode Extension
 In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**.
 
-Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
+Click Install on the result that reads:<br>
+**Fireworks**, *Live Coding for Clojure*.
 
 [View the Fireworks VSCode Extension Docs](integrations/vscode/extension/README.md) 
 
@@ -326,7 +332,7 @@ Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
 
 #### Joyride
 
-There is also an example of [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md) integration. This was created as a proof-of-concept prototype, ahead of the actual VSCode extension. The VSCode extension supercedes this, but the code might be worth looking at if you are curious about setting up a joyride project.
+There is also an example of [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md) integration. This was created as a proof-of-concept prototype, ahead of the actual VSCode extension. The VSCode extension supercedes this, but the code might be worth looking at if you are curious about setting up a Joyride project.
 
 A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this prototype during the [2025 Q3 funding cycle](https://www.clojuriststogether.org/news/q3-2025-funding-announcement/)</p>
 
