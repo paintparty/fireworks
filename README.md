@@ -33,13 +33,12 @@
 
 <br>
 <br>
-<br>
-<br>
 
 
 > [!TIP]
-> **NEW!** The official [Fireworks VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026. [Learn more](integrations/vscode/extension/README.md).
+> **NEW!** Try the official [Fireworks VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026. [Learn more](integrations/vscode/extension/README.md).
 
+<br>
 <br>
 <br>
 
