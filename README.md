@@ -40,7 +40,6 @@
 
 <br>
 <br>
-<br>
 
 <p align="center"><sub><b>Fireworks (Alabaster Dark) + Clojure + lein-test-refresh + integrated terminal + VSCode Joyride user script</b></sub></p>
 <p align="center">
@@ -187,7 +186,7 @@ This can be anyone of the following:
 ```
 
 > [!NOTE]
-> `FIREWORKS_THEME` was introduced in `v0.21.3`, if you are using a previous version, you will need to set you theme globally in config file (described below).
+> Support for `FIREWORKS_THEME` was introduced in `v0.21.3`, if you are using a previous version, you will need to set your theme globally in config file (described below).
 
 
 ## Setting up a system-wide config
@@ -242,14 +241,25 @@ details.
 <br>
 <br>
 
-## Production stubs 
-Fireworks provides stubs so don't have to worry about production code that contains tapping/debugging code that you forgot to remove.
+## Printing Elision / Production Stubs 
+Fireworks provides a compiler elision flag, and also separate production-stub artifacts. So don't have to worry about production code that contains tapping/debugging code that you forgot to remove. When elided, the macros don't print anything - they just expand to the original form itself.
 
-For production builds, you can alias the following namespaces:
+Elide Fireworks printing for non-dev builds with `{:jvm-opts ["-Dfireworks.elide=true"]}`
+Separate AOT/uberjar build should also elide it this way. 
+
+#### ClojureScript
+This is mostly relevant to projects built with shadow-cljs.
+
+In addition to the compiler-flag elison described above, for production builds using shadow-cljs you can use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. Just use whatever is the most recent version (it may be an earlier version number than the latest fireworks, but they are in fact in sync).
+
+Just alias the following namespaces:
 `fireworks.core` ->  `fireworks.stubs.core`<br>
 `fireworks.pp` ->  `fireworks.stubs.pp`
 
-Alternatively, for production builds you can use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. The API is identical to `fireworks` but the macros don't print anything - they just expand to the original form itself.
+```clojure
+{:builds {:app {:release {:build-options {:ns-aliases {fireworks.core fireworks.stubs.core
+                                                       fireworks.pp   fireworks.stubs.pp}}}}}}
+```
 
 <br>
 <br>
