@@ -318,15 +318,29 @@ The official [Fireworks extension for VSCode](https://marketplace.visualstudio.c
 
 Works with or without a REPL connection.
 
+[View the Fireworks VSCode Extension Docs](integrations/vscode/extension/README.md) 
+
 ![VSCode Inline Results](integrations/vscode/extension/resources/gifs/vs-code-inline-results.gif)
+
+<br>
 
 #### Installing the VSCode Extension
 In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**.
 
-Click Install on the result that reads:<br>
-**Fireworks**, *Live Coding for Clojure*.
+Click **Install** on the result that reads:<br>
+**Fireworks**, *Live Coding for Clojure*. 
 
-[View the Fireworks VSCode Extension Docs](integrations/vscode/extension/README.md) 
+The one you are looking for looks like this:
+
+<p align="left">
+  <img width="430px"
+       src="integrations/vscode/extension/resources/screenshots/extension-marketplace-search-results.png"
+       alt="Fireworks Extension Search Results Screenshot">
+  </img>
+</p>
+
+<br>
+
 
 <br>
 

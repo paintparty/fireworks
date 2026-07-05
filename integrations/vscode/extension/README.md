@@ -11,19 +11,30 @@
 
 <br>
 
-This extension provides a commands which fall into 2 main categories:
+This extension provide a few dozen commands, which fall into 2 main categories:
 
 1) A cohesive set of operations to toggle the different Fireworks macros on forms in your editor. You can operate on one form at a time or several nested forms at a time.
 
-2) Live Code mode activates real-time, inline results of wrapped forms. These results are also printed in hi-fidelity color, with annotated file info, in the terminal your project is running in.
+2) Live Code mode activates real-time, inline results of wrapped forms. These results are also printed in hi-fidelity syntax-themed color, with annotated file info, in the terminal your project is running in.
 
 <br>
 
 ## Install
 
-- In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**.<br>Click Install on the result that reads **Fireworks**, *Live Coding for Clojure*.
+- In VS Code, open **Extensions** (`cmd/ctrl+shift+X`), search **Fireworks**.<br>Click **Install** on the result that reads **Fireworks**, *Live Coding for Clojure*. It should look like the one in this screenshot:
+
+<p align="left">
+  <img width="430px"
+       src="resources/screenshots/extension-marketplace-search-results.png"
+       alt="Fireworks Extension Search Results Screenshot">
+  </img>
+</p>
+
+<br>
 
 - Or, install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks).
+
+<br>
 
 - Or, from a `.vsix`: **Extensions: Install from VSIX**.
 
@@ -36,7 +47,7 @@ This extension provides a commands which fall into 2 main categories:
 
 ## Commands
 
-<p align="left"><sub><b>All screenshots below show Fireworks Live Code running with an integrated terminal (on right). Theme is Alabasjer Dark.</b></sub></p>
+All screenshots below show Fireworks Live Code running with an integrated terminal (on right). Theme is Alabasjer Dark.
 
 ### Toggle `?`
 
@@ -135,7 +146,9 @@ For more info on how this works, and using with/without a REPL connection, see [
 
  - Customize the opacity of the background and foreground, as well as the offset gap, of the inline results with corresponding Fireworks commands. 
 
- - Set the theme of the Fireworks terminal output with `Fireworks: Edit or Create a Printing Options config.edn`.
+ - Set the theme of the Fireworks terminal output with `FIREWORKS_THEME`, as described [here](https://github.com/paintparty/fireworks#setting-up-a-system-wide-theme) 
+
+ - Customize more of the formatting options (printed output) with `Fireworks: Edit or Create a Printing Options config.edn`.
    If you don't already have one, you need to save the config.edn in `~/.config/fireworks/config.edn` or `~/.config/bling/config.edn`. You'll also need to export an environment variable on your system for this theme to be active globally, more details on this [here](https://github.com/paintparty/fireworks/tree/main#system-wide-config).
 
 <br>
@@ -174,7 +187,7 @@ No profiles at all? Extension takes a read-only look at `~/.lein/profiles.clj` `
 Save file → watcher re-runs all forms wrapped with `?` → results paint.
 
 ### Babashka Projects
-A Babashka project is a candidate for Live Coding if it contains a `bb.edn` with a task that loads the Fireworks watcher.
+A Babashka project is a candidate for Live Code if it contains a `bb.edn` with a task that loads the Fireworks watcher.
 
 1) Run command `Fireworks: Live Code (Start)`
 2) Pick a Babashka project from the quicklist menu.
