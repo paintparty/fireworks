@@ -3,6 +3,10 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## Unreleased
+- Use `:host-mood` in `fireworks.macros/theme-profile` 
+
+
 ## 0.21.3
 2026-7-04
 
