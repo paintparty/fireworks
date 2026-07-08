@@ -250,7 +250,7 @@ Separate AOT/uberjar build should also elide it this way.
 #### Using `:ns-aliases` in ClojureScript projects with Shadow
 This is mostly relevant to projects built with shadow-cljs.
 
-In addition to the compiler-flag elison described above, for production builds using shadow-cljs you can use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. Just use whatever is the most recent version (it may be an earlier version number than the latest fireworks, but they are in fact in sync).
+In addition to the compiler-flag elision described above, for production builds using shadow-cljs you can use the [`io.github.paintparty/fireworks-stubs`](https://github.com/paintparty/fireworks-stubs) library. Just use whatever is the most recent version (it may be an earlier version number than the latest fireworks, but they are in fact in sync).
 
 Just alias the following namespaces:
 `fireworks.core` ->  `fireworks.stubs.core`<br>
@@ -346,7 +346,7 @@ The one you are looking for looks like this:
 
 #### Joyride
 
-There is also an example of [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md) integration. This was created as a proof-of-concept prototype, ahead of the actual VSCode extension. The VSCode extension supercedes this, but the code might be worth looking at if you are curious about setting up a Joyride project.
+There is also an example of [VSCode + Joyride](https://github.com/paintparty/fireworks/blob/main/docs/editors/vscode/vscode.md) integration. This was created as a proof-of-concept prototype, ahead of the actual VSCode extension. The VSCode extension supersedes this, but the code might be worth looking at if you are curious about setting up a Joyride project.
 
 A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this prototype during the [2025 Q3 funding cycle](https://www.clojuriststogether.org/news/q3-2025-funding-announcement/)</p>
 

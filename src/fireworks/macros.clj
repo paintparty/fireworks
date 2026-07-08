@@ -82,66 +82,67 @@
 
 ;; TODO
 ;; add some kind of warnings entries to profile:
-;; {:os-mood nil
-;;  :os-mood/report ["An `os-mood` value was not supplied to theme-profile"]
+;; {:host-mood nil
+;;  :host-mood/report ["An `host-mood` value was not supplied to theme-profile"]
 ;;  :theme nil
 ;;  :theme/report ["The `s` (theme name) arge supplied to theme-profile was <s>. This is not valid"]}
 
 ;; Also:
-;; Mention something about os-mood and literal theme value mismatch
-;; Resolve os-mood vs supplied theme of "light" or "dark" conflict
+;; Mention something about host-mood and literal theme value mismatch
+;; Resolve host-mood vs supplied theme of "light" or "dark" conflict
 
 
 (defn- theme-profile
   "This expects a string (s) which is the value of the COLOR_THEME env var.
 
-   Optional second argument (os-mood) is a string, one of \"dark\" or \"light\",
-   which is the result of a successfully detected os-level appearance preference
-   from the user's system.
+   Optional second argument (host-mood) is a string, one of \"dark\" or 
+   \"light\", which is the result of a successfully detected \"host\" appearance.
+   The \"host\" environment could be an active application (such as an IDE), or
+   the user's OS.
 
-   The `:theme` result respresents a valid name of a syntax coloring theme
+   The `:theme` result represents a valid name of a syntax coloring theme
    to be applied to rendered source code or data that is the result of
    source-code evaluation. A valid theme name must pass `valid-theme-re`.
 
    If there is a detected mood, and s is a valid synced theme syntax, the value
-   of `:theme` in the result is theme that the user preferrs with the detected
-   os-mood.
+   of `:theme` in the result is theme that the user prefers with the detected
+   host-mood.
 
    (theme-profile \"light:Alabaster Light, dark: Alabaster Dark\" \"light\")
    =>
-   {:os-mood       \"light\"
+   {:host-mood       \"light\"
     :theme         \"Alabaster Light\"
     :theme-mood    nil
     :synced-themes {:light \"Alabaster Light\" :dark \"Alabaster Dark\"}}  
 
    (theme-profile \"light\")
    =>
-   {:os-mood       nil
+   {:host-mood       nil
     :theme         \"Alabaster Light\"
     :synced-themes {:light \"Alabaster Light\" :dark \"Alabaster Dark\"}}  
    "
   ([s]
    (theme-profile s nil))
-  ([s os-mood]
-   (theme-profile s os-mood nil))
-  ([s os-mood report?]
-   (let [os-mood
-         (contains?->> #{"light" "dark"} os-mood)
+  ([s host-mood]
+   (theme-profile s host-mood nil))
+  ([s host-mood report?]
+   (let [host-mood
+         (contains?->> #{"light" "dark"} host-mood)
 
          s       
          (when-> s string?)
 
          m       
          (cond 
-           ;; Theme name provided is not a string, but os-mood detected 
-           (and (not s) os-mood)
-           {:os-mood       prefers 
+           ;; Theme name provided is not a string, but host-mood detected 
+           (and (not s) host-mood)
+           {:host-mood       prefers 
             :theme         nil 
             :theme-mood    nil
             :synced-themes nil}
 
-           ;; Theme name provided is a string, and os-mood detected 
-           (and s os-mood)
+           ;; Theme name provided is a string, and host-mood detected 
+           (and s host-mood)
            (let [{:keys [synced-theme-light synced-theme-dark] 
                   :as   synced-themes}
                  (some-> s
@@ -150,18 +151,18 @@
                          (when-> valid-synced-themes?))
 
                  theme                 
-                 (if (and synced-themes os-mood)
-                   (if (= os-mood "light") synced-theme-light synced-theme-dark)
+                 (if (and synced-themes host-mood)
+                   (if (= host-mood "light") synced-theme-light synced-theme-dark)
                    (valid-theme s))]
-             {:os-mood       os-mood 
+             {:host-mood       host-mood 
               :theme         theme 
               :theme-mood    nil
               :synced-themes synced-themes})
 
-           ;; Theme name is supplied, No os-mood.
+           ;; Theme name is supplied, No host-mood.
            ;; If theme name is valid, and not a synced them, use it.
            :else
-           {:os-mood       nil 
+           {:host-mood       nil 
             :theme         (when-not (valid-synced-theme s)
                             (valid-theme s)) 
             :theme-mood    nil
