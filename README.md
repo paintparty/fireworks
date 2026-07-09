@@ -1,11 +1,14 @@
 
-<p align="center"><sub>&nbsp;&nbsp;&nbsp;&nbsp;A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this project!</sub></p>
+<p align="left"><sub>&nbsp;&nbsp;&nbsp;&nbsp;A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this project!</sub></p>
 
 <br>
+<br>
 
-# Fireworks <img src="resources/icon.png" height="96px" align="right" />
+<img src="resources/icon.png" height="96px"/>
 
-**Live Coding for Clojure Dialects\***  
+# Fireworks
+
+**Live coding for Clojure dialects\***  
 <sub>\*Works with Clojure, ClojureScript, and Babashka</sub>
 
 
@@ -22,6 +25,8 @@
 [Options]:      #options
 [Theming]:      #theming
 
+
+<br>
 
 <p align="left">
 <a href="https://clojars.org/io.github.paintparty/fireworks">
