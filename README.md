@@ -1,42 +1,39 @@
 
 <p align="center"><sub>&nbsp;&nbsp;&nbsp;&nbsp;A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this project!</sub></p>
 
-<!-- <div align="center"><img src="./resources/color-printer-logo.png" width="400"></img></div>  -->
 <br>
-<br>
-<div align="center"><img src="./resources/icon.png" width="108"></img></div> 
-<br>
-<br>
-<p align="center">
-<a href="https://clojars.org/io.github.paintparty/fireworks">
-<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?labelColor=0969da&color=0969da&style=flat&cacheSeconds=3" alt="Fireworks on Clojars"></img>
-</a>
-</p>
 
+# Fireworks <img src="resources/icon.png" height="96px" align="right" />
+
+**Live Coding for Clojure Dialects\***  
+<sub>\*Works with Clojure, ClojureScript, and Babashka</sub>
+
+
+<br>
 <br>
 
 
-<div align="center">
+**[Setup]**  &nbsp;•&nbsp;  **[Editors]**  &nbsp;•&nbsp;  **[Usage]** &nbsp;•&nbsp; **[Modes]** &nbsp;•&nbsp;  **[Options]** &nbsp;•&nbsp; **[Theming]**
 
-**[Features]**  &nbsp;•&nbsp; **[Setup]**  &nbsp;•&nbsp;  **[Editors]**  &nbsp;•&nbsp;  **[Usage]** &nbsp;•&nbsp; **[Modes]** &nbsp;•&nbsp;  **[Options]** &nbsp;•&nbsp; **[Theming]** &nbsp;•&nbsp; **[Interop]**
-</div>
-
-[Features]:     #features
 [Setup]:        #setup
 [Editors]:      #editor-integrations
 [Usage]:        #usage
 [Modes]:        #tap-driven-development
 [Options]:      #options
 [Theming]:      #theming
-[Interop]:      #printing-conventions
 
+
+<p align="left">
+<a href="https://clojars.org/io.github.paintparty/fireworks">
+<img src="https://img.shields.io/clojars/v/io.github.paintparty/fireworks.svg?labelColor=0969da&color=0969da&style=flat&cacheSeconds=3" alt="Fireworks on Clojars"></img>
+</a>
+</p> 
 
 <br>
 <br>
 
 
-> [!TIP]
-> **NEW!** Try the official [**Fireworks VSCode Extension**](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026. [Learn more](integrations/vscode/extension/README.md).
+Try the official [**Fireworks VSCode Extension**](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026. [Learn more](integrations/vscode/extension/README.md).
 
 <br>
 <br>
