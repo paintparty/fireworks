@@ -1,30 +1,28 @@
 (ns fireworks.core
   (:require
    [clojure.set :as set]
-   [clojure.data :as data]
    [clojure.spec.alpha :as s]
-   [fireworks.browser]
-   [fireworks.fs]
-   [fireworks.messaging :as messaging]
-   [fireworks.serialize :as serialize]
-   [fireworks.specs.config :as specs.config]
-   #?(:clj [fireworks.state :as state]
-      :cljs [fireworks.state :as state :refer [node?]])
-   [fireworks.tag :as tag]
-   #?(:cljs [fireworks.macros
+   [hifi.browser]
+   [hifi.fs]
+   [hifi.messaging :as messaging]
+   [hifi.core :as serialize :refer [reset-state!]]
+   [hifi.specs.config :as specs.config]
+   #?(:clj [hifi.state :as state]
+      :cljs [hifi.state :as state :refer [node?]])
+   [hifi.tag :as tag]
+   #?(:cljs [hifi.macros
              :refer-macros
-             [keyed
-              compile-time-warnings-and-errors]])
-   #?(:clj [fireworks.macros :refer [keyed]])
+             [keyed]])
+   #?(:clj [hifi.macros :refer [keyed]])
    #?(:clj [clojure.java.io :as io])
    [clojure.string :as string]
-   [fireworks.config :as config]
-   [fireworks.util :as util] 
+   [hifi.config :as config]
+   [hifi.util :as util]
    [lasertag.core :as lasertag]
-   [fireworks.defs :as defs]
+   [hifi.defs :as defs]
    [clojure.walk :as walk]
    )
-  #?(:cljs (:require-macros 
+  #?(:cljs (:require-macros
             [fireworks.core :refer [? !? ?> !?>]])))
 
 (declare pprint)
@@ -388,7 +386,7 @@
      (let [js-arr 
            (-> opts
                :fmt
-               fireworks.browser/ansi-sgr-string->browser-dev-console-array)
+               hifi.browser/ansi-sgr-string->browser-dev-console-array)
 
            template-count
            (-> opts :template count)
@@ -426,207 +424,8 @@
 ;      SSSSSSSSSSSSSSS         TTTTTTTTTTT
 
  
-(defn- reset-user-opt!
-  "Validates user option override from call site and updates config."
-  [k opts]
-  (let [new-val (or (k opts)
-                    (k (:user-opts opts)))
-        valid?  (some-> k
-                        config/options
-                        :spec
-                        (s/valid? new-val))]
-    (if valid?
-      (swap! state/config assoc k new-val)
-      (messaging/bad-option-value-warning
-       (let [m                     (k config/options)
-             {:keys [line column]} (:form-meta opts)]
-         (merge m 
-                (keyed [k line column])
-                {:header (:fw-fnsym opts)
-                 :k      k
-                 :v      new-val
-                 :form   (:quoted-fw-form opts) 
-                 :file   (:ns-str opts)}))))))
+;; State-priming machinery (reset-state! and friends) now lives in hifi.core.
 
-
-(defn- opt-to-reset [opts k]
-  (let [a      (k @state/config)
-        b      (k opts)
-        diff?  (not= a b)
-        reset? (and diff? (not (nil? b)))] 
-    (when reset? k)))
-
-
-(defn- opts-to-reset
-  "Get a set of overrides the user has passed at call site.
-
-   Merge these on top of the value of @state/config-overrides, which are 
-   config options the user may have set globally, at runtime, in their program
-   via fireworks.core/config!.
-
-   Opts will be reset only if they are different from current value."
-  [user-opts]
-  (some->> user-opts
-           seq
-           keys
-           (into #{})
-           (set/intersection config/option-keys)
-           (keep (partial opt-to-reset user-opts))
-           (into #{})))
-
-
-(defn- some-option-keys-that-update-theme [x]
-  (some-> x
-          (set/intersection
-           config/option-keys-that-update-theme)
-          seq))
-
-
-(defn- diff-from-merged-user-config
-  [config-before]
-  (let [[a b]           (data/diff config-before @state/config)
-        keys-in-a-and-b (into #{} (concat (keys a) (keys b)))]
-    (some-option-keys-that-update-theme
-     keys-in-a-and-b)))
-
-
-(defn- diff-call-site-theme-option-keys
-  [opts-to-reset]
-  (when (seq opts-to-reset) 
-    (some-option-keys-that-update-theme
-     opts-to-reset)))
-
-
-(defn- reset-config+theme!
-  [config-before user-opts opts]
-  (let [ks               (opts-to-reset user-opts)
-        opts-to-reset    (doseq [k ks] (reset-user-opt! k opts))]
-    (when (or (diff-call-site-theme-option-keys opts-to-reset)
-              (diff-from-merged-user-config config-before))
-      (let [{:keys [with-style-maps
-                    with-serialized-style-maps]} 
-            (state/merged-theme* :reset)]
-        (reset! state/merged-theme
-                with-serialized-style-maps)
-        (reset! state/merged-theme-with-unserialized-style-maps
-                with-style-maps)))))
-
-
-(defn- next-row
-  [prev cur other-seq]
-  (reduce
-    (fn [row [diag above other]]
-      (let [update-val (if (= other cur)
-                          diag
-                          (inc (min diag above (peek row))))]
-        (conj row update-val)))
-    [(inc (first prev))]
-    (map vector prev (next prev) other-seq)))
-
-
-(defn distance
-  "Given two words, computes levenshtein distance."
-  [seq1 seq2]
-  (cond
-    (and (empty? seq1) (empty? seq2)) 0
-    (empty? seq1) (count seq2)
-    (empty? seq2) (count seq1)
-    :else (peek
-            (reduce (fn [prev cur] (next-row prev cur seq2))
-                    (map #(identity %2) (cons nil seq2) (range))
-                    seq1))))
-
-
-(defn- spelling-distances [k]
-  (reduce (fn [acc opt] 
-            (let [n (distance (name k)
-                              (name opt))]
-              (update acc n conj opt)))
-          {}
-          config/option-keys))
-
-
-(defn- unknown-option-warning-opts [opts k]
-  (let [{:keys [line column]} (:form-meta opts)
-        distances             (spelling-distances k)
-        lt-5?->               #(when (<  % 5) %)
-        misspellings          (some->> distances
-                                       keys
-                                       (apply min)
-                                       lt-5?->
-                                       (get distances)
-                                       (mapv str)
-                                       (string/join "\n  "))]
-    (merge (keyed [k line column])
-           {:header     (:fw-fnsym opts)
-            :hint       misspellings
-            :hint-label "Maybe you meant:"
-            :k          k
-            :form       (:quoted-fw-form opts) 
-            :file       (:ns-str opts)})))
-
-
-(defn- reset-state!
-  [{find-vals :find
-    user-opts :user-opts
-    :as       opts}]
-
-  ;; Surfacing of compile-time warnings and errors to cljs
-  ;; These will primarily have to do with fireworks.state/user-config,
-  ;; which calls a macro that gets the user-config from a .edn file.
-  #?(:cljs
-     (doseq [x (compile-time-warnings-and-errors)]
-       (when-let [k (when (vector? x) (nth x 0 nil))]
-         (let [f (get messaging/dispatch k nil)]
-           (when (fn? f)
-             (when-let [opts (second x)]
-               (f opts)))))))
-  
-
-  (let [config-before @state/config]
-
-    ;; TODO - add some observability here
-    (reset! state/let-bindings? (:let-bindings? opts))
-    (reset! state/margin-inline-start (or (:margin-inline-start opts)
-                                          (:margin-left opts)))
-
-    ;; TODO - lose if post-replace works
-    (reset! state/styles [])
-    (reset! state/*formatting-meta-level 0)
-    (reset! state/rainbow-level 0)
-    (reset! state/top-level-value-is-sev? false)
-    (reset! messaging/warnings-and-errors [])
-
-    ;; Resetting config to user's config.edn merged with defaults
-    (when state/debug-config?
-      (messaging/fw-debug-report-template
-       "Resetting fireworks.state/config atom to"
-       (state/merged-config)
-       :magenta))
-
-    ;; Reset config & potentially reset/remerge the theme
-    (reset-config+theme! config-before user-opts opts)
-
-    ;; Maybe print detected color
-    (when (:print-detected-color-level? @state/config)
-      (println (str "\n"
-                    "fireworks.state/detected-color-level => "
-                    fireworks.state/detected-color-level
-                    "\n")))
-
-    ;; Warn user if a non-existant config option is passed
-    (doseq [k (some-> opts keys seq )]
-      (when-not (contains? config/option-keys k)
-        (when-not (contains? config/undocumented-option-keys k)
-          (messaging/unknown-option-warning
-           (unknown-option-warning-opts opts k))))))
-  
-  ;; Reset the highlight state.
-  ;; It may pull highlight style from merged theme.
-  (reset! state/highlight (some->> find-vals state/highlight-style))
-  (reset! state/highlight-target-path nil)
-
-  #_(reset! state/rewind-counter 0))
           
 
 
@@ -672,7 +471,7 @@
   ([{:keys [fmt log? err err-x err-opts]
      :as   x}
     js-printing-fn]
-   (if (instance? fireworks.messaging.FireworksThrowable x)
+   (if (instance? hifi.messaging.FireworksThrowable x)
      (if (= (:coll-size err-opts) :lasertag.core/unknown-coll-size)
        (maybe-unable-to-print-warning err-x)
        (let [{:keys [line column file]} (:form-meta err-opts)
@@ -749,7 +548,7 @@
           state/user-config-edn
           :magenta]
 
-         #_["fireworks.state/config, before reset"
+         #_["hifi.state/config, before reset"
           config-before
           :magenta]
          
@@ -762,7 +561,7 @@
                       state/user-config-edn))
           :magenta]
 
-        ;;  ["fireworks.state/config, after reset"
+        ;;  ["hifi.state/config, after reset"
         ;;   @state/config]
          
          #_["Options that were overidden by user options"
@@ -773,7 +572,7 @@
                           [k v]))
                        @state/config))]
 
-        ;;  ["fireworks.state/config, diff / user-supplied overrides"
+        ;;  ["hifi.state/config, diff / user-supplied overrides"
         ;;   (nth (data/diff config-before @state/config) 1 nil)]
 
         ;;  [(str fname ", opts")
@@ -794,7 +593,7 @@
 (defn- fw-config-report []
   (println
    (messaging/block 
-    {:header-str "fireworks.state/config "
+    {:header-str "hifi.state/config "
      :block-type :info
      :body       (str "Result of merging options from user's"
                       "\n"
@@ -850,7 +649,7 @@
 
         [string-with-format-specifier-tags & css-styles] 
         (->> string
-             fireworks.browser/ansi-sgr-string->browser-dev-console-array
+             hifi.browser/ansi-sgr-string->browser-dev-console-array
              vec)]
 
     (keyed [string
@@ -904,15 +703,15 @@
   ;; (? (str line "_" column))
 
 
-  (when (fireworks.fs/path-exists? hidden-dir)
+  (when (hifi.fs/path-exists? hidden-dir)
     (let [fpath
           (str hidden-dir "/" results-subdir "/" (some-> ns-str (str "/" )) line "_" column)
-          #_(fireworks.fs/join-path (? hidden-dir)
+          #_(hifi.fs/join-path (? hidden-dir)
                                     (? results-subdir)
                                     (? ns-str) 
                                     (? (str line "_" column)))]
-      (fireworks.fs/ensure-dir! fpath)
-      (fireworks.fs/write-file! fpath 
+      (hifi.fs/ensure-dir! fpath)
+      (hifi.fs/write-file! fpath 
                                 (str (when perf (str "(" perf")  "))
                                      (safe-str* x))))))
 
@@ -1380,7 +1179,7 @@
 
 
 (defmacro config!
-  "Resets the value of fireworks.state/config-overrides"
+  "Resets the value of hifi.state/config-overrides"
   [m]
   (reset! state/config-overrides m))
 
@@ -1792,14 +1591,14 @@
 
    (letfn
      [(pp [writer]
-        (let [writer (fireworks.pp/count-keeping-writer writer {:max-width max-width})]
-          (fireworks.pp/-pprint x writer
+        (let [writer (hifi.pp/count-keeping-writer writer {:max-width max-width})]
+          (hifi.pp/-pprint x writer
             (assoc opts
               :map-entry-separator map-entry-separator
               :level 0
               :indentation ""
               :reserve-chars 0))
-          (fireworks.pp/nl writer)))]
+          (hifi.pp/nl writer)))]
      #?(:clj
         (do
           (assert (instance? java.io.Writer writer)

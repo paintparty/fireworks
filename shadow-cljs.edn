@@ -2,6 +2,7 @@
 {:source-paths ["src/" 
                 "test/"
                 ;; for local dev
+                "../hifi/src/"
                 ;; "../lasertag/src/"
                 ;; "../bling/src/"
                 ]

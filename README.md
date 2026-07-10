@@ -40,6 +40,8 @@
 
 Try the official [**Fireworks VSCode Extension**](https://marketplace.visualstudio.com/items?itemName=jcoyle.fireworks), released July 2026. [Learn more](integrations/vscode/extension/README.md).
 
+> **As of 0.22.0**, the formatting and syntax-coloring engine behind fireworks lives in its own library, [hifi](https://github.com/paintparty/hifi), which fireworks depends on. Nothing changes for fireworks users — same macros, same options, same config. Use hifi directly if you want the pretty-printed, theme-colored string output without the tapping macros.
+
 <br>
 <br>
 

@@ -1,6 +1,6 @@
 (ns fireworks.profiling
   (:require [fireworks.prof :as p]
-            [fireworks.sample :as sample]
+            [hifi.sample :as sample]
             [lasertag.core]
             [clojure.pprint :refer [pprint]]
             [fireworks.core :refer [?]]))   ; <- your real entry-point ns

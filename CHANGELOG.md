@@ -3,8 +3,14 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
-## Unreleased
-- Use `:host-mood` in `fireworks.macros/theme-profile` 
+## Unreleased (0.22.0)
+
+#### Changed
+- The formatting/colorizing engine (pretty-printing, truncation, theming, syntax coloring) now lives in its own library, [hifi](https://github.com/paintparty/hifi), which fireworks depends on. Fireworks itself is now just the print-and-return / tapping macro layer (`?`, `!?`, `?>`, `!?>`, `?flop`, `config!`, `pprint`) plus file-info/label arrangement. See `docs/adr/` for the split decisions.
+  - Namespace mapping: `fireworks.X` → `hifi.X` for the engine namespaces; `fireworks.serialize` → `hifi.core`. `fireworks.pp` remains as a thin wrapper over `hifi.pp` (`?pp` / `!?pp` / `pprint` unchanged).
+  - No config changes: `FIREWORKS_CONFIG`, `FIREWORKS_THEME`, config.edn conventions, and all call-site options work exactly as before (hifi keeps reading the FIREWORKS_* names).
+  - If you required internal namespaces like `fireworks.state` or `fireworks.themes` directly, require the `hifi.*` equivalent instead.
+- Use `:host-mood` in `hifi.macros/theme-profile` (formerly `fireworks.macros/theme-profile`)
 
 
 ## 0.21.3

@@ -7,17 +7,17 @@
 
 (ns fireworks.smoke-test
   (:require [fireworks.core :refer [? !? ?> !?> pprint]]
-            #?(:cljs [fireworks.macros :refer-macros [keyed]])
-            #?(:clj [fireworks.macros :refer [keyed]])
-            [fireworks.themes :as themes]
-            [fireworks.state]
-            [fireworks.color]
+            #?(:cljs [hifi.macros :refer-macros [keyed]])
+            #?(:clj [hifi.macros :refer [keyed]])
+            [hifi.themes :as themes]
+            [hifi.state]
+            [hifi.color]
             [clojure.string :as str]
             [fireworks.pp :as pp]
             [clojure.walk :as walk]
-            [fireworks.util :as util]
-            [fireworks.sample :as sample]
-            [fireworks.basethemes :as basethemes]
+            [hifi.util :as util]
+            [hifi.sample :as sample]
+            [hifi.basethemes :as basethemes]
             [lasertag.core :as lt :refer [tag-map tag]]
             #?(:cljs [cljs.test :refer [deftest is]])
             #?(:clj [clojure.test :refer :all])))
@@ -45,6 +45,8 @@
 (defn my-custom-printer [x] (println (str "HIHIHIH " x)))
 
 #_(do 
+  (comment "these smoke tests test the arrangement of the file info and label, and general
+            compositing of the options flags and / or option map.")
   (println lb "DEFAULT" lb2)
   (? xx)
   

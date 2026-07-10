@@ -2,7 +2,7 @@
   (:require
    [clojure.string :as string]
    [fireworks.core :refer [?]]
-   [fireworks.sample]
+   [hifi.sample]
    [fireworks.pp :as pp :refer [?pp !?pp pprint]]
    [fireworks.test-util :as tu :refer [escape-sgr]]
    [clojure.test :refer [deftest is]]))
@@ -15,7 +15,7 @@
   nil)
 
 #_(? {:theme theme}
-     fireworks.sample/my-record-type)
+     hifi.sample/my-record-type)
 
 #_(deftest long-fn-name
     (is (=
