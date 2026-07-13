@@ -1,10 +1,9 @@
 
-<p align="left"><sub>&nbsp;&nbsp;&nbsp;&nbsp;A very special thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this project!</sub></p>
+<p align="left"><sub>Many thanks to <a href="https://www.clojuriststogether.org/">Clojurists Together</a> for supporting this project!</sub></p>
 
 <br>
-<br>
 
-<img src="resources/icon.png" height="96px"/>
+<img src="resources/icon.png" height="76px"/>
 
 # Fireworks
 
