@@ -1,5 +1,5 @@
 (ns fireworks.util
-  (:require [clojure.string :as string]
+  (:require [clojure.string :as str]
             [fireworks.defs :as defs]
             [clojure.set :as set]
             [lasertag.fns :as fns]
@@ -7,7 +7,7 @@
             [lasertag.core :as lasertag]
             #?(:bb [clojure.reflect :as r])))
 
-(defn spaces [n] (string/join (repeat n " ")))
+(defn spaces [n] (str/join (repeat n " ")))
 
 (defn badge-type
   "Derived badge type keyword, based on input string.\n
@@ -52,12 +52,12 @@
     (if (> limit (count as-str))
       as-str
       (let [shortened*      (-> as-str
-                                (string/split #"\n")
+                                (str/split #"\n")
                                 first)
             shortened       (if (< limit (count shortened*))
                               (let [ret          (take limit shortened*)
                                     string-like? (string-like? v)]
-                                (str (string/join ret)
+                                (str (str/join ret)
                                      (when-not string-like? " ")
                                      "..."))
                               shortened*)]
@@ -80,7 +80,7 @@
 
 (defn char-repeat [n s]
   (when (pos-int? n)
-    (string/join (repeat n (or s "")))))
+    (str/join (repeat n (or s "")))))
 
 
 (defn ^:public maybe->
@@ -103,7 +103,7 @@
           (subs (inc (.lastIndexOf s " ")))))
 
 (defn- java-util-class? [s]
-  (boolean (some-> s (string/starts-with? "java.util"))))
+  (boolean (some-> s (str/starts-with? "java.util"))))
 
 (defn- java-lang-class? [s]
   (boolean (some->> s (re-find #"java\.lang"))))
