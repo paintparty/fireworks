@@ -74,7 +74,8 @@
                   (str "js/" js-built-in-object-name)
 
                   (and (not= t :object)
-                       (or (contains? all-tags :js-map-like-object)
+                       (or (and (contains? all-tags :js)
+                                (contains? all-tags :map-like))
                            (and (contains? all-tags :js)
                                 (contains? all-tags :object)
                                 (contains? all-tags :instance-of-built-in))

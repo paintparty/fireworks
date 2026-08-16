@@ -202,7 +202,8 @@
           {:js-typed-array? (contains? all-tags :js-typed-array)
            :js-map-like?    (or (contains? all-tags :js-object)
                                 (contains? all-tags :js-map)
-                                (contains? all-tags :js-map-like-object))
+                                (and (contains? all-tags :js)
+                                     (contains? all-tags :map-like)))
            :js-set?         (contains? all-tags :js-set)
            :num-dropped     (some->> truncated-coll-size (- coll-size-adjust))}
           (when map-like?
