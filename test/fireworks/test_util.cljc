@@ -67,7 +67,7 @@
     (println)
     (println "─────────────────────────")))
 
-;; Install the colored-diff hook. On the JVM we WRAP the current value of
+;; Install the colored-diff hook. On the JVM we wrap the current value of
 ;; clojure.test/report rather than `defmethod` it: humane-test-output (loaded via
 ;; the global lein :injections) replaces the report var with its own fn, which
 ;; orphans any defmethod on the original multimethod. Wrapping runs after whatever

@@ -1,18 +1,43 @@
-{:tasks {test:bb {:extra-paths      ["testbb"]
-                  :extra-deps       {io.github.paintparty/fireworks       {:local/root "."}
-                                     io.github.paintparty/lasertag        {:local/root "../lasertag"}
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.5"}}
+ :tasks
+ {:requires [[clojure.string :as str]]
 
-                                     io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
-                                                                           :git/sha "dfb30dd"}}
-                  :task             (exec 'cognitect.test-runner.api/test)
-                  :exec-args        {:dirs ["testbb"]}
-                  :org.babashka/cli {:coerce {:nses [:symbol]
-                                              :vars [:symbol]}}}
+  test      
+  {:doc  "Run the test suite."
+   :task (clojure "-M:test" "-m" "cognitect.test-runner")}
 
-         gen-example-config
-         {:doc        "Regenerate docs/example-bling-config/config.edn from fireworks.config/options."
-          :extra-paths ["src"]
-          :extra-deps {expound/expound               {:mvn/version "0.9.0"}
-                       io.github.paintparty/lasertag {:local/root "../lasertag"}}
-          :requires   ([fireworks.config])
-          :task       (fireworks.config/generate-example-config!)}}}
+  test:bb   
+  {:doc         "Run the test suite using Babashka to check compatibility."
+   :extra-paths ["test"]
+   :extra-deps  {io.github.paintparty/fireworks       {:local/root "."}
+                 io.github.paintparty/lasertag        {:local/root "../lasertag"}
+                 io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" 
+                                                       :git/sha "dfb30dd"}}
+   :task        (exec 'cognitect.test-runner.api/test)}
+
+  test:all  
+  {:doc     "Run the test suite with both Clojure and Babashka."
+   :depends [test test:bb]}
+
+  ci        
+  {:doc     "Run the CI pipeline of tests and build the JAR."
+   :depends [test:all] ; or just test
+   :task    (clojure "-T:build" "jar")}
+
+  ci:deploy 
+  {:doc     "Run the CI pipeline and deploy the JAR."
+   :depends [ci]
+   :task    (clojure "-T:build" "deploy")}
+
+  install   
+  {:doc  "Install the JAR locally (build via ci)."
+   :task (clojure "-T:build" "install")}
+
+  gen-example-config 
+  {:doc         "Regenerate docs/example-bling-config/config.edn from fireworks.config/options."
+   :extra-paths ["src"]
+   :extra-deps  {expound/expound               {:mvn/version "0.9.0"}
+                 io.github.paintparty/lasertag {:local/root "../lasertag"}}
+   :requires    ([fireworks.config])
+   :task        (fireworks.config/generate-example-config!)}}}

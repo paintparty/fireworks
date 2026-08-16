@@ -7,9 +7,8 @@
 
 # Fireworks
 
-**Live coding for Clojure dialects\***  
-<sub>\*Works with Clojure, ClojureScript, and Babashka</sub>
-
+**Live coding for Clojure dialects**  
+<sub>\Works with Clojure, ClojureScript, and Babashka, and Jolt</sub>
 
 <br>
 <br>

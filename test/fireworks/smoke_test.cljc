@@ -5,7 +5,7 @@
 
 ;; Unstructured sandbox for smoke testing
 
-(ns fireworks.smoke-test
+(ns fireworks.sandbox
   (:require [fireworks.core :refer [? !? ?> !?> pprint]]
             #?(:cljs [fireworks.macros :refer-macros [keyed]])
             #?(:clj [fireworks.macros :refer [keyed]])
@@ -18,9 +18,7 @@
             [fireworks.util :as util]
             [fireworks.sample :as sample]
             [fireworks.basethemes :as basethemes]
-            [lasertag.core :as lt :refer [tag-map tag]]
-            #?(:cljs [cljs.test :refer [deftest is]])
-            #?(:clj [clojure.test :refer :all])))
+            [lasertag.core :as lt :refer [tag-map tag]]))
 
 
 #_(? :perf {:perfs? true} :fooo)
@@ -239,12 +237,12 @@
            js/isFinite
            js/EvalError
            js/Date])
-    ;;   (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
+     ;;   (? #"^(?:abc\\\(\[\d)+[^a-z0-9\w]*$|^foobar{1}s?$")
      (!? :pp {:colorize? true} sample/interop-types)
-    ;;  (? (transient [1 2 3 "foo"]))
-    ;;  (println fireworks.sample/my-data-type)
-    ;;  (? :pp (tag-map fireworks.sample/my-data-type))
-    ;;  (? fireworks.sample/my-data-type)
+     ;;  (? (transient [1 2 3 "foo"]))
+     ;;  (println fireworks.sample/my-data-type)
+     ;;  (? :pp (tag-map fireworks.sample/my-data-type))
+     ;;  (? fireworks.sample/my-data-type)
      
      ;;  (? #'bar)
      ;;  (? (tag-map #'bar))
@@ -284,14 +282,21 @@
      ;;  (? (tag-map my-record-type))
      
 
-     (deftype CustomVector [vc]
-       clojure.lang.IPersistentVector
-       ;;  (count [_] (count m))
-       (assoc [this _ _] this))
+    ;;  #?(:bb
+    ;;     nil
+    ;;     :clj
+    ;;     (do (deftype CustomVector [vc]
+    ;;           clojure.lang.IPersistentVector
+    ;;           (assoc [this _ _] this))
+    ;;         (def custom-vector-datatype (->CustomVector [:a 1 :b 3]))))
+     (do (deftype CustomVector [vc]
+              clojure.lang.IPersistentVector
+              (assoc [this _ _] this))
+            (def custom-vector-datatype (->CustomVector [:a 1 :b 3])))
      
-     (def custom-vector-datatype (->CustomVector [:a 1 :b 3]))
+     
 
-     ;;  (? :pp (tag-map custom-vector-datatype))
+     ;; (? :pp (tag-map custom-vector-datatype))
      ;; (? custom-vector-datatype)
      
      (def my-ref (ref 1))

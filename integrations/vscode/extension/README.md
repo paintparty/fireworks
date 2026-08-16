@@ -247,12 +247,12 @@ To run the cljs tests without the watcher:
 npm run test-cljs
 ```
 
-Note: `test-cljs` does not rebuild the `:cljs-lib` output that the extension loads. Run `compile-cljs` (or keep `watch-cljs` running) when you need the extension itself updated, not just the tests green.
+Note: `test-cljs` does not rebuild the `:cljs-lib` output that the extension loads.<br>
+Run `compile-cljs` (or keep `watch-cljs` running) when you need the extension itself updated (not just passing tests).
 
 ### Updating the deps that extensions uses in templates
 
-To update the dependency coordinates that the extension uses to automatically add to project files, change them via:
-`fireworks.vs-code.versions`
+To update the dependency coordinates that the extension uses to automatically add to generated project files with the `Fireworks: Create New Project` command, change them in the `fireworks.vs-code.versions` namespace (cljs).
 
 ### Republishing the extension
 

@@ -6,7 +6,6 @@
    [fireworks.pp :as pp :refer [!?pp pprint]]
    [fireworks.demo]
    [fireworks.sample :as sample] 
-   [fireworks.smoke-test] 
    [fireworks.config :as config]
    [clojure.test :refer [deftest is]]))
 
