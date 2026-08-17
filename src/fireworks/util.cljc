@@ -1,11 +1,11 @@
 (ns fireworks.util
   (:require [clojure.string :as str]
             [fireworks.defs :as defs]
+            ;; [fireworks.pp :refer [?pp] :rename {?pp ?}]
             [clojure.set :as set]
             [lasertag.fns :as fns]
             [lasertag.cached]
-            [lasertag.core :as lasertag]
-            #?(:bb [clojure.reflect :as r])))
+            [lasertag.core :as lasertag]))
 
 (defn spaces [n] (str/join (repeat n " ")))
 
@@ -195,7 +195,78 @@
   [n coll]
   (some? (nth coll n nil)))
 
-(defn truncated-seq 
+(defn- idx-of-vector-bracket
+  "Index of the ] closing the [ at `open`, or nil if unbalanced/truncated."
+  [s open]
+  (let [n (count s)]
+    (loop [i       (inc open)
+           depth   1
+           in-str? false]
+      (when (< i n)
+        (let [c (nth s i)]
+          (cond
+            (= c \\)  (recur (+ i 2) depth in-str?) ; escape or char literal
+            in-str?   (recur (inc i) depth (not= c \"))
+            (= c \")  (recur (inc i) depth true)
+            (= c \[)  (recur (inc i) (inc depth) false)
+            (= c \])  (if (= depth 1) i (recur (inc i) (dec depth) false))
+            :else     (recur (inc i) depth false)))))))
+
+(defn- short-classname
+  "Returns last segment of classname.
+   \"clojure.lang.Delay\" => \"Delay\""
+  [s]
+  (let [short-name (-> s (str/split #"\.") last)]
+    (if-let [f (second (re-find #"^([a-z-]+?)(?:_call)?\$reify" short-name))]
+      (str/capitalize f)
+      short-name)))
+
+(defn- de-noise-one
+  "Maybe de-noise a single #object[...]"
+  [inner]
+  (let [[classname rest*] (let [i (str/index-of inner " ")]
+                            (if i [(subs inner 0 i) (subs inner (inc i))] [inner ""]))
+        rest*             (str/replace rest* #"^0x[0-9a-f]+ ?" "")
+        nm                (some->> classname short-classname (str "#"))
+        space             " "]
+    (cond
+      (str/starts-with? rest* "{")
+      (str nm space rest*)
+
+      (str/starts-with? rest* "\"")
+      (cond
+        ;; If just identity noise e.g., `java.lang.Object@1c655221`, drop it.
+        (str/starts-with? rest* (str "\"" classname "@"))
+        (str nm)
+        :else
+        (str nm space "\"" (subs rest* 1 (-> rest* count (- 1))) "\""))
+
+      :else nil)))
+
+(def ^:private obj-prefix "#object[")
+(def ^:private obj-prefix-count (count obj-prefix))
+
+(defn- de-noise-str
+  "Makes printed representations of objects easier to read.
+   Works across clj, bb, and cljs.
+   Example:
+   #object[clojure.lang.Atom 0x1 {:a 1}] => #Atom{:a 1}"
+  [s]
+  (if-not (str/index-of s obj-prefix)
+    s
+    (loop [s    s
+           from 0]
+      (if-let [i (str/index-of s obj-prefix from)]
+        (if-let [j (idx-of-vector-bracket s (+ i (dec obj-prefix-count)))]
+          (if-let [de-noised (de-noise-one (subs s (+ i obj-prefix-count) j))]
+            (recur (str (subs s 0 i) de-noised (subs s (inc j)))
+                   (+ i (count de-noised)))
+            (recur s (+ i obj-prefix-count)))
+          s)
+        s))))
+
+
+(defn- truncated-seq 
   "Truncates a seq without realizing it.
    
    Optional trucation label or symbol is
@@ -210,7 +281,7 @@
      (take n x))))
 
 
-(defn safe-str
+(defn ^:no-doc safe-str
   "Pass any value and safely get a print representation.
 
    Optional truncation and ellipsis.
@@ -221,43 +292,45 @@
    Unprintable custom objects that would normally throw an AbstractMethodError
    in clojure are returned as (str \"<Print Error: \" (.getMessage e) \">\"),
    or equivalent for target platform"
-  [x
-   {:keys [start end print-length print-level ellipsis?] 
-    :or   {start        0
-           end          10
-           print-length 10 ;<- max length of colls
-           print-level  10
-           ellipsis?    false}}]
-  (try (binding [*print-length* print-length
-                 *print-level*  print-level]
-         (let [lazy-seq?  (lasertag.cached/lazyish-seq? x)
-               s          (pr-str (if lazy-seq?
-                                    ;; TODO - util fn (seq-overflow?) to compute '...+5,
-                                    ;; How to make safe for infinite, etc
-                                    (truncated-seq print-length x '...)
-                                    x))
-               len        (count s)
-               start+     (max 0 (min start len))
-               end+       (max start+ (min end len))
-               target-len (- end+ start+)
-               overflows? (> len end+)]
-           (if (and ellipsis? overflows? (>= target-len 3))
-             (str (subs s start+ (- end+ 3)) "...")
-             (subs s start+ end+))))
+  ([x]
+   (safe-str x nil))
+  ([x
+    {:keys [start end print-length print-level ellipsis?] 
+     :or   {start        0
+            end          100
+            print-length 10 ;<- max length of colls
+            print-level  10
+            ellipsis?    false}}]
+   (try (binding [*print-length* print-length
+                  *print-level*  print-level]
+          (let [lazy-seq?  (lasertag.cached/lazyish-seq? x)
+                s          (pr-str (if lazy-seq?
+                                     ;; TODO - util fn (seq-overflow?) to compute '...+5,
+                                     ;; How to make safe for infinite, etc
+                                     (truncated-seq print-length x '...)
+                                     x))
+                len        (count s)
+                start+     (max 0 (min start len))
+                end+       (max start+ (min end len))
+                target-len (- end+ start+)
+                overflows? (> len end+)]
+            (if (and ellipsis? overflows? (>= target-len 3))
+                (de-noise-str (str (subs s start+ (- end+ 3)) "..."))
+                (de-noise-str (subs s start+ end+)))))
 
-       ;; Catch the missing impl error for each platform
-       (catch #?(:clj AbstractMethodError :cljs js/TypeError) _
-         (str "<Unprintable Custom Type: " 
-              #?(:clj  (.getName (class x))
-                 :cljs (if-let [t (type x)] (.-name t) "Unknown")) 
-              ">"))
+        ;; Catch the missing impl error for each platform
+        (catch #?(:clj AbstractMethodError :cljs js/TypeError) _
+          (str "<Unprintable Custom Type: " 
+               #?(:clj  (.getName (class x))
+                  :cljs (if-let [t (type x)] (.-name t) "Unknown")) 
+               ">"))
 
-       ;; Catch standard exceptions for other printing failures
-       (catch #?(:clj Exception :cljs js/Error) e
-         (str "<Print Error: " 
-              #?(:clj  (.getMessage e)
-                 :cljs (.-message e)) 
-              ">")) ))
+        ;; Catch standard exceptions for other printing failures
+        (catch #?(:clj Exception :cljs js/Error) e
+          (str "<Print Error: " 
+               #?(:clj  (.getMessage e)
+                  :cljs (.-message e)) 
+               ">")) )))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
