@@ -58,7 +58,6 @@
     "onCommand:fireworks.quickStart",
     "onCommand:fireworks.showOutputChannel"
   ],
-  "extensionDependencies": ["betterthantomorrow.calva"],
   "contributes": {
     "commands": [
       { "command": "fireworks.toggle", "title": "Toggle ? (Print & Return)", "category": "Fireworks" },
