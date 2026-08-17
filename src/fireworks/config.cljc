@@ -5,7 +5,6 @@
    #?@(:clj [[clojure.string :as str]
              [clojure.java.io :as io]])))
 
-;; TODO add desc field to each entry, use for docs and potentially validation
 (def options
   {:theme                         {:spec           ::config/theme
                                    :default        "Universal Neutral"
@@ -128,21 +127,6 @@
                                    :desc           "Sets the line-height. Only takes effect in browser consoles."
                                    :category       :limits
                                    :tags           [:limits :theme]}
-   :label-max-length              {:spec     ::config/label-max-length
-                                   :default  44
-                                   :desc     "Sets the max length of the form-to-be-evaled label, or the user label, if supplied."
-                                   :category :fireworks
-                                   :tags     [:fireworks :labels :limits]}
-   :format-label-as-code?         {:spec     ::config/format-label-as-code?
-                                   :default  false
-                                   :desc     "If a custom label is not supplied, this will pretty-print the form-to-be-printed, instead of truncating it."
-                                   :category :fireworks
-                                   :tags     [:fireworks :labels]}
-   :label-color                   {:spec     ::config/label-color
-                                   :desc     "Sets the color of the form-to-be-evaled label, or the user label, if supplied. Valid values are `:blue`, `:green`, or `:red`. All stock themes will have a preset color that is synced with the particular theme, so this option is intended to be used as an override at the call site if you have multiple printings from different places in your codebase, and you want an easy way to distinguish them from each other."
-                                   :default  nil
-                                   :category :fireworks
-                                   :tags     [:fireworks :labels :theme]}
    :margin-bottom                 {:spec     ::config/margin-bottom
                                    :default  1
                                    :category :margins
@@ -159,21 +143,50 @@
                                    :default  0
                                    :category :margins
                                    :tags     [:margins]}
-   :print-with                    {:spec     ::config/print-with
-                                   :default  nil
-                                   :desc     "A custom printing formatting / printing function can be passed at the call site. The function must ultimately call a core printing function such as `clojure.core/println`"
-                                   :category :fireworks
-                                   :tags     [:fireworks :call-site]}
    :find                          {:spec     ::config/find
                                    :default  nil
                                    :desc     "Find and highlight values in the printed output."
                                    :category :decorations
                                    :tags     [:decorations]}
+
+
+   ;; Specific to fireworks.core/? macro printing ------------------------------
+
+   :label-max-length              {:spec     ::config/label-max-length
+                                   :default  44
+                                   :desc     "Sets the max length of the form-to-be-evaled label, or the user label, if supplied."
+                                   :category :fireworks
+                                   :tags     [:fireworks :labels :limits]}
+   :format-label-as-code?         {:spec     ::config/format-label-as-code?
+                                   :default  false
+                                   :desc     "If a custom label is not supplied, this will pretty-print the form-to-be-printed, instead of truncating it."
+                                   :category :fireworks
+                                   :tags     [:fireworks :labels]}
+   :label-color                   {:spec     ::config/label-color
+                                   :desc     "Sets the color of the form-to-be-evaled label, or the user label, if supplied. Valid values are `:blue`, `:green`, or `:red`. All stock themes will have a preset color that is synced with the particular theme, so this option is intended to be used as an override at the call site if you have multiple printings from different places in your codebase, and you want an easy way to distinguish them from each other."
+                                   :default  nil
+                                   :category :fireworks
+                                   :tags     [:fireworks :labels :theme]}
+   :print-with                    {:spec     ::config/print-with
+                                   :default  nil
+                                   :desc     "A custom printing formatting / printing function can be passed at the call site. The function must ultimately call a core printing function such as `clojure.core/println`"
+                                   :category :fireworks
+                                   :tags     [:fireworks :call-site]}
    :when                          {:spec     ::config/when
                                    :default  nil
                                    :desc     "If supplied, this value should be a predicate. Will only print something if value passes predicate."
                                    :category :fireworks
                                    :tags     [:fireworks :call-site]}
+   :perf?                         {:spec     ::config/perf?
+                                   :default  false
+                                   :desc     "Rough quick-bench mean result is included below the file-info line and the form/label. Also prepends the result e.g. \"(69ns)\" to the inline result."
+                                   :category :fireworks
+                                   :tags     [:perf :fireworks]}
+   :only-inline-results?          {:spec     ::config/only-inline-results?
+                                   :default  false
+                                   :desc     "The `?` macro will short circuit after writing inline-result print representation. For silencing printing in console, if the user only wants inline results in editor."
+                                   :category :fireworks
+                                   :tags     [:inline-results :fireworks]}
    :dissoc-metadata-keys          {:spec     ::config/dissoc-metadata-keys
                                    :default  nil
                                    :category :decorations
@@ -199,19 +212,10 @@
                                    :desc     "Experimental colorization for :pp mode, which dispatches to pp/pprint"
                                    :category :decorations
                                    :tags     [:decorations]}
-   :perf?                         {:spec     ::config/perf?
-                                   :default  false
-                                   :desc     "Rough quick-bench mean result is included below the file-info line and the form/label. Also prepends the result e.g. \"(69ns)\" to the inline result."
-                                   :category :fireworks
-                                   :tags     [:perf :fireworks]}
-   :only-inline-results?          {:spec     ::config/only-inline-results?
-                                   :default  false
-                                   :desc     "The `?` macro will short circuit after writing inline-result print representation. For silencing printing in console, if the user only wants inline results in editor."
-                                   :category :fireworks
-                                   :tags     [:inline-results :fireworks]}
 
 
-   ;; Deprecated / Internal dev only
+   ;; Deprecated / Internal dev only -------------------------------------------
+
    :legacy-terminal?              {:spec           ::config/legacy-terminal?
                                    :default        false
                                    :updates-theme? true
