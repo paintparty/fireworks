@@ -11,7 +11,7 @@
 
 
 ;; Document how this works for custom types
-;; This is where badges get determined
+;; This is where badge get determined
 (defn annotation-badge
   [{:keys [t 
            og-t
@@ -51,7 +51,7 @@
                   val-is-derefable?
                   (some-> og-t name string/capitalize)
 
-                  (= t :inst)
+                  (contains? all-tags :inst )
                   defs/inst-badge
 
                   (= t :uuid)

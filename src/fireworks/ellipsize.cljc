@@ -132,10 +132,7 @@
              :nil        "nil"
              :regex      (regex-display x)
              :js/Promise "{}"
-             (if (contains? (:all-tags m) :inst)
-               (inst-str x)
-               ;; for custom js-types
-               (str x)))
+             (str x))
         s (cond 
             (= t :string)     (qv s* :string)
             (= t :regex)      (str "#" (qv s* :regex))

@@ -2,7 +2,7 @@
   (:require
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
-   [clojure.string :as string]
+   [clojure.string :as str]
    [fireworks.ellipsize :as ellipsize]
    [fireworks.order :refer [seq->sorted-map]]
    [fireworks.profile :as profile]
@@ -10,6 +10,7 @@
    [fireworks.state :as state]
    [fireworks.util :as util :refer [maybe->]]
    [lasertag.core]
+  ;;  [fireworks.pp :refer [?pp] :rename {?pp ?}]
    [lasertag.cached]))
 
 ;; The following set of cljs functions optimizes the printing of js objects.
@@ -21,11 +22,11 @@
        "Converts inline css style string to cljs map"
        [v]
        (as-> v $
-         (string/split $ #";")
+         (str/split $ #";")
          (mapv #(reduce (fn [acc x]
-                         (conj acc (string/trim x)))
+                         (conj acc (str/trim x)))
                        []
-                       (-> % string/trim (string/split #":"))) 
+                       (-> % str/trim (str/split #":"))) 
               $)
          (into {} $)))
 
@@ -44,7 +45,7 @@
                                v (.-value item)]]
                      [k
                       (cond (= k "style") (inline-style->map v)
-                            (= k "class") (vec (string/split v " "))
+                            (= k "class") (vec (str/split v " "))
                             :else         v)]))))))
 
      
@@ -92,7 +93,7 @@
      (defn- js-kv [{:keys [x uid-entry? js-map?]} acc k]
        (if (some-> k
                    (maybe-> string?)
-                   (string/starts-with? "closure_uid_"))
+                   (str/starts-with? "closure_uid_"))
          (do (vreset! uid-entry? true)
              acc)
          (conj acc
@@ -342,7 +343,7 @@
                     keys
                     (apply min))
         f  (fn [[a]] (str "\n" (subs a (inc n))))
-        s  (string/replace s re f)]
+        s  (str/replace s re f)]
     s))
 
 (defn- ml-str 
@@ -367,7 +368,7 @@
 (defn- ml-str->vec [s]
   (-> s
       ml-str
-      (string/split #"\n")
+      (str/split #"\n")
       vec))
 
 (defn- truncation-profile
@@ -534,6 +535,9 @@
                      (= x 'js/undefined))
                 (symbol "undefined")
 
+                (contains? all-tags :inst)
+                (-> x pr-str (str/replace #"^#inst " ""))
+
                 (and (:quote-symbols? @state/config)
                      (= t :symbol)
                      ;; check that is is not a js-object key such as `'a':`
@@ -564,7 +568,7 @@
      [user-meta mm*]
      (if (= "sci.lang.Type" (:classname mm*))
        (reduce-kv (fn [m k v]
-                    (if (-> k str (string/starts-with? ":sci.impl"))
+                    (if (-> k str (str/starts-with? ":sci.impl"))
                       m
                       (assoc m k v)))
                   {}

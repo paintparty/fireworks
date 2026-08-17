@@ -14,6 +14,7 @@
    [fireworks.util :as util :refer [spaces badge-type]]
    #?(:cljs [fireworks.macros :refer-macros [keyed]])
    #?(:clj [fireworks.macros :refer [keyed]])
+  ;;  [fireworks.pp :refer [?pp] :rename {?pp ?}]
    [fireworks.state :as state :refer [meta-level-inc! meta-level-dec!]]
    [fireworks.ansi :as ansi]))
 
@@ -1278,8 +1279,8 @@
    (let [truncated  (truncate/truncate {:path       []
                                         :depth      0
                                         :user-meta? user-meta?} source)
-         ;;  truncated  (path-walker truncated)
-         ;;  custom-printed truncated
+         ;; truncated  (path-walker truncated)
+         ;; custom-printed truncated
          ;; TODO - revisit this custom printing stuff
          ;; custom-printed (if (:evaled-form? opts)
          ;;                  truncated
@@ -1288,6 +1289,8 @@
          serialized (serialized profiled indent)
          ;;  len            (-> profiled meta :str-len-with-badge)
          ]
+
+    ;;  (-> profiled meta ?)
 
      ;; For adding line-based undline decor such as "^^^^"
      ;; 1) Look for specific style signature based on class like :error-highlight
@@ -1301,11 +1304,11 @@
 
 
      ;; for debugging path info
-    ;;  (walk/postwalk (fn [x]
-    ;;                     (println)
-    ;;                     (pprint (-> x meta :fw/truncated (select-keys [:og-x :path]))) x)
-    ;;                   truncated)
-
+     ;;  (walk/postwalk (fn [x]
+     ;;                     (println)
+     ;;                     (pprint (-> x meta :fw/truncated (select-keys [:og-x :path]))) x)
+     ;;                   truncated)
+     
      ;; Just for debugging
      ;;  (when (:coll-type? (meta profiled))
      ;;      (? (meta profiled)))
