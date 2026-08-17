@@ -4,6 +4,7 @@
 <sub>07-04-2026</sub>
 
 #### Changed
+
 - Quick Start project naming 
   [#142](https://github.com/paintparty/fireworks/issues/142)
 
@@ -15,10 +16,11 @@
 
 - Cleaner commentary added to deps.edn file, when extension creates a `:fireworks` alias for user (existing projects).
 
-
-
 #### Fixed
 - Error alerts when running command in a workspace when Calva has failed to activate. 
+
+- missing :extra-deps if :live-code alias is added to existing project
+  [#144](https://github.com/paintparty/fireworks/issues/142)
 
 ## 0.2.4
 <sub>07-04-2026</sub>

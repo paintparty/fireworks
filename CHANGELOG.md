@@ -20,7 +20,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 #### Fixed
 - java.util.Date printing [#144](https://github.com/paintparty/fireworks/issues/145)
-
+- Print map-entry as vector [#144]https://github.com/paintparty/fireworks/issues/130
 
 ## 0.21.3
 2026-7-04
