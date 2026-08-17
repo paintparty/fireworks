@@ -20,9 +20,6 @@
             [fireworks.basethemes :as basethemes]
             [lasertag.core :as lt :refer [tag-map tag]]))
 
-(? (java.time.ZonedDateTime/now))
-(? (atom 1))
-(? (java.util.Date.))
 
 #_(? :perf {:perfs? true} :fooo)
 
