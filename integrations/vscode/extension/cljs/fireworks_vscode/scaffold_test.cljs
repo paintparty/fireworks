@@ -53,7 +53,7 @@
  :deps {org.clojure/clojure {:mvn/version \"1.12.0\"}
         io.github.paintparty/fireworks {:mvn/version \"0.21.0\"}}
  :aliases
- {:live-code
+ {:fireworks
   {:extra-paths   [\"test\"]
    :extra-deps    {com.jakemccrary/test-refresh {:mvn/version \"0.26.0\"}}
    :override-deps {io.github.paintparty/fireworks {:local/root \"../../../../../../fireworks\"}}
@@ -61,7 +61,7 @@
    :jvm-opts      [\"-Dfireworks.elide=true\"]}}}")
 
 (deftest content-deps-strips-repo-keys
-  (testing "deps.edn :live-code loses :override-deps (repo local-root) and :jvm-opts (elide)"
+  (testing "deps.edn :fireworks loses :override-deps (repo local-root) and :jvm-opts (elide)"
     (let [out (sc/scaffold-content "deps" "my-app" "deps.edn" deps-example)]
       (is (not (str/includes? out ":override-deps")))
       (is (not (str/includes? out ":local/root")))
@@ -87,7 +87,7 @@
     (let [lein (sc/scaffold-content "lein" "my-app" "project.clj"
                                     "(defproject fireworks-lein-example \"0.1.0\"
                                        :dependencies [[io.github.paintparty/fireworks \"0.0.1\"]]
-                                       :profiles {:live-code {:plugins [[com.jakemccrary/lein-test-refresh \"0.0.1\"]]}})")]
+                                       :profiles {:fireworks {:plugins [[com.jakemccrary/lein-test-refresh \"0.0.1\"]]}})")]
       (is (str/includes? lein (str "[io.github.paintparty/fireworks \"" v/fireworks-version "\"]")))
       (is (str/includes? lein (str "[com.jakemccrary/lein-test-refresh \"" v/lein-test-refresh-version "\"]"))))))
 
@@ -102,7 +102,7 @@
 
 (deftest launch-and-open
   (testing "launch command + open file per runtime"
-    (is (= "clojure -M:live-code" (sc/launch-command "deps")))
-    (is (= "lein with-profile +live-code test-refresh" (sc/launch-command "lein")))
-    (is (= "bb live-code" (sc/launch-command "bb")))
+    (is (= "clojure -M:fireworks" (sc/launch-command "deps")))
+    (is (= "lein with-profile +fireworks test-refresh" (sc/launch-command "lein")))
+    (is (= "bb fireworks" (sc/launch-command "bb")))
     (is (= "src/my_app/core.clj" (sc/open-file "deps" "my-app")))))

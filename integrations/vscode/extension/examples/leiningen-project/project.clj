@@ -6,10 +6,10 @@
 
 
   ;; The VSCode extension command `Fireworks: Live Code` runs:
-  ;; `lein with-profile +live-code test-refresh`.
+  ;; `lein with-profile +fireworks test-refresh`.
   ;; The plugin lives in a profile (not top-level :plugins) so the extension
   ;; detects it as an eligible profile and it stays out of the default build.
-  :profiles {:live-code {:plugins [[com.jakemccrary/lein-test-refresh "0.26.0"]]}
+  :profiles {:fireworks {:plugins [[com.jakemccrary/lein-test-refresh "0.26.0"]]}
 
              ;; Strips Fireworks taps from release builds. Elision is a
              ;; macroexpansion-time flag, so it must be set on the JVM that

@@ -15,7 +15,7 @@
 (def fireworks-sym "io.github.paintparty/fireworks")
 (def fireworks-version "0.21.3")
 
-;; test-refresh (the Clojure CLI / deps.edn artifact) — lives on the live-code alias classpath.
+;; test-refresh (the Clojure CLI / deps.edn artifact) — lives on the fireworks alias classpath.
 (def test-refresh-sym "com.jakemccrary/test-refresh")
 (def test-refresh-version "0.26.0")
 

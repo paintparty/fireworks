@@ -4,7 +4,7 @@
    discipline as the other fireworks-vscode namespaces: no VS Code, no Calva, no file I/O —
    text in, data (or new text) out. Reading: alias names + whether an alias's classpath carries
    test-refresh/Fireworks + what its :main-opts do. Editing (all additive, prompt-then-write on
-   the TS side, mirroring the Leiningen project.clj flow): add a fresh :live-code alias — Fireworks
+   the TS side, mirroring the Leiningen project.clj flow): add a fresh :fireworks alias — Fireworks
    into the top-level :deps, test-refresh into the alias's :extra-deps — never touching an existing
    alias. On unparseable input a reader returns nil and the editor returns {:error :unparseable},
    so TS can abort cleanly."
@@ -89,16 +89,31 @@
 ;; --- additive editors (prompt-then-write on the TS side) ------------------
 
 (defn- unique-alias-name
-  "\"live-code\" unless that alias already exists, else \"fireworks-live-code\"."
+  "\"fireworks\" unless that alias already exists, else \"fireworks-live-code\"."
   [existing-names]
-  (if (contains? existing-names "live-code") "fireworks-live-code" "live-code"))
+  (if (contains? existing-names "fireworks") "fireworks-live-code" "fireworks"))
+
+(defn- merged-extra-paths
+  "An existing :test alias's :extra-paths plus \"test\", deduped, existing entries kept first."
+  [test-alias]
+  (vec (distinct (conj (vec (:extra-paths test-alias)) "test"))))
+
+(defn- merged-extra-deps
+  "An existing :test alias's :extra-deps with the test-refresh coordinate folded in (the pinned
+   default wins on key collision, so the alias always gets a working test-refresh version)."
+  [test-alias]
+  (merge (:extra-deps test-alias) {test-refresh-sym {:mvn/version test-refresh-version}}))
 
 ;; The alias body as a multi-line source string (test-refresh in :extra-deps; Fireworks is a project
 ;; dep). Written with newlines between entries so the appended alias isn't a single flat line — the
-;; final cljfmt pass then aligns the indentation. Kept in step with examples/deps-project.
-(def ^:private alias-body-str
-  (str "{:extra-paths [\"test\"]\n"
-       ":extra-deps {" test-refresh-sym " {:mvn/version \"" test-refresh-version "\"}}\n"
+;; final cljfmt pass then aligns the indentation. When the project already has a :test alias, its
+;; :extra-paths / :extra-deps are carried over (test-refresh added on top) so the fireworks alias
+;; sees the same test classpath; otherwise this falls back to ["test"] + test-refresh alone, kept
+;; in step with examples/deps-project.
+(defn- alias-body-str
+  [test-alias]
+  (str "{:extra-paths " (pr-str (merged-extra-paths test-alias)) "\n"
+       ":extra-deps " (pr-str (merged-extra-deps test-alias)) "\n"
        ":main-opts [\"-m\" \"" test-refresh-main "\"]}"))
 
 (defn- append-nl
@@ -148,36 +163,31 @@
       {:text (append-fireworks-plain text) :changed true})
     (catch :default _ {:error :unparseable})))
 
-;; The live-code alias documentation block, placed between the :aliases keyword and its map value.
-;; `%A%` is the actual alias name (live-code, or fireworks-live-code on collision). Each non-blank
-;; line is indented two spaces at emit time. When an alias is added this block carries the elide
-;; guidance, so the Fireworks coordinate in :deps is left plain (no comment).
+;; The fireworks alias documentation block, appended at the very end of the file (top-level, not
+;; indented). `%A%` is the actual alias name (fireworks, or fireworks-live-code on collision). When
+;; an alias is added this block carries the elide guidance, so the Fireworks coordinate in :deps is
+;; left plain (no comment).
 (def ^:private alias-comment-template
-  [";; Example :%A% alias, which is added by the Fireworks VSCode extension."
+  [";; The :%A% alias (and this commentary) was added by Fireworks (A VSCode extension)."
    ""
    ";; The extension command `Fireworks: Live Code`, with `Integrated Terminal`"
    ";; selected will run: `clojure -M:%A%`."
-   ""
    ";; Or, in your preferred external terminal: `clojure -M:%A%`"
    ""
    ";; The `test-refresh` lib watches `src/` + `test/`, reloads on save,"
    ";; re-runs top-level `fireworks.core/?` forms) and (optionally) runs tests."
    ""
-   ";; Scoped to this alias so the dev tool stays out of the project's normal"
-   ";; dependency set."
-   ""
-   ";; Elide Fireworks for non-dev builds -> {:jvm-opts [\"-Dfireworks.elide=true\"]}"
-   ";; Separate AOT/uberjar build should also elide it this way."])
+   ";; To elide fireworks for non-dev builds -> {:jvm-opts [\"-Dfireworks.elide=true\"]}"
+   ";; This elision will expand calls to the `fireworks.core/?` macro to the value (no runtime printing)."])
 
 (defn- alias-comment-block
-  "The comment block as emit-ready lines (2-space indent, blank lines kept blank, `%A%` -> `alias`)."
+  "The comment block as emit-ready lines, `%A%` -> `alias`."
   [alias]
-  (mapv #(if (= % "") "" (str "  " (str/replace % "%A%" alias))) alias-comment-template))
+  (mapv #(str/replace % "%A%" alias) alias-comment-template))
 
 (defn- force-aliases-newline
   "Ensure the :aliases keyword and its map value are on separate lines (idempotent — a no-op when
-   they already are), so cljfmt indents the map under a `{` at column 2 and insert-alias-comment-block
-   can splice the block after a standalone `:aliases` line. Compares the key/value rows."
+   they already are), so cljfmt indents the map under a `{` at column 2. Compares the key/value rows."
   [text]
   (let [root (z/of-string text {:track-position? true})
         valz (z/get root :aliases)]
@@ -187,43 +197,38 @@
             vrow (first (z/position valz))]
         (if (> vrow krow) text (z/root-string (z/insert-newline-left valz)))))))
 
-(defn- insert-alias-comment-block
-  "Splice the alias comment block into cljfmt'd deps.edn `text`, right after the `:aliases` line (i.e.
-   between the :aliases keyword and its `{` map value). Line-based: cljfmt won't re-indent comments,
-   so we place them ourselves after the final cljfmt pass. Relies on force-aliases-newline having put
-   :aliases on its own line. No-op if that line isn't found."
+(defn- append-alias-comment-block
+  "Append the alias comment block to the end of cljfmt'd deps.edn `text`, separated by a blank
+   line, so it lands after the closing brace of the top-level map rather than inline with it."
   [text alias]
-  (let [lines (vec (str/split text #"\n" -1))
-        idx   (first (keep-indexed (fn [i l] (when (re-find #":aliases\s*$" l) i)) lines))]
-    (if (nil? idx)
-      text
-      (str/join "\n" (concat (subvec lines 0 (inc idx))
-                             (alias-comment-block alias)
-                             (subvec lines (inc idx)))))))
+  (str (str/trimr text) "\n\n" (str/join "\n" (alias-comment-block alias)) "\n"))
 
 (defn add-live-code-alias
   "Add a live-coding alias to deps.edn `text`, the canonical wiring from examples/deps-project:
    Fireworks into the top-level :deps (plain, no comment — the alias block below carries the elide
    guidance) and a new alias {:extra-paths [\"test\"] :extra-deps {test-refresh …} :main-opts [\"-m\" …]}
    into :aliases (test-refresh lives in the alias, Fireworks is a project dep), documented by a
-   comment block placed between the :aliases keyword and its map. Creates the :aliases map if absent,
+   comment block appended at the end of the file. When the project already has a
+   :test alias, its :extra-paths / :extra-deps are carried over into the new alias (test-refresh
+   added on top) so the watcher shares the same test classpath. Creates the :aliases map if absent,
    appends when present — existing aliases are never touched. cljfmt aligns the code; comments are
-   placed after. Names it :live-code, or :fireworks-live-code if :live-code is taken.
+   placed after. Names it :fireworks, or :fireworks-live-code if :fireworks is taken.
    Returns {:text new-text :alias name :changed true}, or {:error :unparseable}."
   [text]
   (try
-    (let [text'    (if (fireworks-present? text) text (append-fireworks-plain text))
-          root     (z/of-string text')
-          az       (z/get root :aliases)
-          existing (if az (set (map alias->str (keys (z/sexpr az)))) #{})
-          name     (unique-alias-name existing)
-          kw       (keyword name)
-          body     (z/node (z/of-string alias-body-str))
-          root'    (if az
-                     (append-nl az kw body true)
-                     (append-nl root :aliases
-                                (z/node (z/of-string (str "{" kw "\n" alias-body-str "}")))
-                                false))
-          text2    (reformat (force-aliases-newline (z/root-string root')))]
-      {:text (insert-alias-comment-block text2 name) :alias name :changed true})
+    (let [text'      (if (fireworks-present? text) text (append-fireworks-plain text))
+          root       (z/of-string text')
+          az         (z/get root :aliases)
+          existing   (if az (set (map alias->str (keys (z/sexpr az)))) #{})
+          name       (unique-alias-name existing)
+          kw         (keyword name)
+          test-alias (when az (get (z/sexpr az) :test))
+          body       (z/node (z/of-string (alias-body-str test-alias)))
+          root'      (if az
+                       (append-nl az kw body true)
+                       (append-nl root :aliases
+                                  (z/node (z/of-string (str "{" kw "\n" (alias-body-str test-alias) "}")))
+                                  false))
+          text2      (reformat (force-aliases-newline (z/root-string root')))]
+      {:text (append-alias-comment-block text2 name) :alias name :changed true})
     (catch :default _ {:error :unparseable})))

@@ -106,7 +106,7 @@
            :hasFireworks   (:has-fireworks r)
            :mainOpts       (:main-opts r)})))
 
-;; Add a fresh :live-code alias to deps.edn `text`: Fireworks into the top-level :deps, test-refresh
+;; Add a fresh :fireworks alias to deps.edn `text`: Fireworks into the top-level :deps, test-refresh
 ;; + :main-opts into the alias. #js {:text ... :alias name :changed bool} on success;
 ;; #js {:error "unparseable"} on a parse error.
 (defn deps-add-live-code-alias [text]
@@ -196,7 +196,7 @@
   (let [r (lein/ensure-fireworks text)]
     (if (error? r) (err->js r) #js {:text (:text r) :changed (:changed r)})))
 
-;; Add a fresh :live-code profile (carrying lein-test-refresh) to project.clj `text` — spliced with
+;; Add a fresh :fireworks profile (carrying lein-test-refresh) to project.clj `text` — spliced with
 ;; a comment header when the project has no :profiles, else assoc'd (:fireworks-live-code on a name
 ;; collision), never rewriting an existing profile. #js {:text ... :profile name :changed bool} on
 ;; success; #js {:error "unparseable"} on a parse error.

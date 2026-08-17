@@ -138,7 +138,7 @@ export function depsAliasStatus(text: string, alias: string): AliasDepsStatus;
 
 export interface AddAliasResult {
   text?: string; // new deps.edn text on success
-  alias?: string; // the alias name added ("live-code", or "fireworks-live-code" if taken)
+  alias?: string; // the alias name added ("fireworks", or "fireworks-live-code" if taken)
   changed?: boolean;
   error?: string; // "unparseable"
 }
@@ -146,7 +146,7 @@ export interface AddAliasResult {
 // Add a fresh live-coding alias: Fireworks into the top-level :deps (appended, or a :deps map
 // created if absent — skipped when already present), test-refresh + :main-opts + :extra-paths into a
 // new :aliases entry. Creates the :aliases map if absent; existing aliases are never touched. Names
-// it :live-code, or :fireworks-live-code if taken. Additive; prompt-then-write.
+// it :fireworks, or :fireworks-live-code if taken. Additive; prompt-then-write.
 export function depsAddLiveCodeAlias(text: string): AddAliasResult;
 
 export interface EnsureFireworksResult {
@@ -232,7 +232,7 @@ export function toggleMode(text: string): ToggleModeResult;
 // name) whose :plugins carries exactly [com.jakemccrary/lein-test-refresh "0.26.0"]; the
 // watcher then runs `lein with-profile +<profile> test-refresh`. Mirroring the deps.edn flow,
 // the extension may additively edit project.clj (picker-consented, no modal): add a fresh
-// :live-code profile, ensure the top-level :test-refresh map, and patch in the Fireworks dep.
+// :fireworks profile, ensure the top-level :test-refresh map, and patch in the Fireworks dep.
 
 export interface LeinProfilesResult {
   all?: string[]; // every profile name in :profiles order (colon dropped)
@@ -266,12 +266,12 @@ export function leinEnsureFireworks(text: string): ChangedTextResult;
 
 export interface AddProfileResult {
   text?: string; // new project.clj text on success
-  profile?: string; // the profile added ("live-code", or "fireworks-live-code" on collision)
+  profile?: string; // the profile added ("fireworks", or "fireworks-live-code" on collision)
   changed?: boolean; // always true on success
   error?: string;
 }
 
-// Add a fresh :live-code profile carrying lein-test-refresh (the eligible-profile shape), never
+// Add a fresh :fireworks profile carrying lein-test-refresh (the eligible-profile shape), never
 // rewriting a profile the user already has: spliced with a comment header when the project has no
 // :profiles, else assoc'd into the existing map. Mirrors depsAddLiveCodeAlias on the deps side.
 export function leinAddLiveCodeProfile(text: string): AddProfileResult;
@@ -318,7 +318,7 @@ export function scaffoldPath(kind: string, name: string, relPath: string): strin
 
 // The text to write for an example-tree file, with the project name substituted: example.core →
 // <ns>.core everywhere; the Leiningen artifact fireworks-lein-example → name in project.clj; and
-// the deps.edn :live-code alias stripped of :override-deps (repo-local :local/root) and :jvm-opts
+// the deps.edn :fireworks alias stripped of :override-deps (repo-local :local/root) and :jvm-opts
 // (elide flag) so a user project runs against the published Fireworks and shows `?` output.
 export function scaffoldContent(kind: string, name: string, relPath: string, content: string): string;
 
@@ -326,8 +326,8 @@ export function scaffoldContent(kind: string, name: string, relPath: string, con
 // plus one Fireworks inline-result idiom).
 export function scaffoldGitignore(): string;
 
-// The Live Code watcher command auto-run after scaffolding: "clojure -M:live-code" (deps),
-// "lein with-profile +live-code test-refresh" (lein), "bb live-code" (bb).
+// The Live Code watcher command auto-run after scaffolding: "clojure -M:fireworks" (deps),
+// "lein with-profile +fireworks test-refresh" (lein), "bb fireworks" (bb).
 export function scaffoldLaunch(kind: string): string;
 
 // The relative path of the source file to open after scaffolding (src/<munged>/core.clj).

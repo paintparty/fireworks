@@ -64,11 +64,11 @@
 ;; --- Content rules --------------------------------------------------------
 
 (defn- strip-live-code-key
-  "Structurally remove key `k` (and its value) from the :live-code alias in deps.edn `text`,
+  "Structurally remove key `k` (and its value) from the :fireworks alias in deps.edn `text`,
    preserving the surrounding formatting and comments. No-op when the key (or alias) is absent."
   [text k]
   (let [root (z/of-string text)
-        az   (some-> root (z/get :aliases) (z/get :live-code))
+        az   (some-> root (z/get :aliases) (z/get :fireworks))
         vz   (when az (z/get az k))]
     (if vz
       ;; remove the value node, which repositions on the key, then remove the key node;
@@ -100,7 +100,7 @@
    - project.clj: the Leiningen artifact `fireworks-lein-example` -> `name`.
    - deps.edn: drop the `:override-deps` (in-repo Fireworks :local/root — must not leak to a user
      project; the published Fireworks is already in the top-level :deps) and `:jvm-opts` (elide flag
-     — would hide `?` output during a live-coding session) keys from the :live-code alias."
+     — would hide `?` output during a live-coding session) keys from the :fireworks alias."
   [_kind name rel-path content]
   (let [ns (project-ns name)
         base (-> content
@@ -164,9 +164,9 @@
   "The Live Code watcher command auto-run after scaffolding a `kind` project."
   [kind]
   (case kind
-    "deps" "clojure -M:live-code"
-    "lein" "lein with-profile +live-code test-refresh"
-    "bb"   "bb live-code"
+    "deps" "clojure -M:fireworks"
+    "lein" "lein with-profile +fireworks test-refresh"
+    "bb"   "bb fireworks"
     nil))
 
 (defn open-file

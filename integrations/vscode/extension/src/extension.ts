@@ -310,10 +310,25 @@ function isVimActive(): boolean {
   return !!vscode.extensions.getExtension('vscodevim.vim')?.isActive;
 }
 
-async function runToggle(variant: '?' | '?>' | '#_'): Promise<void> {
+// Editor commands (toggle/edit/require) all need an active Clojure editor. Invoked via the
+// keybinding this is unreachable (its `when` clause already requires one); invoked from the
+// Command Palette with no matching editor it isn't, so surface a modal instead of a silent no-op.
+function requireClojureEditor(): vscode.TextEditor | undefined {
   const editor = vscode.window.activeTextEditor;
-  if (!editor || editor.document.languageId !== 'clojure') {
-    return; // silent no-op
+  if (editor && editor.document.languageId === 'clojure') {
+    return editor;
+  }
+  void vscode.window.showInformationMessage(
+    'Fireworks: open a Clojure file to run this command.',
+    { modal: true },
+  );
+  return undefined;
+}
+
+async function runToggle(variant: '?' | '?>' | '#_'): Promise<void> {
+  const editor = requireClojureEditor();
+  if (!editor) {
+    return;
   }
 
   try {
@@ -404,9 +419,9 @@ type OptionPick = vscode.QuickPickItem & { option?: string | null };
 // strip it) on the wrapped form at the cursor. Same selectCurrentForm + apply flow as
 // runToggle; the pure side handles wrap/replace/remove and the bare-form wrap-then-add.
 async function runWithOption(): Promise<void> {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor || editor.document.languageId !== 'clojure') {
-    return; // silent no-op
+  const editor = requireClojureEditor();
+  if (!editor) {
+    return;
   }
 
   try {
@@ -461,9 +476,9 @@ type FlagToggle = (opts: FlagOpts) => EditPlan | null;
 // flow as runToggle/runWithOption; `toggle` is the pure per-flag function. No picker —
 // each flag has its own command.
 async function runToggleFlag(toggle: FlagToggle, label: string): Promise<void> {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor || editor.document.languageId !== 'clojure') {
-    return; // silent no-op
+  const editor = requireClojureEditor();
+  if (!editor) {
+    return;
   }
 
   try {
@@ -502,9 +517,9 @@ type RegionEdit = (opts: UnwrapAllOpts) => EditPlan | null;
 // is none (like the other toggle commands), then run `transform` and apply its plan.
 // Shared by the "… in Form" bulk commands.
 async function runFormEdit(transform: RegionEdit, label: string): Promise<void> {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor || editor.document.languageId !== 'clojure') {
-    return; // silent no-op
+  const editor = requireClojureEditor();
+  if (!editor) {
+    return;
   }
 
   // Remember the caret/selection before selectCurrentForm, so a no-op restores it (rather than
@@ -553,9 +568,9 @@ async function runFormEdit(transform: RegionEdit, label: string): Promise<void> 
 // no Calva — the pure side cheaply pre-checks for any wrap and no-ops a wrap-free file
 // without parsing. The reformat pass then realigns the replaced region (here, the file).
 async function runNsEdit(transform: RegionEdit, label: string): Promise<void> {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor || editor.document.languageId !== 'clojure') {
-    return; // silent no-op
+  const editor = requireClojureEditor();
+  if (!editor) {
+    return;
   }
   const doc = editor.document;
   const end = doc.lineAt(doc.lineCount - 1).range.end;
@@ -657,9 +672,9 @@ function endOfInsert(start: { line: number; col: number }, text: string): vscode
 // ns form (or null: no ns form, already required, or unparseable). No selection,
 // cursor move, or Calva format needed.
 async function runAddRequire(): Promise<void> {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor || editor.document.languageId !== 'clojure') {
-    return; // silent no-op
+  const editor = requireClojureEditor();
+  if (!editor) {
+    return;
   }
 
   let plan: RequireEdit | null;
@@ -1296,7 +1311,7 @@ function guidanceDoc(
         ].join('\n'),
       };
     case 'deps-alias-deps': {
-      const alias = params?.get('alias') ?? 'live-code';
+      const alias = params?.get('alias') ?? 'fireworks';
       const missing = params?.get('missing') ?? 'test-refresh and Fireworks';
       return {
         title: 'Fireworks deps.edn alias dependencies',
@@ -1738,7 +1753,7 @@ function allocateEven(lengths: number[], budget: number): number[] {
 // that project's own config: a deps.edn alias (`clojure -M:<alias>`), a bb.edn task
 // (`bb <task>`), or a Leiningen profile carrying lein-test-refresh
 // (`lein with-profile +<profile> test-refresh`). deps and lein may additively edit their build
-// file (picker-driven, no modal — the pick is the consent): a fresh :live-code alias/profile and
+// file (picker-driven, no modal — the pick is the consent): a fresh :fireworks alias/profile and
 // the Fireworks dep, never rewriting the user's own alias/profile. bb writes only the watcher seed.
 // ============================================================================
 
@@ -2197,7 +2212,7 @@ async function resolveWatcherCommand(root: string): Promise<WatcherPlan | undefi
 // The alias must put BOTH test-refresh and Fireworks on the `-M` classpath AND run test-refresh via
 // :main-opts, or the launch fails (no test-refresh → can't locate the main ns; no Fireworks → any ns
 // that requires fireworks.core or uses `?` fails to reload). When no alias qualifies, the picker
-// offers — additively, no modal (the pick is the consent) — to add a fresh :live-code alias
+// offers — additively, no modal (the pick is the consent) — to add a fresh :fireworks alias
 // (Fireworks into the top-level :deps, test-refresh into the alias). We never rewrite the user's own
 // alias. Mirrors the Leiningen project.clj flow: the user still owns deps.edn; we only ever add.
 async function resolveDepsCommand(root: string): Promise<WatcherPlan | undefined> {
@@ -2252,20 +2267,20 @@ async function resolveDepsCommand(root: string): Promise<WatcherPlan | undefined
     return finishDepsPlan(root, alias);
   }
 
-  // No eligible alias → offer to add a fresh :live-code alias to the local deps.edn. When a valid
+  // No eligible alias → offer to add a fresh :fireworks alias to the local deps.edn. When a valid
   // global setup exists (an eligible alias in ~/.clojure/deps.edn AND a global ~/.test-refresh.edn),
   // also offer to run straight from it — zero project edits. Selecting from the picker is the consent
   // (no modal), mirroring the Leiningen project.clj flow.
   const globalPlan = tryDepsGlobalPlan(root);
   type AddItem = vscode.QuickPickItem & { global?: boolean };
-  const items: AddItem[] = [{ label: 'Setup a :live-code alias, in your local deps.edn' }];
+  const items: AddItem[] = [{ label: 'Setup a :fireworks alias, in your local deps.edn' }];
   if (globalPlan) {
     items.push({ label: 'Run from your global ~/.clojure/deps.edn', global: true });
   }
   diagStep(
     globalPlan
-      ? 'No eligible alias → offer a local :live-code alias or the valid global deps.edn alias.'
-      : 'No eligible alias → offer to add a :live-code alias.',
+      ? 'No eligible alias → offer a local :fireworks alias or the valid global deps.edn alias.'
+      : 'No eligible alias → offer to add a :fireworks alias.',
   );
   const pick = await vscode.window.showQuickPick(items, {
     placeHolder: 'No eligible alias in deps.edn',
@@ -2279,7 +2294,7 @@ async function resolveDepsCommand(root: string): Promise<WatcherPlan | undefined
     diagStep('User chose to run from the global ~/.clojure/deps.edn alias.');
     return globalPlan;
   }
-  diagStep('User chose to add a :live-code alias → write the deps.edn edit.');
+  diagStep('User chose to add a :fireworks alias → write the deps.edn edit.');
   const created = createLiveCodeAlias(depsPath, text);
   return created ? finishDepsPlan(root, created) : undefined;
 }
@@ -2347,8 +2362,8 @@ function finishDepsPlan(root: string, alias: string): WatcherPlan {
   return { command: aliasCommand(alias), testRefresh };
 }
 
-// Add a self-contained :live-code alias to deps.edn (+ top-level Fireworks with the elide comment).
-// No modal — the user chose "Add a :live-code alias" from the picker. Returns the alias name to run
+// Add a self-contained :fireworks alias to deps.edn (+ top-level Fireworks with the elide comment).
+// No modal — the user chose "Add a :fireworks alias" from the picker. Returns the alias name to run
 // on success, undefined on an edit/write failure.
 function createLiveCodeAlias(depsPath: string, text: string): string | undefined {
   const r = cljsLib.depsAddLiveCodeAlias(text);
@@ -2378,8 +2393,8 @@ function writeDepsEdn(depsPath: string, text: string): boolean {
 
 // --- Leiningen launch resolution ------------------------------------------
 // Mirrors the deps.edn flow: picker-driven, no confirm modal — selecting a profile (or the
-// "add a :live-code profile" choice) is the consent. The Leiningen flow may additively edit the
-// user's project.clj (rewrite-clj preserves formatting/comments): add a fresh :live-code profile,
+// "add a :fireworks profile" choice) is the consent. The Leiningen flow may additively edit the
+// user's project.clj (rewrite-clj preserves formatting/comments): add a fresh :fireworks profile,
 // ensure the top-level :test-refresh map, and patch in the Fireworks dependency. It never rewrites
 // a profile the user already has. Eligibility: a :profiles entry whose :plugins carries exactly
 // [com.jakemccrary/lein-test-refresh "0.26.0"].
@@ -2448,9 +2463,9 @@ function tryLeinGlobalUserPlan(): WatcherPlan | undefined {
   return undefined;
 }
 
-// Additively add a fresh :live-code profile (carrying lein-test-refresh), then patch in Fireworks +
+// Additively add a fresh :fireworks profile (carrying lein-test-refresh), then patch in Fireworks +
 // :test-refresh, in one write. No modal — the picker choice was the consent, mirroring the deps.edn
-// "Add a :live-code alias" path. Returns the plan, or undefined on an edit/write failure.
+// "Add a :fireworks alias" path. Returns the plan, or undefined on an edit/write failure.
 function addLeinLiveCodeProfile(projectCljPath: string, text: string): WatcherPlan | undefined {
   const added = cljsLib.leinAddLiveCodeProfile(text);
   if (added.error || added.text === undefined || !added.profile) {
@@ -2514,22 +2529,22 @@ async function resolveLeinCommand(root: string): Promise<WatcherPlan | undefined
     return { command: leinCommand(profile) };
   }
 
-  // No eligible profile → offer to add a fresh :live-code profile to the local project.clj. When a
+  // No eligible profile → offer to add a fresh :fireworks profile to the local project.clj. When a
   // valid global ~/.lein/profiles.clj :user profile exists (plugin + :test-refresh, which auto-merges
   // into every task), also offer to run straight from it — zero project edits. Selecting from the
-  // picker is the consent (no modal), mirroring the deps.edn "Add a :live-code alias" choice.
+  // picker is the consent (no modal), mirroring the deps.edn "Add a :fireworks alias" choice.
   const globalPlan = tryLeinGlobalUserPlan();
   type LeinChoice = vscode.QuickPickItem & { global?: boolean };
   const items: LeinChoice[] = [
-    { label: 'Setup a :live-code profile, in your local project.clj' },
+    { label: 'Setup a :fireworks profile, in your local project.clj' },
   ];
   if (globalPlan) {
     items.push({ label: 'Run from your global ~/.lein/profiles.clj', global: true });
   }
   diagStep(
     globalPlan
-      ? 'No eligible profile → offer a local :live-code profile or the valid global :user profile.'
-      : 'No eligible profile → offer to add a :live-code profile.',
+      ? 'No eligible profile → offer a local :fireworks profile or the valid global :user profile.'
+      : 'No eligible profile → offer to add a :fireworks profile.',
   );
   const pick = await vscode.window.showQuickPick(items, {
     placeHolder: 'No eligible profile in project.clj',
@@ -2542,7 +2557,7 @@ async function resolveLeinCommand(root: string): Promise<WatcherPlan | undefined
     diagStep('User chose to run from the global ~/.lein/profiles.clj :user profile.');
     return globalPlan;
   }
-  diagStep('User chose to add a :live-code profile → write the project.clj edit.');
+  diagStep('User chose to add a :fireworks profile → write the project.clj edit.');
   return addLeinLiveCodeProfile(projectCljPath, text);
 }
 
@@ -2785,7 +2800,7 @@ async function createProject(): Promise<void> {
 
     const openPick = await vscode.window.showQuickPick(
       [
-        { label: 'Add to workspace', desc: 'Adds folder to this workspace', value: 'add' as const },
+        { label: 'Add to existing workspace', desc: 'Adds folder to this workspace', value: 'add' as const },
         { label: 'Same window', desc: 'Creates a new workspace in this window', value: 'same' as const },
         { label: 'New window', desc: 'Creates a new workspace in a new window', value: 'new' as const },
       ],

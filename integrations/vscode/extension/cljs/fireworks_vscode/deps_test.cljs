@@ -98,16 +98,16 @@
 ;; --- additive editors -----------------------------------------------------
 
 (deftest add-live-code-alias-fresh
-  (testing "Fireworks appended to top-level :deps, test-refresh into a new :live-code alias"
+  (testing "Fireworks appended to top-level :deps, test-refresh into a new :fireworks alias"
     (let [{:keys [text alias changed]}
           (deps/add-live-code-alias "{:paths [\"src\"] :deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}}")]
-      (is (= "live-code" alias))
+      (is (= "fireworks" alias))
       (is (true? changed))
       ;; Fireworks lives in the project :deps, not the alias :extra-deps
       (is (str/includes? text "io.github.paintparty/fireworks"))
       ;; the written alias must itself pass the readiness checks
       (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
-             (deps/alias-deps-status text "live-code"))))))
+             (deps/alias-deps-status text "fireworks"))))))
 
 (deftest add-live-code-alias-formatted
   (testing "the appended alias is cljfmt'd multi-line, not a single flat line, and comments survive"
@@ -126,7 +126,7 @@
     (let [{:keys [text]} (deps/add-live-code-alias "{:paths [\"src\"]}")]
       (is (str/includes? text "io.github.paintparty/fireworks"))
       (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
-             (deps/alias-deps-status text "live-code"))))))
+             (deps/alias-deps-status text "fireworks"))))))
 
 (deftest add-live-code-alias-fireworks-already-top-level
   (testing "Fireworks already a top-level dep -> not duplicated, alias still added"
@@ -135,36 +135,67 @@
       ;; only one Fireworks coordinate in the result
       (is (= 1 (count (re-seq #"io\.github\.paintparty/fireworks" text))))
       (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
-             (deps/alias-deps-status text "live-code"))))))
+             (deps/alias-deps-status text "fireworks"))))))
 
 (deftest add-live-code-alias-name-collision
-  (testing ":live-code taken -> :fireworks-live-code, original alias untouched, block parameterized"
+  (testing ":fireworks taken -> :fireworks-live-code, original alias untouched, block parameterized"
     (let [{:keys [text alias]}
-          (deps/add-live-code-alias "{:aliases {:live-code {:main-opts [\"-m\" \"whatever\"]}}}")]
+          (deps/add-live-code-alias "{:aliases {:fireworks {:main-opts [\"-m\" \"whatever\"]}}}")]
       (is (= "fireworks-live-code" alias))
-      ;; the user's :live-code alias is left exactly as it was
-      (is (str/includes? text ":live-code {:main-opts [\"-m\" \"whatever\"]}"))
+      ;; the user's :fireworks alias is left exactly as it was
+      (is (str/includes? text ":fireworks {:main-opts [\"-m\" \"whatever\"]}"))
       ;; the comment block names the actual alias
-      (is (str/includes? text ";; Example :fireworks-live-code alias"))
+      (is (str/includes? text ";; The :fireworks-live-code alias"))
       (is (str/includes? text "`clojure -M:fireworks-live-code`"))
       (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
              (deps/alias-deps-status text "fireworks-live-code"))))))
 
 (deftest add-live-code-alias-comment-block
-  (testing "the alias comment block sits between :aliases and its map; :deps gets no elide comment"
+  (testing "the alias comment block is appended at the end of the file; :deps gets no elide comment"
     (let [{:keys [text]}
           (deps/add-live-code-alias "{:paths [\"src\"] :deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}}")
           lines (vec (str/split-lines text))
-          al-i  (first (keep-indexed (fn [i l] (when (re-find #":aliases\s*$" l) i)) lines))
           fw-i  (first (keep-indexed (fn [i l] (when (str/includes? l "io.github.paintparty/fireworks") i)) lines))]
       ;; the block, with its own elide guidance, is present
-      (is (str/includes? text ";; Example :live-code alias, which is added by the Fireworks VSCode extension."))
-      (is (str/includes? text ";; Elide Fireworks for non-dev builds -> {:jvm-opts [\"-Dfireworks.elide=true\"]}"))
-      ;; block comes right after the :aliases line (between :aliases and its {)
-      (is (str/includes? (nth lines (inc al-i)) ";; Example :live-code alias"))
+      (is (str/includes? text ";; The :fireworks alias (and this commentary) was added by Fireworks (A VSCode extension)."))
+      (is (str/includes? text ";; To elide fireworks for non-dev builds -> {:jvm-opts [\"-Dfireworks.elide=true\"]}"))
+      ;; block is the tail of the file, not spliced between :aliases and its {
+      (is (str/ends-with? (str/trimr text)
+                           ";; This elision will expand calls to the `fireworks.core/?` macro to the value (no runtime printing)."))
       ;; the :deps coordinate is plain — no elide comment on the line above it
       (is (not (str/includes? (nth lines (dec fw-i)) ";; Elide")))
       (is (not (str/includes? text ";; Elide Fireworks for non-dev builds with"))))))
+
+(deftest add-live-code-alias-borrows-test-alias-extra-paths
+  (testing "an existing :test alias's :extra-paths are carried into the new :fireworks alias"
+    (let [{:keys [text]}
+          (deps/add-live-code-alias
+           "{:deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}
+             :aliases {:test {:extra-paths [\"test\" \"resources\"]}}}")]
+      (is (str/includes? text "[\"test\" \"resources\"]"))
+      ;; the :test alias itself is untouched
+      (is (str/includes? text ":test {:extra-paths [\"test\" \"resources\"]}"))
+      (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
+             (deps/alias-deps-status text "fireworks"))))))
+
+(deftest add-live-code-alias-borrows-test-alias-extra-deps
+  (testing "an existing :test alias's :extra-deps are merged into the new alias, alongside test-refresh"
+    (let [{:keys [text]}
+          (deps/add-live-code-alias
+           "{:deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}
+             :aliases {:test {:extra-deps {lambdaisland/kaocha {:mvn/version \"1.87.1366\"}}}}}")]
+      (is (str/includes? text "lambdaisland/kaocha"))
+      (is (str/includes? text "com.jakemccrary/test-refresh"))
+      (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
+             (deps/alias-deps-status text "fireworks"))))))
+
+(deftest add-live-code-alias-no-test-alias-falls-back
+  (testing "no :test alias -> the default [\"test\"] + test-refresh-only body"
+    (let [{:keys [text]}
+          (deps/add-live-code-alias "{:deps {org.clojure/clojure {:mvn/version \"1.12.0\"}}}")]
+      (is (str/includes? text "[\"test\"]"))
+      (is (= {:has-test-refresh true :has-fireworks true :main-opts "test-refresh"}
+             (deps/alias-deps-status text "fireworks"))))))
 
 ;; --- ensure-fireworks (standalone deps patch, no alias) -------------------
 

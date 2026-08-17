@@ -161,26 +161,26 @@
          :changed true}))
     (catch :default _ {:error :unparseable})))
 
-;; --- :live-code profile (additive, picker-consented on the TS side) -------
+;; --- :fireworks profile (additive, picker-consented on the TS side) -------
 
 (def ^:private live-code-profile-block
   "The commented :profiles block add-live-code-profile splices when a project.clj has no :profiles.
-   Mirrors examples/leiningen-project: a dedicated :live-code profile carrying exactly the
+   Mirrors examples/leiningen-project: a dedicated :fireworks profile carrying exactly the
    lein-test-refresh plugin (kept out of the default build), documented by the comment header.
    Parsed and inserted verbatim so the comments/alignment survive. The map value mirrors `coordinate`."
   "
   ;; The VSCode extension command `Fireworks: Live Code` runs:
-  ;; `lein with-profile +live-code test-refresh`.
+  ;; `lein with-profile +fireworks test-refresh`.
   ;; The plugin lives in a profile (not top-level :plugins) so the extension
   ;; detects it as an eligible profile and it stays out of the default build.
-  :profiles {:live-code {:plugins [[com.jakemccrary/lein-test-refresh \"0.26.0\"]]}}")
+  :profiles {:fireworks {:plugins [[com.jakemccrary/lein-test-refresh \"0.26.0\"]]}}")
 
 (defn add-live-code-profile
   "Add a fresh live-coding profile to project.clj `text`, mirroring fireworks-vscode.deps/
-   add-live-code-alias on the Clojure CLI side: a :live-code profile whose :plugins carries exactly
+   add-live-code-alias on the Clojure CLI side: a :fireworks profile whose :plugins carries exactly
    the eligible coordinate — never rewriting a profile the user already has. When the project has no
-   :profiles, splice the commented block (always :live-code); when :profiles exists, assoc a fresh
-   profile (:live-code, or :fireworks-live-code when :live-code is taken). Returns
+   :profiles, splice the commented block (always :fireworks); when :profiles exists, assoc a fresh
+   profile (:fireworks, or :fireworks-live-code when :fireworks is taken). Returns
    {:text new-text :profile name :changed true} or {:error :unparseable}."
   [text]
   (try
@@ -189,10 +189,10 @@
         {:text    (let [children (n/children (p/parse-string-all live-code-profile-block))
                         end      (-> (z/of-string text) z/down z/rightmost)]
                     (z/root-string (reduce z/insert-right* end (reverse children))))
-         :profile "live-code"
+         :profile "fireworks"
          :changed true}
         (let [existing (set (map profile-key->str (keys (z/sexpr pz))))
-              name     (if (contains? existing "live-code") "fireworks-live-code" "live-code")
+              name     (if (contains? existing "fireworks") "fireworks-live-code" "fireworks")
               kw       (keyword name)
               ;; assoc appends on the same line as the last profile — insert a newline before the new
               ;; key so it lands on its own line, then let cljfmt fix the indentation (as deps does).

@@ -47,32 +47,32 @@
 ;; --- add-live-code-profile ------------------------------------------------
 
 (deftest add-live-code-profile-splices-when-no-profiles
-  (testing "no :profiles -> splices a commented :live-code profile carrying the plugin"
+  (testing "no :profiles -> splices a commented :fireworks profile carrying the plugin"
     (let [text (str "(defproject my-app \"0.1.0\"\n"
                     "  :dependencies [[org.clojure/clojure \"1.12.0\"]])")
           {:keys [text profile changed]} (lein/add-live-code-profile text)]
       (is changed)
-      (is (= "live-code" profile))
+      (is (= "fireworks" profile))
       (is (str/includes? text eligible-coord))
       ;; the commented header from examples/leiningen-project rides along verbatim
-      (is (str/includes? text ";; `lein with-profile +live-code test-refresh`."))
-      ;; the fresh profile is now eligible and named :live-code
-      (is (= ["live-code"] (:eligible (lein/profiles text)))))))
+      (is (str/includes? text ";; `lein with-profile +fireworks test-refresh`."))
+      ;; the fresh profile is now eligible and named :fireworks
+      (is (= ["fireworks"] (:eligible (lein/profiles text)))))))
 
 (deftest add-live-code-profile-assocs-into-existing
-  (testing "existing :profiles (none eligible) -> assoc a fresh :live-code, leaving others intact"
+  (testing "existing :profiles (none eligible) -> assoc a fresh :fireworks, leaving others intact"
     (let [text (str "(defproject my-app \"0.1.0\"\n"
                     "  :profiles {:dev {:source-paths [\"dev\"]}})")
           {:keys [text profile changed]} (lein/add-live-code-profile text)]
       (is changed)
-      (is (= "live-code" profile))
+      (is (= "fireworks" profile))
       (is (str/includes? text ":dev")) ; user's profile untouched
-      (is (= {:all ["dev" "live-code"] :eligible ["live-code"]} (lein/profiles text))))))
+      (is (= {:all ["dev" "fireworks"] :eligible ["fireworks"]} (lein/profiles text))))))
 
 (deftest add-live-code-profile-avoids-name-collision
-  (testing "a taken :live-code (not eligible) -> the new profile is :fireworks-live-code"
+  (testing "a taken :fireworks (not eligible) -> the new profile is :fireworks-live-code"
     (let [text (str "(defproject my-app \"0.1.0\"\n"
-                    "  :profiles {:live-code {:source-paths [\"dev\"]}})")
+                    "  :profiles {:fireworks {:source-paths [\"dev\"]}})")
           {:keys [text profile changed]} (lein/add-live-code-profile text)]
       (is changed)
       (is (= "fireworks-live-code" profile))
