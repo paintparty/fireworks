@@ -3,8 +3,23 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
-## Unreleased
+## 0.22.0
+
+#### Added
+- Comprehensive bb.edn for running dev and test tasks
+
+- `fireworks.util/de-noise-str`, a robust solution for doing this kind of thing to an existing stringified value:
+  `#object[clojure.lang.Atom 0x1 {:a 1}] => #Atom{:a 1}`
+  Works on strings with multiple instances of noisey print representations. Used in Fireworks extension, for inline results.
+
+
+#### Changed
+- Project ported from lein to deps.edn
 - Use `:host-mood` in `fireworks.macros/theme-profile` 
+- Consolidated snapshot testing setup
+
+#### Fixed
+- java.util.Date printing [#144](https://github.com/paintparty/fireworks/issues/145)
 
 
 ## 0.21.3

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.5
+<sub>07-04-2026</sub>
+
+#### Changed
+- Quick Start project naming 
+  [#142](https://github.com/paintparty/fireworks/issues/142)
+
+- De-noised print presentation of inline results for objects: 
+  `#object[clojure.lang.Atom 0x1 {:a 1}] => #Atom{:a 1}`
+  [#143](https://github.com/paintparty/fireworks/issues/143)
+
+- deps.edn alias `:live-code` -> `:fireworks`
+
+- Cleaner commentary added to deps.edn file, when extension creates a `:fireworks` alias for user (existing projects).
+
+
+
+#### Fixed
+- Error alerts when running command in a workspace when Calva has failed to activate. 
+
 ## 0.2.4
 <sub>07-04-2026</sub>
 

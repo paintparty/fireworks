@@ -1,7 +1,0 @@
-
-
-Take a look at this issue and analyze it:
-
-https://github.com/paintparty/fireworks/issues/142
-
-Create a quick brief summary of what this is about, because I kinda forget what the problem was, but I know it's a problem and let's see if we can fix it.

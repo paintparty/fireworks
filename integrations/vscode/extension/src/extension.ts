@@ -2912,8 +2912,9 @@ const QUICK_START_KINDS: Record<string, Runtime> = { Babashka: 'bb', Leiningen: 
 const KIND_SUFFIX: Record<Runtime, string> = { bb: 'bb', lein: 'lein', deps: 'deps' };
 
 // Fireworks: Quick Start — the one-Enter sandbox. Reads the configured project type, computes a
-// fresh ~/Desktop/scratch-<type> parent, confirms, then scaffolds a `scratch` project inside it and
-// adds it to the workspace. No runtime/parent/name prompts.
+// fresh ~/Desktop/scratch-<type> folder name, confirms, then scaffolds the project directly into
+// it (that folder name doubles as the project name) and adds it to the workspace. No
+// runtime/parent/name prompts.
 async function quickStart(): Promise<void> {
   diagBegin('Quick Start');
   try {
@@ -2933,7 +2934,7 @@ async function quickStart(): Promise<void> {
       return;
     }
 
-    await scaffoldAndOpen(kind, path.join(parentAbs, 'scratch'), 'scratch', 'add');
+    await scaffoldAndOpen(kind, parentAbs, parentName, 'add');
   } finally {
     diagEnd('ended'); // no-op if a branch already flushed
   }
