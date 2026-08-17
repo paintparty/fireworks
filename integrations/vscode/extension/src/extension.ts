@@ -2767,6 +2767,7 @@ async function createProject(): Promise<void> {
       canSelectMany: false,
       openLabel: 'Select parent folder',
       title: 'Select the parent folder for the new project',
+      defaultUri: vscode.Uri.file(os.homedir()),
     });
     if (!parentPick || parentPick.length === 0) {
       diagEnd('cancelled (no parent folder)');
